@@ -20,8 +20,7 @@ question bank that an admin curates.
 3. The user reviews the draft: questions can be **reordered** with the
    ↑/↓ buttons, **discarded and replaced** with another from the *same
    category* (so the counts you asked for stay correct), or just removed.
-4. Once happy, the user can **download the quiz as a PDF** or have it
-   **emailed** to them (as a PDF attachment).
+4. Once happy, the user can **download the quiz as a PDF**.
 
 The whole frontend is responsive and works on mobile - the sidebar
 collapses into a bottom tab bar below 760px wide.
@@ -165,10 +164,6 @@ block and uncomment the Postgres block, then create the `quizdb` database.
 first boot - swap to a proper migration tool (Flyway/Liquibase) before
 production use.
 
-**Email:** fill in real SMTP credentials in the `spring.mail.*` properties
-to make "email me the quiz" actually send mail. Until then, that endpoint
-will throw an error, which the frontend surfaces as a banner.
-
 ### Frontend
 
 ```bash
@@ -190,7 +185,6 @@ Starts on `http://localhost:5173`.
 | POST   | `/api/quiz/generate`          | any logged-in user | Generate a quiz from per-category selections  |
 | POST   | `/api/quiz/replace-question`  | any logged-in user | Swap one question for another in the same category |
 | POST   | `/api/quiz/export/pdf`        | any logged-in user | Download a finalized quiz as PDF              |
-| POST   | `/api/quiz/export/email`      | any logged-in user | Email a finalized quiz as a PDF attachment    |
 | GET    | `/api/admin/questions`        | ADMIN role         | List all questions                            |
 | POST   | `/api/admin/questions`        | ADMIN role         | Create a question                             |
 | PUT    | `/api/admin/questions/{id}`   | ADMIN role         | Update a question                             |
@@ -240,27 +234,57 @@ identically here since the app just talks JDBC/Postgres:
    `postgresql://myuser:mypassword@ep-abc-123.neon.tech/quizdb?sslmode=require`,
    set:
    - `DATABASE_URL=jdbc:postgresql://ep-abc-123.neon.tech/quizdb?sslmode=require`
+     (note the added `jdbc:` prefix, and the username/password stripped back
+     out of the URL - the JDBC driver wants those as separate properties,
+     not embedded in the URL the way `psql`-style connection strings show them)
    - `DATABASE_USERNAME=myuser`
    - `DATABASE_PASSWORD=mypassword`
 
+> **Using Supabase specifically:** its *direct* connection host
+> (`db.<project-ref>.supabase.co`) only resolves to an IPv6 address unless
+> you're on a paid plan with the IPv4 add-on - and **Render doesn't support
+> IPv6**, so that host will time out from a Render service. Use Supabase's
+> **connection pooler** instead: on your project's **Connect** dialog, pick
+> **"Session pooler"** (not "Transaction pooler" - transaction-mode pooling
+> can break Hibernate's prepared-statement caching). The pooler gives you a
+> different host (`aws-0-<region>.pooler.supabase.com`) *and* a different
+> username - it becomes `postgres.<project-ref>` instead of plain
+> `postgres`. Neon doesn't have this problem; its default host is IPv4-reachable.
+
 ### 2. Backend - Render
 
-The repo includes a `render.yaml` blueprint, so Render can set up the
-service for you:
+**Render has no native Java runtime** (only Node, Python, Ruby, Go, Rust and
+Elixir build natively) - so the backend deploys as a **Docker** service.
+`backend/Dockerfile` handles the whole build (Maven compiles the jar, a
+slim JRE image runs it), and `render.yaml` points Render at it:
 
 1. Push this repo to GitHub.
 2. In Render, **New -> Blueprint**, point it at your repo. Render reads
-   `render.yaml` and creates the `quiz-backend` web service.
+   `render.yaml` and creates the `quiz-backend` web service with
+   `runtime: docker`.
 3. Fill in the env vars Render will prompt for (they're listed with
    `sync: false` in `render.yaml` so nothing sensitive is committed):
    `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`,
    `CORS_ALLOWED_ORIGINS`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`,
-   `ADMIN_DEFAULT_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD`.
+   `ADMIN_DEFAULT_PASSWORD`.
    - `CORS_ALLOWED_ORIGINS` should be your GitHub Pages origin, e.g.
      `https://your-username.github.io` (no trailing path, no trailing slash).
    - `JWT_SECRET`: generate with `openssl rand -base64 48`.
 4. Deploy. Render gives you a URL like `https://quiz-backend-xxxx.onrender.com`
    - you'll need it in step 3.
+
+> **If you already created the service manually** (via "New -> Web
+> Service" rather than "New -> Blueprint") and it's failing with something
+> like `Couldn't find a package.json file` / `yarn run v1.22...` - that
+> means it got created with the Node runtime instead of Docker (an earlier
+> version of this guide mistakenly specified a `runtime: java`, which
+> doesn't exist on Render and silently fell back to Node). Render doesn't
+> let you switch a manually-created service's runtime after the fact, so
+> the fix is to delete that service and recreate it either via **New ->
+> Blueprint** (recommended - picks up `runtime: docker` automatically), or
+> manually via **New -> Web Service** with **Runtime: Docker**,
+> **Root Directory: `backend`**, **Dockerfile Path: `./Dockerfile`**,
+> **Docker Build Context Directory: `.`**.
 
 ### 3. Frontend - GitHub Pages
 
@@ -303,6 +327,12 @@ Google Sign-In will silently fail on any origin that isn't listed here.
   don't match between frontend and backend.
 - First request after a while is very slow → expected Render free-tier
   cold start (~1 minute), not a bug.
+- `error Couldn't find a package.json file` / service runs `yarn start` →
+  the Render service was created with the Node runtime instead of Docker -
+  see the callout in the Render section above.
+- Connection hangs, then times out, with a Supabase `DATABASE_URL` →
+  you're likely on Supabase's direct-connection host, which is IPv6-only;
+  switch to the session pooler host (see the database section above).
 - 500 errors on every request → check the Render service logs; almost
   always a missing/misformatted env var (`DATABASE_URL` is the usual
   culprit - it needs the `jdbc:` prefix even though Neon/Supabase give you

@@ -48,9 +48,6 @@ export default {
       responseType: 'blob'
     }).then(r => r.data)
   },
-  emailQuiz(payload) {
-    return client.post('/quiz/export/email', payload).then(r => r.data)
-  },
 
   // --- Admin endpoints (require ADMIN role) ---
   adminListQuestions() {

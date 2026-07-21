@@ -82,12 +82,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Email sending -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
-
         <!-- PDF generation -->
         <dependency>
             <groupId>com.github.librepdf</groupId>

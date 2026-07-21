@@ -1,7 +1,6 @@
 package com.quizapp.controller;
 
 import com.quizapp.dto.*;
-import com.quizapp.service.EmailService;
 import com.quizapp.service.PdfService;
 import com.quizapp.service.QuestionService;
 import com.quizapp.service.QuizService;
@@ -19,14 +18,11 @@ public class QuizController {
 
     private final QuizService quizService;
     private final PdfService pdfService;
-    private final EmailService emailService;
     private final QuestionService questionService;
 
-    public QuizController(QuizService quizService, PdfService pdfService,
-                           EmailService emailService, QuestionService questionService) {
+    public QuizController(QuizService quizService, PdfService pdfService, QuestionService questionService) {
         this.quizService = quizService;
         this.pdfService = pdfService;
-        this.emailService = emailService;
         this.questionService = questionService;
     }
 
@@ -48,7 +44,7 @@ public class QuizController {
         return questionService.findCategoriesForLanguage(language);
     }
 
-    /** Use case 4a: download the finalized quiz as a PDF. */
+    /** Use case 4: download the finalized quiz as a PDF. */
     @PostMapping("/export/pdf")
     public ResponseEntity<byte[]> exportPdf(
             @Valid @RequestBody QuizDto quiz,
@@ -61,12 +57,5 @@ public class QuizController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                 .body(pdf);
-    }
-
-    /** Use case 4b: email the finalized quiz to the given address. */
-    @PostMapping("/export/email")
-    public ResponseEntity<Void> exportEmail(@Valid @RequestBody EmailQuizRequest request) {
-        emailService.sendQuiz(request.getRecipientEmail(), request.getQuiz(), request.isIncludeAnswers());
-        return ResponseEntity.ok().build();
     }
 }

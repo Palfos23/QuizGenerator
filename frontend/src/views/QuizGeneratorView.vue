@@ -108,35 +108,12 @@
         You removed every question. <button class="btn btn-secondary btn-sm" @click="startOver">Start over</button>
       </div>
 
-      <div v-else class="no-print" style="margin-top:32px; display:flex; gap:12px; flex-wrap:wrap;">
+      <div v-else class="no-print" style="margin-top:32px;">
         <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
           {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
         </button>
-        <button class="btn btn-secondary" @click="showEmailModal = true">Email me the quiz</button>
       </div>
     </section>
-
-    <!-- Email modal -->
-    <div v-if="showEmailModal" class="modal-backdrop no-print" @click.self="showEmailModal = false">
-      <div class="modal">
-        <h2>Email this quiz</h2>
-        <p class="page-subtitle">We'll send it as a PDF attachment.</p>
-        <div class="field">
-          <label>Recipient email</label>
-          <input type="email" v-model="emailAddress" placeholder="you@example.com" />
-        </div>
-        <div class="field" style="display:flex; align-items:center; gap:8px;">
-          <input type="checkbox" id="includeAnswers" v-model="includeAnswersInEmail" style="width:auto;" />
-          <label for="includeAnswers" style="margin:0; text-transform:none; font-weight:400;">Include correct answers</label>
-        </div>
-        <div style="display:flex; gap:10px; justify-content:flex-end;">
-          <button class="btn btn-secondary" @click="showEmailModal = false">Cancel</button>
-          <button class="btn btn-primary" :disabled="sendingEmail" @click="sendEmail">
-            {{ sendingEmail ? 'Sending…' : 'Send' }}
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -163,11 +140,6 @@ const generating = ref(false)
 const error = ref('')
 const successMessage = ref('')
 const busyIndex = ref(-1)
-
-const showEmailModal = ref(false)
-const emailAddress = ref('')
-const includeAnswersInEmail = ref(true)
-const sendingEmail = ref(false)
 const exportingPdf = ref(false)
 
 const remainingCategories = computed(() =>
@@ -282,24 +254,6 @@ async function downloadPdf() {
     error.value = 'Could not generate the PDF.'
   } finally {
     exportingPdf.value = false
-  }
-}
-
-async function sendEmail() {
-  sendingEmail.value = true
-  error.value = ''
-  try {
-    await api.emailQuiz({
-      recipientEmail: emailAddress.value,
-      includeAnswers: includeAnswersInEmail.value,
-      quiz: quiz.value
-    })
-    successMessage.value = `Quiz sent to ${emailAddress.value}.`
-    showEmailModal.value = false
-  } catch (e) {
-    error.value = e.response?.data?.message || 'Could not send the email. Check the SMTP settings on the server.'
-  } finally {
-    sendingEmail.value = false
   }
 }
 </script>

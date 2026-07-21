@@ -1,7 +1,7 @@
 <template>
   <div class="app-shell">
     <nav class="nav-rail">
-      <div class="nav-brand">Quiz<span>Creator</span></div>
+      <div class="nav-brand">Quiz<span>Night</span></div>
 
       <template v-if="auth.isAuthenticated.value">
         <router-link v-if="!auth.isAdmin.value" to="/generate" class="nav-link">Create a quiz</router-link>
