@@ -1,11 +1,11 @@
 services:
   - type: web
     name: quiz-backend
-    runtime: java
+    runtime: docker
     plan: free
     rootDir: backend
-    buildCommand: ./mvnw clean package -DskipTests
-    startCommand: java -jar target/quiz-backend-1.0.0.jar
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /api/quiz/categories
     envVars:
       - key: SPRING_PROFILES_ACTIVE
