@@ -18,7 +18,7 @@ client.interceptors.response.use(
   error => {
     if (error.response?.status === 401) {
       auth.logout()
-      router.push('/login')
+      router.push('/')
     }
     return Promise.reject(error)
   }
