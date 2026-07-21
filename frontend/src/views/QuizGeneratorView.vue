@@ -54,7 +54,12 @@
           No categories added yet - pick one below to get started.
         </div>
 
-        <div v-for="(sel, idx) in form.categorySelections" :key="sel.category" class="category-row">
+        <div
+          v-for="(sel, idx) in form.categorySelections"
+          :key="sel.category"
+          class="category-row"
+          :class="{ 'just-added': sel.category === justAddedCategory }"
+        >
           <span class="category-name">{{ sel.category }}</span>
           <input type="number" min="1" max="50" v-model.number="sel.numberOfQuestions" />
           <span style="color:var(--text-dim); font-size:0.85rem;">questions</span>
@@ -134,6 +139,7 @@ const form = reactive({
 const availableCategories = ref([])
 const categoryToAdd = ref('')
 const countToAdd = ref(5)
+const justAddedCategory = ref('')
 
 const quiz = ref(null)
 const generating = ref(false)
@@ -172,9 +178,15 @@ function clampRange(which) {
 
 function addCategorySelection() {
   if (!categoryToAdd.value) return
-  form.categorySelections.push({ category: categoryToAdd.value, numberOfQuestions: countToAdd.value || 1 })
+  const category = categoryToAdd.value
+  form.categorySelections.push({ category, numberOfQuestions: countToAdd.value || 1 })
   categoryToAdd.value = ''
   countToAdd.value = 5
+
+  justAddedCategory.value = category
+  setTimeout(() => {
+    if (justAddedCategory.value === category) justAddedCategory.value = ''
+  }, 1100)
 }
 
 function removeCategorySelection(idx) {

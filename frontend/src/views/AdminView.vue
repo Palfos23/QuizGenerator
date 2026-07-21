@@ -11,53 +11,75 @@
     <div v-if="error" class="banner error">{{ error }}</div>
     <div v-if="successMessage" class="banner success">{{ successMessage }}</div>
 
-    <div class="field" style="max-width:220px;">
-      <label>Filter by language</label>
-      <select v-model="languageFilter">
-        <option value="ALL">All languages</option>
-        <option v-for="lang in LANGUAGES" :key="lang.code" :value="lang.code">{{ lang.flag }} {{ lang.label }}</option>
-      </select>
+    <div class="filter-bar">
+      <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
+        <label>Search</label>
+        <input type="text" v-model="searchText" placeholder="Search question, category or answer…" />
+      </div>
+      <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
+        <label>Language</label>
+        <select v-model="languageFilter">
+          <option value="ALL">All languages</option>
+          <option v-for="lang in LANGUAGES" :key="lang.code" :value="lang.code">{{ lang.flag }} {{ lang.label }}</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
+        <label>Could change?</label>
+        <select v-model="couldChangeFilter">
+          <option value="ALL">Any</option>
+          <option value="YES">May change</option>
+          <option value="NO">Stable</option>
+        </select>
+      </div>
     </div>
 
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
     <div v-else-if="!filteredQuestions.length" class="empty-state">
-      No questions yet{{ languageFilter !== 'ALL' ? ' in ' + languageLabel(languageFilter) : '' }}.
-      Click "Add question" to create one.
+      No questions match those filters.
     </div>
 
-    <div v-else class="table-scroll">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Question</th>
-            <th>Category</th>
-            <th>Lang</th>
-            <th>Difficulty</th>
-            <th>Answer</th>
-            <th>Could change?</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="q in filteredQuestions" :key="q.id">
-            <td style="max-width:280px;">{{ q.questionText }}</td>
-            <td>{{ q.category }}</td>
-            <td>{{ flagFor(q.language) }}</td>
-            <td><span class="tag difficulty-tag" :style="{ background: difficultyColor(q.difficultyLevel) }">{{ q.difficultyLevel }}/10</span></td>
-            <td>{{ q.answer }}</td>
-            <td>
-              <span v-if="q.couldChange" class="tag changeable">May change</span>
-              <span v-else style="color:var(--text-dim); font-size:0.85rem;">Stable</span>
-            </td>
-            <td style="white-space:nowrap;">
-              <button class="btn btn-secondary btn-sm" @click="openEdit(q)">Edit</button>
-              <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="confirmDelete(q)">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <template v-else>
+      <div class="table-scroll">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>Category</th>
+              <th>Lang</th>
+              <th>Difficulty</th>
+              <th>Answer</th>
+              <th>Could change?</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="q in pagedQuestions" :key="q.id">
+              <td style="max-width:280px;">{{ q.questionText }}</td>
+              <td>{{ q.category }}</td>
+              <td>{{ flagFor(q.language) }}</td>
+              <td><span class="tag difficulty-tag" :style="{ background: difficultyColor(q.difficultyLevel) }">{{ q.difficultyLevel }}/10</span></td>
+              <td>{{ q.answer }}</td>
+              <td>
+                <span v-if="q.couldChange" class="tag changeable">May change</span>
+                <span v-else style="color:var(--text-dim); font-size:0.85rem;">Stable</span>
+              </td>
+              <td style="white-space:nowrap;">
+                <button class="btn btn-secondary btn-sm" @click="openEdit(q)">Edit</button>
+                <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="confirmDelete(q)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-bar" v-if="totalPages > 1">
+        <button class="btn btn-secondary btn-sm" :disabled="page === 1" @click="page--">← Prev</button>
+        <span>Page {{ page }} of {{ totalPages }} · {{ filteredQuestions.length }} questions</span>
+        <button class="btn btn-secondary btn-sm" :disabled="page === totalPages" @click="page++">Next →</button>
+      </div>
+      <p v-else style="color:var(--text-dim); font-size:0.85rem;">{{ filteredQuestions.length }} question(s)</p>
+    </template>
 
     <QuestionFormModal
       v-if="showModal"
@@ -69,25 +91,50 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import QuestionFormModal from '../components/QuestionFormModal.vue'
-import { LANGUAGES, languageLabel, difficultyColor } from '../constants'
+import { LANGUAGES, difficultyColor } from '../constants'
+
+const PAGE_SIZE = 15
 
 const questions = ref([])
 const loading = ref(true)
 const error = ref('')
 const successMessage = ref('')
+
+const searchText = ref('')
 const languageFilter = ref('ALL')
+const couldChangeFilter = ref('ALL')
+const page = ref(1)
 
 const showModal = ref(false)
 const editingQuestion = ref(null)
 
-const filteredQuestions = computed(() =>
-  languageFilter.value === 'ALL'
-    ? questions.value
-    : questions.value.filter(q => q.language === languageFilter.value)
-)
+const filteredQuestions = computed(() => {
+  const term = searchText.value.trim().toLowerCase()
+  return questions.value.filter(q => {
+    if (languageFilter.value !== 'ALL' && q.language !== languageFilter.value) return false
+    if (couldChangeFilter.value === 'YES' && !q.couldChange) return false
+    if (couldChangeFilter.value === 'NO' && q.couldChange) return false
+    if (term) {
+      const haystack = `${q.questionText} ${q.category} ${q.answer}`.toLowerCase()
+      if (!haystack.includes(term)) return false
+    }
+    return true
+  })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredQuestions.value.length / PAGE_SIZE)))
+
+const pagedQuestions = computed(() => {
+  const start = (page.value - 1) * PAGE_SIZE
+  return filteredQuestions.value.slice(start, start + PAGE_SIZE)
+})
+
+// jump back to a valid page whenever the filtered set shrinks (new filter, deletion, etc.)
+watch([searchText, languageFilter, couldChangeFilter], () => { page.value = 1 })
+watch(totalPages, (newTotal) => { if (page.value > newTotal) page.value = newTotal })
 
 onMounted(loadQuestions)
 

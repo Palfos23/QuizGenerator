@@ -1,5 +1,5 @@
 <template>
-  <div class="question-card" :class="{ 'discard-anim': discarding }" :style="tiltStyle">
+  <div class="question-card" :class="{ 'discard-anim': discarding }">
     <div class="question-card-header">
       <span class="question-number">Q{{ index + 1 }}</span>
       <div class="question-tags">
@@ -34,10 +34,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { difficultyColor } from '../constants'
 
-const props = defineProps({
+defineProps({
   question: { type: Object, required: true },
   index: { type: Number, required: true },
   editable: { type: Boolean, default: false },
@@ -48,10 +47,4 @@ const props = defineProps({
 })
 
 defineEmits(['discard', 'remove', 'move-up', 'move-down'])
-
-// small alternating tilt so the stack reads like real index cards, not a rigid list
-const tiltStyle = computed(() => {
-  const tilt = props.index % 2 === 0 ? -0.4 : 0.4
-  return { '--tilt': `${tilt}deg` }
-})
 </script>
