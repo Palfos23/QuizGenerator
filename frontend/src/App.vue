@@ -1,21 +1,18 @@
 <template>
   <div class="app-shell">
-    <nav class="nav-rail">
-      <div class="nav-brand">Quiz<span>Night</span></div>
+    <nav class="top-nav">
+      <router-link to="/" class="nav-brand">Quiz<span>Night</span></router-link>
 
       <template v-if="auth.isAuthenticated.value">
         <router-link v-if="!auth.isAdmin.value" to="/generate" class="nav-link">Create a quiz</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/questions" class="nav-link">Question bank</router-link>
 
-        <div style="flex:1;"></div>
-        <div style="padding:10px 12px; font-size:0.8rem; color:var(--text-dim);">
-          {{ auth.state.displayName }}
-        </div>
-        <button class="btn btn-secondary btn-sm" style="margin:0 12px;" @click="logout">Log out</button>
+        <div class="top-nav-spacer"></div>
+        <span class="top-nav-user">{{ auth.state.displayName }}</span>
+        <button class="btn btn-secondary btn-sm" @click="logout">Log out</button>
       </template>
       <template v-else>
-        <router-link to="/" class="nav-link">Log in</router-link>
-        <div style="flex:1;"></div>
+        <div class="top-nav-spacer"></div>
       </template>
     </nav>
 
@@ -23,7 +20,7 @@
       <router-view />
     </div>
 
-    <!-- Mobile-only bottom tab bar - mirrors the sidebar, hidden on desktop via CSS -->
+    <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
       <router-link v-if="!auth.isAdmin.value" to="/generate">Create</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>

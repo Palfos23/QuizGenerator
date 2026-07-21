@@ -94,9 +94,11 @@ onMounted(async () => {
       callback: handleCredentialResponse
     })
     window.google.accounts.id.renderButton(buttonEl.value, {
-      theme: 'outline',
+      theme: 'filled_black',
+      shape: 'pill',
       size: 'large',
       text: 'continue_with',
+      logo_alignment: 'left',
       width: 320
     })
   } catch (e) {
