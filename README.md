@@ -353,6 +353,20 @@ slim JRE image runs it), and `render.yaml` points Render at it:
 4. Deploy. Render gives you a URL like `https://quiz-backend-xxxx.onrender.com`
    - you'll need it in step 3.
 
+> **Picking a region:** unlike Render's manual "New -> Web Service" wizard
+> (which shows a region dropdown), a **Blueprint's region isn't chosen in
+> the dashboard at all** - it's set via the `region:` field on the service
+> in `render.yaml` (currently `frankfurt`; other options are `oregon`,
+> `ohio`, `virginia`, `singapore`). **Match this to your database's
+> region**, not just "closest to you" - every request that touches the
+> database pays for the round-trip between them, and a mismatch (e.g.
+> backend in Oregon, database in Ireland) adds a very noticeable delay to
+> every login and every quiz generation. Render also **doesn't support
+> changing a service's region after creation** - to move it, create a new
+> service in the target region (via Blueprint again, after editing
+> `region:`), verify it works, repoint the frontend's `VITE_API_BASE_URL`
+> at it, then delete the old one.
+
 > **If you already created the service manually** (via "New -> Web
 > Service" rather than "New -> Blueprint") and it's failing with something
 > like `Couldn't find a package.json file` / `yarn run v1.22...` - that
