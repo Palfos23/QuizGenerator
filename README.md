@@ -1,4 +1,4 @@
-# Quiz Generator
+# QuizMaker
 
 A web app for generating custom quizzes (e.g. for a birthday party) from a
 question bank that an admin curates.
@@ -20,10 +20,15 @@ question bank that an admin curates.
 3. The user reviews the draft: questions can be **reordered** with the
    ↑/↓ buttons, **discarded and replaced** with another from the *same
    category* (so the counts you asked for stay correct), or just removed.
-4. Once happy, the user can **download the quiz as a PDF**.
+   Each question's answer is hidden by default behind a "Show answer" toggle,
+   so you can read through questions without spoiling yourself.
+4. Once happy, the user can **download the quiz as a PDF**, and/or hit
+   **"Save to My Quizzes"** to keep a permanent copy they can come back to
+   later at `/my-quizzes` - nothing is saved automatically just from
+   generating a quiz, only on that explicit action.
 
-The whole frontend is responsive and works on mobile - the sidebar
-collapses into a bottom tab bar below 760px wide.
+The whole frontend is responsive and works on mobile - the top nav
+collapses to a bottom tab bar below 760px wide.
 
 ### Languages
 
@@ -40,8 +45,8 @@ Two completely separate login paths, matching two different trust levels:
 
 | Who | How | Where |
 |---|---|---|
-| Regular user | Google Sign-In (their Google account, no password of ours) | `/login` |
-| Admin | Username + password, checked against a dedicated `admin_users` table | `/admin-access` |
+| Regular user | Google Sign-In (their Google account, no password of ours) | `/` (the landing page) |
+| Admin | Username + password, checked against a dedicated `admin_users` table | `/admin` |
 
 Notes on the design:
 
@@ -49,20 +54,29 @@ Notes on the design:
   created automatically the first time someone signs in with Google - there
   is no `AppUser` -> `AdminUser` upgrade path in the code, so a compromised
   or careless regular account can't become an admin account.
-- **The admin login page isn't linked in the main navigation** - the only
-  way to it is the small "Admin" text at the bottom of the sidebar, or
-  knowing the `/admin-access` URL directly. This is a minor speed bump for
-  casual users, **not the actual security boundary** - the real protection
-  is that every `/api/admin/**` endpoint requires a valid JWT with the
-  `ADMIN` role, checked server-side on every request (see `SecurityConfig`).
-  Hiding the link doesn't grant access to anything; only a correct
-  username/password does.
+- **The admin login lives at its own URL (`/admin`)**, separate from the
+  regular sign-in - it's not linked from the main navigation, since regular
+  users have no reason to see it. This is just tidiness, **not the actual
+  security boundary** - the real protection is that every `/api/admin/**`
+  endpoint requires a valid JWT with the `ADMIN` role, checked server-side
+  on every request (see `SecurityConfig`). Someone finding or guessing the
+  `/admin` URL doesn't grant them anything; only a correct username/password does.
 - Both login flows return the same kind of thing: a JWT the frontend stores
   and sends as `Authorization: Bearer <token>` on every API call. The token
   carries the role (`USER` or `ADMIN`), which the backend re-checks on every
   request - it never trusts the frontend's idea of who's logged in.
 - `/api/quiz/**` requires *any* logged-in user. `/api/admin/**` requires the
   `ADMIN` role specifically.
+
+### Routes
+
+| Path | Who sees it | Purpose |
+|---|---|---|
+| `/` | Everyone | Landing page: what the app does + Google sign-in |
+| `/generate` | Logged-in users | Build and export a quiz |
+| `/my-quizzes` | Logged-in users | View/re-download/delete previously saved quizzes |
+| `/admin` | Everyone (but pointless without credentials) | Admin username/password login |
+| `/admin/questions` | Logged-in admins | Manage the question bank |
 
 ### Setting up Google Sign-In
 
@@ -113,10 +127,28 @@ app_users                      admin_users
 ├── name          VARCHAR      └── password_hash   VARCHAR  (BCrypt)
 ├── google_subject VARCHAR
 └── created_at    TIMESTAMP
+
+saved_quizzes                       saved_quiz_questions
+├── id            BIGINT PK         ├── id               BIGINT PK
+├── owner_id      BIGINT FK -> app_users.id
+├── title         VARCHAR           ├── saved_quiz_id    BIGINT FK -> saved_quizzes.id
+├── language      VARCHAR           ├── order_index      INT     (preserves reordering)
+└── created_at    TIMESTAMP         ├── question_text    TEXT
+                                     ├── category         VARCHAR
+                                     ├── difficulty_level  INT
+                                     └── answer           VARCHAR
 ```
 
 `app_users` and `admin_users` are intentionally separate tables with no
 foreign key or conversion path between them.
+
+`saved_quiz_questions` is a **frozen copy** of each question at the moment
+the user hit "Save to My Quizzes" - not a foreign key back to `questions`.
+If an admin later edits or deletes the original question, quizzes already
+saved by users are unaffected; they show exactly what the user saved,
+including whatever order they'd put the questions in. Both tables are
+brand new, so unlike the schema changes further down, there's nothing to
+migrate on an existing deployment - `ddl-auto=update` just creates them.
 
 Each question belongs to exactly one language - there's no automatic
 translation or linking between a question and its equivalent in another
@@ -185,6 +217,10 @@ Starts on `http://localhost:5173`.
 | POST   | `/api/quiz/generate`          | any logged-in user | Generate a quiz from per-category selections  |
 | POST   | `/api/quiz/replace-question`  | any logged-in user | Swap one question for another in the same category |
 | POST   | `/api/quiz/export/pdf`        | any logged-in user | Download a finalized quiz as PDF              |
+| POST   | `/api/quiz/saved`             | any logged-in user | Save a finalized quiz ("My Quizzes")          |
+| GET    | `/api/quiz/saved`             | any logged-in user | List the caller's own saved quizzes           |
+| GET    | `/api/quiz/saved/{id}`        | any logged-in user | Fetch one of the caller's own saved quizzes   |
+| DELETE | `/api/quiz/saved/{id}`        | any logged-in user | Delete one of the caller's own saved quizzes  |
 | GET    | `/api/admin/questions`        | ADMIN role         | List all questions                            |
 | POST   | `/api/admin/questions`        | ADMIN role         | Create a question                             |
 | PUT    | `/api/admin/questions/{id}`   | ADMIN role         | Update a question                             |

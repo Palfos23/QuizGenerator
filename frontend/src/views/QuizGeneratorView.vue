@@ -113,9 +113,12 @@
         You removed every question. <button class="btn btn-secondary btn-sm" @click="startOver">Start over</button>
       </div>
 
-      <div v-else class="no-print" style="margin-top:32px;">
+      <div v-else class="no-print" style="margin-top:32px; display:flex; gap:12px; flex-wrap:wrap;">
         <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
           {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
+        </button>
+        <button class="btn btn-secondary" :disabled="saving" @click="saveQuiz">
+          {{ saving ? 'Saving…' : 'Save to My Quizzes' }}
         </button>
       </div>
     </section>
@@ -147,6 +150,7 @@ const error = ref('')
 const successMessage = ref('')
 const busyIndex = ref(-1)
 const exportingPdf = ref(false)
+const saving = ref(false)
 
 const remainingCategories = computed(() =>
   availableCategories.value.filter(c => !form.categorySelections.some(sel => sel.category === c))
@@ -266,6 +270,20 @@ async function downloadPdf() {
     error.value = 'Could not generate the PDF.'
   } finally {
     exportingPdf.value = false
+  }
+}
+
+async function saveQuiz() {
+  saving.value = true
+  error.value = ''
+  successMessage.value = ''
+  try {
+    await api.saveQuiz(quiz.value)
+    successMessage.value = 'Saved - find it any time under "My Quizzes".'
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not save the quiz.'
+  } finally {
+    saving.value = false
   }
 }
 </script>

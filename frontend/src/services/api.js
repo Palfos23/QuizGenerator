@@ -49,6 +49,20 @@ export default {
     }).then(r => r.data)
   },
 
+  // --- My Quizzes (explicitly saved, not auto-saved on generate) ---
+  saveQuiz(quiz) {
+    return client.post('/quiz/saved', quiz).then(r => r.data)
+  },
+  listSavedQuizzes() {
+    return client.get('/quiz/saved').then(r => r.data)
+  },
+  getSavedQuiz(id) {
+    return client.get(`/quiz/saved/${id}`).then(r => r.data)
+  },
+  deleteSavedQuiz(id) {
+    return client.delete(`/quiz/saved/${id}`)
+  },
+
   // --- Admin endpoints (require ADMIN role) ---
   adminListQuestions() {
     return client.get('/admin/questions').then(r => r.data)

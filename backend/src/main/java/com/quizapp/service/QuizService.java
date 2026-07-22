@@ -63,6 +63,7 @@ public class QuizService {
 
         QuizDto quiz = new QuizDto();
         quiz.setTitle(request.getTitle() == null || request.getTitle().isBlank() ? "My Quiz" : request.getTitle());
+        quiz.setLanguage(request.getLanguage());
         quiz.setQuestions(picked);
         quiz.setWarnings(warnings);
         return quiz;

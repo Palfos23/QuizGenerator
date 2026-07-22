@@ -4,7 +4,7 @@
       <h1>Build a quiz in minutes, not hours</h1>
       <p class="page-subtitle landing-lede">
         Pick your categories, how many questions from each, a difficulty level and a language -
-        QuizNight pulls matching questions from the question bank, and you can reorder, swap out,
+        QuizMaker pulls matching questions from the question bank, and you can reorder, swap out,
         or remove anything before you print it.
       </p>
     </section>

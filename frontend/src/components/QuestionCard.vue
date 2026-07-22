@@ -12,10 +12,14 @@
 
     <div class="question-text">{{ question.questionText }}</div>
 
-    <div class="answer-box">
+    <div class="answer-box" v-if="showAnswer">
       <span class="answer-label">Answer</span>
       {{ question.answer }}
     </div>
+
+    <button class="btn btn-secondary btn-sm no-print reveal-btn" @click="showAnswer = !showAnswer">
+      {{ showAnswer ? 'Hide answer' : 'Show answer' }}
+    </button>
 
     <div class="question-card-actions no-print" v-if="editable">
       <div class="reorder-buttons">
@@ -34,6 +38,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { difficultyColor } from '../constants'
 
 defineProps({
@@ -47,4 +52,6 @@ defineProps({
 })
 
 defineEmits(['discard', 'remove', 'move-up', 'move-down'])
+
+const showAnswer = ref(false)
 </script>

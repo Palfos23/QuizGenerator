@@ -1,10 +1,11 @@
 <template>
   <div class="app-shell">
     <nav class="top-nav">
-      <router-link to="/" class="nav-brand">Quiz<span>Night</span></router-link>
+      <router-link to="/" class="nav-brand">Quiz<span>Maker</span></router-link>
 
       <template v-if="auth.isAuthenticated.value">
         <router-link v-if="!auth.isAdmin.value" to="/generate" class="nav-link">Create a quiz</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" class="nav-link">My quizzes</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/questions" class="nav-link">Question bank</router-link>
 
         <div class="top-nav-spacer"></div>
@@ -23,6 +24,7 @@
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
       <router-link v-if="!auth.isAdmin.value" to="/generate">Create</router-link>
+      <router-link v-if="!auth.isAdmin.value" to="/my-quizzes">My quizzes</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
       <button @click="logout">Log out</button>
     </nav>

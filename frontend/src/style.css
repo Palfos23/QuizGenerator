@@ -429,6 +429,10 @@ input[type="range"]::-moz-range-progress {
   color: var(--teal);
 }
 
+.reveal-btn {
+  margin-bottom: 14px;
+}
+
 .question-card-actions {
   display: flex;
   align-items: center;
@@ -587,6 +591,34 @@ input[type="range"]::-moz-range-progress {
   width: 100%;
   max-width: 560px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.saved-quiz-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.saved-quiz-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.02);
+  flex-wrap: wrap;
+}
+
+.saved-quiz-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.saved-quiz-meta {
+  color: var(--text-dim);
+  font-size: 0.85rem;
 }
 
 /* ---------- Landing page ---------- */

@@ -3,6 +3,7 @@ import QuizGeneratorView from '../views/QuizGeneratorView.vue'
 import AdminView from '../views/AdminView.vue'
 import HomeView from '../views/HomeView.vue'
 import AdminLoginView from '../views/AdminLoginView.vue'
+import MyQuizzesView from '../views/MyQuizzesView.vue'
 import auth from '../services/auth'
 
 const routes = [
@@ -10,6 +11,7 @@ const routes = [
   { path: '/', name: 'home', component: HomeView },
 
   { path: '/generate', name: 'generate', component: QuizGeneratorView, meta: { requiresAuth: true } },
+  { path: '/my-quizzes', name: 'my-quizzes', component: MyQuizzesView, meta: { requiresAuth: true } },
 
   // The admin's own front door - a dedicated login landing page, separate from the
   // regular Google sign-in. Note this URL being "findable" isn't the security boundary:
