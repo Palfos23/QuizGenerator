@@ -104,7 +104,7 @@ public class GridPlayService {
             attempt.getSolvedEntryIds().add(matched.getId());
             result.setCorrect(true);
             result.setEntry(new GridEntryViewDto(matched.getId(), matched.getHintLabel(), matched.getHintValue(),
-                    true, matched.getAthlete().getName(), logoUrl(matched)));
+                    true, true, matched.getAthlete().getName(), logoUrl(matched)));
 
             boolean allSolved = attempt.getSolvedEntryIds().size() >= grid.getEntries().size();
             result.setAllSolved(allSolved);
@@ -180,8 +180,9 @@ public class GridPlayService {
         List<GridEntryViewDto> entries = grid.getEntries().stream()
                 .sorted((a, b) -> b.getHintValue() - a.getHintValue())
                 .map(e -> {
-                    boolean solved = revealAll || attempt.getSolvedEntryIds().contains(e.getId());
-                    return new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), solved,
+                    boolean guessedByUser = attempt.getSolvedEntryIds().contains(e.getId());
+                    boolean solved = revealAll || guessedByUser;
+                    return new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), solved, guessedByUser,
                             solved ? e.getAthlete().getName() : null, logoUrl(e));
                 })
                 .collect(Collectors.toList());

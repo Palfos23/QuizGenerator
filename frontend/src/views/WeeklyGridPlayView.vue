@@ -17,7 +17,7 @@
             v-for="i in state.maxStrikes"
             :key="i"
             class="strike-dot"
-            :class="{ used: i <= state.strikesUsed }"
+            :class="{ used: i <= state.strikesUsed, 'just-used': i === state.strikesUsed && justStruck }"
           ></span>
         </div>
       </div>
@@ -30,14 +30,25 @@
       <div v-else-if="gameOver" class="banner error">Out of strikes. Reveal the rest, or keep going in Overtime just for fun.</div>
 
       <div class="grid-tiles">
-        <div v-for="e in state.entries" :key="e.id" class="grid-tile" :class="{ solved: e.solved }">
+        <div
+          v-for="e in state.entries"
+          :key="e.id"
+          class="grid-tile"
+          :class="{
+            correct: e.guessedByUser,
+            'revealed-only': e.solved && !e.guessedByUser,
+            'just-solved': e.id === justSolvedId
+          }"
+        >
+          <span v-if="e.guessedByUser" class="grid-tile-status correct">✓</span>
+          <span v-else-if="e.solved" class="grid-tile-status wrong">✕</span>
           <img v-if="e.logoUrl" :src="e.logoUrl" alt="" class="grid-tile-logo" />
           <div class="grid-tile-hint">{{ e.hintLabel }} | {{ e.hintValue }}</div>
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>
       </div>
 
-      <div v-if="canStillGuess" class="field guess-box">
+      <div v-if="canStillGuess" class="field guess-box" :class="{ shake: shakeGuessBox }">
         <label>Search for an athlete…</label>
         <input
           type="text"
@@ -85,6 +96,10 @@ const searchResults = ref([])
 const guessing = ref(false)
 const actionBusy = ref(false)
 
+const justSolvedId = ref(null)
+const justStruck = ref(false)
+const shakeGuessBox = ref(false)
+
 const solvedCount = computed(() => state.value?.entries.filter(e => e.solved).length || 0)
 const allSolved = computed(() => !!state.value && solvedCount.value === state.value.entries.length)
 const gameOver = computed(() => !!state.value && state.value.completed && !allSolved.value && !state.value.revealed)
@@ -130,7 +145,27 @@ async function submitGuess(athlete) {
   try {
     const result = await api.submitGridGuess(gridId, athlete.id)
     toast.show(result.correct ? `Correct - ${result.entry.athleteName}!` : 'Wrong guess', result.correct ? 'success' : 'error')
-    await loadState()
+
+    // Update just the bits that changed locally instead of refetching the whole grid -
+    // keeps the update instant and lets a CSS transition animate the specific tile
+    // that changed, rather than the whole board flashing into a new state at once.
+    state.value.strikesUsed = result.strikesUsed
+
+    if (result.correct) {
+      const idx = state.value.entries.findIndex(e => e.id === result.entry.id)
+      if (idx !== -1) state.value.entries.splice(idx, 1, result.entry)
+      justSolvedId.value = result.entry.id
+      setTimeout(() => { if (justSolvedId.value === result.entry.id) justSolvedId.value = null }, 700)
+    } else {
+      justStruck.value = true
+      shakeGuessBox.value = true
+      setTimeout(() => { justStruck.value = false }, 500)
+      setTimeout(() => { shakeGuessBox.value = false }, 450)
+    }
+
+    if (result.gameOver || result.allSolved) {
+      state.value.completed = true
+    }
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
   } finally {
