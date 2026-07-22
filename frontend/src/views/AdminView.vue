@@ -79,6 +79,13 @@
 
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
+    <div v-else-if="!questions.length" class="empty-state">
+      <p style="margin-top:0;">No questions in the bank yet.</p>
+      <button class="btn btn-primary" :disabled="seedingStarterPack" @click="addStarterPack">
+        {{ seedingStarterPack ? 'Adding…' : 'Add a starter pack of sample questions' }}
+      </button>
+    </div>
+
     <div v-else-if="!filteredQuestions.length" class="empty-state">
       No questions match those filters.
     </div>
@@ -110,7 +117,7 @@
               </td>
               <td style="white-space:nowrap;">
                 <button class="btn btn-secondary btn-sm" @click="openEdit(q)">Edit</button>
-                <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="confirmDelete(q)">Delete</button>
+                <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(q)">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -131,6 +138,14 @@
       @close="showModal = false"
       @saved="onSaved"
     />
+
+    <ConfirmModal
+      v-if="pendingDelete"
+      title="Delete this question?"
+      :message="`'${pendingDelete.questionText}' will be permanently removed from the bank.`"
+      @confirm="doDelete"
+      @cancel="pendingDelete = null"
+    />
   </div>
 </template>
 
@@ -138,6 +153,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import QuestionFormModal from '../components/QuestionFormModal.vue'
+import ConfirmModal from '../components/ConfirmModal.vue'
 import { LANGUAGES, difficultyColor } from '../constants'
 
 const PAGE_SIZE = 15
@@ -154,6 +170,8 @@ const page = ref(1)
 
 const showModal = ref(false)
 const editingQuestion = ref(null)
+const pendingDelete = ref(null)
+const seedingStarterPack = ref(false)
 
 const fileInput = ref(null)
 const importing = ref(false)
@@ -233,8 +251,13 @@ function onSaved() {
   loadStats()
 }
 
-async function confirmDelete(q) {
-  if (!window.confirm(`Delete this question?\n\n"${q.questionText}"`)) return
+function requestDelete(q) {
+  pendingDelete.value = q
+}
+
+async function doDelete() {
+  const q = pendingDelete.value
+  pendingDelete.value = null
   error.value = ''
   try {
     await api.adminDeleteQuestion(q.id)
@@ -243,6 +266,21 @@ async function confirmDelete(q) {
     loadStats()
   } catch (e) {
     error.value = 'Could not delete the question.'
+  }
+}
+
+async function addStarterPack() {
+  seedingStarterPack.value = true
+  error.value = ''
+  try {
+    const result = await api.adminAddStarterPack()
+    successMessage.value = `Added ${result.added} sample questions across all five languages.`
+    loadQuestions()
+    loadStats()
+  } catch (e) {
+    error.value = 'Could not add the starter pack.'
+  } finally {
+    seedingStarterPack.value = false
   }
 }
 

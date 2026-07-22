@@ -103,4 +103,17 @@ public class QuestionService {
         }
         questionRepository.deleteById(id);
     }
+
+    /**
+     * Lets an admin populate an empty (or nearly empty) bank with a small set of sample
+     * questions across all five languages, so there's something to generate a quiz from
+     * immediately instead of facing a blank table. Safe to call more than once - it just
+     * adds another copy of the sample set, so it's intended for a genuinely empty bank.
+     */
+    @Transactional
+    public com.quizapp.dto.StarterPackResultDto addStarterPack() {
+        List<Question> starterPack = com.quizapp.config.SampleQuestions.build();
+        questionRepository.saveAll(starterPack);
+        return new com.quizapp.dto.StarterPackResultDto(starterPack.size());
+    }
 }

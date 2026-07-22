@@ -91,5 +91,11 @@ export default {
   },
   adminGetStats() {
     return client.get('/admin/questions/stats').then(r => r.data)
+  },
+  adminAddStarterPack() {
+    return client.post('/admin/questions/starter-pack').then(r => r.data)
+  },
+  adminAddStarterPack() {
+    return client.post('/admin/questions/starter-pack').then(r => r.data)
   }
 }

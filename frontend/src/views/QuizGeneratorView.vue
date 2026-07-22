@@ -1,5 +1,6 @@
 <template>
   <div>
+    <div class="step-indicator">{{ quiz ? 'Step 2 of 2 - Review & finalize' : 'Step 1 of 2 - Configure' }}</div>
     <h1>Create a quiz</h1>
     <p class="page-subtitle">Pick a language, a difficulty range, and how many questions you want from each category.</p>
 
@@ -35,47 +36,52 @@
         <div class="difficulty-slider-group">
           <div class="difficulty-slider-row">
             <span class="slider-label">Min</span>
-            <input type="range" min="1" max="10" v-model.number="form.minDifficulty" @input="clampRange('min')" />
-            <output>{{ form.minDifficulty }}</output>
+            <input
+              type="range" min="1" max="10" v-model.number="form.minDifficulty"
+              @input="clampRange('min')" aria-label="Minimum difficulty"
+            />
+            <output>{{ form.minDifficulty }} <span class="difficulty-word">{{ difficultyWord(form.minDifficulty) }}</span></output>
           </div>
           <div class="difficulty-slider-row">
             <span class="slider-label">Max</span>
-            <input type="range" min="1" max="10" v-model.number="form.maxDifficulty" @input="clampRange('max')" />
-            <output>{{ form.maxDifficulty }}</output>
+            <input
+              type="range" min="1" max="10" v-model.number="form.maxDifficulty"
+              @input="clampRange('max')" aria-label="Maximum difficulty"
+            />
+            <output>{{ form.maxDifficulty }} <span class="difficulty-word">{{ difficultyWord(form.maxDifficulty) }}</span></output>
           </div>
         </div>
       </div>
 
       <div class="field">
         <label>Categories &amp; how many questions from each</label>
+        <p style="color:var(--text-dim); font-size:0.85rem; margin:-4px 0 12px;">Tap a category to add it, then use +/- to set the count.</p>
 
-        <div v-if="!form.categorySelections.length" class="empty-state" style="padding:20px;">
-          No categories added yet - pick one below to get started.
-        </div>
-
-        <div
-          v-for="(sel, idx) in form.categorySelections"
-          :key="sel.category"
-          class="category-row"
-          :class="{ 'just-added': sel.category === justAddedCategory }"
-        >
-          <span class="category-name">{{ sel.category }}</span>
-          <input type="number" min="1" max="50" v-model.number="sel.numberOfQuestions" />
-          <span style="color:var(--text-dim); font-size:0.85rem;">questions</span>
-          <button class="btn btn-danger btn-sm" @click="removeCategorySelection(idx)">✕</button>
-        </div>
-
-        <div class="category-picker-row" v-if="remainingCategories.length">
-          <select v-model="categoryToAdd">
-            <option disabled value="">Add a category…</option>
-            <option v-for="c in remainingCategories" :key="c" :value="c">{{ c }}</option>
-          </select>
-          <input type="number" min="1" max="50" v-model.number="countToAdd" style="width:70px;" />
-          <button class="btn btn-secondary" @click="addCategorySelection">+ Add</button>
-        </div>
-        <span v-if="!availableCategories.length" style="color:var(--text-dim); font-size:0.85rem;">
+        <div v-if="!availableCategories.length" class="empty-state" style="padding:20px;">
           No {{ languageLabel(form.language) }} categories yet - add some questions in that language in the admin page first.
-        </span>
+        </div>
+
+        <div v-else class="category-chip-grid">
+          <div
+            v-for="cat in availableCategories"
+            :key="cat"
+            class="category-chip"
+            :class="{ selected: isSelected(cat), 'just-added': cat === justAddedCategory }"
+          >
+            <button v-if="!isSelected(cat)" class="chip-add-btn" @click="toggleCategory(cat)">
+              + {{ cat }}
+            </button>
+            <template v-else>
+              <span class="category-chip-name">{{ cat }}</span>
+              <div class="stepper">
+                <button aria-label="Decrease question count" @click="stepCount(cat, -1)">−</button>
+                <span>{{ countFor(cat) }}</span>
+                <button aria-label="Increase question count" @click="stepCount(cat, 1)">+</button>
+              </div>
+              <button class="chip-remove-btn" aria-label="Remove category" @click="toggleCategory(cat)">✕</button>
+            </template>
+          </div>
+        </div>
       </div>
 
       <button class="btn btn-primary" :disabled="generating || !form.categorySelections.length" @click="generateQuiz">
@@ -87,7 +93,7 @@
     <section v-else>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
         <h2 style="margin:0;">{{ quiz.title }} <span style="color:var(--text-dim); font-weight:400; font-size:1rem;">· {{ quiz.questions.length }} questions</span></h2>
-        <button class="btn btn-secondary btn-sm no-print" @click="startOver">Start over</button>
+        <button class="btn btn-secondary btn-sm no-print" @click="requestStartOver">Start over</button>
       </div>
       <p class="page-subtitle" style="margin-top:-10px;">Use the ↑ / ↓ buttons to reorder questions.</p>
 
@@ -96,35 +102,56 @@
         :min-difficulty="form.minDifficulty"
         :max-difficulty="form.maxDifficulty"
         @error="error = $event"
+        @changed="reviewDirty = true"
       >
         <template #empty>
-          You removed every question. <button class="btn btn-secondary btn-sm" @click="startOver">Start over</button>
+          You removed every question. <button class="btn btn-secondary btn-sm" @click="requestStartOver">Start over</button>
         </template>
         <template #actions>
-          <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
-            {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
-          </button>
-          <button
-            class="btn"
-            :class="justSaved ? 'btn-primary' : 'btn-secondary'"
-            :disabled="saving"
-            @click="saveQuiz"
-          >
-            {{ saving ? 'Saving…' : justSaved ? 'Saved to My Quizzes ✓' : 'Save to My Quizzes' }}
-          </button>
+          <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
+            <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; font-size:0.9rem; color:var(--text-dim);">
+              <input type="checkbox" v-model="includeAnswersInPdf" style="width:auto;" />
+              Include answers in PDF
+            </label>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
+                {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
+              </button>
+              <button
+                class="btn"
+                :class="justSaved ? 'btn-primary' : 'btn-secondary'"
+                :disabled="saving"
+                @click="saveQuiz"
+              >
+                {{ saving ? 'Saving…' : justSaved ? 'Saved to My Quizzes ✓' : 'Save to My Quizzes' }}
+              </button>
+            </div>
+          </div>
         </template>
       </QuizReviewEditor>
     </section>
+
+    <ConfirmModal
+      v-if="showStartOverConfirm"
+      title="Discard changes?"
+      message="You've discarded, replaced or reordered questions in this quiz. Starting over will lose those changes unless you've already saved this quiz."
+      confirm-text="Start over"
+      @confirm="confirmStartOver"
+      @cancel="showStartOverConfirm = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import QuizReviewEditor from '../components/QuizReviewEditor.vue'
+import ConfirmModal from '../components/ConfirmModal.vue'
 import api from '../services/api'
 import { LANGUAGES, languageLabel } from '../constants'
 
-const form = reactive({
+const DRAFT_KEY = 'quiz_draft_form'
+
+const form = reactive(loadDraft() || {
   title: '',
   language: 'EN',
   minDifficulty: 1,
@@ -133,8 +160,6 @@ const form = reactive({
 })
 
 const availableCategories = ref([])
-const categoryToAdd = ref('')
-const countToAdd = ref(5)
 const justAddedCategory = ref('')
 
 const quiz = ref(null)
@@ -143,10 +168,26 @@ const error = ref('')
 const exportingPdf = ref(false)
 const saving = ref(false)
 const justSaved = ref(false)
+const includeAnswersInPdf = ref(true)
+const reviewDirty = ref(false)
+const showStartOverConfirm = ref(false)
 
-const remainingCategories = computed(() =>
-  availableCategories.value.filter(c => !form.categorySelections.some(sel => sel.category === c))
-)
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch (e) {
+    return null
+  }
+}
+
+watch(form, (value) => {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(value))
+  } catch (e) {
+    // storage full or unavailable - not worth surfacing an error for a convenience feature
+  }
+}, { deep: true })
 
 onMounted(loadCategories)
 
@@ -172,21 +213,37 @@ function clampRange(which) {
   }
 }
 
-function addCategorySelection() {
-  if (!categoryToAdd.value) return
-  const category = categoryToAdd.value
-  form.categorySelections.push({ category, numberOfQuestions: countToAdd.value || 1 })
-  categoryToAdd.value = ''
-  countToAdd.value = 5
+function difficultyWord(value) {
+  if (value <= 3) return 'Easy'
+  if (value <= 7) return 'Medium'
+  return 'Hard'
+}
 
-  justAddedCategory.value = category
+function isSelected(cat) {
+  return form.categorySelections.some(s => s.category === cat)
+}
+
+function countFor(cat) {
+  return form.categorySelections.find(s => s.category === cat)?.numberOfQuestions ?? 0
+}
+
+function toggleCategory(cat) {
+  const idx = form.categorySelections.findIndex(s => s.category === cat)
+  if (idx !== -1) {
+    form.categorySelections.splice(idx, 1)
+    return
+  }
+  form.categorySelections.push({ category: cat, numberOfQuestions: 5 })
+  justAddedCategory.value = cat
   setTimeout(() => {
-    if (justAddedCategory.value === category) justAddedCategory.value = ''
+    if (justAddedCategory.value === cat) justAddedCategory.value = ''
   }, 1100)
 }
 
-function removeCategorySelection(idx) {
-  form.categorySelections.splice(idx, 1)
+function stepCount(cat, delta) {
+  const sel = form.categorySelections.find(s => s.category === cat)
+  if (!sel) return
+  sel.numberOfQuestions = Math.min(50, Math.max(1, sel.numberOfQuestions + delta))
 }
 
 async function generateQuiz() {
@@ -201,6 +258,7 @@ async function generateQuiz() {
       categorySelections: form.categorySelections
     })
     quiz.value = result
+    reviewDirty.value = false
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not generate a quiz. Try different filters.'
   } finally {
@@ -208,16 +266,30 @@ async function generateQuiz() {
   }
 }
 
-function startOver() {
+function requestStartOver() {
+  if (reviewDirty.value) {
+    showStartOverConfirm.value = true
+  } else {
+    doStartOver()
+  }
+}
+
+function confirmStartOver() {
+  showStartOverConfirm.value = false
+  doStartOver()
+}
+
+function doStartOver() {
   quiz.value = null
   error.value = ''
+  reviewDirty.value = false
 }
 
 async function downloadPdf() {
   exportingPdf.value = true
   error.value = ''
   try {
-    const blob = await api.exportPdf(quiz.value, true)
+    const blob = await api.exportPdf(quiz.value, includeAnswersInPdf.value)
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url

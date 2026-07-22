@@ -26,7 +26,7 @@
           </div>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-secondary btn-sm" @click="openOne(q.id)">View &amp; edit</button>
-            <button class="btn btn-danger btn-sm" @click="confirmDelete(q)">Delete</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Delete</button>
           </div>
         </div>
       </div>
@@ -51,20 +51,45 @@
         @changed="dirty = true"
       >
         <template #actions>
-          <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
-            {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
-          </button>
-          <button
-            class="btn"
-            :class="justUpdated ? 'btn-primary' : 'btn-secondary'"
-            :disabled="updating"
-            @click="updateQuiz"
-          >
-            {{ updating ? 'Updating…' : justUpdated ? 'Updated ✓' : 'Update' }}
-          </button>
+          <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
+            <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; font-size:0.9rem; color:var(--text-dim);">
+              <input type="checkbox" v-model="includeAnswersInPdf" style="width:auto;" />
+              Include answers in PDF
+            </label>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
+                {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
+              </button>
+              <button
+                class="btn"
+                :class="justUpdated ? 'btn-primary' : 'btn-secondary'"
+                :disabled="updating"
+                @click="updateQuiz"
+              >
+                {{ updating ? 'Updating…' : justUpdated ? 'Updated ✓' : 'Update' }}
+              </button>
+            </div>
+          </div>
         </template>
       </QuizReviewEditor>
     </section>
+
+    <ConfirmModal
+      v-if="pendingDelete"
+      title="Delete this quiz?"
+      :message="`'${pendingDelete.title}' will be permanently removed. This can't be undone.`"
+      @confirm="doDelete"
+      @cancel="pendingDelete = null"
+    />
+
+    <ConfirmModal
+      v-if="showUnsavedConfirm"
+      title="Discard changes?"
+      message="You have unsaved changes to this quiz. Going back will lose them unless you hit Update first."
+      confirm-text="Discard &amp; go back"
+      @confirm="confirmBackToList"
+      @cancel="showUnsavedConfirm = false"
+    />
   </div>
 </template>
 
@@ -72,6 +97,7 @@
 import { onMounted, ref } from 'vue'
 import api from '../services/api'
 import QuizReviewEditor from '../components/QuizReviewEditor.vue'
+import ConfirmModal from '../components/ConfirmModal.vue'
 import { LANGUAGES, languageLabel } from '../constants'
 
 const quizzes = ref([])
@@ -83,6 +109,9 @@ const exportingPdf = ref(false)
 const updating = ref(false)
 const justUpdated = ref(false)
 const dirty = ref(false)
+const includeAnswersInPdf = ref(true)
+const pendingDelete = ref(null)
+const showUnsavedConfirm = ref(false)
 
 onMounted(loadList)
 
@@ -118,15 +147,26 @@ async function openOne(id) {
 }
 
 function backToList() {
-  if (dirty.value && !window.confirm('You have unsaved changes to this quiz. Discard them and go back?')) {
+  if (dirty.value) {
+    showUnsavedConfirm.value = true
     return
   }
+  openQuiz.value = null
+}
+
+function confirmBackToList() {
+  showUnsavedConfirm.value = false
   openQuiz.value = null
   dirty.value = false
 }
 
-async function confirmDelete(q) {
-  if (!window.confirm(`Delete "${q.title}"? This can't be undone.`)) return
+function requestDelete(q) {
+  pendingDelete.value = q
+}
+
+async function doDelete() {
+  const q = pendingDelete.value
+  pendingDelete.value = null
   error.value = ''
   try {
     await api.deleteSavedQuiz(q.id)
@@ -141,7 +181,7 @@ async function downloadPdf() {
   exportingPdf.value = true
   error.value = ''
   try {
-    const blob = await api.exportPdf(openQuiz.value, true)
+    const blob = await api.exportPdf(openQuiz.value, includeAnswersInPdf.value)
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url

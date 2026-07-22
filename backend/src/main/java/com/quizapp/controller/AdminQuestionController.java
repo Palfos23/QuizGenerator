@@ -72,4 +72,10 @@ public class AdminQuestionController {
     public ImportResultDto importCsv(@RequestParam("file") MultipartFile file) {
         return questionImportService.importCsv(file);
     }
+
+    /** One-click on-ramp for a brand-new, empty question bank. */
+    @PostMapping("/starter-pack")
+    public com.quizapp.dto.StarterPackResultDto addStarterPack() {
+        return questionService.addStarterPack();
+    }
 }
