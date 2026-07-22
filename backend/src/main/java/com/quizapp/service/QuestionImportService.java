@@ -11,8 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PushbackInputStream;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,7 @@ import java.util.Set;
 public class QuestionImportService {
 
     private static final Set<String> TRUE_VALUES = Set.of("true", "yes", "1", "y");
+    private static final byte[] UTF8_BOM = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
 
     private final QuestionRepository questionRepository;
 
@@ -42,7 +46,7 @@ public class QuestionImportService {
         ImportResultDto result = new ImportResultDto();
         List<Question> toSave = new ArrayList<>();
 
-        try (var reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
+        try (Reader reader = openStrippingBom(file)) {
             CSVFormat format = CSVFormat.DEFAULT.builder()
                     .setHeader()
                     .setSkipHeaderRecord(true)
@@ -70,6 +74,29 @@ public class QuestionImportService {
         questionRepository.saveAll(toSave);
         result.setImported(toSave.size());
         return result;
+    }
+
+    /**
+     * Excel and Google Sheets' "CSV UTF-8" export prepends a byte-order-mark (EF BB BF).
+     * Left in place, it silently attaches itself to the first header's name (turning
+     * "question" into "\uFEFFquestion"), which made every row fail with a false
+     * "question is required" error. Strip it here if present.
+     */
+    private Reader openStrippingBom(MultipartFile file) throws IOException {
+        PushbackInputStream pushback = new PushbackInputStream(
+                new BufferedInputStream(file.getInputStream()), UTF8_BOM.length);
+
+        byte[] maybeBom = new byte[UTF8_BOM.length];
+        int read = pushback.read(maybeBom, 0, UTF8_BOM.length);
+
+        if (read < UTF8_BOM.length || !java.util.Arrays.equals(maybeBom, UTF8_BOM)) {
+            // not a BOM (or a short file) - put back whatever we peeked at
+            if (read > 0) {
+                pushback.unread(maybeBom, 0, read);
+            }
+        }
+
+        return new InputStreamReader(pushback, StandardCharsets.UTF_8);
     }
 
     private Question parseRow(CSVRecord record) {

@@ -256,6 +256,10 @@ Invalid rows are skipped and reported individually (with a reason and row
 number) rather than failing the whole import - the response shape is
 `{ imported, skipped, errors[] }`.
 
+Files saved as "CSV UTF-8" from Excel or Google Sheets (the right choice
+for accented characters) include a leading byte-order-mark - the importer
+strips it automatically, so you don't need to worry about it either way.
+
 `POST /api/quiz/generate` body shape:
 
 ```json
