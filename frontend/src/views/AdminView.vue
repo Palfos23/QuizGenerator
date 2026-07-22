@@ -5,11 +5,55 @@
         <h1>Question bank</h1>
         <p class="page-subtitle">Every question here is available to the quiz generator. Add, edit or remove them.</p>
       </div>
-      <button class="btn btn-primary" @click="openCreate">+ Add question</button>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-secondary" @click="triggerImport" :disabled="importing">
+          {{ importing ? 'Importing…' : 'Import CSV' }}
+        </button>
+        <input ref="fileInput" type="file" accept=".csv,text/csv" style="display:none;" @change="onFileChosen" />
+        <button class="btn btn-primary" @click="openCreate">+ Add question</button>
+      </div>
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
     <div v-if="successMessage" class="banner success">{{ successMessage }}</div>
+
+    <div v-if="importResult" class="banner" :class="importResult.errors.length ? 'error' : 'success'">
+      <div>Imported {{ importResult.imported }} question(s){{ importResult.skipped ? `, skipped ${importResult.skipped}` : '' }}.</div>
+      <ul v-if="importResult.errors.length" style="margin:8px 0 0; padding-left:18px;">
+        <li v-for="(e, i) in importResult.errors" :key="i">{{ e }}</li>
+      </ul>
+      <button class="btn btn-secondary btn-sm" style="margin-top:10px;" @click="importResult = null">Dismiss</button>
+    </div>
+
+    <!-- Bank overview / coverage -->
+    <div class="stats-panel">
+      <button class="btn btn-secondary btn-sm" @click="showStats = !showStats">
+        {{ showStats ? 'Hide' : 'Show' }} bank overview
+      </button>
+      <div v-if="showStats" class="table-scroll" style="margin-top:14px;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Language</th>
+              <th>Questions</th>
+              <th>Difficulty range</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="s in stats" :key="s.category + s.language">
+              <td>{{ s.category }}</td>
+              <td>{{ flagFor(s.language) }} {{ s.language }}</td>
+              <td>
+                <span :class="{ 'stat-low': s.count < 3 }">{{ s.count }}</span>
+                <span v-if="s.count < 3" class="tag changeable" style="margin-left:8px;">Low coverage</span>
+              </td>
+              <td>{{ s.minDifficulty }}-{{ s.maxDifficulty }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <div class="filter-bar">
       <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
@@ -111,6 +155,13 @@ const page = ref(1)
 const showModal = ref(false)
 const editingQuestion = ref(null)
 
+const fileInput = ref(null)
+const importing = ref(false)
+const importResult = ref(null)
+
+const showStats = ref(false)
+const stats = ref([])
+
 const filteredQuestions = computed(() => {
   const term = searchText.value.trim().toLowerCase()
   return questions.value.filter(q => {
@@ -136,7 +187,10 @@ const pagedQuestions = computed(() => {
 watch([searchText, languageFilter, couldChangeFilter], () => { page.value = 1 })
 watch(totalPages, (newTotal) => { if (page.value > newTotal) page.value = newTotal })
 
-onMounted(loadQuestions)
+onMounted(() => {
+  loadQuestions()
+  loadStats()
+})
 
 async function loadQuestions() {
   loading.value = true
@@ -147,6 +201,14 @@ async function loadQuestions() {
     error.value = 'Could not load questions from the server.'
   } finally {
     loading.value = false
+  }
+}
+
+async function loadStats() {
+  try {
+    stats.value = await api.adminGetStats()
+  } catch (e) {
+    // non-critical - the overview panel just stays empty
   }
 }
 
@@ -168,6 +230,7 @@ function onSaved() {
   showModal.value = false
   successMessage.value = 'Question saved.'
   loadQuestions()
+  loadStats()
 }
 
 async function confirmDelete(q) {
@@ -177,8 +240,32 @@ async function confirmDelete(q) {
     await api.adminDeleteQuestion(q.id)
     successMessage.value = 'Question deleted.'
     loadQuestions()
+    loadStats()
   } catch (e) {
     error.value = 'Could not delete the question.'
+  }
+}
+
+function triggerImport() {
+  fileInput.value?.click()
+}
+
+async function onFileChosen(event) {
+  const file = event.target.files?.[0]
+  event.target.value = '' // allow re-choosing the same file later
+  if (!file) return
+
+  importing.value = true
+  error.value = ''
+  importResult.value = null
+  try {
+    importResult.value = await api.adminImportCsv(file)
+    loadQuestions()
+    loadStats()
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not import that file.'
+  } finally {
+    importing.value = false
   }
 }
 </script>

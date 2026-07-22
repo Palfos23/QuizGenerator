@@ -78,5 +78,15 @@ export default {
   },
   adminDeleteQuestion(id) {
     return client.delete(`/admin/questions/${id}`)
+  },
+  adminImportCsv(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return client.post('/admin/questions/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }).then(r => r.data)
+  },
+  adminGetStats() {
+    return client.get('/admin/questions/stats').then(r => r.data)
   }
 }

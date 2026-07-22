@@ -7,7 +7,9 @@ import com.quizapp.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +46,31 @@ public class QuestionService {
                 .map(Question::getCategory)
                 .distinct()
                 .sorted()
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Coverage breakdown per category/language combination - lets an admin spot thin
+     * spots (e.g. "French Sports only has 2 questions") at a glance instead of finding
+     * out when a quiz generation comes up short.
+     */
+    @Transactional(readOnly = true)
+    public List<com.quizapp.dto.CategoryStatDto> getStats() {
+        List<Question> all = questionRepository.findAll();
+
+        Map<String, List<Question>> grouped = all.stream()
+                .collect(Collectors.groupingBy(q -> q.getCategory() + "\u0000" + q.getLanguage()));
+
+        return grouped.values().stream()
+                .map(group -> {
+                    Question first = group.get(0);
+                    int min = group.stream().mapToInt(Question::getDifficultyLevel).min().orElse(0);
+                    int max = group.stream().mapToInt(Question::getDifficultyLevel).max().orElse(0);
+                    return new com.quizapp.dto.CategoryStatDto(
+                            first.getCategory(), first.getLanguage(), group.size(), min, max);
+                })
+                .sorted(Comparator.comparing(com.quizapp.dto.CategoryStatDto::getCount)
+                        .thenComparing(com.quizapp.dto.CategoryStatDto::getCategory))
                 .collect(Collectors.toList());
     }
 

@@ -212,7 +212,7 @@ Starts on `http://localhost:5173`.
 | Method | Path                          | Auth required     | Purpose                                      |
 |--------|-------------------------------|--------------------|-----------------------------------------------|
 | POST   | `/api/auth/google`            | none               | Exchange a Google ID token for our JWT        |
-| POST   | `/api/auth/admin/login`       | none               | Admin username/password login                |
+| POST   | `/api/auth/admin/login`       | none (rate-limited - see below) | Admin username/password login    |
 | GET    | `/api/quiz/categories?language=EN` | none          | Categories that have questions in that language |
 | POST   | `/api/quiz/generate`          | any logged-in user | Generate a quiz from per-category selections  |
 | POST   | `/api/quiz/replace-question`  | any logged-in user | Swap one question for another in the same category |
@@ -222,9 +222,39 @@ Starts on `http://localhost:5173`.
 | GET    | `/api/quiz/saved/{id}`        | any logged-in user | Fetch one of the caller's own saved quizzes   |
 | DELETE | `/api/quiz/saved/{id}`        | any logged-in user | Delete one of the caller's own saved quizzes  |
 | GET    | `/api/admin/questions`        | ADMIN role         | List all questions                            |
+| GET    | `/api/admin/questions/stats`  | ADMIN role         | Coverage breakdown (count/difficulty range per category+language) |
+| POST   | `/api/admin/questions/import` | ADMIN role         | Bulk-add questions from a CSV upload          |
 | POST   | `/api/admin/questions`        | ADMIN role         | Create a question                             |
 | PUT    | `/api/admin/questions/{id}`   | ADMIN role         | Update a question                             |
 | DELETE | `/api/admin/questions/{id}`   | ADMIN role         | Delete a question                             |
+
+### Admin login rate limiting
+
+`/api/auth/admin/login` allows 5 failed attempts per IP per 15-minute
+window before returning `429 Too Many Requests`; a successful login clears
+the count. This is intentionally simple - in-memory, per Render instance -
+which is fine for this app's single-instance deployment but would need a
+shared store (Redis, etc.) if it ever ran across multiple instances behind
+a load balancer. See `LoginRateLimiter`.
+
+### Bulk question import
+
+`POST /api/admin/questions/import` accepts a CSV file (`multipart/form-data`,
+field name `file`) with a header row:
+
+```csv
+question,category,difficulty,language,answer,couldChange
+"What is the capital of Italy?",Geography,2,EN,Rome,false
+"Premier League's all-time top scorer?",Sports,6,EN,Alan Shearer,true
+```
+
+- `difficulty`: 1-10
+- `language`: one of `EN`, `DE`, `FR`, `ES`, `NO`
+- `couldChange`: optional, defaults to `false` if omitted (`true`/`yes`/`1` all count as true)
+
+Invalid rows are skipped and reported individually (with a reason and row
+number) rather than failing the whole import - the response shape is
+`{ imported, skipped, errors[] }`.
 
 `POST /api/quiz/generate` body shape:
 

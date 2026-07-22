@@ -4,6 +4,7 @@ import com.quizapp.dto.AdminLoginRequest;
 import com.quizapp.dto.AuthResponse;
 import com.quizapp.dto.GoogleLoginRequest;
 import com.quizapp.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,9 +27,21 @@ public class AuthController {
         return authService.loginWithGoogle(request.getIdToken());
     }
 
-    /** Admins: username/password login - a completely separate credential store from AppUser. */
+    /** Admins: username/password login - a completely separate credential store from AppUser. Rate-limited per IP. */
     @PostMapping("/admin/login")
-    public AuthResponse adminLogin(@Valid @RequestBody AdminLoginRequest request) {
-        return authService.loginAsAdmin(request.getUsername(), request.getPassword());
+    public AuthResponse adminLogin(@Valid @RequestBody AdminLoginRequest request, HttpServletRequest httpRequest) {
+        return authService.loginAsAdmin(request.getUsername(), request.getPassword(), clientKey(httpRequest));
+    }
+
+    /**
+     * Render (like most PaaS hosts) sits behind a reverse proxy, so the real client IP is in
+     * X-Forwarded-For, not getRemoteAddr(). Falls back to getRemoteAddr() for local dev.
+     */
+    private String clientKey(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            return forwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

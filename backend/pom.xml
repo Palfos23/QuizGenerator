@@ -89,6 +89,13 @@
             <version>1.3.39</version>
         </dependency>
 
+        <!-- CSV parsing for bulk question import -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

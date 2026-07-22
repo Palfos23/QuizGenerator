@@ -514,6 +514,19 @@ input[type="range"]::-moz-range-progress {
   flex: 1;
 }
 
+.stats-panel {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.02);
+}
+
+.stat-low {
+  color: var(--coral);
+  font-weight: 700;
+}
+
 .filter-bar {
   display: flex;
   gap: 16px;
