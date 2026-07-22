@@ -30,6 +30,14 @@
         <input type="text" v-model="local.team" placeholder="e.g. Tottenham Hotspur" />
       </div>
 
+      <div class="field">
+        <label>Photo URL <span class="picker-hint">a hosted image link - shown once a player is guessed</span></label>
+        <input type="text" v-model="local.photoUrl" placeholder="https://…" />
+        <div v-if="local.photoUrl" style="margin-top:10px;">
+          <img :src="local.photoUrl" alt="" class="club-logo-preview" />
+        </div>
+      </div>
+
       <div style="display:flex; gap:10px; justify-content:flex-end;">
         <button class="btn btn-secondary" @click="$emit('close')">Cancel</button>
         <button class="btn btn-primary" :disabled="saving" @click="save">
@@ -56,7 +64,7 @@ const localError = ref('')
 
 const local = reactive(props.athlete
   ? { ...props.athlete }
-  : { name: '', sport: 'FOOTBALL', team: '' })
+  : { name: '', sport: 'FOOTBALL', team: '', photoUrl: '' })
 
 async function save() {
   localError.value = ''

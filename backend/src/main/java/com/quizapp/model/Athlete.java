@@ -27,6 +27,20 @@ public class Athlete {
     @Column
     private String team;
 
+    // A hosted image URL, same tradeoff as Club.logoUrl - not a file upload, since
+    // Render's filesystem is ephemeral. Only ever exposed to players once a tile is
+    // solved (see GridPlayService) - showing it earlier would spoil the guess.
+    @Column(name = "photo_url", length = 1000)
+    private String photoUrl;
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
     public Long getId() {
         return id;
     }

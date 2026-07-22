@@ -36,6 +36,7 @@
       <table class="table">
         <thead>
           <tr>
+            <th>Photo</th>
             <th>Name</th>
             <th>Sport</th>
             <th>Team</th>
@@ -44,6 +45,7 @@
         </thead>
         <tbody>
           <tr v-for="a in filteredAthletes" :key="a.id">
+            <td><img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="club-logo-thumb" /></td>
             <td>{{ a.name }}</td>
             <td>{{ sportLabel(a.sport) }}</td>
             <td>{{ a.team }}</td>

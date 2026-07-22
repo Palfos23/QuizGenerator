@@ -16,6 +16,16 @@ public class AthleteDto {
 
     private String team;
 
+    private String photoUrl;
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
     public Long getId() {
         return id;
     }

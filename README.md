@@ -108,6 +108,15 @@ Supabase Storage, etc.). For now, point the logo URL at wherever you're
 already hosting the crest image (your own hosting, a public Supabase
 Storage URL, etc.).
 
+Athletes can also have a **photo URL**, same tradeoff and same reasoning
+as club logos - a hosted image link, not an upload. The photo only ever
+appears on a tile *after* it's solved (the club logo is the hint
+beforehand); the backend enforces this the same way it already withholds
+the athlete's name until solved, so the photo can't be used to visually
+recognize someone before actually guessing them. If no photo is set, a
+solved tile just keeps showing the club logo instead - it never ends up
+looking emptier than an unsolved one.
+
 ## Authentication
 
 Two completely separate login paths, matching two different trust levels:
@@ -235,7 +244,8 @@ athletes                            grids
 ├── id       BIGINT PK              ├── id               BIGINT PK
 ├── name     VARCHAR                ├── title            VARCHAR
 ├── sport    VARCHAR (FOOTBALL|CYCLING)  ├── theme        TEXT
-└── team     VARCHAR                ├── sport            VARCHAR
+├── team     VARCHAR                ├── sport            VARCHAR
+└── photo_url VARCHAR (nullable; shown only once a tile is solved)
                                      ├── week_start_date  DATE   (grid is "live" for this Mon-Sun)
 grid_candidates                     └── max_strikes      INT
 ├── id         BIGINT PK

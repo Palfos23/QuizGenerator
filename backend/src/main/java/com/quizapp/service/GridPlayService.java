@@ -104,7 +104,7 @@ public class GridPlayService {
             attempt.getSolvedEntryIds().add(matched.getId());
             result.setCorrect(true);
             result.setEntry(new GridEntryViewDto(matched.getId(), matched.getHintLabel(), matched.getHintValue(),
-                    true, true, matched.getAthlete().getName(), logoUrl(matched)));
+                    true, true, matched.getAthlete().getName(), matched.getAthlete().getPhotoUrl(), logoUrl(matched)));
 
             boolean allSolved = attempt.getSolvedEntryIds().size() >= grid.getEntries().size();
             result.setAllSolved(allSolved);
@@ -183,7 +183,9 @@ public class GridPlayService {
                     boolean guessedByUser = attempt.getSolvedEntryIds().contains(e.getId());
                     boolean solved = revealAll || guessedByUser;
                     return new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), solved, guessedByUser,
-                            solved ? e.getAthlete().getName() : null, logoUrl(e));
+                            solved ? e.getAthlete().getName() : null,
+                            solved ? e.getAthlete().getPhotoUrl() : null,
+                            logoUrl(e));
                 })
                 .collect(Collectors.toList());
         dto.setEntries(entries);

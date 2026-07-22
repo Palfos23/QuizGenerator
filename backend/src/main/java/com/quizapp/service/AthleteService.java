@@ -45,6 +45,7 @@ public class AthleteService {
         athlete.setName(dto.getName());
         athlete.setSport(dto.getSport());
         athlete.setTeam(dto.getTeam());
+        athlete.setPhotoUrl(dto.getPhotoUrl());
         return toDto(athleteRepository.save(athlete));
     }
 
@@ -55,6 +56,7 @@ public class AthleteService {
         athlete.setName(dto.getName());
         athlete.setSport(dto.getSport());
         athlete.setTeam(dto.getTeam());
+        athlete.setPhotoUrl(dto.getPhotoUrl());
         return toDto(athleteRepository.save(athlete));
     }
 
@@ -76,6 +78,7 @@ public class AthleteService {
         dto.setName(a.getName());
         dto.setSport(a.getSport());
         dto.setTeam(a.getTeam());
+        dto.setPhotoUrl(a.getPhotoUrl());
         return dto;
     }
 }

@@ -42,7 +42,13 @@
         >
           <span v-if="e.guessedByUser" class="grid-tile-status correct">✓</span>
           <span v-else-if="e.solved" class="grid-tile-status wrong">✕</span>
-          <img v-if="e.logoUrl" :src="e.logoUrl" alt="" class="grid-tile-logo" />
+          <img
+            v-if="tileImage(e)"
+            :src="tileImage(e)"
+            alt=""
+            class="grid-tile-logo"
+            :class="{ 'is-photo': e.solved && e.athletePhotoUrl }"
+          />
           <div class="grid-tile-hint">{{ e.hintLabel }} | {{ e.hintValue }}</div>
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>
@@ -106,6 +112,14 @@ const gameOver = computed(() => !!state.value && state.value.completed && !allSo
 const canStillGuess = computed(() =>
   !!state.value && !allSolved.value && !state.value.revealed && (!state.value.completed || state.value.overtime)
 )
+
+// Before solving: the club logo is the hint. Once solved: swap to the athlete's own
+// photo if one's set, falling back to the logo (or nothing) if not - a solved tile
+// should never look emptier than an unsolved one just because no photo was added.
+function tileImage(entry) {
+  if (entry.solved && entry.athletePhotoUrl) return entry.athletePhotoUrl
+  return entry.logoUrl
+}
 
 onMounted(loadState)
 
