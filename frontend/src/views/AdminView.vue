@@ -15,7 +15,6 @@
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="successMessage" class="banner success">{{ successMessage }}</div>
 
     <div v-if="importResult" class="banner" :class="importResult.errors.length ? 'error' : 'success'">
       <div>Imported {{ importResult.imported }} question(s){{ importResult.skipped ? `, skipped ${importResult.skipped}` : '' }}.</div>
@@ -79,7 +78,7 @@
 
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
-    <div v-else-if="!questions.length" class="empty-state">
+    <div v-else-if="!questions.length" class="empty-state friendly">
       <p style="margin-top:0;">No questions in the bank yet.</p>
       <button class="btn btn-primary" :disabled="seedingStarterPack" @click="addStarterPack">
         {{ seedingStarterPack ? 'Adding…' : 'Add a starter pack of sample questions' }}
@@ -95,22 +94,22 @@
         <table class="table">
           <thead>
             <tr>
-              <th>Question</th>
-              <th>Category</th>
+              <th class="sortable" @click="toggleSort('questionText')">Question{{ sortArrow('questionText') }}</th>
+              <th class="sortable" @click="toggleSort('category')">Category{{ sortArrow('category') }}</th>
               <th>Lang</th>
-              <th>Difficulty</th>
+              <th class="sortable" @click="toggleSort('difficultyLevel')">Difficulty{{ sortArrow('difficultyLevel') }}</th>
               <th>Answer</th>
-              <th>Could change?</th>
+              <th class="sortable" @click="toggleSort('couldChange')">Could change?{{ sortArrow('couldChange') }}</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="q in pagedQuestions" :key="q.id">
-              <td style="max-width:280px;">{{ q.questionText }}</td>
-              <td>{{ q.category }}</td>
+              <td style="max-width:280px;" v-html="highlight(q.questionText)"></td>
+              <td v-html="highlight(q.category)"></td>
               <td>{{ flagFor(q.language) }}</td>
               <td><span class="tag difficulty-tag" :style="{ background: difficultyColor(q.difficultyLevel) }">{{ q.difficultyLevel }}/10</span></td>
-              <td>{{ q.answer }}</td>
+              <td v-html="highlight(q.answer)"></td>
               <td>
                 <span v-if="q.couldChange" class="tag changeable">May change</span>
                 <span v-else style="color:var(--text-dim); font-size:0.85rem;">Stable</span>
@@ -152,6 +151,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 import QuestionFormModal from '../components/QuestionFormModal.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import { LANGUAGES, difficultyColor } from '../constants'
@@ -161,12 +161,14 @@ const PAGE_SIZE = 15
 const questions = ref([])
 const loading = ref(true)
 const error = ref('')
-const successMessage = ref('')
 
 const searchText = ref('')
 const languageFilter = ref('ALL')
 const couldChangeFilter = ref('ALL')
 const page = ref(1)
+
+const sortColumn = ref('category')
+const sortDirection = ref('asc') // 'asc' | 'desc'
 
 const showModal = ref(false)
 const editingQuestion = ref(null)
@@ -194,11 +196,25 @@ const filteredQuestions = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredQuestions.value.length / PAGE_SIZE)))
+const sortedQuestions = computed(() => {
+  const col = sortColumn.value
+  const dir = sortDirection.value === 'asc' ? 1 : -1
+  return [...filteredQuestions.value].sort((a, b) => {
+    let av = a[col]
+    let bv = b[col]
+    if (typeof av === 'string') av = av.toLowerCase()
+    if (typeof bv === 'string') bv = bv.toLowerCase()
+    if (av < bv) return -1 * dir
+    if (av > bv) return 1 * dir
+    return 0
+  })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(sortedQuestions.value.length / PAGE_SIZE)))
 
 const pagedQuestions = computed(() => {
   const start = (page.value - 1) * PAGE_SIZE
-  return filteredQuestions.value.slice(start, start + PAGE_SIZE)
+  return sortedQuestions.value.slice(start, start + PAGE_SIZE)
 })
 
 // jump back to a valid page whenever the filtered set shrinks (new filter, deletion, etc.)
@@ -234,6 +250,35 @@ function flagFor(code) {
   return LANGUAGES.find(l => l.code === code)?.flag || code
 }
 
+function toggleSort(col) {
+  if (sortColumn.value === col) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortColumn.value = col
+    sortDirection.value = 'asc'
+  }
+}
+
+function sortArrow(col) {
+  if (sortColumn.value !== col) return ''
+  return sortDirection.value === 'asc' ? ' ▲' : ' ▼'
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+}
+
+// Wraps the current search term in <mark> so matches are easy to spot at a glance.
+// Escapes the surrounding text first since question/category/answer content is
+// admin-authored free text, not something we want rendered as raw HTML.
+function highlight(text) {
+  const escaped = escapeHtml(text)
+  const term = searchText.value.trim()
+  if (!term) return escaped
+  const escapedTerm = escapeHtml(term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return escaped.replace(new RegExp(`(${escapedTerm})`, 'ig'), '<mark>$1</mark>')
+}
+
 function openCreate() {
   editingQuestion.value = null
   showModal.value = true
@@ -246,7 +291,7 @@ function openEdit(q) {
 
 function onSaved() {
   showModal.value = false
-  successMessage.value = 'Question saved.'
+  toast.show('Question saved.')
   loadQuestions()
   loadStats()
 }
@@ -261,7 +306,7 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteQuestion(q.id)
-    successMessage.value = 'Question deleted.'
+    toast.show('Question deleted.')
     loadQuestions()
     loadStats()
   } catch (e) {
@@ -274,7 +319,7 @@ async function addStarterPack() {
   error.value = ''
   try {
     const result = await api.adminAddStarterPack()
-    successMessage.value = `Added ${result.added} sample questions across all five languages.`
+    toast.show(`Added ${result.added} sample questions across all five languages.`)
     loadQuestions()
     loadStats()
   } catch (e) {

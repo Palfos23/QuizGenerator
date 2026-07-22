@@ -28,12 +28,15 @@
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
       <button @click="logout">Log out</button>
     </nav>
+
+    <ToastHost />
   </div>
 </template>
 
 <script setup>
 import auth from './services/auth'
 import { useRouter } from 'vue-router'
+import ToastHost from './components/ToastHost.vue'
 
 const router = useRouter()
 

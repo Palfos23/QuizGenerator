@@ -6,7 +6,7 @@
       <div v-if="localError" class="banner error">{{ localError }}</div>
 
       <div class="field">
-        <label>Language</label>
+        <label>Language <span class="picker-hint">choose one</span></label>
         <div class="language-row">
           <button
             v-for="lang in LANGUAGES"

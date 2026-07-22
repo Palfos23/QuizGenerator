@@ -83,7 +83,7 @@ Notes on the design:
 |---|---|---|
 | `/` | Everyone | Landing page: what the app does + Google sign-in |
 | `/generate` | Logged-in users | Build and export a quiz |
-| `/my-quizzes` | Logged-in users | View/re-download/delete previously saved quizzes |
+| `/my-quizzes` | Logged-in users | View/edit/re-download/duplicate/delete previously saved quizzes |
 | `/admin` | Everyone (but pointless without credentials) | Admin username/password login |
 | `/admin/questions` | Logged-in admins | Manage the question bank |
 

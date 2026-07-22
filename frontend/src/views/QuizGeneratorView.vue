@@ -17,7 +17,7 @@
       </div>
 
       <div class="field">
-        <label>Language</label>
+        <label>Language <span class="picker-hint">choose one</span></label>
         <div class="language-row">
           <button
             v-for="lang in LANGUAGES"
@@ -54,10 +54,10 @@
       </div>
 
       <div class="field">
-        <label>Categories &amp; how many questions from each</label>
+        <label>Categories &amp; how many questions from each <span class="picker-hint">pick as many as you like</span></label>
         <p style="color:var(--text-dim); font-size:0.85rem; margin:-4px 0 12px;">Tap a category to add it, then use +/- to set the count.</p>
 
-        <div v-if="!availableCategories.length" class="empty-state" style="padding:20px;">
+        <div v-if="!availableCategories.length" class="empty-state friendly" style="padding:20px;">
           No {{ languageLabel(form.language) }} categories yet - add some questions in that language in the admin page first.
         </div>
 
@@ -91,8 +91,11 @@
 
     <!-- Step 2: review, reorder + finalize -->
     <section v-else>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-        <h2 style="margin:0;">{{ quiz.title }} <span style="color:var(--text-dim); font-weight:400; font-size:1rem;">· {{ quiz.questions.length }} questions</span></h2>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <div style="flex:1; min-width:220px;">
+          <input type="text" v-model="quiz.title" @input="reviewDirty = true" class="title-edit-input" aria-label="Quiz title" />
+          <span style="color:var(--text-dim); font-size:0.9rem;">{{ quiz.questions.length }} questions</span>
+        </div>
         <button class="btn btn-secondary btn-sm no-print" @click="requestStartOver">Start over</button>
       </div>
       <p class="page-subtitle" style="margin-top:-10px;">Use the ↑ / ↓ buttons to reorder questions.</p>

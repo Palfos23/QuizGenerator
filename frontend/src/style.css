@@ -210,15 +210,17 @@ h2 { font-size: 1.35rem; }
 /* ---------- Language selector ---------- */
 
 .language-row {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 .language-btn {
   padding: 9px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
+  border: none;
+  border-right: 1px solid var(--border);
   background: transparent;
   color: var(--text-dim);
   font-weight: 600;
@@ -227,10 +229,10 @@ h2 { font-size: 1.35rem; }
   align-items: center;
   gap: 6px;
 }
+.language-btn:last-child { border-right: none; }
 
 .language-btn.active {
   background: var(--violet);
-  border-color: var(--violet);
   color: #fff;
 }
 
@@ -467,6 +469,76 @@ input[type="range"]::-moz-range-progress {
   padding: 40px;
   text-align: center;
   color: var(--text-dim);
+}
+
+.title-edit-input {
+  display: block;
+  width: 100%;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  margin: 0 0 2px -8px;
+}
+.title-edit-input:hover,
+.title-edit-input:focus {
+  border-color: var(--border);
+  background: rgba(255,255,255,0.03);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  z-index: 100;
+}
+.toast.success { background: var(--teal); color: #05261a; }
+.toast.error { background: var(--coral); color: #2b0009; }
+
+.toast-fade-enter-active, .toast-fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.toast-fade-enter-from, .toast-fade-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 10px);
+}
+
+mark {
+  background: var(--gold-soft);
+  color: var(--gold);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.table th.sortable:hover { color: var(--text); }
+.sort-arrow { margin-left: 4px; color: var(--gold); }
+
+.empty-state.friendly {
+  border-style: solid;
+  border-color: rgba(242, 183, 5, 0.3);
+  background: var(--gold-soft);
+}
+
+.picker-hint {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  text-transform: none;
+  font-weight: 400;
+  margin-left: 6px;
 }
 
 .step-indicator {
