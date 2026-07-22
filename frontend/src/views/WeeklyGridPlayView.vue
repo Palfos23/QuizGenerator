@@ -31,6 +31,7 @@
 
       <div class="grid-tiles">
         <div v-for="e in state.entries" :key="e.id" class="grid-tile" :class="{ solved: e.solved }">
+          <img v-if="e.logoUrl" :src="e.logoUrl" alt="" class="grid-tile-logo" />
           <div class="grid-tile-hint">{{ e.hintLabel }} | {{ e.hintValue }}</div>
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>

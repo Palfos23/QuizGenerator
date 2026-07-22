@@ -3,10 +3,12 @@ package com.quizapp.service;
 import com.quizapp.dto.*;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
+import com.quizapp.model.Club;
 import com.quizapp.model.Grid;
 import com.quizapp.model.GridCandidate;
 import com.quizapp.model.GridEntry;
 import com.quizapp.repository.AthleteRepository;
+import com.quizapp.repository.ClubRepository;
 import com.quizapp.repository.GridRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +24,13 @@ public class GridAdminService {
 
     private final GridRepository gridRepository;
     private final AthleteRepository athleteRepository;
+    private final ClubRepository clubRepository;
 
-    public GridAdminService(GridRepository gridRepository, AthleteRepository athleteRepository) {
+    public GridAdminService(GridRepository gridRepository, AthleteRepository athleteRepository,
+                             ClubRepository clubRepository) {
         this.gridRepository = gridRepository;
         this.athleteRepository = athleteRepository;
+        this.clubRepository = clubRepository;
     }
 
     @Transactional(readOnly = true)
@@ -102,6 +107,14 @@ public class GridAdminService {
             entry.setHintLabel(input.getHintLabel());
             entry.setHintValue(input.getHintValue());
             entry.setOrderIndex(index++);
+
+            if (input.getClubId() != null) {
+                Club club = clubRepository.findById(input.getClubId())
+                        .orElseThrow(() -> new IllegalArgumentException("No club found with id " + input.getClubId()));
+                entry.setClub(club);
+            }
+            entry.setShowLogo(input.getShowLogo());
+
             entries.add(entry);
         }
         grid.setEntries(entries);
@@ -120,7 +133,8 @@ public class GridAdminService {
                 .collect(Collectors.toList()));
         dto.setEntries(grid.getEntries().stream()
                 .map(e -> new GridAdminDetailDto.EntryDetail(
-                        e.getId(), AthleteService.toDto(e.getAthlete()), e.getHintLabel(), e.getHintValue()))
+                        e.getId(), AthleteService.toDto(e.getAthlete()), e.getHintLabel(), e.getHintValue(),
+                        e.getClub() != null ? ClubService.toDto(e.getClub()) : null, e.isShowLogo()))
                 .collect(Collectors.toList()));
         return dto;
     }

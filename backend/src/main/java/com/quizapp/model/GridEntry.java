@@ -34,6 +34,35 @@ public class GridEntry {
     @Column(name = "order_index", nullable = false)
     private int orderIndex;
 
+    // Optional - which club's crest to show as an extra hint on this entry's tile.
+    // Nullable on purpose: not every grid needs logos, and a club-themed grid vs. a
+    // cross-club grid ("all-time PL scorers") pick a different club per entry anyway.
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "club_id")
+    private Club club;
+
+    // Nullable Boolean (not a primitive) so this column can be added to an existing,
+    // non-empty grid_entries table without a NOT NULL/default migration headache -
+    // null is treated as "show the logo" (the default) wherever this is read.
+    @Column(name = "show_logo")
+    private Boolean showLogo;
+
+    public Club getClub() {
+        return club;
+    }
+
+    public void setClub(Club club) {
+        this.club = club;
+    }
+
+    public boolean isShowLogo() {
+        return showLogo == null || showLogo;
+    }
+
+    public void setShowLogo(Boolean showLogo) {
+        this.showLogo = showLogo;
+    }
+
     public Long getId() {
         return id;
     }

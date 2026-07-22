@@ -152,5 +152,22 @@ export default {
   },
   adminDeleteAthlete(id) {
     return client.delete(`/admin/athletes/${id}`)
+  },
+
+  // --- Clubs: admin ---
+  adminSearchClubs(sport, name) {
+    const query = new URLSearchParams()
+    if (sport) query.set('sport', sport)
+    if (name) query.set('name', name)
+    return client.get(`/admin/clubs?${query.toString()}`).then(r => r.data)
+  },
+  adminCreateClub(payload) {
+    return client.post('/admin/clubs', payload).then(r => r.data)
+  },
+  adminUpdateClub(id, payload) {
+    return client.put(`/admin/clubs/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteClub(id) {
+    return client.delete(`/admin/clubs/${id}`)
   }
 }

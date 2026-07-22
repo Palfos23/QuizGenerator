@@ -8,6 +8,7 @@ import WeeklyGridListView from '../views/WeeklyGridListView.vue'
 import WeeklyGridPlayView from '../views/WeeklyGridPlayView.vue'
 import AdminAthletesView from '../views/AdminAthletesView.vue'
 import AdminGridsView from '../views/AdminGridsView.vue'
+import AdminClubsView from '../views/AdminClubsView.vue'
 import auth from '../services/auth'
 
 const routes = [
@@ -26,7 +27,8 @@ const routes = [
   { path: '/admin', name: 'admin-login', component: AdminLoginView },
   { path: '/admin/questions', name: 'admin', component: AdminView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/athletes', name: 'admin-athletes', component: AdminAthletesView, meta: { requiresAuth: true, requiresAdmin: true } },
-  { path: '/admin/grids', name: 'admin-grids', component: AdminGridsView, meta: { requiresAuth: true, requiresAdmin: true } }
+  { path: '/admin/grids', name: 'admin-grids', component: AdminGridsView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/clubs', name: 'admin-clubs', component: AdminClubsView, meta: { requiresAuth: true, requiresAdmin: true } }
 ]
 
 const router = createRouter({

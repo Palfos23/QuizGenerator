@@ -558,6 +558,29 @@ mark {
   border-radius: var(--radius-sm);
 }
 
+.grid-tile-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.club-logo-thumb {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.club-logo-preview {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  background: rgba(255,255,255,0.03);
+}
+
 /* ---------- Weekly grid game ---------- */
 
 .grid-status-bar {

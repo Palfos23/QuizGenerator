@@ -5,7 +5,10 @@
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
         <div>
           <h1>Weekly grids</h1>
-          <p class="page-subtitle">Create and manage the weekly guessing-grid challenges.</p>
+          <p class="page-subtitle">
+            Create and manage the weekly guessing-grid challenges.
+            <router-link to="/admin/clubs">Manage clubs →</router-link>
+          </p>
         </div>
         <button class="btn btn-primary" @click="openCreate">+ Create grid</button>
       </div>
@@ -107,9 +110,17 @@
               <input type="checkbox" v-model="c.correct" style="width:auto;" />
               {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
             </label>
-            <div v-if="c.correct" style="display:flex; gap:8px;">
+            <div v-if="c.correct" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input type="text" v-model="c.hintLabel" placeholder="Label (e.g. FW)" style="width:110px;" />
               <input type="number" v-model.number="c.hintValue" placeholder="Value" style="width:80px;" />
+              <select v-model="c.clubId" style="width:170px;">
+                <option :value="null">No logo</option>
+                <option v-for="club in clubOptions" :key="club.id" :value="club.id">{{ club.name }}</option>
+              </select>
+              <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400; font-size:0.82rem; color:var(--text-dim); margin:0;">
+                <input type="checkbox" v-model="c.showLogo" style="width:auto;" :disabled="!c.clubId" />
+                Show logo
+              </label>
             </div>
             <button class="btn btn-danger btn-sm" @click="candidates.splice(idx, 1)">✕</button>
           </div>
@@ -153,13 +164,25 @@ const form = reactive({
   weekStartDate: '',
   maxStrikes: 5
 })
-const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue }]
+const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue, clubId, showLogo }]
+const clubOptions = ref([])
 
 const athleteSearchTerm = ref('')
 const athleteSearchResults = ref([])
 const bulkTeam = ref('')
 
-onMounted(loadGrids)
+onMounted(() => {
+  loadGrids()
+  loadClubOptions()
+})
+
+async function loadClubOptions() {
+  try {
+    clubOptions.value = await api.adminSearchClubs(form.sport)
+  } catch (e) {
+    // non-critical - the club dropdown just stays empty
+  }
+}
 
 async function loadGrids() {
   loading.value = true
@@ -192,13 +215,14 @@ watch(athleteSearchTerm, (val) => {
 function changeSport(code) {
   form.sport = code
   athleteSearchResults.value = []
+  loadClubOptions()
 }
 
 function addCandidate(athlete) {
   if (candidates.value.some(c => c.athleteId === athlete.id)) return
   candidates.value.push({
     athleteId: athlete.id, name: athlete.name, team: athlete.team,
-    correct: false, hintLabel: '', hintValue: null
+    correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true
   })
 }
 
@@ -223,6 +247,7 @@ function resetForm() {
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
   bulkTeam.value = ''
+  loadClubOptions()
 }
 
 function openCreate() {
@@ -248,12 +273,15 @@ async function openEdit(id) {
         athleteId: a.id, name: a.name, team: a.team,
         correct: !!entry,
         hintLabel: entry?.hintLabel || '',
-        hintValue: entry?.hintValue ?? null
+        hintValue: entry?.hintValue ?? null,
+        clubId: entry?.club?.id ?? null,
+        showLogo: entry?.showLogo ?? true
       }
     })
 
     editingGridId.value = id
     view.value = 'builder'
+    loadClubOptions()
   } catch (e) {
     error.value = 'Could not load that grid.'
   }
@@ -282,7 +310,10 @@ async function saveGrid() {
     weekStartDate: form.weekStartDate,
     maxStrikes: form.maxStrikes,
     candidateAthleteIds: candidates.value.map(c => c.athleteId),
-    entries: entries.map(c => ({ athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: c.hintValue }))
+    entries: entries.map(c => ({
+      athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: c.hintValue,
+      clubId: c.clubId, showLogo: c.showLogo
+    }))
   }
 
   saving.value = true

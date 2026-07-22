@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface GridEntryRepository extends JpaRepository<GridEntry, Long> {
     List<GridEntry> findByGrid_IdOrderByHintValueDesc(Long gridId);
+    boolean existsByClub_Id(Long clubId);
 }

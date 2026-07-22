@@ -75,6 +75,19 @@ How it fits together:
   intentionally includes candidates who *don't* satisfy the theme (e.g.
   every other Spurs player who didn't hit 10 goals), so guessing them is a
   real wrong answer, not something the search box filters out for you.
+- Tiles can show a **club crest as an extra hint**, managed at `/admin/clubs`
+  (name, sport, and a logo image URL - see the note below on why it's a
+  URL rather than a file upload). The logo lives on the *entry*, not the
+  athlete, which is what makes all of these work with the same mechanism:
+  - A club-themed grid ("Tottenham's top scorers") - pick the same crest
+    on every entry.
+  - A cross-club grid ("all-time Premier League top scorers") - pick
+    whichever club is actually relevant *for that player* on each entry
+    individually.
+  - Too easy with the logo showing? Untick "Show logo" on that one entry -
+    the hint label and number still show, just not the crest.
+  Like the pool candidates, a club is entirely optional per entry - a grid
+  with no logos at all works exactly as before.
 - Players search and guess from `/weekly-grid`; correct guesses reveal a
   tile, wrong guesses cost a strike. Running out of strikes ends the
   attempt - from there you can **reveal** the remaining answers, or keep
@@ -86,6 +99,14 @@ How it fits together:
   the athlete roster and question bank both have real depth, daily grids
   are a straightforward next step (just a narrower active-window
   calculation), not a redesign.
+
+Club logos are a **plain URL field**, not a file upload. Render's
+filesystem is ephemeral (wiped on every redeploy), so storing an uploaded
+image file locally would just lose it on the next deploy - actually
+persisting uploads would need a separate cloud storage integration (S3,
+Supabase Storage, etc.). For now, point the logo URL at wherever you're
+already hosting the crest image (your own hosting, a public Supabase
+Storage URL, etc.).
 
 ## Authentication
 
@@ -129,6 +150,7 @@ Notes on the design:
 | `/admin/questions` | Logged-in admins | Manage the question bank |
 | `/admin/athletes` | Logged-in admins | Manage the athlete roster used to build grids |
 | `/admin/grids` | Logged-in admins | Create and edit weekly grids |
+| `/admin/clubs` | Logged-in admins | Manage club crests used as logo hints (linked from the grid builder, not the main nav) |
 
 ### Setting up Google Sign-In
 
@@ -223,12 +245,15 @@ grid_candidates                     └── max_strikes      INT
 grid_attempts                              ├── athlete_id  BIGINT FK -> athletes.id
 ├── id            BIGINT PK                ├── hint_label  VARCHAR  (e.g. "FW")
 ├── grid_id       BIGINT FK -> grids.id    ├── hint_value  INT      (e.g. 14)
-├── user_id       BIGINT FK -> app_users.id└── order_index INT
-├── strikes_used  INT
-├── completed     BOOLEAN
+├── user_id       BIGINT FK -> app_users.id├── order_index INT
+├── strikes_used  INT                      ├── club_id     BIGINT FK -> clubs.id  (nullable)
+├── completed     BOOLEAN                  └── show_logo   BOOLEAN (nullable; null = shown)
 ├── overtime      BOOLEAN
-├── revealed      BOOLEAN
-└── (solved entry ids in a separate grid_attempt_solved_entries join table)
+├── revealed      BOOLEAN                  clubs
+└── (solved entry ids in a separate         ├── id       BIGINT PK
+    grid_attempt_solved_entries join table) ├── name     VARCHAR
+                                             ├── sport    VARCHAR (FOOTBALL|CYCLING)
+                                             └── logo_url VARCHAR (a hosted image URL, not a file upload)
 ```
 
 `grid_candidates` is the full searchable pool for a grid's guess box -
@@ -239,6 +264,13 @@ by being in `grid_entries`; being in `grid_candidates` alone just makes
 them guessable - and wrong, if guessed. One `grid_attempts` row tracks a
 single user's progress on a single grid (unique on `grid_id` + `user_id`),
 so progress survives a refresh or a later visit.
+
+`club_id` and `show_logo` on `grid_entries` are both nullable by design -
+that's what makes this a safe addition to an existing, non-empty
+`grid_entries` table (`ddl-auto=update` just adds them, no manual SQL
+needed, unlike the earlier `difficulty`/`language` migration below). A
+null `club_id` means no logo; a null `show_logo` is treated as "shown" -
+see `GridEntry.isShowLogo()` in the backend.
 
 > **If you already deployed the previous schema** (with a `difficulty`
 > enum column): `ddl-auto=update` only *adds* columns, it doesn't migrate
@@ -328,6 +360,10 @@ Starts on `http://localhost:5173`.
 | POST   | `/api/admin/athletes`         | ADMIN role         | Add an athlete                                |
 | PUT    | `/api/admin/athletes/{id}`    | ADMIN role         | Update an athlete                             |
 | DELETE | `/api/admin/athletes/{id}`    | ADMIN role         | Delete an athlete (blocked if used in a grid) |
+| GET    | `/api/admin/clubs`            | ADMIN role         | Search clubs (`sport`, `name` filters)        |
+| POST   | `/api/admin/clubs`            | ADMIN role         | Add a club                                    |
+| PUT    | `/api/admin/clubs/{id}`       | ADMIN role         | Update a club                                 |
+| DELETE | `/api/admin/clubs/{id}`       | ADMIN role         | Delete a club (blocked if used as a logo on any entry) |
 
 ### Admin login rate limiting
 

@@ -21,12 +21,16 @@ public class GridAdminDetailDto {
         private AthleteDto athlete;
         private String hintLabel;
         private int hintValue;
+        private ClubDto club;
+        private boolean showLogo;
 
-        public EntryDetail(Long id, AthleteDto athlete, String hintLabel, int hintValue) {
+        public EntryDetail(Long id, AthleteDto athlete, String hintLabel, int hintValue, ClubDto club, boolean showLogo) {
             this.id = id;
             this.athlete = athlete;
             this.hintLabel = hintLabel;
             this.hintValue = hintValue;
+            this.club = club;
+            this.showLogo = showLogo;
         }
 
         public Long getId() {
@@ -43,6 +47,14 @@ public class GridAdminDetailDto {
 
         public int getHintValue() {
             return hintValue;
+        }
+
+        public ClubDto getClub() {
+            return club;
+        }
+
+        public boolean isShowLogo() {
+            return showLogo;
         }
     }
 

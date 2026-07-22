@@ -104,7 +104,7 @@ public class GridPlayService {
             attempt.getSolvedEntryIds().add(matched.getId());
             result.setCorrect(true);
             result.setEntry(new GridEntryViewDto(matched.getId(), matched.getHintLabel(), matched.getHintValue(),
-                    true, matched.getAthlete().getName()));
+                    true, matched.getAthlete().getName(), logoUrl(matched)));
 
             boolean allSolved = attempt.getSolvedEntryIds().size() >= grid.getEntries().size();
             result.setAllSolved(allSolved);
@@ -182,10 +182,17 @@ public class GridPlayService {
                 .map(e -> {
                     boolean solved = revealAll || attempt.getSolvedEntryIds().contains(e.getId());
                     return new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), solved,
-                            solved ? e.getAthlete().getName() : null);
+                            solved ? e.getAthlete().getName() : null, logoUrl(e));
                 })
                 .collect(Collectors.toList());
         dto.setEntries(entries);
         return dto;
+    }
+
+    // The logo is a hint shown alongside the label/value, visible whether or not the
+    // tile is solved yet - unless the admin explicitly hid it for this entry, or no
+    // club was set at all.
+    private String logoUrl(GridEntry entry) {
+        return (entry.isShowLogo() && entry.getClub() != null) ? entry.getClub().getLogoUrl() : null;
     }
 }
