@@ -4,7 +4,6 @@
     <p class="page-subtitle">Pick a language, a difficulty range, and how many questions you want from each category.</p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="successMessage" class="banner success">{{ successMessage }}</div>
     <div v-if="quiz && quiz.warnings && quiz.warnings.length" class="banner error">
       <div v-for="(w, i) in quiz.warnings" :key="i">{{ w }}</div>
     </div>
@@ -92,42 +91,36 @@
       </div>
       <p class="page-subtitle" style="margin-top:-10px;">Use the ↑ / ↓ buttons to reorder questions.</p>
 
-      <div class="card-stack">
-        <QuestionCard
-          v-for="(q, idx) in quiz.questions"
-          :key="q.id"
-          :question="q"
-          :index="idx"
-          editable
-          :busy="busyIndex === idx"
-          :is-first="idx === 0"
-          :is-last="idx === quiz.questions.length - 1"
-          @discard="discardAndReplace(idx)"
-          @remove="removeQuestion(idx)"
-          @move-up="moveQuestion(idx, -1)"
-          @move-down="moveQuestion(idx, 1)"
-        />
-      </div>
-
-      <div v-if="!quiz.questions.length" class="empty-state">
-        You removed every question. <button class="btn btn-secondary btn-sm" @click="startOver">Start over</button>
-      </div>
-
-      <div v-else class="no-print" style="margin-top:32px; display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
-          {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
-        </button>
-        <button class="btn btn-secondary" :disabled="saving" @click="saveQuiz">
-          {{ saving ? 'Saving…' : 'Save to My Quizzes' }}
-        </button>
-      </div>
+      <QuizReviewEditor
+        :quiz="quiz"
+        :min-difficulty="form.minDifficulty"
+        :max-difficulty="form.maxDifficulty"
+        @error="error = $event"
+      >
+        <template #empty>
+          You removed every question. <button class="btn btn-secondary btn-sm" @click="startOver">Start over</button>
+        </template>
+        <template #actions>
+          <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
+            {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
+          </button>
+          <button
+            class="btn"
+            :class="justSaved ? 'btn-primary' : 'btn-secondary'"
+            :disabled="saving"
+            @click="saveQuiz"
+          >
+            {{ saving ? 'Saving…' : justSaved ? 'Saved to My Quizzes ✓' : 'Save to My Quizzes' }}
+          </button>
+        </template>
+      </QuizReviewEditor>
     </section>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import QuestionCard from '../components/QuestionCard.vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import QuizReviewEditor from '../components/QuizReviewEditor.vue'
 import api from '../services/api'
 import { LANGUAGES, languageLabel } from '../constants'
 
@@ -147,10 +140,9 @@ const justAddedCategory = ref('')
 const quiz = ref(null)
 const generating = ref(false)
 const error = ref('')
-const successMessage = ref('')
-const busyIndex = ref(-1)
 const exportingPdf = ref(false)
 const saving = ref(false)
+const justSaved = ref(false)
 
 const remainingCategories = computed(() =>
   availableCategories.value.filter(c => !form.categorySelections.some(sel => sel.category === c))
@@ -199,7 +191,6 @@ function removeCategorySelection(idx) {
 
 async function generateQuiz() {
   error.value = ''
-  successMessage.value = ''
   generating.value = true
   try {
     const result = await api.generateQuiz({
@@ -217,42 +208,9 @@ async function generateQuiz() {
   }
 }
 
-async function discardAndReplace(idx) {
-  error.value = ''
-  busyIndex.value = idx
-  try {
-    const discarded = quiz.value.questions[idx]
-    const replacement = await api.replaceQuestion({
-      category: discarded.category,
-      language: form.language,
-      minDifficulty: form.minDifficulty,
-      maxDifficulty: form.maxDifficulty,
-      excludeIds: quiz.value.questions.map(q => q.id)
-    })
-    quiz.value.questions.splice(idx, 1, replacement)
-  } catch (e) {
-    error.value = e.response?.data?.message || 'No replacement question was available.'
-  } finally {
-    busyIndex.value = -1
-  }
-}
-
-function removeQuestion(idx) {
-  quiz.value.questions.splice(idx, 1)
-}
-
-function moveQuestion(idx, direction) {
-  const target = idx + direction
-  if (target < 0 || target >= quiz.value.questions.length) return
-  const questions = quiz.value.questions
-  const [moved] = questions.splice(idx, 1)
-  questions.splice(target, 0, moved)
-}
-
 function startOver() {
   quiz.value = null
   error.value = ''
-  successMessage.value = ''
 }
 
 async function downloadPdf() {
@@ -276,10 +234,10 @@ async function downloadPdf() {
 async function saveQuiz() {
   saving.value = true
   error.value = ''
-  successMessage.value = ''
   try {
     await api.saveQuiz(quiz.value)
-    successMessage.value = 'Saved - find it any time under "My Quizzes".'
+    justSaved.value = true
+    setTimeout(() => { justSaved.value = false }, 3000)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not save the quiz.'
   } finally {

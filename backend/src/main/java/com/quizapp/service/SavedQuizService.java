@@ -34,10 +34,34 @@ public class SavedQuizService {
 
         SavedQuiz entity = new SavedQuiz();
         entity.setOwner(owner);
-        entity.setTitle(quiz.getTitle() == null || quiz.getTitle().isBlank() ? "My Quiz" : quiz.getTitle());
+        entity.setTitle(titleOrDefault(quiz));
         entity.setLanguage(quiz.getLanguage());
+        entity.setQuestions(buildSnapshot(quiz));
 
-        List<SavedQuizQuestion> questions = IntStream.range(0, quiz.getQuestions().size())
+        SavedQuiz saved = savedQuizRepository.save(entity);
+        return toDto(saved);
+    }
+
+    /** Overwrites an existing saved quiz's title/language/questions in place - same id, same createdAt. */
+    @Transactional
+    public QuizDto update(String ownerEmail, Long id, QuizDto quiz) {
+        SavedQuiz existing = savedQuizRepository.findByIdAndOwner_Email(id, ownerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("No saved quiz found with id " + id));
+
+        existing.setTitle(titleOrDefault(quiz));
+        existing.setLanguage(quiz.getLanguage());
+        existing.setQuestions(buildSnapshot(quiz));
+
+        SavedQuiz saved = savedQuizRepository.save(existing);
+        return toDto(saved);
+    }
+
+    private String titleOrDefault(QuizDto quiz) {
+        return quiz.getTitle() == null || quiz.getTitle().isBlank() ? "My Quiz" : quiz.getTitle();
+    }
+
+    private List<SavedQuizQuestion> buildSnapshot(QuizDto quiz) {
+        return IntStream.range(0, quiz.getQuestions().size())
                 .mapToObj(i -> {
                     QuestionDto q = quiz.getQuestions().get(i);
                     SavedQuizQuestion sq = new SavedQuizQuestion();
@@ -49,10 +73,6 @@ public class SavedQuizService {
                     return sq;
                 })
                 .collect(Collectors.toList());
-        entity.setQuestions(questions);
-
-        SavedQuiz saved = savedQuizRepository.save(entity);
-        return toDto(saved);
     }
 
     @Transactional(readOnly = true)

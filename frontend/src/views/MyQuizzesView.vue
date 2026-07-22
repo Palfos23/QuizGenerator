@@ -25,37 +25,45 @@
             </div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openOne(q.id)">View</button>
+            <button class="btn btn-secondary btn-sm" @click="openOne(q.id)">View &amp; edit</button>
             <button class="btn btn-danger btn-sm" @click="confirmDelete(q)">Delete</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Detail view -->
+    <!-- Detail / edit view -->
     <section v-else>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
         <h2 style="margin:0;">
           {{ openQuiz.title }}
           <span style="color:var(--text-dim); font-weight:400; font-size:1rem;">· {{ openQuiz.questions.length }} questions</span>
         </h2>
-        <button class="btn btn-secondary btn-sm no-print" @click="openQuiz = null">← Back to list</button>
+        <button class="btn btn-secondary btn-sm no-print" @click="backToList">← Back to list</button>
       </div>
+      <p class="page-subtitle" style="margin-top:-10px;">
+        Use the ↑ / ↓ buttons to reorder, or discard/replace questions - then hit "Update" to save your changes.
+      </p>
 
-      <div class="card-stack">
-        <QuestionCard
-          v-for="(q, idx) in openQuiz.questions"
-          :key="idx"
-          :question="q"
-          :index="idx"
-        />
-      </div>
-
-      <div class="no-print" style="margin-top:32px;">
-        <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
-          {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
-        </button>
-      </div>
+      <QuizReviewEditor
+        :quiz="openQuiz"
+        @error="error = $event"
+        @changed="dirty = true"
+      >
+        <template #actions>
+          <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
+            {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
+          </button>
+          <button
+            class="btn"
+            :class="justUpdated ? 'btn-primary' : 'btn-secondary'"
+            :disabled="updating"
+            @click="updateQuiz"
+          >
+            {{ updating ? 'Updating…' : justUpdated ? 'Updated ✓' : 'Update' }}
+          </button>
+        </template>
+      </QuizReviewEditor>
     </section>
   </div>
 </template>
@@ -63,7 +71,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import api from '../services/api'
-import QuestionCard from '../components/QuestionCard.vue'
+import QuizReviewEditor from '../components/QuizReviewEditor.vue'
 import { LANGUAGES, languageLabel } from '../constants'
 
 const quizzes = ref([])
@@ -72,6 +80,9 @@ const error = ref('')
 const successMessage = ref('')
 const openQuiz = ref(null)
 const exportingPdf = ref(false)
+const updating = ref(false)
+const justUpdated = ref(false)
+const dirty = ref(false)
 
 onMounted(loadList)
 
@@ -97,11 +108,21 @@ function formatDate(iso) {
 
 async function openOne(id) {
   error.value = ''
+  successMessage.value = ''
   try {
     openQuiz.value = await api.getSavedQuiz(id)
+    dirty.value = false
   } catch (e) {
     error.value = 'Could not load that quiz.'
   }
+}
+
+function backToList() {
+  if (dirty.value && !window.confirm('You have unsaved changes to this quiz. Discard them and go back?')) {
+    return
+  }
+  openQuiz.value = null
+  dirty.value = false
 }
 
 async function confirmDelete(q) {
@@ -131,6 +152,21 @@ async function downloadPdf() {
     error.value = 'Could not generate the PDF.'
   } finally {
     exportingPdf.value = false
+  }
+}
+
+async function updateQuiz() {
+  updating.value = true
+  error.value = ''
+  try {
+    openQuiz.value = await api.updateSavedQuiz(openQuiz.value.id, openQuiz.value)
+    dirty.value = false
+    justUpdated.value = true
+    setTimeout(() => { justUpdated.value = false }, 3000)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not update the quiz.'
+  } finally {
+    updating.value = false
   }
 }
 </script>

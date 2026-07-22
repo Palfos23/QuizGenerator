@@ -43,6 +43,12 @@ public class SavedQuizController {
         return savedQuizService.getOne(authentication.getName(), id);
     }
 
+    /** Overwrites a previously saved quiz - same id, updated content (e.g. after re-editing it). */
+    @PutMapping("/{id}")
+    public QuizDto update(@PathVariable Long id, @Valid @RequestBody QuizDto quiz, Authentication authentication) {
+        return savedQuizService.update(authentication.getName(), id, quiz);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id, Authentication authentication) {
         savedQuizService.delete(authentication.getName(), id);

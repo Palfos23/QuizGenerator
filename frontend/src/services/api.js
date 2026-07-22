@@ -59,6 +59,9 @@ export default {
   getSavedQuiz(id) {
     return client.get(`/quiz/saved/${id}`).then(r => r.data)
   },
+  updateSavedQuiz(id, quiz) {
+    return client.put(`/quiz/saved/${id}`, quiz).then(r => r.data)
+  },
   deleteSavedQuiz(id) {
     return client.delete(`/quiz/saved/${id}`)
   },

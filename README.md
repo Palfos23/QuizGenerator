@@ -25,10 +25,19 @@ question bank that an admin curates.
 4. Once happy, the user can **download the quiz as a PDF**, and/or hit
    **"Save to My Quizzes"** to keep a permanent copy they can come back to
    later at `/my-quizzes` - nothing is saved automatically just from
-   generating a quiz, only on that explicit action.
+   generating a quiz, only on that explicit action. A saved quiz isn't
+   frozen once saved, either: reopening it from `/my-quizzes` gives the
+   same reorder/discard/replace/remove tools as the original review step,
+   with an "Update" button to overwrite the saved copy in place.
 
 The whole frontend is responsive and works on mobile - the top nav
 collapses to a bottom tab bar below 760px wide.
+
+Worth knowing: the original difficulty range used to *generate* a quiz isn't
+stored with it (only its language is) - so when discarding/replacing a
+question on an already-saved quiz, the replacement is pulled from the full
+1-10 range rather than whatever narrower range you generated with
+originally. The category is still matched, same as before.
 
 ### Languages
 
@@ -220,6 +229,7 @@ Starts on `http://localhost:5173`.
 | POST   | `/api/quiz/saved`             | any logged-in user | Save a finalized quiz ("My Quizzes")          |
 | GET    | `/api/quiz/saved`             | any logged-in user | List the caller's own saved quizzes           |
 | GET    | `/api/quiz/saved/{id}`        | any logged-in user | Fetch one of the caller's own saved quizzes   |
+| PUT    | `/api/quiz/saved/{id}`        | any logged-in user | Overwrite a saved quiz's title/questions in place |
 | DELETE | `/api/quiz/saved/{id}`        | any logged-in user | Delete one of the caller's own saved quizzes  |
 | GET    | `/api/admin/questions`        | ADMIN role         | List all questions                            |
 | GET    | `/api/admin/questions/stats`  | ADMIN role         | Coverage breakdown (count/difficulty range per category+language) |
