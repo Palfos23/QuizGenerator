@@ -34,7 +34,17 @@
 
       <div v-if="error" class="banner error">{{ error }}</div>
       <div v-if="loadingScript" style="color:var(--text-dim); font-size:0.9rem;">Loading sign-in…</div>
-      <div ref="buttonEl"></div>
+
+      <div v-if="loggingIn" class="login-progress">
+        <span class="spinner"></span>
+        <div>
+          <div>Signing you in…</div>
+          <div v-if="slowLogin" style="color:var(--text-dim); font-size:0.85rem; margin-top:4px;">
+            Still working - this is taking longer than usual.
+          </div>
+        </div>
+      </div>
+      <div v-show="!loggingIn" ref="buttonEl"></div>
 
       <p v-if="!clientIdConfigured" style="color:var(--text-dim); font-size:0.85rem; margin-top:20px;">
         Google sign-in isn't configured yet - set <code>VITE_GOOGLE_CLIENT_ID</code> in the frontend's
@@ -54,6 +64,8 @@ const router = useRouter()
 const buttonEl = ref(null)
 const error = ref('')
 const loadingScript = ref(true)
+const loggingIn = ref(false)
+const slowLogin = ref(false)
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 const clientIdConfigured = !!clientId
 
@@ -110,12 +122,21 @@ onMounted(async () => {
 
 async function handleCredentialResponse(response) {
   error.value = ''
+  loggingIn.value = true
+  slowLogin.value = false
+  // Surface it if the request is taking a while, rather than leaving a bare spinner
+  // with no indication of whether it's still working or has silently stalled.
+  const slowTimer = setTimeout(() => { slowLogin.value = true }, 2500)
+
   try {
     const result = await api.loginWithGoogle(response.credential)
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
     router.push('/generate')
   } catch (e) {
     error.value = e.response?.data?.message || 'Sign-in failed. Please try again.'
+    loggingIn.value = false
+  } finally {
+    clearTimeout(slowTimer)
   }
 }
 </script>
