@@ -95,7 +95,62 @@ export default {
   adminAddStarterPack() {
     return client.post('/admin/questions/starter-pack').then(r => r.data)
   },
-  adminAddStarterPack() {
-    return client.post('/admin/questions/starter-pack').then(r => r.data)
+
+  // --- Weekly grids: user-facing ---
+  getActiveGrids() {
+    return client.get('/grids/active').then(r => r.data)
+  },
+  getArchiveGrids() {
+    return client.get('/grids/archive').then(r => r.data)
+  },
+  getGridPlayState(id) {
+    return client.get(`/grids/${id}/play`).then(r => r.data)
+  },
+  searchGridCandidates(id, search) {
+    return client.get(`/grids/${id}/candidates?search=${encodeURIComponent(search || '')}`).then(r => r.data)
+  },
+  submitGridGuess(id, athleteId) {
+    return client.post(`/grids/${id}/guess`, { athleteId }).then(r => r.data)
+  },
+  enterGridOvertime(id) {
+    return client.post(`/grids/${id}/overtime`).then(r => r.data)
+  },
+  revealGrid(id) {
+    return client.post(`/grids/${id}/reveal`).then(r => r.data)
+  },
+
+  // --- Weekly grids: admin ---
+  adminListGrids() {
+    return client.get('/admin/grids').then(r => r.data)
+  },
+  adminGetGrid(id) {
+    return client.get(`/admin/grids/${id}`).then(r => r.data)
+  },
+  adminCreateGrid(payload) {
+    return client.post('/admin/grids', payload).then(r => r.data)
+  },
+  adminUpdateGrid(id, payload) {
+    return client.put(`/admin/grids/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteGrid(id) {
+    return client.delete(`/admin/grids/${id}`)
+  },
+
+  // --- Athlete roster: admin ---
+  adminSearchAthletes(params = {}) {
+    const query = new URLSearchParams()
+    if (params.sport) query.set('sport', params.sport)
+    if (params.team) query.set('team', params.team)
+    if (params.name) query.set('name', params.name)
+    return client.get(`/admin/athletes?${query.toString()}`).then(r => r.data)
+  },
+  adminCreateAthlete(payload) {
+    return client.post('/admin/athletes', payload).then(r => r.data)
+  },
+  adminUpdateAthlete(id, payload) {
+    return client.put(`/admin/athletes/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteAthlete(id) {
+    return client.delete(`/admin/athletes/${id}`)
   }
 }

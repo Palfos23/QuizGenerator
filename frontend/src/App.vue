@@ -6,7 +6,10 @@
       <template v-if="auth.isAuthenticated.value">
         <router-link v-if="!auth.isAdmin.value" to="/generate" class="nav-link">Create a quiz</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" class="nav-link">My quizzes</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/weekly-grid" class="nav-link">Weekly grid</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/questions" class="nav-link">Question bank</router-link>
+        <router-link v-if="auth.isAdmin.value" to="/admin/athletes" class="nav-link">Athletes</router-link>
+        <router-link v-if="auth.isAdmin.value" to="/admin/grids" class="nav-link">Weekly grids</router-link>
 
         <div class="top-nav-spacer"></div>
         <span class="top-nav-user">{{ auth.state.displayName }}</span>
@@ -25,7 +28,10 @@
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
       <router-link v-if="!auth.isAdmin.value" to="/generate">Create</router-link>
       <router-link v-if="!auth.isAdmin.value" to="/my-quizzes">My quizzes</router-link>
+      <router-link v-if="!auth.isAdmin.value" to="/weekly-grid">Weekly grid</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
+      <router-link v-if="auth.isAdmin.value" to="/admin/athletes">Athletes</router-link>
+      <router-link v-if="auth.isAdmin.value" to="/admin/grids">Grids</router-link>
       <button @click="logout">Log out</button>
     </nav>
 

@@ -4,6 +4,10 @@ import AdminView from '../views/AdminView.vue'
 import HomeView from '../views/HomeView.vue'
 import AdminLoginView from '../views/AdminLoginView.vue'
 import MyQuizzesView from '../views/MyQuizzesView.vue'
+import WeeklyGridListView from '../views/WeeklyGridListView.vue'
+import WeeklyGridPlayView from '../views/WeeklyGridPlayView.vue'
+import AdminAthletesView from '../views/AdminAthletesView.vue'
+import AdminGridsView from '../views/AdminGridsView.vue'
 import auth from '../services/auth'
 
 const routes = [
@@ -12,13 +16,17 @@ const routes = [
 
   { path: '/generate', name: 'generate', component: QuizGeneratorView, meta: { requiresAuth: true } },
   { path: '/my-quizzes', name: 'my-quizzes', component: MyQuizzesView, meta: { requiresAuth: true } },
+  { path: '/weekly-grid', name: 'weekly-grid', component: WeeklyGridListView, meta: { requiresAuth: true } },
+  { path: '/weekly-grid/:id', name: 'weekly-grid-play', component: WeeklyGridPlayView, meta: { requiresAuth: true } },
 
   // The admin's own front door - a dedicated login landing page, separate from the
   // regular Google sign-in. Note this URL being "findable" isn't the security boundary:
   // the backend still requires a valid ADMIN-role JWT on every /api/admin/** call regardless
   // of how someone got to this page.
   { path: '/admin', name: 'admin-login', component: AdminLoginView },
-  { path: '/admin/questions', name: 'admin', component: AdminView, meta: { requiresAuth: true, requiresAdmin: true } }
+  { path: '/admin/questions', name: 'admin', component: AdminView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/athletes', name: 'admin-athletes', component: AdminAthletesView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/grids', name: 'admin-grids', component: AdminGridsView, meta: { requiresAuth: true, requiresAdmin: true } }
 ]
 
 const router = createRouter({

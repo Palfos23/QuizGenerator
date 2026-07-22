@@ -42,6 +42,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // generating/exporting quizzes: any logged-in user (USER or ADMIN)
                         .requestMatchers("/api/quiz/**").authenticated()
+                        // browsing/playing weekly grids: any logged-in user (USER or ADMIN)
+                        .requestMatchers("/api/grids/**").authenticated()
                         .anyRequest().authenticated())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // needed for the H2 console
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);

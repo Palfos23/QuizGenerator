@@ -6,8 +6,17 @@ export const LANGUAGES = [
   { code: 'NO', label: 'Norwegian', flag: '🇳🇴' }
 ]
 
+export const SPORTS = [
+  { code: 'FOOTBALL', label: 'Football' },
+  { code: 'CYCLING', label: 'Cycling' }
+]
+
 export function languageLabel(code) {
   return LANGUAGES.find(l => l.code === code)?.label || code
+}
+
+export function sportLabel(code) {
+  return SPORTS.find(s => s.code === code)?.label || code
 }
 
 // Maps a 1-10 difficulty to a hue on a green(easy) -> red(hard) scale, used for badges/sliders.

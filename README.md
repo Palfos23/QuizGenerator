@@ -48,6 +48,45 @@ language at a time. The interface itself (buttons, labels, etc.) is still
 English-only - translating the UI chrome would be a separate, bigger
 project if you want it too.
 
+### Weekly grid
+
+A second, separate game mode alongside the quiz generator - a themed
+guessing grid (think "name every Cardinals skill-position player who
+started 35+ games," inspired by sites like BDGE's Daily Grid), covering
+**football or cycling**, admin's choice per grid.
+
+How it fits together:
+
+- An admin maintains an **athlete roster** (`/admin/athletes`) - just a
+  name, sport, and team/team-name per athlete. Nothing else about them is
+  tracked in the system; any stats relevant to a specific grid (goals,
+  wins, games started) are entered per-grid, not stored on the athlete
+  permanently, since the same athlete could reasonably show up in a future
+  grid with a different relevant stat.
+- An admin builds a **grid** (`/admin/grids`): a title, a theme description,
+  a week (grids run Monday-Sunday), a strike limit, and two things built
+  from the roster:
+  - a **candidate pool** - every athlete guessable in this grid's search
+    box (there's a quick "add a whole team" helper for this)
+  - a subset of that pool flagged as **correct answers**, each with a
+    short hint label and number (e.g. "FW" / 14) shown on its tile before
+    it's solved
+- A **decoy is still guessable and still costs a strike** - the pool
+  intentionally includes candidates who *don't* satisfy the theme (e.g.
+  every other Spurs player who didn't hit 10 goals), so guessing them is a
+  real wrong answer, not something the search box filters out for you.
+- Players search and guess from `/weekly-grid`; correct guesses reveal a
+  tile, wrong guesses cost a strike. Running out of strikes ends the
+  attempt - from there you can **reveal** the remaining answers, or keep
+  guessing in **Overtime** (further correct guesses still reveal tiles,
+  but nothing in overtime affects your strikes or counts as a "clean"
+  solve). One attempt is tracked per user per grid, so progress survives a
+  refresh or a return visit later in the week.
+- Started weekly, on purpose - the README's own admonition to itself: once
+  the athlete roster and question bank both have real depth, daily grids
+  are a straightforward next step (just a narrower active-window
+  calculation), not a redesign.
+
 ## Authentication
 
 Two completely separate login paths, matching two different trust levels:
@@ -84,8 +123,12 @@ Notes on the design:
 | `/` | Everyone | Landing page: what the app does + Google sign-in |
 | `/generate` | Logged-in users | Build and export a quiz |
 | `/my-quizzes` | Logged-in users | View/edit/re-download/duplicate/delete previously saved quizzes |
+| `/weekly-grid` | Logged-in users | This week's grid(s) to play, plus a "previous boards" archive |
+| `/weekly-grid/:id` | Logged-in users | Play a specific grid |
 | `/admin` | Everyone (but pointless without credentials) | Admin username/password login |
 | `/admin/questions` | Logged-in admins | Manage the question bank |
+| `/admin/athletes` | Logged-in admins | Manage the athlete roster used to build grids |
+| `/admin/grids` | Logged-in admins | Create and edit weekly grids |
 
 ### Setting up Google Sign-In
 
@@ -165,6 +208,38 @@ language. An admin adding "capital of France" in English, German, French,
 Spanish and Norwegian creates five independent rows. This keeps the model
 simple, at the cost of the admin having to enter each language by hand.
 
+```
+athletes                            grids
+├── id       BIGINT PK              ├── id               BIGINT PK
+├── name     VARCHAR                ├── title            VARCHAR
+├── sport    VARCHAR (FOOTBALL|CYCLING)  ├── theme        TEXT
+└── team     VARCHAR                ├── sport            VARCHAR
+                                     ├── week_start_date  DATE   (grid is "live" for this Mon-Sun)
+grid_candidates                     └── max_strikes      INT
+├── id         BIGINT PK
+├── grid_id    BIGINT FK -> grids.id       grid_entries
+└── athlete_id BIGINT FK -> athletes.id    ├── id          BIGINT PK
+                                            ├── grid_id     BIGINT FK -> grids.id
+grid_attempts                              ├── athlete_id  BIGINT FK -> athletes.id
+├── id            BIGINT PK                ├── hint_label  VARCHAR  (e.g. "FW")
+├── grid_id       BIGINT FK -> grids.id    ├── hint_value  INT      (e.g. 14)
+├── user_id       BIGINT FK -> app_users.id└── order_index INT
+├── strikes_used  INT
+├── completed     BOOLEAN
+├── overtime      BOOLEAN
+├── revealed      BOOLEAN
+└── (solved entry ids in a separate grid_attempt_solved_entries join table)
+```
+
+`grid_candidates` is the full searchable pool for a grid's guess box -
+decoys and correct answers alike. `grid_entries` is the subset that are
+actually correct, each carrying the hint shown on its tile before it's
+solved. An athlete only gets a hint (and only becomes visible on a tile)
+by being in `grid_entries`; being in `grid_candidates` alone just makes
+them guessable - and wrong, if guessed. One `grid_attempts` row tracks a
+single user's progress on a single grid (unique on `grid_id` + `user_id`),
+so progress survives a refresh or a later visit.
+
 > **If you already deployed the previous schema** (with a `difficulty`
 > enum column): `ddl-auto=update` only *adds* columns, it doesn't migrate
 > data, and the new `difficulty_level`/`language` columns are `NOT NULL`
@@ -237,6 +312,22 @@ Starts on `http://localhost:5173`.
 | POST   | `/api/admin/questions`        | ADMIN role         | Create a question                             |
 | PUT    | `/api/admin/questions/{id}`   | ADMIN role         | Update a question                             |
 | DELETE | `/api/admin/questions/{id}`   | ADMIN role         | Delete a question                             |
+| GET    | `/api/grids/active`           | any logged-in user | This week's live grid(s)                      |
+| GET    | `/api/grids/archive`          | any logged-in user | Past grids, most recent first                 |
+| GET    | `/api/grids/{id}/play`        | any logged-in user | Grid + the caller's own attempt state (creates one if none exists) |
+| GET    | `/api/grids/{id}/candidates`  | any logged-in user | Search that grid's guessable pool by name     |
+| POST   | `/api/grids/{id}/guess`       | any logged-in user | Submit a guess (athlete id)                   |
+| POST   | `/api/grids/{id}/overtime`    | any logged-in user | Keep guessing after running out of strikes (no longer scored) |
+| POST   | `/api/grids/{id}/reveal`      | any logged-in user | Give up and reveal the remaining answers      |
+| GET    | `/api/admin/grids`            | ADMIN role         | List all grids                                |
+| GET    | `/api/admin/grids/{id}`       | ADMIN role         | Full grid detail for editing                  |
+| POST   | `/api/admin/grids`            | ADMIN role         | Create a grid (candidates + entries)          |
+| PUT    | `/api/admin/grids/{id}`       | ADMIN role         | Replace a grid's candidates/entries           |
+| DELETE | `/api/admin/grids/{id}`       | ADMIN role         | Delete a grid (and everyone's progress on it) |
+| GET    | `/api/admin/athletes`         | ADMIN role         | Search the roster (`sport`, `team`, `name` filters) |
+| POST   | `/api/admin/athletes`         | ADMIN role         | Add an athlete                                |
+| PUT    | `/api/admin/athletes/{id}`    | ADMIN role         | Update an athlete                             |
+| DELETE | `/api/admin/athletes/{id}`    | ADMIN role         | Delete an athlete (blocked if used in a grid) |
 
 ### Admin login rate limiting
 
