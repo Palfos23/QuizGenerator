@@ -1,13 +1,14 @@
 <template>
   <div>
-    <router-link to="/weekly-grid" class="nav-link" style="padding-left:0; display:inline-block; margin-bottom:12px;">← All grids</router-link>
-
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
     <div v-else-if="state" class="grid-page">
-      <h1 style="margin-bottom:6px;">{{ state.title }}</h1>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:10px;">
+        <h1 style="margin:0;">{{ state.title }}</h1>
+        <router-link to="/weekly-grid" class="btn btn-secondary btn-sm no-print">← All grids</router-link>
+      </div>
       <p class="page-subtitle">{{ state.theme }}</p>
 
       <div class="grid-status-bar">
