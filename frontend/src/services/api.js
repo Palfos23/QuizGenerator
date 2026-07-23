@@ -169,5 +169,50 @@ export default {
   },
   adminDeleteClub(id) {
     return client.delete(`/admin/clubs/${id}`)
+  },
+
+  // --- Tension: gameplay ---
+  fetchTensionQuestions(count, category) {
+    const query = new URLSearchParams({ count: String(count) })
+    if (category) query.set('category', category)
+    return client.get(`/tension/questions/random?${query.toString()}`).then(r => r.data)
+  },
+  fetchTensionAnswerOptions(categoryName) {
+    if (!categoryName) return Promise.resolve([])
+    return client.get(`/tension/categories/${encodeURIComponent(categoryName)}/options`).then(r => r.data)
+  },
+  fetchTensionMainCategories() {
+    return client.get('/tension/questions/categories').then(r => r.data)
+  },
+
+  // --- Tension: admin questions ---
+  adminListTensionQuestions() {
+    return client.get('/admin/tension/questions').then(r => r.data)
+  },
+  adminGetTensionQuestion(id) {
+    return client.get(`/admin/tension/questions/${id}`).then(r => r.data)
+  },
+  adminCreateTensionQuestion(payload) {
+    return client.post('/admin/tension/questions', payload).then(r => r.data)
+  },
+  adminUpdateTensionQuestion(id, payload) {
+    return client.put(`/admin/tension/questions/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteTensionQuestion(id) {
+    return client.delete(`/admin/tension/questions/${id}`)
+  },
+
+  // --- Tension: admin categories ---
+  adminListTensionCategories() {
+    return client.get('/admin/tension/categories').then(r => r.data)
+  },
+  adminCreateTensionCategory(payload) {
+    return client.post('/admin/tension/categories', payload).then(r => r.data)
+  },
+  adminUpdateTensionCategory(id, payload) {
+    return client.put(`/admin/tension/categories/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteTensionCategory(id) {
+    return client.delete(`/admin/tension/categories/${id}`)
   }
 }

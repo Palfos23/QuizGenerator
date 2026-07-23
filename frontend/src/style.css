@@ -790,6 +790,96 @@ mark {
 .guess-result-row:last-child { border-bottom: none; }
 .guess-result-row:hover { background: rgba(255,255,255,0.05); }
 
+/* ---------- Tension game ---------- */
+
+.tension-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.tension-player-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 220px;
+}
+
+.tension-player-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.03);
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.tension-player-answer {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.tension-round-score {
+  font-weight: 700;
+}
+.tension-round-score.positive { color: var(--teal); }
+.tension-round-score.negative { color: var(--coral); }
+
+.tension-answers-panel {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  width: min(520px, 100%);
+}
+
+.tension-row-revealed td { background: rgba(61, 220, 151, 0.08); }
+.tension-row-trap td { background: rgba(255, 77, 109, 0.1); }
+
+.tension-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+  background: rgba(8, 9, 14, 0.94);
+  backdrop-filter: blur(4px);
+}
+
+.tension-winner-row td {
+  background: rgba(242, 183, 5, 0.12);
+  font-weight: 700;
+}
+
+.color-swatch-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.color-swatch-btn.selected {
+  border-color: var(--text);
+}
+
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
 .step-indicator {
   font-family: var(--font-mono);
   font-size: 0.75rem;

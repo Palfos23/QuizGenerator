@@ -125,6 +125,40 @@ automatically (black or white) based on the chosen background's
 brightness, so an admin picking a very light or very dark color doesn't
 end up with unreadable text.
 
+### Tension
+
+A third game mode, ported from a separate standalone project (originally
+Spring Boot + MongoDB + React) into this app's stack (Spring Boot + Postgres
++ Vue). It's a pass-the-device party game, not an async one like the
+weekly grid - everyone plays together in one sitting, so unlike the grid
+there's **no server-side game-state to track**. The backend's only job is
+serving up questions and autocomplete word lists; turn order, scoring, and
+the reveal sequence all live in the browser for the duration of one game,
+exactly like the original.
+
+**How a round works:** each question has a "safe" list of up to 10 ranked
+answers (rank 10 - the least obvious still-safe answer - scores the most;
+rank 1 scores the least) plus a separate "tension" list ranked just past
+that cutoff. Players take turns (rotating who goes first each question)
+typing one guess each, picking from an autocomplete box scoped to the
+question's answer category. Once everyone's answered, a short countdown
+triggers a reveal, one answer at a time:
+- Matches a safe answer → score = that answer's own rank
+- Matches a tension answer → **-5** flat, regardless of its rank
+- Matches nothing at all → **-3**
+
+Highest total after the last question wins. The name comes from the
+temptation to push toward a higher-scoring (rank 10) guess versus playing
+it safe - go one rank too far and you're in tension territory.
+
+Content is managed at `/admin/tension-questions` (each question's safe and
+tension answer lists) and `/admin/tension-categories` (the autocomplete
+word lists - a broader suggestion pool, not necessarily all correct
+answers, just plausible same-category words to type from). Since this was
+ported from a separate Mongo-backed project, none of that original
+question content carries over automatically - it has to be re-entered (or
+imported from an export) into the new Postgres-backed admin UI.
+
 ## Authentication
 
 Two completely separate login paths, matching two different trust levels:
@@ -168,6 +202,9 @@ Notes on the design:
 | `/admin/athletes` | Logged-in admins | Manage the athlete roster used to build grids |
 | `/admin/grids` | Logged-in admins | Create and edit weekly grids |
 | `/admin/clubs` | Logged-in admins | Manage club crests used as logo hints (linked from the grid builder, not the main nav) |
+| `/tension` | Logged-in users | Play Tension - landing, player setup, live game, and results all in one flow |
+| `/admin/tension-questions` | Logged-in admins | Manage Tension questions (safe + tension answer lists) |
+| `/admin/tension-categories` | Logged-in admins | Manage the autocomplete word lists used while answering |
 
 ### Setting up Google Sign-In
 
@@ -291,6 +328,28 @@ needed, unlike the earlier `difficulty`/`language` migration below). A
 null `club_id` means no logo; a null `show_logo` is treated as "shown" -
 see `GridEntry.isShowLogo()` in the backend.
 
+```
+tension_questions                   tension_answer_entries
+├── id               BIGINT PK      ├── id          BIGINT PK
+├── title            VARCHAR        ├── question_id BIGINT FK -> tension_questions.id
+├── main_category    VARCHAR        ├── rank        INT      (own 1..N sequence per tension flag)
+└── answers_category VARCHAR        ├── text        VARCHAR
+                                     └── tension     BOOLEAN
+tension_categories
+├── id   BIGINT PK
+└── name VARCHAR (unique)
+
+tension_category_options            (a plain string list, one row per word,
+├── category_id BIGINT FK            joined back to tension_categories - an
+└── option_text VARCHAR              @ElementCollection, not its own entity)
+```
+
+All four tables are brand new, so there's nothing to migrate here either.
+`rank` on `tension_answer_entries` is scoped *within* its own `tension`
+flag - safe answers are ranked 1..10 independently from tension answers,
+which have their own separate ranking - matching the original app's
+two-separate-lists design rather than one continuous ranking.
+
 > **If you already deployed the previous schema** (with a `difficulty`
 > enum column): `ddl-auto=update` only *adds* columns, it doesn't migrate
 > data, and the new `difficulty_level`/`language` columns are `NOT NULL`
@@ -383,6 +442,18 @@ Starts on `http://localhost:5173`.
 | POST   | `/api/admin/clubs`            | ADMIN role         | Add a club                                    |
 | PUT    | `/api/admin/clubs/{id}`       | ADMIN role         | Update a club                                 |
 | DELETE | `/api/admin/clubs/{id}`       | ADMIN role         | Delete a club (blocked if used as a logo on any entry) |
+| GET    | `/api/tension/questions/random` | any logged-in user | Draw random questions to start a game (`count`, `category`) |
+| GET    | `/api/tension/questions/categories` | any logged-in user | Distinct main categories, for the landing page's filter |
+| GET    | `/api/tension/categories/{name}/options` | any logged-in user | Autocomplete word list for the answer box |
+| GET    | `/api/admin/tension/questions` | ADMIN role         | List all Tension questions                    |
+| GET    | `/api/admin/tension/questions/{id}` | ADMIN role    | Full question detail for editing              |
+| POST   | `/api/admin/tension/questions` | ADMIN role         | Create a question (safe + tension answer lists) |
+| PUT    | `/api/admin/tension/questions/{id}` | ADMIN role    | Replace a question's answer lists              |
+| DELETE | `/api/admin/tension/questions/{id}` | ADMIN role    | Delete a question                              |
+| GET    | `/api/admin/tension/categories` | ADMIN role        | List answer categories                         |
+| POST   | `/api/admin/tension/categories` | ADMIN role        | Add an answer category                         |
+| PUT    | `/api/admin/tension/categories/{id}` | ADMIN role   | Update an answer category                      |
+| DELETE | `/api/admin/tension/categories/{id}` | ADMIN role   | Delete an answer category                      |
 
 ### Admin login rate limiting
 

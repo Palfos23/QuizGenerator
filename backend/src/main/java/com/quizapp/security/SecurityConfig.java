@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/quiz/**").authenticated()
                         // browsing/playing weekly grids: any logged-in user (USER or ADMIN)
                         .requestMatchers("/api/grids/**").authenticated()
+                        // fetching tension questions/autocomplete: any logged-in user (USER or ADMIN)
+                        .requestMatchers("/api/tension/**").authenticated()
                         .anyRequest().authenticated())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // needed for the H2 console
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
