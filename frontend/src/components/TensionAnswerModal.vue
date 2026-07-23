@@ -11,14 +11,16 @@
         </p>
 
         <form @submit.prevent="submit" style="position:relative;">
-          <input
-            type="text"
-            v-model="value"
-            @input="onInput"
-            placeholder="Type your answer…"
-            autocomplete="off"
-            style="text-align:center;"
-          />
+          <div class="field" style="margin-bottom:0;">
+            <input
+              type="text"
+              v-model="value"
+              @input="onInput"
+              placeholder="Type your answer…"
+              autocomplete="off"
+              style="text-align:center;"
+            />
+          </div>
 
           <div v-if="duplicateError" style="color:var(--coral); font-size:0.9rem; margin-top:8px;">
             That answer's already been used by another player this round.

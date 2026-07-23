@@ -8,7 +8,7 @@
     <h1 style="text-align:center; margin:6px 0 24px;">{{ question.title }}</h1>
 
     <div class="tension-layout">
-      <div class="tension-player-col">
+      <div v-if="leftPlayers.length" class="tension-player-col">
         <div
           v-for="player in leftPlayers"
           :key="player"
@@ -52,7 +52,7 @@
         </table>
       </div>
 
-      <div class="tension-player-col">
+      <div v-if="rightPlayers.length" class="tension-player-col">
         <div
           v-for="player in rightPlayers"
           :key="player"
@@ -80,7 +80,7 @@
         Answers in {{ countdown }}…
       </div>
 
-      <button v-if="revealed && revealIndex < allAnswersList.length" class="btn btn-secondary" @click="revealIndex = allAnswersList.length">
+      <button v-if="revealed && revealIndex < allAnswersList.length" class="btn btn-secondary" @click="skipReveal">
         Skip reveal
       </button>
 
@@ -223,21 +223,31 @@ function reveal() {
   roundAnswers.value = scored
   revealed.value = true
   revealIndex.value = 0
+  scheduleReveal()
 }
 
 let revealTimer = null
-watch(revealIndex, () => {
+function scheduleReveal() {
   clearTimeout(revealTimer)
-  if (!revealed.value) return
   if (revealIndex.value < allAnswersList.value.length) {
-    revealTimer = setTimeout(() => { revealIndex.value += 1 }, 1100)
+    revealTimer = setTimeout(() => {
+      revealIndex.value += 1
+      if (revealIndex.value >= allAnswersList.value.length) {
+        scores.value = pendingScores.value
+      } else {
+        scheduleReveal()
+      }
+    }, 1100)
   } else {
     scores.value = pendingScores.value
   }
-})
-watch(revealed, (val) => {
-  if (val) revealIndex.value = 0
-})
+}
+
+function skipReveal() {
+  clearTimeout(revealTimer)
+  revealIndex.value = allAnswersList.value.length
+  scores.value = pendingScores.value
+}
 
 function startIntro() {
   showIntro.value = true

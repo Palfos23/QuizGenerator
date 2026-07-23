@@ -2,6 +2,7 @@ package com.quizapp.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,11 +31,13 @@ public class TensionQuestion {
     // The safe list - correct answers ranked 1..10. Position 10 (the least obvious
     // still-safe answer) is worth the most; position 1 is worth the least.
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @SQLRestriction("tension = false")
     private List<TensionAnswerEntry> safeAnswers = new ArrayList<>();
 
     // The tension list - answers ranked just past the safe cutoff. Guessing one of
     // these costs a flat -5, regardless of its own rank.
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @SQLRestriction("tension = true")
     private List<TensionAnswerEntry> tensionAnswers = new ArrayList<>();
 
     public Long getId() {
