@@ -99,7 +99,7 @@ public class SavedQuizService {
         savedQuizRepository.delete(quiz);
     }
 
-    private QuizDto toDto(SavedQuiz entity) {
+    static QuizDto toDto(SavedQuiz entity) {
         QuizDto dto = new QuizDto();
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());

@@ -21,14 +21,28 @@ question bank that an admin curates.
    ↑/↓ buttons, **discarded and replaced** with another from the *same
    category* (so the counts you asked for stay correct), or just removed.
    Each question's answer is hidden by default behind a "Show answer" toggle,
-   so you can read through questions without spoiling yourself.
+   so you can read through questions without spoiling yourself. An
+   **"Add more questions"** control at the bottom of the review step also
+   lets you bump up a category's count, or pull in a category that wasn't
+   part of the original selection at all - without starting over. This
+   lives in the shared `QuizReviewEditor` component, so it's available
+   everywhere that component is used: generating a fresh quiz, editing a
+   saved one, and building an admin quiz template.
 4. Once happy, the user can **download the quiz as a PDF**, and/or hit
    **"Save to My Quizzes"** to keep a permanent copy they can come back to
    later at `/my-quizzes` - nothing is saved automatically just from
    generating a quiz, only on that explicit action. A saved quiz isn't
    frozen once saved, either: reopening it from `/my-quizzes` gives the
-   same reorder/discard/replace/remove tools as the original review step,
-   with an "Update" button to overwrite the saved copy in place.
+   same reorder/discard/replace/remove/add tools as the original review
+   step, with an "Update" button to overwrite the saved copy in place.
+
+An admin can also publish a **quiz template** at `/admin/quiz-templates`
+(same generate-and-review flow as above, just saved differently) - these
+show up in an "Available quizzes" section at the top of every user's
+`/my-quizzes` page, with a "Copy to My Quizzes" button. Copying creates a
+brand-new, fully independent `SavedQuiz` for that user - editing their
+copy never touches the template, and the admin editing the template later
+never touches anyone's existing copies.
 
 The whole frontend is responsive and works on mobile - the top nav
 collapses to a bottom tab bar below 760px wide.
@@ -158,6 +172,26 @@ answers, just plausible same-category words to type from). Since this was
 ported from a separate Mongo-backed project, none of that original
 question content carries over automatically - it has to be re-entered (or
 imported from an export) into the new Postgres-backed admin UI.
+
+### User-submitted questions
+
+Any logged-in user can suggest a question at `/suggest-question`, which an
+admin reviews at `/admin/question-submissions`. Approving copies it into
+the shared `questions` table (available to everyone via the normal
+generator); rejecting does **not** discard it - it just never leaves the
+`submitted_questions` table, and the submitter can see the reason why on
+their own submissions list.
+
+The interesting part: a rejected (or still-pending) submission stays
+usable, but only by the person who wrote it. On the generator page, a
+user can tick "Include my own submitted questions" - when they do, their
+own submissions (any status except APPROVED, since those are already in
+the shared pool by then) become eligible candidates for *their own*
+quizzes only, never anyone else's. Internally this works by mapping a
+submission straight to a `QuestionDto` with a **negative id** - real
+questions always have positive ids, so this guarantees a personal
+submission can never collide with an unrelated shared question that
+happens to share the same numeric id during discard/replace.
 
 ## Authentication
 
@@ -350,6 +384,41 @@ flag - safe answers are ranked 1..10 independently from tension answers,
 which have their own separate ranking - matching the original app's
 two-separate-lists design rather than one continuous ranking.
 
+```
+submitted_questions
+├── id               BIGINT PK
+├── question_text    VARCHAR
+├── category          VARCHAR
+├── difficulty_level  INT
+├── language          VARCHAR
+├── answer            VARCHAR
+├── could_change      BOOLEAN
+├── submitted_by      BIGINT FK -> app_users.id
+├── status            VARCHAR (PENDING|APPROVED|REJECTED)
+├── rejection_reason   VARCHAR (nullable - only set when REJECTED)
+└── created_at         TIMESTAMP
+```
+
+Also brand new - approving one copies its fields into a fresh row in the
+existing `questions` table (no FK back to the submission); rejecting just
+sets `status` and `rejection_reason` in place.
+
+```
+quiz_templates                      quiz_template_questions
+├── id         BIGINT PK            ├── id               BIGINT PK
+├── title      VARCHAR              ├── template_id       BIGINT FK -> quiz_templates.id
+├── language   VARCHAR              ├── order_index       INT
+└── created_at TIMESTAMP            ├── question_text     VARCHAR
+                                     ├── category          VARCHAR
+                                     ├── difficulty_level  INT
+                                     └── answer            VARCHAR
+```
+
+Deliberately shaped identically to `saved_quizzes`/`saved_quiz_questions` -
+a template is really just a `SavedQuiz` with no owner. Copying one calls
+the same question-snapshot logic and creates a normal, independent
+`SavedQuiz` row for whoever copied it.
+
 > **If you already deployed the previous schema** (with a `difficulty`
 > enum column): `ddl-auto=update` only *adds* columns, it doesn't migrate
 > data, and the new `difficulty_level`/`language` columns are `NOT NULL`
@@ -410,6 +479,7 @@ Starts on `http://localhost:5173`.
 | GET    | `/api/quiz/categories?language=EN` | none          | Categories that have questions in that language |
 | POST   | `/api/quiz/generate`          | any logged-in user | Generate a quiz from per-category selections  |
 | POST   | `/api/quiz/replace-question`  | any logged-in user | Swap one question for another in the same category |
+| POST   | `/api/quiz/add-questions`     | any logged-in user | Add N more questions (new or existing category) to a quiz being reviewed/edited |
 | POST   | `/api/quiz/export/pdf`        | any logged-in user | Download a finalized quiz as PDF              |
 | POST   | `/api/quiz/saved`             | any logged-in user | Save a finalized quiz ("My Quizzes")          |
 | GET    | `/api/quiz/saved`             | any logged-in user | List the caller's own saved quizzes           |
@@ -454,6 +524,18 @@ Starts on `http://localhost:5173`.
 | POST   | `/api/admin/tension/categories` | ADMIN role        | Add an answer category                         |
 | PUT    | `/api/admin/tension/categories/{id}` | ADMIN role   | Update an answer category                      |
 | DELETE | `/api/admin/tension/categories/{id}` | ADMIN role   | Delete an answer category                      |
+| POST   | `/api/questions/submissions`  | any logged-in user | Submit a question for review                  |
+| GET    | `/api/questions/submissions/mine` | any logged-in user | Your own submissions, any status          |
+| GET    | `/api/admin/question-submissions` | ADMIN role     | All submissions, for the review queue         |
+| POST   | `/api/admin/question-submissions/{id}/approve` | ADMIN role | Approve - copies into the shared bank |
+| POST   | `/api/admin/question-submissions/{id}/reject` | ADMIN role | Reject with a reason (stays usable by the submitter) |
+| GET    | `/api/quiz-templates`         | any logged-in user | Browse published templates                    |
+| POST   | `/api/quiz-templates/{id}/copy` | any logged-in user | Copy a template into your own My Quizzes     |
+| GET    | `/api/admin/quiz-templates`   | ADMIN role         | List all templates                            |
+| GET    | `/api/admin/quiz-templates/{id}` | ADMIN role      | Full template detail for editing              |
+| POST   | `/api/admin/quiz-templates`   | ADMIN role         | Publish a new template                        |
+| PUT    | `/api/admin/quiz-templates/{id}` | ADMIN role      | Replace a template's questions                |
+| DELETE | `/api/admin/quiz-templates/{id}` | ADMIN role      | Delete a template (existing copies unaffected) |
 
 ### Admin login rate limiting
 

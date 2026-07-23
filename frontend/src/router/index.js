@@ -12,6 +12,9 @@ import AdminClubsView from '../views/AdminClubsView.vue'
 import TensionView from '../views/TensionView.vue'
 import AdminTensionQuestionsView from '../views/AdminTensionQuestionsView.vue'
 import AdminTensionCategoriesView from '../views/AdminTensionCategoriesView.vue'
+import SuggestQuestionView from '../views/SuggestQuestionView.vue'
+import AdminSubmissionsView from '../views/AdminSubmissionsView.vue'
+import AdminQuizTemplatesView from '../views/AdminQuizTemplatesView.vue'
 import auth from '../services/auth'
 
 const routes = [
@@ -34,7 +37,10 @@ const routes = [
   { path: '/admin/clubs', name: 'admin-clubs', component: AdminClubsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/tension', name: 'tension', component: TensionView, meta: { requiresAuth: true } },
   { path: '/admin/tension-questions', name: 'admin-tension-questions', component: AdminTensionQuestionsView, meta: { requiresAuth: true, requiresAdmin: true } },
-  { path: '/admin/tension-categories', name: 'admin-tension-categories', component: AdminTensionCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } }
+  { path: '/admin/tension-categories', name: 'admin-tension-categories', component: AdminTensionCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/suggest-question', name: 'suggest-question', component: SuggestQuestionView, meta: { requiresAuth: true } },
+  { path: '/admin/question-submissions', name: 'admin-question-submissions', component: AdminSubmissionsView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/quiz-templates', name: 'admin-quiz-templates', component: AdminQuizTemplatesView, meta: { requiresAuth: true, requiresAdmin: true } }
 ]
 
 const router = createRouter({

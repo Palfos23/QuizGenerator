@@ -28,6 +28,19 @@ public class QuizGenerateRequest {
     @Valid
     private List<CategorySelectionDto> categorySelections;
 
+    // If true, the requesting user's own submitted questions (pending or rejected,
+    // not just approved ones) are eligible candidates too - but only for their own
+    // quizzes, never for anyone else's.
+    private boolean includeMySubmissions = false;
+
+    public boolean isIncludeMySubmissions() {
+        return includeMySubmissions;
+    }
+
+    public void setIncludeMySubmissions(boolean includeMySubmissions) {
+        this.includeMySubmissions = includeMySubmissions;
+    }
+
     public String getTitle() {
         return title;
     }

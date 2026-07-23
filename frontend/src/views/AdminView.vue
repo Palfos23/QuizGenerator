@@ -3,7 +3,11 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
       <div>
         <h1>Question bank</h1>
-        <p class="page-subtitle">Every question here is available to the quiz generator. Add, edit or remove them.</p>
+        <p class="page-subtitle">
+          Every question here is available to the quiz generator. Add, edit or remove them.
+          <router-link to="/admin/question-submissions">Review user submissions →</router-link> ·
+          <router-link to="/admin/quiz-templates">Manage quiz templates →</router-link>
+        </p>
       </div>
       <div style="display:flex; gap:10px;">
         <button class="btn btn-secondary" @click="triggerImport" :disabled="importing">

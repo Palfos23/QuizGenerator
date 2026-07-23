@@ -7,6 +7,22 @@
 
     <!-- List view -->
     <section v-if="!openQuiz">
+      <div v-if="templates.length" style="margin-bottom:32px;">
+        <h2 style="font-size:1.1rem;">Available quizzes</h2>
+        <p class="page-subtitle" style="margin-top:-6px;">Published by an admin - copy one to get your own editable version.</p>
+        <div class="saved-quiz-list">
+          <div v-for="t in templates" :key="t.id" class="saved-quiz-row">
+            <div class="saved-quiz-info">
+              <div class="saved-quiz-title">{{ t.title }}</div>
+              <div class="saved-quiz-meta">{{ languageLabel(t.language) }} · {{ t.questionCount }} questions</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" :disabled="copyingId === t.id" @click="copyTemplate(t)">
+              {{ copyingId === t.id ? 'Copying…' : 'Copy to My Quizzes' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
       <div v-else-if="!quizzes.length" class="empty-state friendly">
@@ -141,12 +157,39 @@ const includeAnswersInPdf = ref(true)
 const pendingDelete = ref(null)
 const showUnsavedConfirm = ref(false)
 const duplicatingId = ref(null)
+const templates = ref([])
+const copyingId = ref(null)
 
 // A regenerated-but-not-yet-saved copy has no id from the server yet - that's
 // the signal for "Save as new" instead of "Update".
 const isDraft = computed(() => !!openQuiz.value && !openQuiz.value.id)
 
-onMounted(loadList)
+onMounted(() => {
+  loadList()
+  loadTemplates()
+})
+
+async function loadTemplates() {
+  try {
+    templates.value = await api.listQuizTemplates()
+  } catch (e) {
+    // non-critical - the templates section just stays empty
+  }
+}
+
+async function copyTemplate(t) {
+  copyingId.value = t.id
+  error.value = ''
+  try {
+    await api.copyQuizTemplate(t.id)
+    toast.show(`"${t.title}" added to My Quizzes.`)
+    loadList()
+  } catch (e) {
+    error.value = 'Could not copy that template.'
+  } finally {
+    copyingId.value = null
+  }
+}
 
 async function loadList() {
   loading.value = true

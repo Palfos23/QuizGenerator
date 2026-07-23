@@ -61,6 +61,10 @@
       <button v-if="revealed && revealIndex < allAnswersList.length" class="btn btn-secondary" @click="skipReveal">
         Skip reveal
       </button>
+
+      <button v-if="readyForStandings" class="btn btn-primary" @click="openStandingsModal">
+        Show standings
+      </button>
     </div>
 
     <div v-if="showStandingsModal" class="modal-backdrop">
@@ -262,13 +266,18 @@ function skipReveal() {
 
 const showStandingsModal = ref(false)
 const displayedStandings = ref([])
+const readyForStandings = ref(false)
 
-// Applies this round's scores, then opens the standings modal showing rows in
-// their OLD rank order first - a moment later they slide to the new order via
-// TransitionGroup's built-in FLIP animation, so a move up/down is an actual
-// visible motion rather than just a color change.
+// Applies this round's scores immediately (so player cards update right away), but
+// waits for an explicit click before showing the standings modal - going straight
+// from reveal into an animated modal felt too abrupt.
 function finishReveal() {
   scores.value = pendingScores.value
+  readyForStandings.value = true
+}
+
+function openStandingsModal() {
+  readyForStandings.value = false
   displayedStandings.value = rankBeforeRound.value.map(name => {
     const finalEntry = standings.value.find(s => s.name === name)
     return finalEntry || { name, direction: 'same' }
@@ -309,6 +318,7 @@ function nextQuestion() {
     currentPlayerIdx.value = 0
     revealIndex.value = 0
     countdown.value = null
+    readyForStandings.value = false
   } else {
     emit('gameOver', scores.value)
   }

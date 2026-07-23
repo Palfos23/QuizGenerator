@@ -2,7 +2,10 @@
   <div>
     <div class="step-indicator">{{ quiz ? 'Step 2 of 2 - Review & finalize' : 'Step 1 of 2 - Configure' }}</div>
     <h1>Create a quiz</h1>
-    <p class="page-subtitle">Pick a language, a difficulty range, and how many questions you want from each category.</p>
+    <p class="page-subtitle">
+      Pick a language, a difficulty range, and how many questions you want from each category.
+      Don't see a question you'd like included? <router-link to="/suggest-question">Suggest one →</router-link>
+    </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
     <div v-if="quiz && quiz.warnings && quiz.warnings.length" class="banner error">
@@ -84,6 +87,11 @@
         </div>
       </div>
 
+      <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; margin-bottom:16px;">
+        <input type="checkbox" v-model="form.includeMySubmissions" style="width:auto;" />
+        Include my own submitted questions <span class="picker-hint">even ones still pending or rejected - only you can draw from these</span>
+      </label>
+
       <button class="btn btn-primary" :disabled="generating || !form.categorySelections.length" @click="generateQuiz">
         {{ generating ? 'Generating…' : 'Generate quiz' }}
       </button>
@@ -159,7 +167,8 @@ const form = reactive(loadDraft() || {
   language: 'EN',
   minDifficulty: 1,
   maxDifficulty: 10,
-  categorySelections: [] // [{ category, numberOfQuestions }]
+  categorySelections: [], // [{ category, numberOfQuestions }]
+  includeMySubmissions: false
 })
 
 const availableCategories = ref([])
@@ -258,7 +267,8 @@ async function generateQuiz() {
       language: form.language,
       minDifficulty: form.minDifficulty,
       maxDifficulty: form.maxDifficulty,
-      categorySelections: form.categorySelections
+      categorySelections: form.categorySelections,
+      includeMySubmissions: form.includeMySubmissions
     })
     quiz.value = result
     reviewDirty.value = false

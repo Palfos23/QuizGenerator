@@ -28,14 +28,20 @@ public class QuizController {
 
     /** Use case 1 & 2: generate a quiz with N questions, a difficulty and one or more categories. */
     @PostMapping("/generate")
-    public QuizDto generate(@Valid @RequestBody QuizGenerateRequest request) {
-        return quizService.generate(request);
+    public QuizDto generate(@Valid @RequestBody QuizGenerateRequest request, org.springframework.security.core.Authentication authentication) {
+        return quizService.generate(request, authentication.getName());
     }
 
     /** Use case 3: discard one question from the draft quiz and get a fresh replacement. */
     @PostMapping("/replace-question")
     public QuestionDto replaceQuestion(@Valid @RequestBody ReplaceQuestionRequest request) {
         return quizService.replaceOne(request);
+    }
+
+    /** Add more questions to an in-progress quiz - a new category, or more of one already there. */
+    @PostMapping("/add-questions")
+    public List<QuestionDto> addQuestions(@Valid @RequestBody AddQuestionsRequest request) {
+        return quizService.addQuestions(request);
     }
 
     /** Categories that have at least one question in the given language, to populate the generator form. */

@@ -40,6 +40,9 @@ export default {
   replaceQuestion(payload) {
     return client.post('/quiz/replace-question', payload).then(r => r.data)
   },
+  addQuestions(payload) {
+    return client.post('/quiz/add-questions', payload).then(r => r.data)
+  },
   getCategories(language) {
     return client.get(`/quiz/categories?language=${language}`).then(r => r.data)
   },
@@ -214,5 +217,49 @@ export default {
   },
   adminDeleteTensionCategory(id) {
     return client.delete(`/admin/tension/categories/${id}`)
+  },
+
+  // --- Question submissions: user-facing ---
+  submitQuestion(payload) {
+    return client.post('/questions/submissions', payload).then(r => r.data)
+  },
+  myQuestionSubmissions() {
+    return client.get('/questions/submissions/mine').then(r => r.data)
+  },
+
+  // --- Question submissions: admin review ---
+  adminListSubmissions() {
+    return client.get('/admin/question-submissions').then(r => r.data)
+  },
+  adminApproveSubmission(id) {
+    return client.post(`/admin/question-submissions/${id}/approve`).then(r => r.data)
+  },
+  adminRejectSubmission(id, reason) {
+    return client.post(`/admin/question-submissions/${id}/reject`, { reason }).then(r => r.data)
+  },
+
+  // --- Quiz templates: user-facing ---
+  listQuizTemplates() {
+    return client.get('/quiz-templates').then(r => r.data)
+  },
+  copyQuizTemplate(id) {
+    return client.post(`/quiz-templates/${id}/copy`).then(r => r.data)
+  },
+
+  // --- Quiz templates: admin ---
+  adminListQuizTemplates() {
+    return client.get('/admin/quiz-templates').then(r => r.data)
+  },
+  adminGetQuizTemplate(id) {
+    return client.get(`/admin/quiz-templates/${id}`).then(r => r.data)
+  },
+  adminCreateQuizTemplate(payload) {
+    return client.post('/admin/quiz-templates', payload).then(r => r.data)
+  },
+  adminUpdateQuizTemplate(id, payload) {
+    return client.put(`/admin/quiz-templates/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteQuizTemplate(id) {
+    return client.delete(`/admin/quiz-templates/${id}`)
   }
 }
