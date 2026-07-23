@@ -8,9 +8,9 @@
     <h1 style="text-align:center; margin:6px 0 24px;">{{ question.title }}</h1>
 
     <div class="tension-layout">
-      <div v-if="leftPlayers.length" class="tension-player-col">
+      <div class="tension-player-col">
         <div
-          v-for="player in leftPlayers"
+          v-for="player in playerNames"
           :key="player"
           class="tension-player-card"
           :style="{ borderColor: colorOf(player) }"
@@ -35,10 +35,10 @@
         <table class="table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Answer</th>
-              <th>Player</th>
-              <th>Score</th>
+              <th style="width:10%;">#</th>
+              <th style="width:45%;">Answer</th>
+              <th style="width:25%;">Player</th>
+              <th style="width:20%;">Score</th>
             </tr>
           </thead>
           <tbody>
@@ -50,28 +50,6 @@
             </tr>
           </tbody>
         </table>
-      </div>
-
-      <div v-if="rightPlayers.length" class="tension-player-col">
-        <div
-          v-for="player in rightPlayers"
-          :key="player"
-          class="tension-player-card"
-          :style="{ borderColor: colorOf(player) }"
-        >
-          <div>
-            <strong>{{ player }}</strong>
-            <div class="tension-player-answer">{{ answerTextFor(player) || '— waiting —' }}</div>
-          </div>
-          <div style="text-align:right;">
-            <div
-              v-if="showRoundScoreFor(player)"
-              class="tension-round-score"
-              :class="{ positive: (scoreFor(player) ?? 0) > 0, negative: (scoreFor(player) ?? 0) < 0 }"
-            >{{ formatScore(scoreFor(player)) }}</div>
-            <div style="font-size:0.8rem; color:var(--text-dim);">Total: {{ scores[player] }}</div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -144,9 +122,6 @@ const rotatedPlayers = computed(() => {
   const shift = currentQuestionIndex.value % playerNames.length
   return [...playerNames.slice(shift), ...playerNames.slice(0, shift)]
 })
-
-const leftPlayers = computed(() => playerNames.slice(0, Math.ceil(playerNames.length / 2)))
-const rightPlayers = computed(() => playerNames.slice(Math.ceil(playerNames.length / 2)))
 
 // Combined reveal order: all safe answers (rank ascending) first, then all tension
 // answers (rank ascending) - matches the original's reveal sequencing.

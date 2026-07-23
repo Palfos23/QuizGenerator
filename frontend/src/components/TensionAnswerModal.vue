@@ -10,6 +10,16 @@
           Tension answers on this one: {{ tensionCount }}
         </p>
 
+        <div v-if="answeredPlayers.length" style="text-align:left; margin-bottom:20px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 14px;">
+          <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
+            Answered so far this round
+          </div>
+          <div v-for="(name, i) in answeredPlayers" :key="name" style="display:flex; justify-content:space-between; font-size:0.9rem; padding:2px 0;">
+            <span>{{ name }}</span>
+            <span style="color:var(--text-dim);">{{ usedAnswers[i] }}</span>
+          </div>
+        </div>
+
         <form @submit.prevent="submit" style="position:relative;">
           <div class="field" style="margin-bottom:0;">
             <input

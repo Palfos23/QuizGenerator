@@ -804,7 +804,8 @@ mark {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-width: 220px;
+  width: 240px;
+  flex-shrink: 0;
 }
 
 .tension-player-card {
@@ -836,7 +837,9 @@ mark {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
-  width: min(520px, 100%);
+  flex: 1;
+  min-width: 320px;
+  max-width: 720px;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -1223,6 +1226,17 @@ mark {
   h1 { font-size: 1.6rem; }
 
   .grid-tiles { grid-template-columns: repeat(2, 1fr); }
+
+  .tension-layout { flex-direction: column; align-items: stretch; }
+  .tension-player-col { width: 100%; flex-direction: row; flex-wrap: wrap; }
+  .tension-player-card { flex: 1; min-width: 140px; }
+  .tension-answers-panel { min-width: 0; max-width: 100%; padding: 14px; }
+  .tension-answers-panel .table { font-size: 0.82rem; }
+  .tension-answers-panel th:first-child,
+  .tension-answers-panel td:first-child { display: none; } /* rank column - least essential, drop it first */
+  .tension-answers-panel th:nth-child(2) { width: 50% !important; }
+  .tension-answers-panel th:nth-child(3) { width: 28% !important; }
+  .tension-answers-panel th:nth-child(4) { width: 22% !important; }
 
   .modal-backdrop {
     align-items: flex-end;
