@@ -53,6 +53,25 @@
       </div>
     </div>
 
+    <div v-if="revealed && revealIndex >= allAnswersList.length" class="tension-standings">
+      <h3 style="text-align:center; margin-top:0;">Standings</h3>
+      <div
+        v-for="(entry, i) in standings"
+        :key="entry.name"
+        class="tension-standing-row"
+        :class="{ 'moved-up': entry.direction === 'up', 'moved-down': entry.direction === 'down' }"
+      >
+        <span class="tension-standing-rank">#{{ i + 1 }}</span>
+        <span style="flex:1;">{{ entry.name }}</span>
+        <span
+          v-if="entry.direction !== 'same'"
+          class="tension-standing-arrow"
+          :class="entry.direction"
+        >{{ entry.direction === 'up' ? '▲' : '▼' }}</span>
+        <span style="font-weight:700; min-width:48px; text-align:right;">{{ scores[entry.name] }}</span>
+      </div>
+    </div>
+
     <div style="text-align:center; margin-top:24px;">
       <div v-if="countdown !== null && !revealed" style="font-size:1.4rem; font-weight:700;">
         Answers in {{ countdown }}…
@@ -110,6 +129,7 @@ const revealIndex = ref(0)
 const countdown = ref(null)
 const showIntro = ref(true)
 const introCountdown = ref(4)
+const rankBeforeRound = ref([]) // player names, ordered by score, captured at the start of this question
 
 const playerNames = props.players.map(p => p.name)
 const question = computed(() => props.questions[currentQuestionIndex.value])
@@ -131,6 +151,18 @@ const allAnswersList = computed(() => [
 ])
 
 const allAnswered = computed(() => roundAnswers.value.length === rotatedPlayers.value.length)
+
+const standings = computed(() => {
+  const ordered = [...playerNames].sort((a, b) => scores.value[b] - scores.value[a])
+  return ordered.map((name) => {
+    const before = rankBeforeRound.value.indexOf(name)
+    const now = ordered.indexOf(name)
+    let direction = 'same'
+    if (before !== -1 && now < before) direction = 'up'
+    else if (before !== -1 && now > before) direction = 'down'
+    return { name, direction }
+  })
+})
 
 function answerTextFor(player) {
   return roundAnswers.value.find(a => a.player === player)?.answer
@@ -225,6 +257,7 @@ function skipReveal() {
 }
 
 function startIntro() {
+  rankBeforeRound.value = [...playerNames].sort((a, b) => scores.value[b] - scores.value[a])
   showIntro.value = true
   introCountdown.value = 4
   const timer = setInterval(() => {
