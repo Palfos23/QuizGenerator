@@ -29,6 +29,33 @@
       <div v-else-if="allSolved" class="banner success">You found them all!</div>
       <div v-else-if="gameOver" class="banner error">Out of strikes. Reveal the rest, or keep going in Overtime just for fun.</div>
 
+      <div v-if="canStillGuess" class="guess-box" :class="{ shake: shakeGuessBox }">
+        <input
+          type="text"
+          v-model="searchTerm"
+          placeholder="Search for a player…"
+          aria-label="Search for an athlete"
+          autocomplete="off"
+          @keydown.esc="searchTerm = ''"
+        />
+        <div v-if="searchResults.length" class="guess-results">
+          <button
+            v-for="a in searchResults"
+            :key="a.id"
+            class="guess-result-row"
+            :disabled="guessing"
+            @click="submitGuess(a)"
+          >
+            {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div v-else-if="gameOver" class="no-print" style="margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn btn-primary" :disabled="actionBusy" @click="doOvertime">Continue in Overtime</button>
+        <button class="btn btn-secondary" :disabled="actionBusy" @click="doReveal">Reveal remaining answers</button>
+      </div>
+
       <div class="grid-tiles">
         <div
           v-for="e in state.entries"
@@ -52,33 +79,6 @@
           <div class="grid-tile-hint">{{ e.hintLabel }} | {{ e.hintValue }}</div>
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>
-      </div>
-
-      <div v-if="canStillGuess" class="field guess-box" :class="{ shake: shakeGuessBox }">
-        <label>Search for an athlete…</label>
-        <input
-          type="text"
-          v-model="searchTerm"
-          placeholder="Type a name…"
-          autocomplete="off"
-          @keydown.esc="searchTerm = ''"
-        />
-        <div v-if="searchResults.length" class="guess-results">
-          <button
-            v-for="a in searchResults"
-            :key="a.id"
-            class="guess-result-row"
-            :disabled="guessing"
-            @click="submitGuess(a)"
-          >
-            {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
-          </button>
-        </div>
-      </div>
-
-      <div v-else-if="gameOver" class="no-print" style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="btn btn-primary" :disabled="actionBusy" @click="doOvertime">Continue in Overtime</button>
-        <button class="btn btn-secondary" :disabled="actionBusy" @click="doReveal">Reveal remaining answers</button>
       </div>
     </template>
   </div>
