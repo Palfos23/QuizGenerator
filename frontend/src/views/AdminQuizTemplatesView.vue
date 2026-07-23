@@ -30,7 +30,8 @@
       </div>
     </template>
 
-    <template v-else-if="view === 'settings'">
+    <!-- Pick questions from the existing bank -->
+    <template v-else-if="view === 'picker'">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <h1 style="margin:0;">{{ editingId ? 'Edit template' : 'Create template' }}</h1>
         <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Back to list</button>
@@ -40,17 +41,17 @@
 
       <div class="field">
         <label>Title</label>
-        <input type="text" v-model="form.title" placeholder="e.g. Office Christmas Party Quiz" />
+        <input type="text" v-model="quiz.title" placeholder="e.g. Office Christmas Party Quiz" />
       </div>
 
       <div class="field">
-        <label>Language <span class="picker-hint">choose one</span></label>
+        <label>Language <span class="picker-hint">choose one - changing this clears any questions already picked</span></label>
         <div class="language-row">
           <button
             v-for="lang in LANGUAGES"
             :key="lang.code"
             class="language-btn"
-            :class="{ active: form.language === lang.code }"
+            :class="{ active: quiz.language === lang.code }"
             @click="selectLanguage(lang.code)"
           >
             <span>{{ lang.flag }}</span> {{ lang.label }}
@@ -58,53 +59,65 @@
         </div>
       </div>
 
-      <div class="field" style="display:flex; gap:16px;">
-        <div style="flex:1;">
-          <label>Min difficulty</label>
-          <input type="range" min="1" max="10" v-model.number="form.minDifficulty" />
-          <output>{{ form.minDifficulty }}</output>
+      <div class="filter-bar">
+        <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
+          <label>Search</label>
+          <input type="text" v-model="searchText" placeholder="Search question, category or answer…" />
         </div>
-        <div style="flex:1;">
-          <label>Max difficulty</label>
-          <input type="range" min="1" max="10" v-model.number="form.maxDifficulty" />
-          <output>{{ form.maxDifficulty }}</output>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Categories <span class="picker-hint">pick as many as you like</span></label>
-        <div class="category-chip-grid">
-          <div
-            v-for="cat in availableCategories"
-            :key="cat"
-            class="category-chip"
-            :class="{ selected: isSelected(cat) }"
-          >
-            <span class="category-chip-name" @click="toggleCategory(cat)">{{ cat }}</span>
-            <template v-if="isSelected(cat)">
-              <div class="stepper">
-                <button @click="adjustCount(cat, -1)">−</button>
-                <span>{{ countFor(cat) }}</span>
-                <button @click="adjustCount(cat, 1)">+</button>
-              </div>
-              <button class="chip-remove-btn" aria-label="Remove category" @click="toggleCategory(cat)">✕</button>
-            </template>
-          </div>
+        <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
+          <label>Category</label>
+          <select v-model="categoryFilter">
+            <option value="ALL">All categories</option>
+            <option v-for="cat in availableCategories" :key="cat" :value="cat">{{ cat }}</option>
+          </select>
         </div>
       </div>
 
-      <button class="btn btn-primary" :disabled="generating || !form.categorySelections.length" @click="generateDraft">
-        {{ generating ? 'Generating…' : 'Generate draft' }}
+      <p style="font-weight:600;">{{ quiz.questions.length }} question(s) picked</p>
+
+      <div v-if="!filteredBank.length" class="empty-state">
+        No {{ languageLabel(quiz.language) }} questions match those filters.
+      </div>
+
+      <div v-else class="table-scroll" style="max-height:480px; overflow-y:auto;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>Category</th>
+              <th>Difficulty</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="q in filteredBank" :key="q.id">
+              <td style="max-width:340px;">{{ q.questionText }}</td>
+              <td>{{ q.category }}</td>
+              <td>{{ q.difficultyLevel }}/10</td>
+              <td style="white-space:nowrap;">
+                <button
+                  class="btn btn-sm"
+                  :class="isPicked(q.id) ? 'btn-primary' : 'btn-secondary'"
+                  @click="togglePick(q)"
+                >{{ isPicked(q.id) ? 'Added ✓' : '+ Add' }}</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button class="btn btn-primary" style="margin-top:20px;" :disabled="!quiz.questions.length" @click="view = 'review'">
+        Continue to review ({{ quiz.questions.length }} picked)
       </button>
     </template>
 
     <template v-else-if="view === 'review'">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <input type="text" v-model="quiz.title" class="title-edit-input" aria-label="Quiz title" />
-        <button class="btn btn-secondary btn-sm" @click="view = 'settings'">← Adjust settings</button>
+        <button class="btn btn-secondary btn-sm" @click="view = 'picker'">← Pick more questions</button>
       </div>
 
-      <QuizReviewEditor :quiz="quiz" :min-difficulty="form.minDifficulty" :max-difficulty="form.maxDifficulty" @error="error = $event">
+      <QuizReviewEditor :quiz="quiz" @error="error = $event">
         <template #actions>
           <button class="btn btn-primary" :disabled="saving" @click="saveTemplate">
             {{ saving ? 'Saving…' : 'Save template' }}
@@ -124,7 +137,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import QuizReviewEditor from '../components/QuizReviewEditor.vue'
@@ -135,16 +148,15 @@ const view = ref('list')
 const templates = ref([])
 const loading = ref(true)
 const error = ref('')
-const generating = ref(false)
 const saving = ref(false)
 const editingId = ref(null)
 const pendingDelete = ref(null)
-const availableCategories = ref([])
-const quiz = ref(null)
 
-const form = reactive({
-  title: '', language: 'EN', minDifficulty: 1, maxDifficulty: 10, categorySelections: []
-})
+const bank = ref([])
+const availableCategories = ref([])
+const searchText = ref('')
+const categoryFilter = ref('ALL')
+const quiz = ref(null)
 
 onMounted(loadTemplates)
 
@@ -160,93 +172,76 @@ async function loadTemplates() {
   }
 }
 
-async function loadCategories() {
+async function loadBank() {
   try {
-    availableCategories.value = await api.getCategories(form.language)
+    bank.value = await api.adminListQuestions()
+    availableCategories.value = [...new Set(
+      bank.value.filter(q => q.language === quiz.value.language).map(q => q.category)
+    )].sort()
   } catch (e) {
-    error.value = 'Could not load categories.'
+    error.value = 'Could not load the question bank.'
+  }
+}
+
+const filteredBank = computed(() => {
+  const term = searchText.value.trim().toLowerCase()
+  return bank.value.filter(q => {
+    if (q.language !== quiz.value.language) return false
+    if (categoryFilter.value !== 'ALL' && q.category !== categoryFilter.value) return false
+    if (term && !`${q.questionText} ${q.category} ${q.answer}`.toLowerCase().includes(term)) return false
+    return true
+  })
+})
+
+function isPicked(id) {
+  return quiz.value.questions.some(q => q.id === id)
+}
+
+function togglePick(q) {
+  if (isPicked(q.id)) {
+    quiz.value.questions = quiz.value.questions.filter(picked => picked.id !== q.id)
+  } else {
+    quiz.value.questions.push({
+      id: q.id, questionText: q.questionText, category: q.category,
+      difficultyLevel: q.difficultyLevel, answer: q.answer
+    })
   }
 }
 
 function selectLanguage(code) {
-  form.language = code
-  form.categorySelections = []
-  loadCategories()
-}
-
-function isSelected(cat) {
-  return form.categorySelections.some(s => s.category === cat)
-}
-function countFor(cat) {
-  return form.categorySelections.find(s => s.category === cat)?.numberOfQuestions || 0
-}
-function toggleCategory(cat) {
-  if (isSelected(cat)) {
-    form.categorySelections = form.categorySelections.filter(s => s.category !== cat)
-  } else {
-    form.categorySelections.push({ category: cat, numberOfQuestions: 5 })
-  }
-}
-function adjustCount(cat, delta) {
-  const sel = form.categorySelections.find(s => s.category === cat)
-  if (sel) sel.numberOfQuestions = Math.max(1, sel.numberOfQuestions + delta)
-}
-
-function resetForm() {
-  form.title = ''
-  form.language = 'EN'
-  form.minDifficulty = 1
-  form.maxDifficulty = 10
-  form.categorySelections = []
+  quiz.value.language = code
+  quiz.value.questions = []
+  categoryFilter.value = 'ALL'
+  loadBank()
 }
 
 function openCreate() {
-  resetForm()
+  quiz.value = { title: '', language: 'EN', questions: [], warnings: [] }
   editingId.value = null
-  quiz.value = null
-  view.value = 'settings'
-  loadCategories()
+  searchText.value = ''
+  categoryFilter.value = 'ALL'
+  view.value = 'picker'
+  loadBank()
 }
 
 async function openEdit(id) {
   error.value = ''
   try {
-    const detail = await api.adminGetQuizTemplate(id)
-    form.title = detail.title
-    form.language = detail.language
-    form.minDifficulty = 1
-    form.maxDifficulty = 10
-    form.categorySelections = []
+    quiz.value = await api.adminGetQuizTemplate(id)
     editingId.value = id
-    quiz.value = detail
     view.value = 'review'
-    loadCategories()
+    loadBank()
   } catch (e) {
     error.value = 'Could not load that template.'
   }
 }
 
-async function generateDraft() {
-  error.value = ''
-  generating.value = true
-  try {
-    quiz.value = await api.generateQuiz({
-      title: form.title || 'Untitled quiz',
-      language: form.language,
-      minDifficulty: form.minDifficulty,
-      maxDifficulty: form.maxDifficulty,
-      categorySelections: form.categorySelections
-    })
-    view.value = 'review'
-  } catch (e) {
-    error.value = e.response?.data?.message || 'Could not generate a draft.'
-  } finally {
-    generating.value = false
-  }
-}
-
 async function saveTemplate() {
   error.value = ''
+  if (!quiz.value.questions.length) {
+    error.value = 'Pick at least one question first.'
+    return
+  }
   saving.value = true
   try {
     if (editingId.value) {
