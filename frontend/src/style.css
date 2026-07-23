@@ -630,7 +630,7 @@ mark {
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
   max-width: 760px;
-  margin: 20px 0;
+  margin: 20px auto;
 }
 
 .grid-tile {
@@ -638,7 +638,7 @@ mark {
   aspect-ratio: 1 / 1;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: var(--ink-raised);
+  background: rgba(26, 28, 40, 0.85);
   transition: border-color 0.25s ease, background 0.25s ease;
 }
 .grid-tile.correct {
