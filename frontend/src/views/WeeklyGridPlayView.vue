@@ -76,7 +76,10 @@
             class="grid-tile-logo"
             :class="{ 'is-photo': e.solved && e.athletePhotoUrl }"
           />
-          <div class="grid-tile-hint">{{ e.hintLabel }} | {{ e.hintValue }}</div>
+          <div
+            class="grid-tile-hint"
+            :style="{ background: e.hintColor || 'var(--gold)', color: readableTextColor(e.hintColor) }"
+          >{{ e.hintLabel }} | {{ e.hintValue }}</div>
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>
       </div>
@@ -89,6 +92,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
+import { readableTextColor } from '../constants'
 
 const route = useRoute()
 const gridId = route.params.id

@@ -117,6 +117,14 @@ recognize someone before actually guessing them. If no photo is set, a
 solved tile just keeps showing the club logo instead - it never ends up
 looking emptier than an unsolved one.
 
+Each club can also have its own **hint badge color** (a hex value, e.g.
+`#F2B705`) instead of every badge being the same gold - useful if you want
+a tile's badge to actually match the team's colors. Leave it blank and the
+badge falls back to the app's default gold. The badge's text color adapts
+automatically (black or white) based on the chosen background's
+brightness, so an admin picking a very light or very dark color doesn't
+end up with unreadable text.
+
 ## Authentication
 
 Two completely separate login paths, matching two different trust levels:
@@ -263,7 +271,8 @@ grid_attempts                              ├── athlete_id  BIGINT FK -> at
 └── (solved entry ids in a separate         ├── id       BIGINT PK
     grid_attempt_solved_entries join table) ├── name     VARCHAR
                                              ├── sport    VARCHAR (FOOTBALL|CYCLING)
-                                             └── logo_url VARCHAR (a hosted image URL, not a file upload)
+                                             ├── logo_url VARCHAR (a hosted image URL, not a file upload)
+                                             └── color    VARCHAR (hex; nullable, falls back to default gold)
 ```
 
 `grid_candidates` is the full searchable pool for a grid's guess box -

@@ -26,6 +26,20 @@ public class Club {
     @Column(name = "logo_url", length = 1000)
     private String logoUrl;
 
+    // Hex color (e.g. "#F2B705") used for this club's hint badge on grid tiles, so a
+    // badge doesn't have to be the same gold for every club regardless of team colors.
+    // Nullable - falls back to the app's default gold wherever it's read.
+    @Column(name = "color", length = 20)
+    private String color;
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
     public Long getId() {
         return id;
     }

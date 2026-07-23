@@ -104,7 +104,8 @@ public class GridPlayService {
             attempt.getSolvedEntryIds().add(matched.getId());
             result.setCorrect(true);
             result.setEntry(new GridEntryViewDto(matched.getId(), matched.getHintLabel(), matched.getHintValue(),
-                    true, true, matched.getAthlete().getName(), matched.getAthlete().getPhotoUrl(), logoUrl(matched)));
+                    true, true, matched.getAthlete().getName(), matched.getAthlete().getPhotoUrl(), logoUrl(matched),
+                    hintColor(matched)));
 
             boolean allSolved = attempt.getSolvedEntryIds().size() >= grid.getEntries().size();
             result.setAllSolved(allSolved);
@@ -185,11 +186,15 @@ public class GridPlayService {
                     return new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), solved, guessedByUser,
                             solved ? e.getAthlete().getName() : null,
                             solved ? e.getAthlete().getPhotoUrl() : null,
-                            logoUrl(e));
+                            logoUrl(e), hintColor(e));
                 })
                 .collect(Collectors.toList());
         dto.setEntries(entries);
         return dto;
+    }
+
+    private String hintColor(GridEntry entry) {
+        return entry.getClub() != null ? entry.getClub().getColor() : null;
     }
 
     // The logo is a hint shown alongside the label/value, visible whether or not the

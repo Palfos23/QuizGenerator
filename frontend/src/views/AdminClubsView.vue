@@ -39,6 +39,7 @@
             <th>Logo</th>
             <th>Name</th>
             <th>Sport</th>
+            <th>Color</th>
             <th></th>
           </tr>
         </thead>
@@ -47,6 +48,7 @@
             <td><img v-if="c.logoUrl" :src="c.logoUrl" alt="" class="club-logo-thumb" /></td>
             <td>{{ c.name }}</td>
             <td>{{ sportLabel(c.sport) }}</td>
+            <td><span class="color-swatch" :style="{ background: c.color || 'var(--gold)' }"></span></td>
             <td style="white-space:nowrap;">
               <button class="btn btn-secondary btn-sm" @click="openEdit(c)">Edit</button>
               <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(c)">Delete</button>

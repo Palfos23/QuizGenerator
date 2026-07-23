@@ -10,9 +10,10 @@ public class GridEntryViewDto {
     private String athleteName; // null unless solved
     private String athletePhotoUrl; // null unless solved - showing it earlier would let players recognize the athlete before guessing
     private String logoUrl; // null if no club set, or the admin hid it for this entry
+    private String hintColor; // the entry's club's color, if any set - null falls back to the app default gold
 
     public GridEntryViewDto(Long id, String hintLabel, int hintValue, boolean solved, boolean guessedByUser,
-                             String athleteName, String athletePhotoUrl, String logoUrl) {
+                             String athleteName, String athletePhotoUrl, String logoUrl, String hintColor) {
         this.id = id;
         this.hintLabel = hintLabel;
         this.hintValue = hintValue;
@@ -21,6 +22,7 @@ public class GridEntryViewDto {
         this.athleteName = athleteName;
         this.athletePhotoUrl = athletePhotoUrl;
         this.logoUrl = logoUrl;
+        this.hintColor = hintColor;
     }
 
     public boolean isGuessedByUser() {
@@ -33,6 +35,10 @@ public class GridEntryViewDto {
 
     public String getLogoUrl() {
         return logoUrl;
+    }
+
+    public String getHintColor() {
+        return hintColor;
     }
 
     public Long getId() {

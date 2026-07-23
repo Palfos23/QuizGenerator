@@ -39,6 +39,7 @@ public class ClubService {
         club.setName(dto.getName());
         club.setSport(dto.getSport());
         club.setLogoUrl(dto.getLogoUrl());
+        club.setColor(dto.getColor());
         return toDto(clubRepository.save(club));
     }
 
@@ -49,6 +50,7 @@ public class ClubService {
         club.setName(dto.getName());
         club.setSport(dto.getSport());
         club.setLogoUrl(dto.getLogoUrl());
+        club.setColor(dto.getColor());
         return toDto(clubRepository.save(club));
     }
 
@@ -70,6 +72,7 @@ public class ClubService {
         dto.setName(c.getName());
         dto.setSport(c.getSport());
         dto.setLogoUrl(c.getLogoUrl());
+        dto.setColor(c.getColor());
         return dto;
     }
 }
