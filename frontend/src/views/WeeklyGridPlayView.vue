@@ -6,7 +6,7 @@
 
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
-    <template v-else-if="state">
+    <div v-else-if="state" class="grid-page">
       <h1 style="margin-bottom:6px;">{{ state.title }}</h1>
       <p class="page-subtitle">{{ state.theme }}</p>
 
@@ -83,7 +83,7 @@
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
