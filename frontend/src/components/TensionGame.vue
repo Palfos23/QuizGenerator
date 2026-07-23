@@ -53,25 +53,6 @@
       </div>
     </div>
 
-    <div v-if="revealed && revealIndex >= allAnswersList.length" class="tension-standings">
-      <h3 style="text-align:center; margin-top:0;">Standings</h3>
-      <div
-        v-for="(entry, i) in standings"
-        :key="entry.name"
-        class="tension-standing-row"
-        :class="{ 'moved-up': entry.direction === 'up', 'moved-down': entry.direction === 'down' }"
-      >
-        <span class="tension-standing-rank">#{{ i + 1 }}</span>
-        <span style="flex:1;">{{ entry.name }}</span>
-        <span
-          v-if="entry.direction !== 'same'"
-          class="tension-standing-arrow"
-          :class="entry.direction"
-        >{{ entry.direction === 'up' ? '▲' : '▼' }}</span>
-        <span style="font-weight:700; min-width:48px; text-align:right;">{{ scores[entry.name] }}</span>
-      </div>
-    </div>
-
     <div style="text-align:center; margin-top:24px;">
       <div v-if="countdown !== null && !revealed" style="font-size:1.4rem; font-weight:700;">
         Answers in {{ countdown }}…
@@ -80,10 +61,33 @@
       <button v-if="revealed && revealIndex < allAnswersList.length" class="btn btn-secondary" @click="skipReveal">
         Skip reveal
       </button>
+    </div>
 
-      <button v-if="revealed && revealIndex >= allAnswersList.length" class="btn btn-primary" @click="nextQuestion">
-        {{ currentQuestionIndex + 1 < questions.length ? 'Next question' : 'Finish game' }}
-      </button>
+    <div v-if="showStandingsModal" class="modal-backdrop">
+      <div class="modal">
+        <h2 style="text-align:center;">Standings</h2>
+        <TransitionGroup name="standing" tag="div" class="tension-standings-list">
+          <div
+            v-for="(entry, i) in displayedStandings"
+            :key="entry.name"
+            class="tension-standing-row"
+            :class="{ 'moved-up': entry.direction === 'up', 'moved-down': entry.direction === 'down' }"
+          >
+            <span class="tension-standing-rank">#{{ i + 1 }}</span>
+            <span style="flex:1;">{{ entry.name }}</span>
+            <span
+              v-if="entry.direction !== 'same'"
+              class="tension-standing-arrow"
+              :class="entry.direction"
+            >{{ entry.direction === 'up' ? '▲' : '▼' }}</span>
+            <span style="font-weight:700; min-width:48px; text-align:right;">{{ scores[entry.name] }}</span>
+          </div>
+        </TransitionGroup>
+
+        <button class="btn btn-primary" style="width:100%; margin-top:20px;" @click="closeStandingsAndContinue">
+          {{ currentQuestionIndex + 1 < questions.length ? 'Next question' : 'Finish game' }}
+        </button>
+      </div>
     </div>
 
     <div v-if="showIntro" class="tension-intro-overlay">
@@ -240,20 +244,44 @@ function scheduleReveal() {
     revealTimer = setTimeout(() => {
       revealIndex.value += 1
       if (revealIndex.value >= allAnswersList.value.length) {
-        scores.value = pendingScores.value
+        finishReveal()
       } else {
         scheduleReveal()
       }
     }, 1100)
   } else {
-    scores.value = pendingScores.value
+    finishReveal()
   }
 }
 
 function skipReveal() {
   clearTimeout(revealTimer)
   revealIndex.value = allAnswersList.value.length
+  finishReveal()
+}
+
+const showStandingsModal = ref(false)
+const displayedStandings = ref([])
+
+// Applies this round's scores, then opens the standings modal showing rows in
+// their OLD rank order first - a moment later they slide to the new order via
+// TransitionGroup's built-in FLIP animation, so a move up/down is an actual
+// visible motion rather than just a color change.
+function finishReveal() {
   scores.value = pendingScores.value
+  displayedStandings.value = rankBeforeRound.value.map(name => {
+    const finalEntry = standings.value.find(s => s.name === name)
+    return finalEntry || { name, direction: 'same' }
+  })
+  showStandingsModal.value = true
+  setTimeout(() => {
+    displayedStandings.value = standings.value
+  }, 500)
+}
+
+function closeStandingsAndContinue() {
+  showStandingsModal.value = false
+  nextQuestion()
 }
 
 function startIntro() {
