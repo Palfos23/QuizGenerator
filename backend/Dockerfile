@@ -18,4 +18,12 @@ COPY --from=build /app/target/*.jar app.jar
 # Render injects PORT at runtime; application.properties already reads
 # server.port=${PORT:8080}, so nothing else is needed here.
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Explicit memory tuning matters on a small container (Render Starter = 512Mi).
+# Without it, the JVM sizes heap as a percentage of container memory but leaves
+# Metaspace (class metadata) completely uncapped by default - as more entities/
+# services/controllers get added over time, Metaspace usage grows right along
+# with them, with nothing stopping it from eating into the same 512Mi the heap
+# is trying to share. -Xmx/-XX:MaxMetaspaceSize give both a hard, safe ceiling
+# with headroom left for thread stacks and other native/JVM overhead.
+ENTRYPOINT ["java", "-Xmx280m", "-XX:MaxMetaspaceSize=160m", "-XX:+UseContainerSupport", "-jar", "app.jar"]

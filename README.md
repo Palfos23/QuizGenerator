@@ -666,6 +666,20 @@ slim JRE image runs it), and `render.yaml` points Render at it:
 > `region:`), verify it works, repoint the frontend's `VITE_API_BASE_URL`
 > at it, then delete the old one.
 
+> **Memory on Starter (512Mi):** the Dockerfile explicitly caps the JVM
+> (`-Xmx280m -XX:MaxMetaspaceSize=160m`) and `application-prod.properties`
+> caps Tomcat's thread pool at 20, rather than leaving everything at JVM/
+> Tomcat defaults. Without this, the container can get OOM-killed by
+> Render outright (visible in the deploy logs as `Out of memory (used over
+> 512Mi)` followed by a forced restart) - Java's default heap sizing
+> leaves **Metaspace** (class metadata) completely uncapped, and as more
+> entities/services/controllers get added over time, Metaspace usage grows
+> right along with them. If this happens again after further growth, these
+> numbers may need raising, and/or it's a sign the app has outgrown a
+> 512Mi instance entirely - upgrading the Render plan for more RAM is the
+> more durable fix at that point, not something further JVM tuning can
+> keep working around indefinitely.
+
 > **If you already created the service manually** (via "New -> Web
 > Service" rather than "New -> Blueprint") and it's failing with something
 > like `Couldn't find a package.json file` / `yarn run v1.22...` - that
