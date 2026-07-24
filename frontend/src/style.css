@@ -1170,6 +1170,11 @@ mark {
   font-weight: 700;
 }
 
+.scoreboard-table {
+  min-width: 0;
+  table-layout: fixed;
+}
+
 .banner {
   padding: 12px 16px;
   border-radius: var(--radius-sm);

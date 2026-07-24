@@ -19,9 +19,9 @@
           <div v-else-if="!scoreboard.length" style="color:var(--text-dim); font-size:0.9rem;">
             Nobody has completed this grid yet.
           </div>
-          <table v-else class="table">
+          <table v-else class="table scoreboard-table">
             <thead>
-              <tr><th>#</th><th>Player</th><th style="text-align:right;">Score</th></tr>
+              <tr><th style="width:14%;">#</th><th style="width:56%;">Player</th><th style="width:30%; text-align:right;">Score</th></tr>
             </thead>
             <tbody>
               <tr v-for="(s, i) in topFive" :key="s.userName + i" :class="{ 'you-row': s.isYou }">
