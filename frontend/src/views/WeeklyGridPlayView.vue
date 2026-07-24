@@ -5,12 +5,10 @@
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
     <div v-else-if="state" class="grid-page">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:10px;">
-        <h1 style="margin:0;">{{ state.title }}</h1>
-        <div style="display:flex; gap:8px;" class="no-print">
-          <button class="btn btn-secondary btn-sm icon-btn" @click="openScoreboard" title="Scoreboard" aria-label="Scoreboard">🏆</button>
-          <router-link to="/weekly-grid" class="btn btn-secondary btn-sm">← All grids</router-link>
-        </div>
+      <h1 style="margin:0 0 10px;">{{ state.title }}</h1>
+      <div style="display:flex; gap:8px; margin-bottom:6px;" class="no-print">
+        <router-link to="/weekly-grid" class="btn btn-secondary btn-sm">← All grids</router-link>
+        <button class="btn btn-secondary btn-sm icon-btn" @click="openScoreboard" title="Scoreboard" aria-label="Scoreboard">🏆</button>
       </div>
       <p class="page-subtitle">{{ state.theme }}</p>
 
