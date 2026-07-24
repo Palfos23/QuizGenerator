@@ -44,7 +44,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="a in filteredAthletes" :key="a.id">
+          <tr v-for="a in pagedAthletes" :key="a.id">
             <td><img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="club-logo-thumb" /></td>
             <td>{{ a.name }}</td>
             <td>{{ sportLabel(a.sport) }}</td>
@@ -56,6 +56,8 @@
           </tr>
         </tbody>
       </table>
+
+      <Pagination v-model:page="page" :page-size="PAGE_SIZE" :total-items="filteredAthletes.length" />
     </div>
 
     <AthleteFormModal
@@ -76,11 +78,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import AthleteFormModal from '../components/AthleteFormModal.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import Pagination from '../components/Pagination.vue'
 import { SPORTS, sportLabel } from '../constants'
 
 const athletes = ref([])
@@ -101,6 +104,14 @@ const filteredAthletes = computed(() => {
     return true
   })
 })
+
+const PAGE_SIZE = 15
+const page = ref(1)
+const pagedAthletes = computed(() => {
+  const start = (page.value - 1) * PAGE_SIZE
+  return filteredAthletes.value.slice(start, start + PAGE_SIZE)
+})
+watch([searchText, sportFilter], () => { page.value = 1 })
 
 onMounted(loadAthletes)
 

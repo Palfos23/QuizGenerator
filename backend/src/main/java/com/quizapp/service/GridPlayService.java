@@ -36,7 +36,7 @@ public class GridPlayService {
     }
 
     @Transactional(readOnly = true)
-    public List<com.quizapp.dto.GridScoreboardEntryDto> getScoreboard(Long gridId) {
+    public List<com.quizapp.dto.GridScoreboardEntryDto> getScoreboard(Long gridId, String requestingUserEmail) {
         Grid grid = gridRepository.findById(gridId)
                 .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
         int entryCount = grid.getEntries().size();
@@ -45,7 +45,7 @@ public class GridPlayService {
                 .filter(GridAttempt::isCompleted) // in-progress attempts aren't shown - they're still being played
                 .map(a -> new com.quizapp.dto.GridScoreboardEntryDto(
                         a.getUser().getName(), a.getSolvedEntryIds().size(), entryCount,
-                        a.isCompleted(), a.isOvertime()))
+                        a.isCompleted(), a.isOvertime(), a.getUser().getEmail().equals(requestingUserEmail)))
                 .sorted((a, b) -> {
                     // clean solves rank ahead of overtime-assisted ones at the same score
                     int scoreCompare = b.getGuessedCount() - a.getGuessedCount();

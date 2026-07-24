@@ -8,32 +8,41 @@
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:10px;">
         <h1 style="margin:0;">{{ state.title }}</h1>
         <div style="display:flex; gap:8px;" class="no-print">
-          <button class="btn btn-secondary btn-sm" @click="toggleScoreboard">
-            {{ showScoreboard ? 'Hide' : 'Show' }} scoreboard
-          </button>
+          <button class="btn btn-secondary btn-sm icon-btn" @click="openScoreboard" title="Scoreboard" aria-label="Scoreboard">🏆</button>
           <router-link to="/weekly-grid" class="btn btn-secondary btn-sm">← All grids</router-link>
         </div>
       </div>
       <p class="page-subtitle">{{ state.theme }}</p>
 
-      <div v-if="showScoreboard" class="no-print" style="margin-bottom:20px; border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px;">
-        <h3 style="margin-top:0;">Scoreboard</h3>
-        <div v-if="scoreboardLoading" style="color:var(--text-dim); font-size:0.9rem;">Loading…</div>
-        <div v-else-if="!scoreboard.length" style="color:var(--text-dim); font-size:0.9rem;">
-          Nobody has completed this grid yet.
+      <div v-if="showScoreboard" class="modal-backdrop no-print" @click.self="showScoreboard = false">
+        <div class="modal">
+          <h2 style="margin-top:0;">Scoreboard</h2>
+          <div v-if="scoreboardLoading" style="color:var(--text-dim); font-size:0.9rem;">Loading…</div>
+          <div v-else-if="!scoreboard.length" style="color:var(--text-dim); font-size:0.9rem;">
+            Nobody has completed this grid yet.
+          </div>
+          <table v-else class="table">
+            <thead>
+              <tr><th>#</th><th>Player</th><th style="text-align:right;">Score</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="(s, i) in topFive" :key="s.userName + i" :class="{ 'you-row': s.isYou }">
+                <td>{{ i + 1 }}</td>
+                <td>{{ s.userName }}<span v-if="s.usedOvertime" style="color:var(--violet); font-size:0.8rem;"> (overtime)</span></td>
+                <td style="text-align:right;">{{ s.guessedCount }} / {{ s.entryCount }}</td>
+              </tr>
+              <tr v-if="yourRank && yourRank.rank > 5">
+                <td colspan="3" style="text-align:center; color:var(--text-dim); padding:4px 0;">···</td>
+              </tr>
+              <tr v-if="yourRank && yourRank.rank > 5" class="you-row">
+                <td>{{ yourRank.rank }}</td>
+                <td>{{ yourRank.entry.userName }}<span v-if="yourRank.entry.usedOvertime" style="color:var(--violet); font-size:0.8rem;"> (overtime)</span></td>
+                <td style="text-align:right;">{{ yourRank.entry.guessedCount }} / {{ yourRank.entry.entryCount }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="showScoreboard = false">Close</button>
         </div>
-        <table v-else class="table">
-          <thead>
-            <tr><th>#</th><th>Player</th><th style="text-align:right;">Score</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="(s, i) in scoreboard" :key="s.userName + i">
-              <td>{{ i + 1 }}</td>
-              <td>{{ s.userName }}<span v-if="s.usedOvertime" style="color:var(--violet); font-size:0.8rem;"> (overtime)</span></td>
-              <td style="text-align:right;">{{ s.guessedCount }} / {{ s.entryCount }}</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
 
       <div class="grid-status-bar">
@@ -272,9 +281,16 @@ const showScoreboard = ref(false)
 const scoreboard = ref([])
 const scoreboardLoading = ref(false)
 
-async function toggleScoreboard() {
-  showScoreboard.value = !showScoreboard.value
-  if (showScoreboard.value && !scoreboard.value.length) {
+const topFive = computed(() => scoreboard.value.slice(0, 5))
+const yourRank = computed(() => {
+  const idx = scoreboard.value.findIndex(s => s.isYou)
+  if (idx === -1) return null
+  return { rank: idx + 1, entry: scoreboard.value[idx] }
+})
+
+async function openScoreboard() {
+  showScoreboard.value = true
+  if (!scoreboard.value.length) {
     scoreboardLoading.value = true
     try {
       scoreboard.value = await api.getGridScoreboard(gridId)

@@ -28,8 +28,8 @@ public class GridController {
     }
 
     @GetMapping("/{id}/scoreboard")
-    public List<com.quizapp.dto.GridScoreboardEntryDto> scoreboard(@PathVariable Long id) {
-        return gridPlayService.getScoreboard(id);
+    public List<com.quizapp.dto.GridScoreboardEntryDto> scoreboard(@PathVariable Long id, Authentication authentication) {
+        return gridPlayService.getScoreboard(id, authentication.getName());
     }
 
     @GetMapping("/archive")
