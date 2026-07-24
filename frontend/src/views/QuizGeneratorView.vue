@@ -113,7 +113,7 @@
           <input type="text" v-model="quiz.title" @input="reviewDirty = true" class="title-edit-input" aria-label="Quiz title" />
           <span style="color:var(--text-dim); font-size:0.9rem;">{{ quiz.questions.length }} questions</span>
         </div>
-        <button class="btn btn-secondary btn-sm no-print" @click="requestStartOver">Start over</button>
+        <button class="btn btn-secondary btn-sm no-print" @click="requestStartOver">← Back to settings</button>
       </div>
       <p class="page-subtitle" style="margin-top:-10px;">Use the ↑ / ↓ buttons to reorder questions.</p>
 
@@ -154,16 +154,26 @@
     <ConfirmModal
       v-if="showStartOverConfirm"
       title="Discard changes?"
-      message="You've discarded, replaced or reordered questions in this quiz. Starting over will lose those changes unless you've already saved this quiz."
-      confirm-text="Start over"
+      message="You've discarded, replaced or reordered questions in this quiz. Going back to settings will lose those changes unless you've already saved this quiz."
+      confirm-text="Back to settings"
       @confirm="confirmStartOver"
       @cancel="showStartOverConfirm = false"
+    />
+
+    <ConfirmModal
+      v-if="showLeaveConfirm"
+      title="Leave this quiz?"
+      message="You've discarded, replaced or reordered questions in this quiz. Navigating away will lose those changes unless you've already saved this quiz."
+      confirm-text="Leave anyway"
+      @confirm="confirmLeave"
+      @cancel="cancelLeave"
     />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 import QuizReviewEditor from '../components/QuizReviewEditor.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import api from '../services/api'
@@ -192,6 +202,29 @@ const justSaved = ref(false)
 const includeAnswersInPdf = ref(true)
 const reviewDirty = ref(false)
 const showStartOverConfirm = ref(false)
+const showLeaveConfirm = ref(false)
+let pendingLeaveResolve = null
+
+// Protects against losing an in-progress review by clicking a nav link (or any
+// other navigation) - previously only the "Back to settings" button warned about
+// this, so leaving via the nav bar lost your work silently.
+onBeforeRouteLeave(() => {
+  if (!reviewDirty.value) return true
+  return new Promise((resolve) => {
+    pendingLeaveResolve = resolve
+    showLeaveConfirm.value = true
+  })
+})
+
+function confirmLeave() {
+  showLeaveConfirm.value = false
+  pendingLeaveResolve?.(true)
+}
+
+function cancelLeave() {
+  showLeaveConfirm.value = false
+  pendingLeaveResolve?.(false)
+}
 
 function loadDraft() {
   try {

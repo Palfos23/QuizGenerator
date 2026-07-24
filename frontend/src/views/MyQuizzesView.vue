@@ -134,11 +134,21 @@
       @confirm="confirmBackToList"
       @cancel="showUnsavedConfirm = false"
     />
+
+    <ConfirmModal
+      v-if="showLeaveConfirm"
+      title="Leave this quiz?"
+      message="You have unsaved changes to this quiz. Navigating away will lose them unless you save first."
+      confirm-text="Leave anyway"
+      @confirm="confirmLeave"
+      @cancel="cancelLeave"
+    />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
 import QuizReviewEditor from '../components/QuizReviewEditor.vue'
@@ -163,6 +173,30 @@ const copyingId = ref(null)
 // A regenerated-but-not-yet-saved copy has no id from the server yet - that's
 // the signal for "Save as new" instead of "Update".
 const isDraft = computed(() => !!openQuiz.value && !openQuiz.value.id)
+
+// Protects against losing edits to an open quiz by clicking a nav link - the
+// "Back to list" button already warns about this, but leaving via the nav bar
+// previously lost your work silently.
+let pendingLeaveResolve = null
+const showLeaveConfirm = ref(false)
+
+onBeforeRouteLeave(() => {
+  if (!openQuiz.value || !dirty.value) return true
+  return new Promise((resolve) => {
+    pendingLeaveResolve = resolve
+    showLeaveConfirm.value = true
+  })
+})
+
+function confirmLeave() {
+  showLeaveConfirm.value = false
+  pendingLeaveResolve?.(true)
+}
+
+function cancelLeave() {
+  showLeaveConfirm.value = false
+  pendingLeaveResolve?.(false)
+}
 
 onMounted(() => {
   loadList()
