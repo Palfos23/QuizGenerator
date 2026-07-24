@@ -1170,9 +1170,14 @@ mark {
   font-weight: 700;
 }
 
-.scoreboard-table {
+table.scoreboard-table {
   min-width: 0;
   table-layout: fixed;
+}
+.scoreboard-table td,
+.scoreboard-table th {
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .banner {
