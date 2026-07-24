@@ -1,10 +1,12 @@
 <template>
   <div>
     <div class="step-indicator">{{ quiz ? 'Step 2 of 2 - Review & finalize' : 'Step 1 of 2 - Configure' }}</div>
-    <h1>Create a quiz</h1>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+      <h1 style="margin:0;">Create a quiz</h1>
+      <router-link v-if="!quiz" to="/suggest-question" class="btn btn-secondary btn-sm">+ Suggest a question</router-link>
+    </div>
     <p class="page-subtitle">
       Pick a language, a difficulty range, and how many questions you want from each category.
-      Don't see a question you'd like included? <router-link to="/suggest-question">Suggest one →</router-link>
     </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
@@ -372,6 +374,7 @@ async function saveQuiz() {
   error.value = ''
   try {
     await api.saveQuiz(quiz.value)
+    reviewDirty.value = false
     justSaved.value = true
     setTimeout(() => { justSaved.value = false }, 3000)
   } catch (e) {

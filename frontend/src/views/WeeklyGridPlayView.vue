@@ -8,7 +8,7 @@
       <h1 style="margin:0 0 10px;">{{ state.title }}</h1>
       <div style="display:flex; gap:8px; margin-bottom:6px;" class="no-print">
         <router-link to="/weekly-grid" class="btn btn-secondary btn-sm">← All grids</router-link>
-        <button class="btn btn-secondary btn-sm icon-btn" @click="openScoreboard" title="Scoreboard" aria-label="Scoreboard">🏆</button>
+        <button class="btn btn-secondary btn-sm" @click="openScoreboard" title="Scoreboard">🏆 Results</button>
       </div>
       <p class="page-subtitle">{{ state.theme }}</p>
 

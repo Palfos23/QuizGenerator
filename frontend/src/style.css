@@ -328,6 +328,7 @@ input[type="range"]::-moz-range-progress {
   border: none;
   font-weight: 600;
   font-size: 0.9rem;
+  text-decoration: none;
 }
 
 .btn-primary {
@@ -1301,6 +1302,7 @@ table.scoreboard-table {
   border-radius: var(--radius-md);
   background: rgba(255,255,255,0.02);
   color: var(--text);
+  text-decoration: none;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 .dashboard-feature-card:hover {
