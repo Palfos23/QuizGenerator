@@ -125,7 +125,7 @@
         @changed="reviewDirty = true"
       >
         <template #empty>
-          You removed every question. <button class="btn btn-secondary btn-sm" @click="requestStartOver">Start over</button>
+          No questions here yet - use the panels below to add some, or generate a random batch.
         </template>
         <template #actions>
           <div style="display:flex; flex-direction:column; gap:10px; width:100%;">

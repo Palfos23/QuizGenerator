@@ -18,7 +18,7 @@
     </div>
 
     <div v-if="!quiz.questions.length" class="empty-state">
-      <slot name="empty">Every question was removed.</slot>
+      <slot name="empty">No questions here yet - use the panels below to add some.</slot>
     </div>
 
     <div class="add-questions-row">
