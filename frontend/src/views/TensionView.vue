@@ -2,7 +2,6 @@
   <div>
     <template v-if="stage === 'landing'">
       <h1>Tension</h1>
-      <h2>Tension does not work at the moment, a fix will come soon</h2>
       <p class="page-subtitle">
         A pass-the-device party quiz. Guess as close to position 10 on the list as you dare -
         go too far past it into "tension" territory and it costs you.

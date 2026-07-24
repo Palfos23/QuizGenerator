@@ -7,6 +7,7 @@ import com.quizapp.repository.TensionCategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,10 +26,17 @@ public class TensionCategoryService {
         return categoryRepository.findAll().stream().map(TensionCategoryService::toDto).collect(Collectors.toList());
     }
 
+    /**
+     * options is lazy-loaded (the JPA default for @ElementCollection) - copying it
+     * into a plain ArrayList here, while the transaction/session is still open, is
+     * what actually triggers the fetch. Returning the raw Hibernate collection
+     * reference instead would leave it uninitialized until Jackson tries to
+     * serialize it later, by which point the session has already closed.
+     */
     @Transactional(readOnly = true)
     public List<String> getOptions(String categoryName) {
         return categoryRepository.findByNameIgnoreCase(categoryName)
-                .map(TensionAnswerCategory::getOptions)
+                .map(c -> new ArrayList<>(c.getOptions()))
                 .orElse(Collections.emptyList());
     }
 
@@ -61,7 +69,7 @@ public class TensionCategoryService {
         TensionCategoryDto dto = new TensionCategoryDto();
         dto.setId(c.getId());
         dto.setName(c.getName());
-        dto.setOptions(c.getOptions());
+        dto.setOptions(new ArrayList<>(c.getOptions()));
         return dto;
     }
 }
