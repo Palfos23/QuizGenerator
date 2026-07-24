@@ -36,7 +36,7 @@ public class TensionCategoryService {
     @Transactional(readOnly = true)
     public List<String> getOptions(String categoryName) {
         return categoryRepository.findByNameIgnoreCase(categoryName)
-                .map(c -> new ArrayList<>(c.getOptions()))
+                .<List<String>>map(c -> new ArrayList<>(c.getOptions()))
                 .orElse(Collections.emptyList());
     }
 
