@@ -46,6 +46,9 @@ public class TensionAnswerCategory {
     }
 
     public void setOptions(List<String> options) {
-        this.options = options != null ? options : new ArrayList<>();
+        this.options.clear();
+        if (options != null) {
+            this.options.addAll(options);
+        }
     }
 }
