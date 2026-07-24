@@ -5,7 +5,11 @@
         <h1>Athletes</h1>
         <p class="page-subtitle">The roster used to build weekly grid candidate pools.</p>
       </div>
-      <button class="btn btn-primary" @click="openCreate">+ Add athlete</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" @click="triggerFilePicker">📄 Import CSV</button>
+        <button class="btn btn-primary" @click="openCreate">+ Add athlete</button>
+      </div>
+      <input ref="fileInput" type="file" accept=".csv,text/csv" style="display:none;" @change="onFileSelected" />
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
@@ -74,6 +78,44 @@
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
+
+    <div v-if="showImportPreview" class="modal-backdrop" @click.self="closeImportPreview">
+      <div class="modal" style="max-width:640px;">
+        <h2 style="margin-top:0;">Import from CSV</h2>
+        <p class="page-subtitle">
+          Expected columns: <code>name, sport, team, photoUrl</code> (photoUrl optional).
+          Sport must be {{ SPORTS.map(s => s.code).join(' or ') }}.
+        </p>
+
+        <div v-if="importRows.length" style="max-height:320px; overflow-y:auto; margin-bottom:16px;">
+          <table class="table" style="min-width:0; table-layout:fixed;">
+            <thead>
+              <tr><th style="width:28%;">Name</th><th style="width:20%;">Sport</th><th style="width:28%;">Team</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, i) in importRows" :key="i" :class="{ 'tension-row-trap': !row.valid }">
+                <td>{{ row.name }}</td>
+                <td>{{ row.sport }}</td>
+                <td>{{ row.team }}</td>
+                <td style="color: var(--coral); font-size:0.85rem;">{{ row.valid ? '' : row.error }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="font-size:0.9rem; color:var(--text-dim);">
+          {{ validImportCount }} of {{ importRows.length }} row(s) look valid and will be imported.
+          {{ importRows.length - validImportCount }} will be skipped.
+        </p>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn btn-secondary" @click="closeImportPreview">Cancel</button>
+          <button class="btn btn-primary" :disabled="!validImportCount || importing" @click="confirmImport">
+            {{ importing ? `Importing… (${importProgress}/${validImportCount})` : `Import ${validImportCount} athlete(s)` }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -95,6 +137,115 @@ const sportFilter = ref('ALL')
 const showModal = ref(false)
 const editingAthlete = ref(null)
 const pendingDelete = ref(null)
+
+const fileInput = ref(null)
+const showImportPreview = ref(false)
+const importRows = ref([])
+const importing = ref(false)
+const importProgress = ref(0)
+
+const validImportCount = computed(() => importRows.value.filter(r => r.valid).length)
+
+function triggerFilePicker() {
+  fileInput.value?.click()
+}
+
+function parseCsvLine(line) {
+  const cells = []
+  let current = ''
+  let inQuotes = false
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]
+    if (inQuotes) {
+      if (char === '"' && line[i + 1] === '"') { current += '"'; i++ }
+      else if (char === '"') { inQuotes = false }
+      else { current += char }
+    } else if (char === '"') {
+      inQuotes = true
+    } else if (char === ',') {
+      cells.push(current)
+      current = ''
+    } else {
+      current += char
+    }
+  }
+  cells.push(current)
+  return cells.map(c => c.trim())
+}
+
+function onFileSelected(event) {
+  const file = event.target.files[0]
+  event.target.value = '' // allow picking the same file again later
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    const lines = String(reader.result).split(/\r?\n/).filter(l => l.trim().length > 0)
+    if (!lines.length) {
+      error.value = 'That file appears to be empty.'
+      return
+    }
+
+    const header = parseCsvLine(lines[0]).map(h => h.toLowerCase())
+    const nameIdx = header.indexOf('name')
+    const sportIdx = header.indexOf('sport')
+    const teamIdx = header.indexOf('team')
+    const photoIdx = header.indexOf('photourl')
+
+    if (nameIdx === -1 || sportIdx === -1) {
+      error.value = 'CSV needs at least "name" and "sport" columns.'
+      return
+    }
+
+    const validSportCodes = SPORTS.map(s => s.code)
+    importRows.value = lines.slice(1).map(line => {
+      const cells = parseCsvLine(line)
+      const name = cells[nameIdx] || ''
+      const sport = (cells[sportIdx] || '').toUpperCase()
+      const team = teamIdx !== -1 ? (cells[teamIdx] || '') : ''
+      const photoUrl = photoIdx !== -1 ? (cells[photoIdx] || '') : ''
+
+      let rowError = ''
+      if (!name) rowError = 'Missing name'
+      else if (!validSportCodes.includes(sport)) rowError = `Invalid sport (must be ${validSportCodes.join('/')})`
+
+      return { name, sport, team, photoUrl, valid: !rowError, error: rowError }
+    })
+    showImportPreview.value = true
+  }
+  reader.readAsText(file)
+}
+
+function closeImportPreview() {
+  showImportPreview.value = false
+  importRows.value = []
+}
+
+async function confirmImport() {
+  importing.value = true
+  importProgress.value = 0
+  let failed = 0
+  const toImport = importRows.value.filter(r => r.valid)
+
+  for (const row of toImport) {
+    try {
+      await api.adminCreateAthlete({
+        name: row.name, sport: row.sport, team: row.team || null, photoUrl: row.photoUrl || null
+      })
+    } catch (e) {
+      failed++
+    }
+    importProgress.value++
+  }
+
+  importing.value = false
+  showImportPreview.value = false
+  importRows.value = []
+  loadAthletes()
+  toast.show(failed
+    ? `Imported ${toImport.length - failed} of ${toImport.length} - ${failed} failed.`
+    : `Imported ${toImport.length} athlete(s).`)
+}
 
 const filteredAthletes = computed(() => {
   const term = searchText.value.trim().toLowerCase()
