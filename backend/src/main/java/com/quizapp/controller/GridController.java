@@ -23,13 +23,13 @@ public class GridController {
     }
 
     @GetMapping("/active")
-    public List<GridSummaryDto> active() {
-        return gridPlayService.findActive();
+    public List<GridSummaryDto> active(Authentication authentication) {
+        return gridPlayService.findActive(authentication.getName());
     }
 
     @GetMapping("/archive")
-    public List<GridSummaryDto> archive() {
-        return gridPlayService.findArchive();
+    public List<GridSummaryDto> archive(Authentication authentication) {
+        return gridPlayService.findArchive(authentication.getName());
     }
 
     @GetMapping("/{id}/play")

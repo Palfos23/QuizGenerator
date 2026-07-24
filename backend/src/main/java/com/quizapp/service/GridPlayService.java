@@ -36,22 +36,45 @@ public class GridPlayService {
     }
 
     @Transactional(readOnly = true)
-    public List<GridSummaryDto> findActive() {
+    public List<GridSummaryDto> findActive(String userEmail) {
         LocalDate today = LocalDate.now();
-        return gridRepository.findAll().stream()
+        List<Grid> grids = gridRepository.findAll().stream()
                 .filter(g -> isActive(g, today))
-                .map(g -> new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(), g.getEntries().size()))
                 .collect(Collectors.toList());
+        return toSummariesWithStatus(grids, userEmail);
     }
 
     @Transactional(readOnly = true)
-    public List<GridSummaryDto> findArchive() {
+    public List<GridSummaryDto> findArchive(String userEmail) {
         LocalDate today = LocalDate.now();
-        return gridRepository.findAll().stream()
+        List<Grid> grids = gridRepository.findAll().stream()
                 .filter(g -> !isActive(g, today) && g.getWeekStartDate().isBefore(today))
                 .sorted((a, b) -> b.getWeekStartDate().compareTo(a.getWeekStartDate()))
-                .map(g -> new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(), g.getEntries().size()))
                 .collect(Collectors.toList());
+        return toSummariesWithStatus(grids, userEmail);
+    }
+
+    /**
+     * One query for all the user's attempts across every grid being listed, rather
+     * than a separate query per grid - matters once there are a lot of grids.
+     */
+    private List<GridSummaryDto> toSummariesWithStatus(List<Grid> grids, String userEmail) {
+        List<Long> gridIds = grids.stream().map(Grid::getId).collect(Collectors.toList());
+        java.util.Map<Long, GridAttempt> attemptByGridId = gridIds.isEmpty()
+                ? java.util.Map.of()
+                : gridAttemptRepository.findByGrid_IdInAndUser_Email(gridIds, userEmail).stream()
+                        .collect(Collectors.toMap(a -> a.getGrid().getId(), a -> a));
+
+        return grids.stream().map(g -> {
+            GridAttempt attempt = attemptByGridId.get(g.getId());
+            String status = attempt == null ? "NOT_STARTED" : (attempt.isCompleted() ? "COMPLETED" : "IN_PROGRESS");
+            // solvedEntryIds only ever contains genuinely-correct guesses (overtime
+            // included) - never entries that were merely revealed - so this is the
+            // same "found" count shown during actual play, not an inflated one.
+            Integer guessedCount = attempt == null ? null : attempt.getSolvedEntryIds().size();
+            return new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(),
+                    g.getEntries().size(), status, guessedCount);
+        }).collect(Collectors.toList());
     }
 
     private boolean isActive(Grid grid, LocalDate today) {

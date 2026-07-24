@@ -36,7 +36,7 @@ public class GridAdminService {
     @Transactional(readOnly = true)
     public List<GridSummaryDto> findAll() {
         return gridRepository.findAll().stream()
-                .map(g -> new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(), g.getEntries().size()))
+                .map(g -> new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(), g.getEntries().size(), null, null))
                 .collect(Collectors.toList());
     }
 

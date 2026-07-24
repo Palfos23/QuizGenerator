@@ -19,7 +19,12 @@
             {{ sportLabel(g.sport) }} · {{ g.entryCount }} athletes to find · week of {{ formatDate(g.weekStartDate) }}
           </div>
         </div>
-        <router-link :to="`/weekly-grid/${g.id}`" class="btn btn-primary btn-sm">Play</router-link>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span class="tag" :style="statusStyle(g.status)">{{ statusLabel(g) }}</span>
+          <router-link :to="`/weekly-grid/${g.id}`" class="btn btn-primary btn-sm">
+            {{ g.status === 'NOT_STARTED' ? 'Play' : 'Continue' }}
+          </router-link>
+        </div>
       </div>
     </div>
 
@@ -37,7 +42,12 @@
                 {{ sportLabel(g.sport) }} · {{ g.entryCount }} athletes to find · week of {{ formatDate(g.weekStartDate) }}
               </div>
             </div>
-            <router-link :to="`/weekly-grid/${g.id}`" class="btn btn-secondary btn-sm">Play</router-link>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span class="tag" :style="statusStyle(g.status)">{{ statusLabel(g) }}</span>
+              <router-link :to="`/weekly-grid/${g.id}`" class="btn btn-secondary btn-sm">
+                {{ g.status === 'NOT_STARTED' ? 'Play' : 'Continue' }}
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -73,5 +83,17 @@ onMounted(async () => {
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+function statusLabel(g) {
+  if (g.status === 'COMPLETED') return `Completed · ${g.guessedCount}/${g.entryCount} found`
+  if (g.status === 'IN_PROGRESS') return `In progress · ${g.guessedCount}/${g.entryCount} found`
+  return 'Not started'
+}
+
+function statusStyle(status) {
+  if (status === 'COMPLETED') return { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }
+  if (status === 'IN_PROGRESS') return { background: 'rgba(242,183,5,0.15)', color: 'var(--gold)' }
+  return { background: 'rgba(255,255,255,0.06)', color: 'var(--text-dim)' }
 }
 </script>
