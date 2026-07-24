@@ -50,6 +50,15 @@ public class QuizController {
         return questionService.findCategoriesForLanguage(language);
     }
 
+    /** Search the bank to hand-pick specific questions into a quiz, rather than only a random batch. */
+    @GetMapping("/search-questions")
+    public List<QuestionDto> searchQuestions(
+            @RequestParam(defaultValue = "EN") com.quizapp.model.Language language,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String category) {
+        return questionService.searchForUser(language, search, category);
+    }
+
     /** Use case 4: download the finalized quiz as a PDF. */
     @PostMapping("/export/pdf")
     public ResponseEntity<byte[]> exportPdf(

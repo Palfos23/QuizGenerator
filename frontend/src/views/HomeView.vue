@@ -91,7 +91,7 @@ function waitForGoogleIdentity(timeoutMs = 10000) {
 
 onMounted(async () => {
   if (auth.isAuthenticated.value) {
-    router.push(auth.isAdmin.value ? '/admin/questions' : '/generate')
+    router.push(auth.isAdmin.value ? '/admin/questions' : '/dashboard')
     return
   }
   if (!clientIdConfigured) {
@@ -131,7 +131,7 @@ async function handleCredentialResponse(response) {
   try {
     const result = await api.loginWithGoogle(response.credential)
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
-    router.push('/generate')
+    router.push('/dashboard')
   } catch (e) {
     error.value = e.response?.data?.message || 'Sign-in failed. Please try again.'
     loggingIn.value = false

@@ -35,28 +35,6 @@
       </div>
 
       <div class="field">
-        <label>Difficulty range <span style="text-transform:none;font-weight:400;">(1 = easiest, 10 = hardest)</span></label>
-        <div class="difficulty-slider-group">
-          <div class="difficulty-slider-row">
-            <span class="slider-label">Min</span>
-            <input
-              type="range" min="1" max="10" v-model.number="form.minDifficulty"
-              @input="clampRange('min')" aria-label="Minimum difficulty"
-            />
-            <output>{{ form.minDifficulty }} <span class="difficulty-word">{{ difficultyWord(form.minDifficulty) }}</span></output>
-          </div>
-          <div class="difficulty-slider-row">
-            <span class="slider-label">Max</span>
-            <input
-              type="range" min="1" max="10" v-model.number="form.maxDifficulty"
-              @input="clampRange('max')" aria-label="Maximum difficulty"
-            />
-            <output>{{ form.maxDifficulty }} <span class="difficulty-word">{{ difficultyWord(form.maxDifficulty) }}</span></output>
-          </div>
-        </div>
-      </div>
-
-      <div class="field">
         <label>Categories &amp; how many questions from each <span class="picker-hint">pick as many as you like</span></label>
         <p style="color:var(--text-dim); font-size:0.85rem; margin:-4px 0 12px;">Tap a category to add it, then use +/- to set the count.</p>
 
@@ -87,14 +65,45 @@
         </div>
       </div>
 
-      <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; margin-bottom:16px;">
-        <input type="checkbox" v-model="form.includeMySubmissions" style="width:auto;" />
-        Include my own submitted questions <span class="picker-hint">even ones still pending or rejected - only you can draw from these</span>
-      </label>
+      <details class="advanced-disclosure">
+        <summary>Advanced options</summary>
 
-      <button class="btn btn-primary" :disabled="generating || !form.categorySelections.length" @click="generateQuiz">
-        {{ generating ? 'Generating…' : 'Generate quiz' }}
-      </button>
+        <div class="field" style="margin-top:16px;">
+          <label>Difficulty range <span style="text-transform:none;font-weight:400;">(1 = easiest, 10 = hardest)</span></label>
+          <div class="difficulty-slider-group">
+            <div class="difficulty-slider-row">
+              <span class="slider-label">Min</span>
+              <input
+                type="range" min="1" max="10" v-model.number="form.minDifficulty"
+                @input="clampRange('min')" aria-label="Minimum difficulty"
+              />
+              <output>{{ form.minDifficulty }} <span class="difficulty-word">{{ difficultyWord(form.minDifficulty) }}</span></output>
+            </div>
+            <div class="difficulty-slider-row">
+              <span class="slider-label">Max</span>
+              <input
+                type="range" min="1" max="10" v-model.number="form.maxDifficulty"
+                @input="clampRange('max')" aria-label="Maximum difficulty"
+              />
+              <output>{{ form.maxDifficulty }} <span class="difficulty-word">{{ difficultyWord(form.maxDifficulty) }}</span></output>
+            </div>
+          </div>
+        </div>
+
+        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400;">
+          <input type="checkbox" v-model="form.includeMySubmissions" style="width:auto;" />
+          Include my own submitted questions <span class="picker-hint">even ones still pending or rejected - only you can draw from these</span>
+        </label>
+      </details>
+
+      <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:20px;">
+        <button class="btn btn-primary" :disabled="generating || !form.categorySelections.length" @click="generateQuiz">
+          {{ generating ? 'Generating…' : 'Generate quiz' }}
+        </button>
+        <button class="btn btn-secondary" @click="startBlank">
+          Or start blank &amp; search for specific questions →
+        </button>
+      </div>
     </section>
 
     <!-- Step 2: review, reorder + finalize -->
@@ -256,6 +265,15 @@ function stepCount(cat, delta) {
   const sel = form.categorySelections.find(s => s.category === cat)
   if (!sel) return
   sel.numberOfQuestions = Math.min(50, Math.max(1, sel.numberOfQuestions + delta))
+}
+
+function startBlank() {
+  quiz.value = {
+    title: form.title || 'My Quiz',
+    language: form.language,
+    questions: [],
+    warnings: []
+  }
 }
 
 async function generateQuiz() {

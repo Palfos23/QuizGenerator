@@ -50,6 +50,27 @@ public class QuestionService {
     }
 
     /**
+     * Lets any logged-in user (not just admins) search the bank by text to hand-pick
+     * specific questions into a quiz, rather than only drawing a random batch. Capped
+     * at 30 results since this backs a live-typing search box, not a management table.
+     */
+    @Transactional(readOnly = true)
+    public List<QuestionDto> searchForUser(com.quizapp.model.Language language, String term, String category) {
+        String needle = term == null ? "" : term.trim().toLowerCase();
+        String wantedCategory = category == null ? "" : category.trim().toLowerCase();
+
+        return questionRepository.findByLanguage(language).stream()
+                .filter(q -> wantedCategory.isEmpty() || q.getCategory().trim().toLowerCase().equals(wantedCategory))
+                .filter(q -> needle.isEmpty()
+                        || q.getQuestionText().toLowerCase().contains(needle)
+                        || q.getCategory().toLowerCase().contains(needle)
+                        || q.getAnswer().toLowerCase().contains(needle))
+                .limit(30)
+                .map(QuestionMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Coverage breakdown per category/language combination - lets an admin spot thin
      * spots (e.g. "French Sports only has 2 questions") at a glance instead of finding
      * out when a quiz generation comes up short.

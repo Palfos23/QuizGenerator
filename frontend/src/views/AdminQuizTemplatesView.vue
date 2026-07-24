@@ -30,10 +30,11 @@
       </div>
     </template>
 
-    <!-- Pick questions from the existing bank -->
-    <template v-else-if="view === 'picker'">
+    <!-- Just title + language up front - question picking happens in the review step below,
+         which already has both a random-batch adder and a search-and-add box built in. -->
+    <template v-else-if="view === 'settings'">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h1 style="margin:0;">{{ editingId ? 'Edit template' : 'Create template' }}</h1>
+        <h1 style="margin:0;">Create template</h1>
         <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Back to list</button>
       </div>
 
@@ -41,81 +42,35 @@
 
       <div class="field">
         <label>Title</label>
-        <input type="text" v-model="quiz.title" placeholder="e.g. Office Christmas Party Quiz" />
+        <input type="text" v-model="newTitle" placeholder="e.g. Office Christmas Party Quiz" />
       </div>
 
       <div class="field">
-        <label>Language <span class="picker-hint">choose one - changing this clears any questions already picked</span></label>
+        <label>Language <span class="picker-hint">choose one</span></label>
         <div class="language-row">
           <button
             v-for="lang in LANGUAGES"
             :key="lang.code"
             class="language-btn"
-            :class="{ active: quiz.language === lang.code }"
-            @click="selectLanguage(lang.code)"
+            :class="{ active: newLanguage === lang.code }"
+            @click="newLanguage = lang.code"
           >
             <span>{{ lang.flag }}</span> {{ lang.label }}
           </button>
         </div>
       </div>
 
-      <div class="filter-bar">
-        <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
-          <label>Search</label>
-          <input type="text" v-model="searchText" placeholder="Search question, category or answer…" />
-        </div>
-        <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-          <label>Category</label>
-          <select v-model="categoryFilter">
-            <option value="ALL">All categories</option>
-            <option v-for="cat in availableCategories" :key="cat" :value="cat">{{ cat }}</option>
-          </select>
-        </div>
-      </div>
-
-      <p style="font-weight:600;">{{ quiz.questions.length }} question(s) picked</p>
-
-      <div v-if="!filteredBank.length" class="empty-state">
-        No {{ languageLabel(quiz.language) }} questions match those filters.
-      </div>
-
-      <div v-else class="table-scroll" style="max-height:480px; overflow-y:auto;">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Question</th>
-              <th>Category</th>
-              <th>Difficulty</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="q in filteredBank" :key="q.id">
-              <td style="max-width:340px;">{{ q.questionText }}</td>
-              <td>{{ q.category }}</td>
-              <td>{{ q.difficultyLevel }}/10</td>
-              <td style="white-space:nowrap;">
-                <button
-                  class="btn btn-sm"
-                  :class="isPicked(q.id) ? 'btn-primary' : 'btn-secondary'"
-                  @click="togglePick(q)"
-                >{{ isPicked(q.id) ? 'Added ✓' : '+ Add' }}</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <button class="btn btn-primary" style="margin-top:20px;" :disabled="!quiz.questions.length" @click="view = 'review'">
-        Continue to review ({{ quiz.questions.length }} picked)
-      </button>
+      <button class="btn btn-primary" @click="startBuilding">Start building →</button>
     </template>
 
     <template v-else-if="view === 'review'">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <input type="text" v-model="quiz.title" class="title-edit-input" aria-label="Quiz title" />
-        <button class="btn btn-secondary btn-sm" @click="view = 'picker'">← Pick more questions</button>
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Back to list</button>
       </div>
+      <p class="page-subtitle" style="margin-top:-14px;">
+        {{ languageLabel(quiz.language) }} · use the panels below to add a random batch, or search for specific questions.
+      </p>
 
       <QuizReviewEditor :quiz="quiz" @error="error = $event">
         <template #actions>
@@ -137,7 +92,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import QuizReviewEditor from '../components/QuizReviewEditor.vue'
@@ -152,10 +107,8 @@ const saving = ref(false)
 const editingId = ref(null)
 const pendingDelete = ref(null)
 
-const bank = ref([])
-const availableCategories = ref([])
-const searchText = ref('')
-const categoryFilter = ref('ALL')
+const newTitle = ref('')
+const newLanguage = ref('EN')
 const quiz = ref(null)
 
 onMounted(loadTemplates)
@@ -172,56 +125,16 @@ async function loadTemplates() {
   }
 }
 
-async function loadBank() {
-  try {
-    bank.value = await api.adminListQuestions()
-    availableCategories.value = [...new Set(
-      bank.value.filter(q => q.language === quiz.value.language).map(q => q.category)
-    )].sort()
-  } catch (e) {
-    error.value = 'Could not load the question bank.'
-  }
-}
-
-const filteredBank = computed(() => {
-  const term = searchText.value.trim().toLowerCase()
-  return bank.value.filter(q => {
-    if (q.language !== quiz.value.language) return false
-    if (categoryFilter.value !== 'ALL' && q.category !== categoryFilter.value) return false
-    if (term && !`${q.questionText} ${q.category} ${q.answer}`.toLowerCase().includes(term)) return false
-    return true
-  })
-})
-
-function isPicked(id) {
-  return quiz.value.questions.some(q => q.id === id)
-}
-
-function togglePick(q) {
-  if (isPicked(q.id)) {
-    quiz.value.questions = quiz.value.questions.filter(picked => picked.id !== q.id)
-  } else {
-    quiz.value.questions.push({
-      id: q.id, questionText: q.questionText, category: q.category,
-      difficultyLevel: q.difficultyLevel, answer: q.answer
-    })
-  }
-}
-
-function selectLanguage(code) {
-  quiz.value.language = code
-  quiz.value.questions = []
-  categoryFilter.value = 'ALL'
-  loadBank()
-}
-
 function openCreate() {
-  quiz.value = { title: '', language: 'EN', questions: [], warnings: [] }
+  newTitle.value = ''
+  newLanguage.value = 'EN'
   editingId.value = null
-  searchText.value = ''
-  categoryFilter.value = 'ALL'
-  view.value = 'picker'
-  loadBank()
+  view.value = 'settings'
+}
+
+function startBuilding() {
+  quiz.value = { title: newTitle.value || 'Untitled quiz', language: newLanguage.value, questions: [], warnings: [] }
+  view.value = 'review'
 }
 
 async function openEdit(id) {
@@ -230,7 +143,6 @@ async function openEdit(id) {
     quiz.value = await api.adminGetQuizTemplate(id)
     editingId.value = id
     view.value = 'review'
-    loadBank()
   } catch (e) {
     error.value = 'Could not load that template.'
   }
@@ -239,7 +151,7 @@ async function openEdit(id) {
 async function saveTemplate() {
   error.value = ''
   if (!quiz.value.questions.length) {
-    error.value = 'Pick at least one question first.'
+    error.value = 'Add at least one question first.'
     return
   }
   saving.value = true
