@@ -43,6 +43,14 @@ public class GridAttempt {
     @Column(name = "grid_entry_id")
     private Set<Long> solvedEntryIds = new HashSet<>();
 
+    // Subset of solvedEntryIds that were specifically solved while overtime was
+    // active - lets the UI show "found, but during overtime" distinctly from a
+    // normal timed solve, rather than treating every green tile the same way.
+    @ElementCollection
+    @CollectionTable(name = "grid_attempt_overtime_entries", joinColumns = @JoinColumn(name = "attempt_id"))
+    @Column(name = "grid_entry_id")
+    private Set<Long> overtimeSolvedEntryIds = new HashSet<>();
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -108,6 +116,14 @@ public class GridAttempt {
 
     public void setSolvedEntryIds(Set<Long> solvedEntryIds) {
         this.solvedEntryIds = solvedEntryIds;
+    }
+
+    public Set<Long> getOvertimeSolvedEntryIds() {
+        return overtimeSolvedEntryIds;
+    }
+
+    public void setOvertimeSolvedEntryIds(Set<Long> overtimeSolvedEntryIds) {
+        this.overtimeSolvedEntryIds = overtimeSolvedEntryIds;
     }
 
     public Instant getCreatedAt() {

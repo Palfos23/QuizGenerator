@@ -102,10 +102,13 @@ public class GridPlayService {
 
         if (matched != null) {
             attempt.getSolvedEntryIds().add(matched.getId());
+            if (attempt.isOvertime()) {
+                attempt.getOvertimeSolvedEntryIds().add(matched.getId());
+            }
             result.setCorrect(true);
             result.setEntry(new GridEntryViewDto(matched.getId(), matched.getHintLabel(), matched.getHintValue(),
-                    true, true, matched.getAthlete().getName(), matched.getAthlete().getPhotoUrl(), logoUrl(matched),
-                    hintColor(matched)));
+                    true, true, attempt.isOvertime(), matched.getAthlete().getName(), matched.getAthlete().getPhotoUrl(),
+                    logoUrl(matched), hintColor(matched)));
 
             boolean allSolved = attempt.getSolvedEntryIds().size() >= grid.getEntries().size();
             result.setAllSolved(allSolved);
@@ -183,7 +186,9 @@ public class GridPlayService {
                 .map(e -> {
                     boolean guessedByUser = attempt.getSolvedEntryIds().contains(e.getId());
                     boolean solved = revealAll || guessedByUser;
+                    boolean solvedInOvertime = attempt.getOvertimeSolvedEntryIds().contains(e.getId());
                     return new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), solved, guessedByUser,
+                            solvedInOvertime,
                             solved ? e.getAthlete().getName() : null,
                             solved ? e.getAthlete().getPhotoUrl() : null,
                             logoUrl(e), hintColor(e));

@@ -23,11 +23,18 @@
         </div>
       </div>
 
-      <div v-if="state.overtime" class="banner" style="background:rgba(139,124,255,0.15); color:var(--violet); border:1px solid rgba(139,124,255,0.35);">
-        Overtime - further guesses don't cost strikes or count toward your result.
+      <div v-if="allSolved" class="banner success">
+        <strong>Game complete - you found them all!</strong>
+        <span v-if="overtimeSolvedCount">
+          {{ overtimeSolvedCount }} of those were found during Overtime, so this wasn't a clean solve - but nice work regardless.
+        </span>
       </div>
-      <div v-else-if="state.revealed" class="banner error">Answers revealed - this attempt is finished.</div>
-      <div v-else-if="allSolved" class="banner success">You found them all!</div>
+      <div v-else-if="state.revealed" class="banner error">
+        <strong>Game over - answers revealed.</strong> This attempt is finished.
+      </div>
+      <div v-else-if="state.overtime" class="banner" style="background:rgba(139,124,255,0.15); color:var(--violet); border:1px solid rgba(139,124,255,0.35);">
+        Overtime - further guesses don't cost strikes, and won't count toward a clean solve.
+      </div>
       <div v-else-if="gameOver" class="banner error">Out of strikes. Reveal the rest, or keep going in Overtime just for fun.</div>
 
       <div v-if="canStillGuess" class="guess-box" :class="{ shake: shakeGuessBox }">
@@ -63,12 +70,14 @@
           :key="e.id"
           class="grid-tile"
           :class="{
-            correct: e.guessedByUser,
+            correct: e.guessedByUser && !e.solvedInOvertime,
+            'solved-overtime': e.solvedInOvertime,
             'revealed-only': e.solved && !e.guessedByUser,
             'just-solved': e.id === justSolvedId
           }"
         >
-          <span v-if="e.guessedByUser" class="grid-tile-status correct">✓</span>
+          <span v-if="e.solvedInOvertime" class="grid-tile-status overtime" title="Found during Overtime">⏱</span>
+          <span v-else-if="e.guessedByUser" class="grid-tile-status correct">✓</span>
           <span v-else-if="e.solved" class="grid-tile-status wrong">✕</span>
           <img
             v-if="tileImage(e)"
@@ -113,6 +122,7 @@ const shakeGuessBox = ref(false)
 
 const solvedCount = computed(() => state.value?.entries.filter(e => e.solved).length || 0)
 const allSolved = computed(() => !!state.value && solvedCount.value === state.value.entries.length)
+const overtimeSolvedCount = computed(() => state.value?.entries.filter(e => e.solvedInOvertime).length || 0)
 const gameOver = computed(() => !!state.value && state.value.completed && !allSolved.value && !state.value.revealed)
 const canStillGuess = computed(() =>
   !!state.value && !allSolved.value && !state.value.revealed && (!state.value.completed || state.value.overtime)

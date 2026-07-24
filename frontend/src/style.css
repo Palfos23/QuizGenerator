@@ -720,6 +720,10 @@ mark {
   background: rgba(61, 220, 151, 0.08);
   border-color: rgba(61, 220, 151, 0.4);
 }
+.grid-tile.solved-overtime {
+  background: rgba(139, 124, 255, 0.1);
+  border-color: rgba(139, 124, 255, 0.4);
+}
 .grid-tile.revealed-only {
   background: rgba(255, 77, 109, 0.06);
   border-color: rgba(255, 77, 109, 0.3);
@@ -787,6 +791,7 @@ mark {
   z-index: 2;
 }
 .grid-tile-status.correct { background: var(--teal); color: #05261a; }
+.grid-tile-status.overtime { background: var(--violet); color: #ffffff; }
 .grid-tile-status.wrong { background: var(--coral); color: #2b0009; }
 
 .grid-tile-name {

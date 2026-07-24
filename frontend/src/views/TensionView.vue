@@ -55,6 +55,12 @@
         </button>
       </div>
 
+      <div v-if="starting" class="tension-intro-overlay">
+        <span class="spinner" style="width:32px; height:32px; border-width:4px; margin-bottom:20px;"></span>
+        <h1>Shuffling your questions…</h1>
+        <p style="margin-top:12px; color:var(--text-dim);">First round starts in just a moment.</p>
+      </div>
+
       <div v-if="colorPickerIndex !== null" class="modal-backdrop" @click.self="colorPickerIndex = null">
         <div class="modal">
           <h2>Pick a color</h2>
