@@ -7,9 +7,34 @@
     <div v-else-if="state" class="grid-page">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:10px;">
         <h1 style="margin:0;">{{ state.title }}</h1>
-        <router-link to="/weekly-grid" class="btn btn-secondary btn-sm no-print">← All grids</router-link>
+        <div style="display:flex; gap:8px;" class="no-print">
+          <button class="btn btn-secondary btn-sm" @click="toggleScoreboard">
+            {{ showScoreboard ? 'Hide' : 'Show' }} scoreboard
+          </button>
+          <router-link to="/weekly-grid" class="btn btn-secondary btn-sm">← All grids</router-link>
+        </div>
       </div>
       <p class="page-subtitle">{{ state.theme }}</p>
+
+      <div v-if="showScoreboard" class="no-print" style="margin-bottom:20px; border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px;">
+        <h3 style="margin-top:0;">Scoreboard</h3>
+        <div v-if="scoreboardLoading" style="color:var(--text-dim); font-size:0.9rem;">Loading…</div>
+        <div v-else-if="!scoreboard.length" style="color:var(--text-dim); font-size:0.9rem;">
+          Nobody has completed this grid yet.
+        </div>
+        <table v-else class="table">
+          <thead>
+            <tr><th>#</th><th>Player</th><th style="text-align:right;">Score</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="(s, i) in scoreboard" :key="s.userName + i">
+              <td>{{ i + 1 }}</td>
+              <td>{{ s.userName }}<span v-if="s.usedOvertime" style="color:var(--violet); font-size:0.8rem;"> (overtime)</span></td>
+              <td style="text-align:right;">{{ s.guessedCount }} / {{ s.entryCount }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <div class="grid-status-bar">
         <div class="grid-progress">{{ guessedCount }} / {{ state.entries.length }} found</div>
@@ -61,8 +86,8 @@
         </div>
       </div>
 
-      <div v-if="state.overtime && canStillGuess" class="no-print" style="margin-bottom:20px;">
-        <button class="btn btn-secondary btn-sm" :disabled="actionBusy" @click="doReveal">Give up &amp; reveal remaining answers</button>
+      <div v-if="canStillGuess" class="no-print" style="margin-bottom:20px;">
+        <button class="btn btn-secondary btn-sm" :disabled="actionBusy" @click="showGiveUpConfirm = true">Give up &amp; reveal remaining answers</button>
       </div>
 
       <div v-else-if="gameOver" class="no-print" style="margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap;">
@@ -100,6 +125,15 @@
         </div>
       </div>
     </div>
+
+    <ConfirmModal
+      v-if="showGiveUpConfirm"
+      title="Give up on this grid?"
+      message="This ends your attempt and reveals every remaining answer. You won't be able to keep guessing on this board afterward."
+      confirm-text="Give up"
+      @confirm="confirmGiveUp"
+      @cancel="showGiveUpConfirm = false"
+    />
   </div>
 </template>
 
@@ -109,6 +143,7 @@ import { useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
 import { readableTextColor } from '../constants'
+import ConfirmModal from '../components/ConfirmModal.vue'
 
 const route = useRoute()
 const gridId = route.params.id
@@ -230,5 +265,29 @@ async function doReveal() {
   } finally {
     actionBusy.value = false
   }
+}
+
+const showGiveUpConfirm = ref(false)
+const showScoreboard = ref(false)
+const scoreboard = ref([])
+const scoreboardLoading = ref(false)
+
+async function toggleScoreboard() {
+  showScoreboard.value = !showScoreboard.value
+  if (showScoreboard.value && !scoreboard.value.length) {
+    scoreboardLoading.value = true
+    try {
+      scoreboard.value = await api.getGridScoreboard(gridId)
+    } catch (e) {
+      // scoreboard is a nice-to-have - fail quietly, empty state already covers it
+    } finally {
+      scoreboardLoading.value = false
+    }
+  }
+}
+
+async function confirmGiveUp() {
+  showGiveUpConfirm.value = false
+  await doReveal()
 }
 </script>

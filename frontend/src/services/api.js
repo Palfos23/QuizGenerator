@@ -16,9 +16,9 @@ client.interceptors.request.use(config => {
 client.interceptors.response.use(
   response => response,
   error => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && auth.state.token) {
       auth.logout()
-      router.push('/')
+      router.push('/?sessionExpired=1')
     }
     return Promise.reject(error)
   }
@@ -126,6 +126,9 @@ export default {
   },
   revealGrid(id) {
     return client.post(`/grids/${id}/reveal`).then(r => r.data)
+  },
+  getGridScoreboard(id) {
+    return client.get(`/grids/${id}/scoreboard`).then(r => r.data)
   },
 
   // --- Weekly grids: admin ---
@@ -267,5 +270,21 @@ export default {
   },
   adminDeleteQuizTemplate(id) {
     return client.delete(`/admin/quiz-templates/${id}`)
+  },
+
+  // --- Reports: user-facing ---
+  submitReport(payload) {
+    return client.post('/reports', payload).then(r => r.data)
+  },
+  myReports() {
+    return client.get('/reports/mine').then(r => r.data)
+  },
+
+  // --- Reports: admin ---
+  adminListReports() {
+    return client.get('/admin/reports').then(r => r.data)
+  },
+  adminResolveReport(id, adminNote) {
+    return client.post(`/admin/reports/${id}/resolve`, { adminNote }).then(r => r.data)
   }
 }

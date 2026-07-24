@@ -16,6 +16,8 @@ import AdminTensionCategoriesView from '../views/AdminTensionCategoriesView.vue'
 import SuggestQuestionView from '../views/SuggestQuestionView.vue'
 import AdminSubmissionsView from '../views/AdminSubmissionsView.vue'
 import AdminQuizTemplatesView from '../views/AdminQuizTemplatesView.vue'
+import ReportProblemView from '../views/ReportProblemView.vue'
+import AdminReportsView from '../views/AdminReportsView.vue'
 import auth from '../services/auth'
 
 const routes = [
@@ -42,7 +44,9 @@ const routes = [
   { path: '/admin/tension-categories', name: 'admin-tension-categories', component: AdminTensionCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/suggest-question', name: 'suggest-question', component: SuggestQuestionView, meta: { requiresAuth: true } },
   { path: '/admin/question-submissions', name: 'admin-question-submissions', component: AdminSubmissionsView, meta: { requiresAuth: true, requiresAdmin: true } },
-  { path: '/admin/quiz-templates', name: 'admin-quiz-templates', component: AdminQuizTemplatesView, meta: { requiresAuth: true, requiresAdmin: true } }
+  { path: '/admin/quiz-templates', name: 'admin-quiz-templates', component: AdminQuizTemplatesView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/report-problem', name: 'report-problem', component: ReportProblemView, meta: { requiresAuth: true } },
+  { path: '/admin/reports', name: 'admin-reports', component: AdminReportsView, meta: { requiresAuth: true, requiresAdmin: true } }
 ]
 
 const router = createRouter({

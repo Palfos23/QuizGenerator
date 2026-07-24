@@ -1,6 +1,9 @@
 <template>
   <div>
-    <h1>Suggest a question</h1>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+      <h1 style="margin:0;">Suggest a question</h1>
+      <router-link to="/dashboard" class="btn btn-secondary btn-sm">← Back to dashboard</router-link>
+    </div>
     <p class="page-subtitle">
       Submit a question for admin review. If it's approved, it joins the shared question bank for everyone.
       If it's rejected, you'll see why here - and you can still use it in your own quizzes either way.

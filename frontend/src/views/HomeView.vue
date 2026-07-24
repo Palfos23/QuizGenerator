@@ -55,10 +55,11 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import api from '../services/api'
 import auth from '../services/auth'
 
+const route = useRoute()
 const router = useRouter()
 const buttonEl = ref(null)
 const error = ref('')
@@ -92,6 +93,9 @@ onMounted(async () => {
   if (auth.isAuthenticated.value) {
     router.push(auth.isAdmin.value ? '/admin/questions' : '/dashboard')
     return
+  }
+  if (route.query.sessionExpired) {
+    error.value = 'Your session expired - please sign in again.'
   }
   if (!clientIdConfigured) {
     loadingScript.value = false

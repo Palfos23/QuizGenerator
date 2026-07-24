@@ -27,6 +27,10 @@
         <h3>Suggest a question</h3>
         <p>Add to the shared question bank - admin-reviewed, and usable in your own quizzes either way.</p>
       </router-link>
+      <router-link to="/report-problem" class="dashboard-feature-card">
+        <h3>Report a problem</h3>
+        <p>Found a bug or something confusing? Let us know.</p>
+      </router-link>
     </div>
   </div>
 </template>

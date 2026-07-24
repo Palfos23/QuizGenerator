@@ -27,6 +27,11 @@ public class GridController {
         return gridPlayService.findActive(authentication.getName());
     }
 
+    @GetMapping("/{id}/scoreboard")
+    public List<com.quizapp.dto.GridScoreboardEntryDto> scoreboard(@PathVariable Long id) {
+        return gridPlayService.getScoreboard(id);
+    }
+
     @GetMapping("/archive")
     public List<GridSummaryDto> archive(Authentication authentication) {
         return gridPlayService.findArchive(authentication.getName());

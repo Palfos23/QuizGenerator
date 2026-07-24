@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface GridAttemptRepository extends JpaRepository<GridAttempt, Long> {
     Optional<GridAttempt> findByGrid_IdAndUser_Email(Long gridId, String email);
     List<GridAttempt> findByGrid_IdInAndUser_Email(List<Long> gridIds, String email);
+    List<GridAttempt> findByGrid_Id(Long gridId);
 }

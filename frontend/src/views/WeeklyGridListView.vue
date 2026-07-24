@@ -22,7 +22,7 @@
         <div style="display:flex; align-items:center; gap:12px;">
           <span class="tag" :style="statusStyle(g.status)">{{ statusLabel(g) }}</span>
           <router-link :to="`/weekly-grid/${g.id}`" class="btn btn-primary btn-sm">
-            {{ g.status === 'NOT_STARTED' ? 'Play' : 'Continue' }}
+            {{ buttonLabel(g.status) }}
           </router-link>
         </div>
       </div>
@@ -45,7 +45,7 @@
             <div style="display:flex; align-items:center; gap:12px;">
               <span class="tag" :style="statusStyle(g.status)">{{ statusLabel(g) }}</span>
               <router-link :to="`/weekly-grid/${g.id}`" class="btn btn-secondary btn-sm">
-                {{ g.status === 'NOT_STARTED' ? 'Play' : 'Continue' }}
+                {{ buttonLabel(g.status) }}
               </router-link>
             </div>
           </div>
@@ -83,6 +83,12 @@ onMounted(async () => {
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+function buttonLabel(status) {
+  if (status === 'NOT_STARTED') return 'Play'
+  if (status === 'COMPLETED') return 'View'
+  return 'Continue'
 }
 
 function statusLabel(g) {
