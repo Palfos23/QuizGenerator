@@ -12,7 +12,7 @@
       <p class="page-subtitle">{{ state.theme }}</p>
 
       <div class="grid-status-bar">
-        <div class="grid-progress">{{ solvedCount }} / {{ state.entries.length }} found</div>
+        <div class="grid-progress">{{ guessedCount }} / {{ state.entries.length }} found</div>
         <div class="strike-dots">
           <span
             v-for="i in state.maxStrikes"
@@ -24,18 +24,20 @@
       </div>
 
       <div v-if="allSolved" class="banner success">
-        <strong>Game complete - you found them all!</strong>
-        <span v-if="overtimeSolvedCount">
+        <div><strong>Game complete - you found them all!</strong></div>
+        <div v-if="overtimeSolvedCount">
           {{ overtimeSolvedCount }} of those were found during Overtime, so this wasn't a clean solve - but nice work regardless.
-        </span>
+        </div>
       </div>
       <div v-else-if="state.revealed" class="banner error">
-        <strong>Game over - answers revealed.</strong> This attempt is finished.
+        <div><strong>Game over.</strong> You found {{ guessedCount }} / {{ state.entries.length }} before revealing the rest.</div>
       </div>
       <div v-else-if="state.overtime" class="banner" style="background:rgba(139,124,255,0.15); color:var(--violet); border:1px solid rgba(139,124,255,0.35);">
         Overtime - further guesses don't cost strikes, and won't count toward a clean solve.
       </div>
-      <div v-else-if="gameOver" class="banner error">Out of strikes. Reveal the rest, or keep going in Overtime just for fun.</div>
+      <div v-else-if="gameOver" class="banner error">
+        <div><strong>Game over - out of strikes.</strong> You found {{ guessedCount }} / {{ state.entries.length }}. Reveal the rest, or keep going in Overtime just for fun.</div>
+      </div>
 
       <div v-if="canStillGuess" class="guess-box" :class="{ shake: shakeGuessBox }">
         <input
@@ -57,6 +59,10 @@
             {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
           </button>
         </div>
+      </div>
+
+      <div v-if="state.overtime && canStillGuess" class="no-print" style="margin-bottom:20px;">
+        <button class="btn btn-secondary btn-sm" :disabled="actionBusy" @click="doReveal">Give up &amp; reveal remaining answers</button>
       </div>
 
       <div v-else-if="gameOver" class="no-print" style="margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap;">
@@ -120,10 +126,10 @@ const justSolvedId = ref(null)
 const justStruck = ref(false)
 const shakeGuessBox = ref(false)
 
-const solvedCount = computed(() => state.value?.entries.filter(e => e.solved).length || 0)
-const allSolved = computed(() => !!state.value && solvedCount.value === state.value.entries.length)
+const guessedCount = computed(() => state.value?.entries.filter(e => e.guessedByUser).length || 0)
+const allSolved = computed(() => !!state.value && guessedCount.value === state.value.entries.length)
 const overtimeSolvedCount = computed(() => state.value?.entries.filter(e => e.solvedInOvertime).length || 0)
-const gameOver = computed(() => !!state.value && state.value.completed && !allSolved.value && !state.value.revealed)
+const gameOver = computed(() => !!state.value && state.value.completed && !allSolved.value && !state.value.revealed && !state.value.overtime)
 const canStillGuess = computed(() =>
   !!state.value && !allSolved.value && !state.value.revealed && (!state.value.completed || state.value.overtime)
 )
