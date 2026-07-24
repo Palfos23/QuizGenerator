@@ -43,7 +43,7 @@ public class QuizService {
         for (CategorySelectionDto selection : request.getCategorySelections()) {
             List<QuestionDto> candidates = candidatePool(
                     request.getLanguage(), request.getMinDifficulty(), request.getMaxDifficulty(),
-                    List.of(selection.getCategory()))
+                    selection.getCategory())
                     .stream().map(QuestionMapper::toDto).collect(Collectors.toList());
 
             if (request.isIncludeMySubmissions()) {
@@ -90,7 +90,7 @@ public class QuizService {
 
         List<Question> candidates = candidatePool(
                 request.getLanguage(), request.getMinDifficulty(), request.getMaxDifficulty(),
-                List.of(request.getCategory()));
+                request.getCategory());
         Collections.shuffle(candidates);
 
         return candidates.stream()
@@ -107,7 +107,7 @@ public class QuizService {
 
         List<Question> candidates = candidatePool(
                 request.getLanguage(), request.getMinDifficulty(), request.getMaxDifficulty(),
-                List.of(request.getCategory()));
+                request.getCategory());
         Collections.shuffle(candidates);
 
         return candidates.stream()
@@ -161,21 +161,14 @@ public class QuizService {
      * category and difficulty range in memory - question banks here are small enough
      * that this is simpler and safer than a dynamic native IN-clause query.
      */
+    /**
+     * Delegates straight to the database-level query - see QuestionRepository.findCandidates
+     * for why this matters (this runs on every generation, replace, and add-more call).
+     */
     private List<Question> candidatePool(Language language, Integer minDifficulty, Integer maxDifficulty,
-                                          List<String> categories) {
-        List<Question> byLanguage = questionRepository.findByLanguage(language);
-
+                                          String category) {
         int min = minDifficulty == null ? 1 : minDifficulty;
         int max = maxDifficulty == null ? 10 : maxDifficulty;
-
-        Set<String> wanted = categories.stream()
-                .filter(c -> c != null && !c.isBlank())
-                .map(c -> c.trim().toLowerCase())
-                .collect(Collectors.toSet());
-
-        return byLanguage.stream()
-                .filter(q -> q.getDifficultyLevel() >= min && q.getDifficultyLevel() <= max)
-                .filter(q -> wanted.isEmpty() || wanted.contains(q.getCategory().trim().toLowerCase()))
-                .collect(Collectors.toList());
+        return questionRepository.findCandidates(language, min, max, category);
     }
 }

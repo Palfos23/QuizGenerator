@@ -749,3 +749,72 @@ Google Sign-In will silently fail on any origin that isn't listed here.
   caps you at 750 instance-hours/month - fine for a personal project, not
   for anything that needs to always be instantly responsive. Upgrading to
   a paid Render instance type removes both limits without any code change.
+
+## Scalability
+
+This app was built and tuned for its actual scope - personal/small-group
+use with a question bank of a few hundred to a few thousand rows. Several
+things below were deliberate simplifications that were the right call at
+that scale, and would need revisiting at real scale (thousands of users,
+tens of thousands of questions):
+
+- **Fixed (this pass): quiz generation no longer loads every question in
+  a language into memory before filtering.** `QuizService.candidatePool()`
+  used to call `findByLanguage()` (fetching the *entire* language's
+  question set as Hibernate entities) and then filter by category and
+  difficulty in a Java stream. This ran on every quiz generation, every
+  discard-and-replace, and every "add more questions" call - the single
+  most frequently hit heavy operation in the app - so it was the first
+  thing worth fixing. `QuestionRepository.findCandidates()` now does the
+  filtering in the SQL query itself (`WHERE language = ? AND
+  difficulty_level BETWEEN ? AND ? AND LOWER(category) = LOWER(?)`), so
+  only matching rows are ever loaded.
+
+  **This fix isn't fully realized without a matching index.** Without
+  one, Postgres still does a full sequential scan to answer that query -
+  much cheaper than deserializing every row into Hibernate entities
+  client-side, but still not what you want at real volume. Run this once
+  (safe against an existing table, doesn't affect any data):
+  ```sql
+  CREATE INDEX IF NOT EXISTS idx_questions_lang_cat_diff
+  ON questions (language, category, difficulty_level);
+  ```
+
+- **Still todo - same root cause, different endpoints.** The exact same
+  "fetch everything, filter in memory" pattern exists in
+  `AthleteService.search()`, `TensionQuestionService.getRandom()`/
+  `getDistinctMainCategories()`, and the admin question-bank list (which
+  sends the *entire* table to the browser and filters client-side in
+  Vue). None of these hurt at a few hundred rows; all of them would at
+  tens of thousands. Same fix shape each time: push the filter into the
+  repository query, and paginate rather than returning full tables.
+- **No caching layer.** Categories, clubs, and athletes are re-queried
+  from Postgres on every request even though they barely ever change.
+  Even a short-TTL in-memory cache (Spring's `@Cacheable` needs no new
+  infra) on these reference-data lookups would cut a large share of DB
+  load with no logic changes. Pairs naturally with the point above -
+  worth doing both together.
+- **Login rate limiting is in-memory** (`LoginRateLimiter`), which is a
+  hard blocker for horizontal scaling specifically: each backend instance
+  would keep its own independent counter, silently turning "5 attempts"
+  into "5 × instance count." This needs to move to something shared
+  (Redis, or a DB-backed counter) *before* running more than one backend
+  instance - not just a nice-to-have at that point.
+- **No rate limiting on gameplay/generation endpoints** (quiz generation,
+  Tension guesses, Weekly Grid guesses) - only admin login has a limiter
+  today. PDF generation in particular is genuinely CPU-heavy per request.
+  At real concurrent load this is where you'd see slowness before
+  anything above becomes the bottleneck.
+- **Connection pool sizing**: if the backend ever runs as multiple
+  instances, each one's HikariCP pool adds to the total connections
+  against Supabase's pooler, which has its own ceiling per plan tier.
+  Capacity planning, not a code change - just worth knowing before adding
+  instance #2.
+
+If traffic or data volume ever genuinely trended toward "viral," the
+order I'd tackle this in: **add basic observability first** (you can't
+tell which of the above is the actual bottleneck from Render's logs
+alone), then the remaining "fetch everything" endpoints + caching
+together (same root cause), then the login rate limiter fix - but only
+once actually adding a second instance, since it's not urgent before
+that point.
