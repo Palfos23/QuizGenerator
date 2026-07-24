@@ -7,8 +7,8 @@
 
     <!-- List view -->
     <section v-if="!openQuiz">
-      <div v-if="templates.length" style="margin-bottom:32px;">
-        <h2 style="font-size:1.1rem;">Available quizzes</h2>
+      <div v-if="templates.length" class="templates-panel">
+        <h2 style="font-size:1.1rem; margin-top:0;">📋 Available templates</h2>
         <p class="page-subtitle" style="margin-top:-6px;">Published by an admin - copy one to get your own editable version.</p>
         <div class="saved-quiz-list">
           <div v-for="t in templates" :key="t.id" class="saved-quiz-row">
@@ -22,6 +22,8 @@
           </div>
         </div>
       </div>
+
+      <h2 style="margin-top:32px;">My quizzes</h2>
 
       <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
@@ -294,6 +296,7 @@ function backToList() {
     return
   }
   openQuiz.value = null
+  loadList()
 }
 
 function confirmBackToList() {

@@ -24,6 +24,9 @@ public class QuizDto {
     // e.g. "Only found 2 of the 4 requested Film questions" - empty when everything matched exactly
     private List<String> warnings = new ArrayList<>();
 
+    // Null unless this quiz was copied from an admin-published template.
+    private String sourceTemplateTitle;
+
     public Long getId() {
         return id;
     }
@@ -62,5 +65,13 @@ public class QuizDto {
 
     public void setWarnings(List<String> warnings) {
         this.warnings = warnings;
+    }
+
+    public String getSourceTemplateTitle() {
+        return sourceTemplateTitle;
+    }
+
+    public void setSourceTemplateTitle(String sourceTemplateTitle) {
+        this.sourceTemplateTitle = sourceTemplateTitle;
     }
 }

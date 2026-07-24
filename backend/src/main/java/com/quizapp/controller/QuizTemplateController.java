@@ -23,6 +23,11 @@ public class QuizTemplateController {
         return quizTemplateService.findAll();
     }
 
+    @GetMapping("/{id}")
+    public QuizDto getOne(@PathVariable Long id) {
+        return quizTemplateService.getOne(id);
+    }
+
     @PostMapping("/{id}/copy")
     public QuizDto copy(@PathVariable Long id, Authentication authentication) {
         return quizTemplateService.copyToMyQuizzes(id, authentication.getName());

@@ -257,6 +257,9 @@ export default {
   listQuizTemplates() {
     return client.get('/quiz-templates').then(r => r.data)
   },
+  getQuizTemplate(id) {
+    return client.get(`/quiz-templates/${id}`).then(r => r.data)
+  },
   copyQuizTemplate(id) {
     return client.post(`/quiz-templates/${id}/copy`).then(r => r.data)
   },

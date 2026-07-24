@@ -295,9 +295,13 @@ saved_quizzes                       saved_quiz_questions
 ├── owner_id      BIGINT FK -> app_users.id
 ├── title         VARCHAR           ├── saved_quiz_id    BIGINT FK -> saved_quizzes.id
 ├── language      VARCHAR           ├── order_index      INT     (preserves reordering)
-└── created_at    TIMESTAMP         ├── question_text    TEXT
-                                     ├── category         VARCHAR
-                                     ├── difficulty_level  INT
+├── source_template_title  VARCHAR  ├── question_text    TEXT
+│   (nullable - set only when       ├── category         VARCHAR
+│   copied from a template; a       ├── difficulty_level  INT
+│   snapshot, not a live FK, so it
+│   still reads fine even if the
+│   template is later edited/deleted)
+└── created_at    TIMESTAMP
                                      └── answer           VARCHAR
 ```
 

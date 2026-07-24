@@ -40,7 +40,8 @@
         <label>Categories &amp; how many questions from each <span class="picker-hint">pick as many as you like</span></label>
         <p style="color:var(--text-dim); font-size:0.85rem; margin:-4px 0 12px;">Tap a category to add it, then use +/- to set the count.</p>
 
-        <div v-if="!availableCategories.length" class="empty-state friendly" style="padding:20px;">
+        <div v-if="categoriesLoading" style="color:var(--text-dim); padding:20px;">Loading categories…</div>
+        <div v-else-if="!availableCategories.length" class="empty-state friendly" style="padding:20px;">
           No {{ languageLabel(form.language) }} categories yet - add some questions in that language in the admin page first.
         </div>
 
@@ -193,6 +194,7 @@ const form = reactive(loadDraft() || {
 })
 
 const availableCategories = ref([])
+const categoriesLoading = ref(true)
 const justAddedCategory = ref('')
 
 const quiz = ref(null)
@@ -248,10 +250,13 @@ watch(form, (value) => {
 onMounted(loadCategories)
 
 async function loadCategories() {
+  categoriesLoading.value = true
   try {
     availableCategories.value = await api.getCategories(form.language)
   } catch (e) {
     error.value = 'Could not load categories from the server.'
+  } finally {
+    categoriesLoading.value = false
   }
 }
 

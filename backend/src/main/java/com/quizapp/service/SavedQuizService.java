@@ -36,6 +36,7 @@ public class SavedQuizService {
         entity.setOwner(owner);
         entity.setTitle(titleOrDefault(quiz));
         entity.setLanguage(quiz.getLanguage());
+        entity.setSourceTemplateTitle(quiz.getSourceTemplateTitle());
         entity.setQuestions(buildSnapshot(quiz));
 
         SavedQuiz saved = savedQuizRepository.save(entity);
@@ -79,7 +80,7 @@ public class SavedQuizService {
     public List<SavedQuizSummaryDto> listForUser(String ownerEmail) {
         return savedQuizRepository.findByOwner_EmailOrderByCreatedAtDesc(ownerEmail).stream()
                 .map(q -> new SavedQuizSummaryDto(q.getId(), q.getTitle(), q.getLanguage(),
-                        q.getQuestions().size(), q.getCreatedAt()))
+                        q.getQuestions().size(), q.getCreatedAt(), q.getSourceTemplateTitle()))
                 .collect(Collectors.toList());
     }
 
@@ -104,6 +105,7 @@ public class SavedQuizService {
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setLanguage(entity.getLanguage());
+        dto.setSourceTemplateTitle(entity.getSourceTemplateTitle());
         dto.setQuestions(entity.getQuestions().stream()
                 .map(sq -> {
                     QuestionDto q = new QuestionDto();

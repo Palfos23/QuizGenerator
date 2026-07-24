@@ -1129,6 +1129,14 @@ mark {
   letter-spacing: 0.03em;
 }
 
+.templates-panel {
+  margin-bottom: 32px;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(242,183,5,0.06), rgba(255,255,255,0.02));
+}
+
 .stats-panel {
   margin-bottom: 24px;
   padding: 16px;

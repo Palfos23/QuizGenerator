@@ -84,6 +84,7 @@ public class QuizTemplateService {
         saved.setOwner(owner);
         saved.setTitle(template.getTitle());
         saved.setLanguage(template.getLanguage());
+        saved.setSourceTemplateTitle(template.getTitle());
 
         List<SavedQuizQuestion> questions = template.getQuestions().stream()
                 .map(tq -> {

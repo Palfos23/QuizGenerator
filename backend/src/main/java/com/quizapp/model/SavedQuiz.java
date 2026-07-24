@@ -30,6 +30,13 @@ public class SavedQuiz {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
+    // Set only when this quiz originated from copying an admin-published template -
+    // a snapshot of the template's title at copy time, not a live reference, so it
+    // still reads sensibly even if the original template is later edited or deleted.
+    // Null means the user built this one from scratch.
+    @Column(name = "source_template_title")
+    private String sourceTemplateTitle;
+
     // Ordered snapshot of the questions as the user finalized them (after any
     // reordering/discard-and-replace) - independent of the live Question rows,
     // so later admin edits or deletions don't change a quiz someone already saved.
@@ -71,6 +78,14 @@ public class SavedQuiz {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public String getSourceTemplateTitle() {
+        return sourceTemplateTitle;
+    }
+
+    public void setSourceTemplateTitle(String sourceTemplateTitle) {
+        this.sourceTemplateTitle = sourceTemplateTitle;
     }
 
     public void setCreatedAt(Instant createdAt) {

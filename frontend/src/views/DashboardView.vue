@@ -9,6 +9,30 @@
       <router-link to="/generate" class="btn btn-primary btn-lg">Create a quiz →</router-link>
     </section>
 
+    <h2 style="margin-top:48px;">Quiz templates</h2>
+    <p class="page-subtitle" style="margin-top:-6px;">
+      Published by an admin - download a ready-made PDF right away, or copy one into your own My Quizzes to edit first.
+    </p>
+
+    <div v-if="templatesLoading" style="color:var(--text-dim);">Loading…</div>
+    <div v-else-if="!templates.length" class="empty-state">No templates published yet.</div>
+    <div v-else class="saved-quiz-list">
+      <div v-for="t in templates" :key="t.id" class="saved-quiz-row">
+        <div class="saved-quiz-info">
+          <div class="saved-quiz-title">{{ t.title }}</div>
+          <div class="saved-quiz-meta">{{ languageLabel(t.language) }} · {{ t.questionCount }} questions</div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" :disabled="downloadingId === t.id" @click="downloadTemplate(t)">
+            {{ downloadingId === t.id ? 'Preparing…' : 'Download PDF' }}
+          </button>
+          <button class="btn btn-secondary btn-sm" :disabled="copyingId === t.id" @click="copyTemplate(t)">
+            {{ copyingId === t.id ? 'Copying…' : 'Copy to My Quizzes' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <h2 style="margin-top:48px;">More ways to play</h2>
     <div class="dashboard-features">
       <router-link to="/weekly-grid" class="dashboard-feature-card">
@@ -38,3 +62,58 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { onMounted, ref } from 'vue'
+import api from '../services/api'
+import toast from '../services/toast'
+import { languageLabel } from '../constants'
+
+const templates = ref([])
+const templatesLoading = ref(true)
+const downloadingId = ref(null)
+const copyingId = ref(null)
+
+onMounted(loadTemplates)
+
+async function loadTemplates() {
+  templatesLoading.value = true
+  try {
+    templates.value = await api.listQuizTemplates()
+  } catch (e) {
+    // non-critical - the section just shows its empty state
+  } finally {
+    templatesLoading.value = false
+  }
+}
+
+async function downloadTemplate(t) {
+  downloadingId.value = t.id
+  try {
+    const full = await api.getQuizTemplate(t.id)
+    const blob = await api.exportPdf(full, true)
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${full.title.replace(/[^a-zA-Z0-9-_]/g, '_')}.pdf`
+    a.click()
+    window.URL.revokeObjectURL(url)
+  } catch (e) {
+    toast.show('Could not download that template.')
+  } finally {
+    downloadingId.value = null
+  }
+}
+
+async function copyTemplate(t) {
+  copyingId.value = t.id
+  try {
+    await api.copyQuizTemplate(t.id)
+    toast.show(`"${t.title}" added to My Quizzes.`)
+  } catch (e) {
+    toast.show('Could not copy that template.')
+  } finally {
+    copyingId.value = null
+  }
+}
+</script>

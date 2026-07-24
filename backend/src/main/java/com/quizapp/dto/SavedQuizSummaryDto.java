@@ -11,13 +11,16 @@ public class SavedQuizSummaryDto {
     private Language language;
     private int questionCount;
     private Instant createdAt;
+    private String sourceTemplateTitle;
 
-    public SavedQuizSummaryDto(Long id, String title, Language language, int questionCount, Instant createdAt) {
+    public SavedQuizSummaryDto(Long id, String title, Language language, int questionCount, Instant createdAt,
+                                String sourceTemplateTitle) {
         this.id = id;
         this.title = title;
         this.language = language;
         this.questionCount = questionCount;
         this.createdAt = createdAt;
+        this.sourceTemplateTitle = sourceTemplateTitle;
     }
 
     public Long getId() {
@@ -38,5 +41,9 @@ public class SavedQuizSummaryDto {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public String getSourceTemplateTitle() {
+        return sourceTemplateTitle;
     }
 }
