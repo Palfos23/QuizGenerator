@@ -15,6 +15,10 @@
         <h3>Weekly grid</h3>
         <p>Guess every athlete that fits this week's theme before you run out of strikes.</p>
       </router-link>
+      <router-link to="/grid-battle" class="dashboard-feature-card">
+        <h3>Grid Battle</h3>
+        <p>A pass-the-device multiplayer version of Weekly Grid - take turns, or lose a life trying.</p>
+      </router-link>
       <router-link to="/tension" class="dashboard-feature-card">
         <h3>Tension</h3>
         <p>A pass-the-device party quiz - push for a high-value guess, or play it safe.</p>

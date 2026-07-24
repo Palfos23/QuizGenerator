@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import QuizGeneratorView from '../views/QuizGeneratorView.vue'
 import DashboardView from '../views/DashboardView.vue'
+import MultiplayerGridView from '../views/MultiplayerGridView.vue'
 import AdminView from '../views/AdminView.vue'
 import HomeView from '../views/HomeView.vue'
 import AdminLoginView from '../views/AdminLoginView.vue'
@@ -26,6 +27,7 @@ const routes = [
 
   { path: '/generate', name: 'generate', component: QuizGeneratorView, meta: { requiresAuth: true } },
   { path: '/dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true } },
+  { path: '/grid-battle', name: 'grid-battle', component: MultiplayerGridView, meta: { requiresAuth: true } },
   { path: '/my-quizzes', name: 'my-quizzes', component: MyQuizzesView, meta: { requiresAuth: true } },
   { path: '/weekly-grid', name: 'weekly-grid', component: WeeklyGridListView, meta: { requiresAuth: true } },
   { path: '/weekly-grid/:id', name: 'weekly-grid-play', component: WeeklyGridPlayView, meta: { requiresAuth: true } },

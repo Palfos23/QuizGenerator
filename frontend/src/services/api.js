@@ -118,6 +118,12 @@ export default {
   searchGridCandidates(id, search) {
     return client.get(`/grids/${id}/candidates?search=${encodeURIComponent(search || '')}`).then(r => r.data)
   },
+  getMultiplayerGridStart(id) {
+    return client.get(`/grids/${id}/multiplayer-start`).then(r => r.data)
+  },
+  submitMultiplayerGridGuess(id, athleteId, revealedEntryIds) {
+    return client.post(`/grids/${id}/multiplayer-guess`, { athleteId, revealedEntryIds }).then(r => r.data)
+  },
   submitGridGuess(id, athleteId) {
     return client.post(`/grids/${id}/guess`, { athleteId }).then(r => r.data)
   },

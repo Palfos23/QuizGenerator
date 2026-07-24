@@ -5,6 +5,7 @@ import com.quizapp.dto.GridEntryViewDto;
 import com.quizapp.dto.GridPlayStateDto;
 import com.quizapp.dto.GridSummaryDto;
 import com.quizapp.dto.GuessResultDto;
+import com.quizapp.dto.MultiplayerGuessRequest;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.AppUser;
 import com.quizapp.model.Grid;
@@ -18,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -123,6 +126,68 @@ public class GridPlayService {
                 .map(AthleteService::toDto)
                 .limit(20)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Starting state for a multiplayer (local pass-and-play) game on this grid - all
+     * tiles blank, nothing solved yet. Unlike the single-player /play endpoint, this
+     * doesn't create or depend on a GridAttempt, since 2-4 local players share one
+     * screen rather than each having their own persisted attempt.
+     */
+    @Transactional(readOnly = true)
+    public GridPlayStateDto getMultiplayerStartState(Long gridId) {
+        Grid grid = gridRepository.findById(gridId)
+                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+
+        GridPlayStateDto dto = new GridPlayStateDto();
+        dto.setId(grid.getId());
+        dto.setTitle(grid.getTitle());
+        dto.setTheme(grid.getTheme());
+        dto.setSport(grid.getSport());
+        dto.setMaxStrikes(grid.getMaxStrikes());
+        dto.setStrikesUsed(0);
+        dto.setCompleted(false);
+        dto.setOvertime(false);
+        dto.setRevealed(false);
+        dto.setEntries(grid.getEntries().stream()
+                .sorted((a, b) -> b.getHintValue() - a.getHintValue())
+                .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), false, false, false,
+                        null, null, logoUrl(e), hintColor(e)))
+                .collect(Collectors.toList()));
+        return dto;
+    }
+
+    /**
+     * Stateless guess check for multiplayer mode - same core matching logic as the
+     * single-player guess(), but takes "already revealed" from the request instead
+     * of a persisted GridAttempt, since there's no single account to attach one to.
+     */
+    @Transactional(readOnly = true)
+    public GuessResultDto multiplayerGuess(Long gridId, MultiplayerGuessRequest request) {
+        Grid grid = gridRepository.findById(gridId)
+                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+
+        Set<Long> revealed = request.getRevealedEntryIds() == null
+                ? Collections.emptySet() : Set.copyOf(request.getRevealedEntryIds());
+
+        GuessResultDto result = new GuessResultDto();
+        GridEntry matched = grid.getEntries().stream()
+                .filter(e -> e.getAthlete().getId().equals(request.getAthleteId()))
+                .filter(e -> !revealed.contains(e.getId()))
+                .findFirst()
+                .orElse(null);
+
+        if (matched != null) {
+            result.setCorrect(true);
+            result.setEntry(new GridEntryViewDto(matched.getId(), matched.getHintLabel(), matched.getHintValue(),
+                    true, true, false, matched.getAthlete().getName(), matched.getAthlete().getPhotoUrl(),
+                    logoUrl(matched), hintColor(matched)));
+            result.setAllSolved(revealed.size() + 1 >= grid.getEntries().size());
+        } else {
+            result.setCorrect(false);
+            result.setAllSolved(false);
+        }
+        return result;
     }
 
     @Transactional

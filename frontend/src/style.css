@@ -1166,6 +1166,31 @@ mark {
   white-space: nowrap;
 }
 
+.mp-player-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.mp-player-card {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  min-width: 140px;
+  text-align: center;
+  background: rgba(255,255,255,0.02);
+  transition: all 0.2s ease;
+}
+.mp-player-card.active-turn {
+  background: rgba(242, 183, 5, 0.1);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+.mp-player-card.eliminated {
+  opacity: 0.4;
+}
+
 .you-row td {
   background: rgba(242, 183, 5, 0.1);
   font-weight: 700;

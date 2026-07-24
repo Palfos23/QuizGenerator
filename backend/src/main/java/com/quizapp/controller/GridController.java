@@ -47,6 +47,18 @@ public class GridController {
         return gridPlayService.searchCandidates(id, search);
     }
 
+    /** Starting tiles for a local pass-and-play multiplayer game - no persisted attempt involved. */
+    @GetMapping("/{id}/multiplayer-start")
+    public GridPlayStateDto multiplayerStart(@PathVariable Long id) {
+        return gridPlayService.getMultiplayerStartState(id);
+    }
+
+    /** Stateless guess check for multiplayer mode - the client tracks revealed entries itself. */
+    @PostMapping("/{id}/multiplayer-guess")
+    public GuessResultDto multiplayerGuess(@PathVariable Long id, @jakarta.validation.Valid @RequestBody com.quizapp.dto.MultiplayerGuessRequest request) {
+        return gridPlayService.multiplayerGuess(id, request);
+    }
+
     @PostMapping("/{id}/guess")
     public GuessResultDto guess(@PathVariable Long id, @Valid @RequestBody GuessRequest request, Authentication authentication) {
         return gridPlayService.guess(id, authentication.getName(), request.getAthleteId());
