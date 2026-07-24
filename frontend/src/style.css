@@ -165,6 +165,7 @@ h2 { font-size: 1.35rem; }
 .field input[type="number"],
 .field input[type="email"],
 .field input[type="password"],
+.field input[type="date"],
 .field select,
 .field textarea {
   width: 100%;
@@ -176,6 +177,11 @@ h2 { font-size: 1.35rem; }
   font-size: 0.95rem;
   font-family: var(--font-body);
   transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.field input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
 }
 
 .field input:focus, .field select:focus, .field textarea:focus {
@@ -587,6 +593,23 @@ mark {
   padding: 12px 14px;
   border: 1px dashed var(--border);
   border-radius: var(--radius-md);
+}
+.add-more-questions select,
+.add-more-questions input[type="text"],
+.add-more-questions input[type="number"] {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.add-more-questions select:focus,
+.add-more-questions input:focus {
+  border-color: var(--gold);
+  background: rgba(255,255,255,0.05);
 }
 
 .candidate-list {
@@ -1308,8 +1331,9 @@ mark {
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: rgba(255,255,255,0.02);
+  background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.02));
   max-width: 420px;
+  margin-top: 8px;
 }
 
 .login-progress {

@@ -2,7 +2,7 @@
   <div>
     <!-- List view -->
     <template v-if="view === 'list'">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
         <div>
           <h1>Weekly grids</h1>
           <p class="page-subtitle">

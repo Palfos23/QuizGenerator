@@ -1,30 +1,29 @@
 <template>
   <div class="landing">
     <section class="landing-hero">
-      <h1>Build a quiz in minutes, not hours</h1>
+      <h1>Quizzes, party games, and trivia - all in one place</h1>
       <p class="page-subtitle landing-lede">
-        Pick your categories, how many questions from each, a difficulty level and a language -
-        QuizMaker pulls matching questions from the question bank, and you can reorder, swap out,
-        or remove anything before you print it.
+        Build a custom quiz from a shared question bank, play a themed weekly guessing
+        grid, or run a pass-the-device party game with friends. Sign in with Google to get started.
       </p>
     </section>
 
     <section class="landing-features">
       <div class="feature-card">
-        <h3>Mix your own categories</h3>
-        <p>3 questions about sport, 4 about film, 6 about literature - however you want to split it.</p>
+        <h3>Create a quiz</h3>
+        <p>Mix categories, set a difficulty, then reorder, search in specific questions, or swap out anything before you print it.</p>
       </div>
       <div class="feature-card">
-        <h3>Dial in the difficulty</h3>
-        <p>A 1-10 scale per quiz, so you can keep things easy or make it brutal.</p>
+        <h3>Weekly grid</h3>
+        <p>Guess every athlete that fits the week's theme before you run out of strikes.</p>
       </div>
       <div class="feature-card">
-        <h3>Five languages</h3>
-        <p>English, German, French, Spanish or Norwegian question banks.</p>
+        <h3>Tension</h3>
+        <p>A pass-the-device party quiz - push for a high-value guess, or play it safe.</p>
       </div>
       <div class="feature-card">
-        <h3>Review before you print</h3>
-        <p>Reorder, discard and replace, or remove any question, then export straight to PDF.</p>
+        <h3>Suggest a question</h3>
+        <p>Add to the shared bank yourself - admin-reviewed, and usable in your own quizzes either way.</p>
       </div>
     </section>
 
