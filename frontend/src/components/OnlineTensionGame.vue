@@ -102,7 +102,7 @@
               @click="skipReveal"
             >Skip reveal</button>
             <button
-              v-else
+              v-else-if="isHost"
               class="btn btn-primary"
               style="margin-top:16px; width:100%;"
               :disabled="advancing"
@@ -110,6 +110,7 @@
             >
               {{ advancing ? 'Loading…' : (state.currentQuestionIndex + 1 < state.totalQuestions ? 'Next question' : 'Finish game') }}
             </button>
+            <div v-else style="margin-top:16px; text-align:center; color:var(--text-dim);">Waiting for the host to continue…</div>
           </template>
         </div>
       </div>
@@ -125,7 +126,8 @@ import api from '../services/api'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
-  yourParticipantId: { type: [Number, String], required: true }
+  yourParticipantId: { type: [Number, String], required: true },
+  isHost: { type: Boolean, default: false }
 })
 const emit = defineEmits(['gameOver', 'leave'])
 

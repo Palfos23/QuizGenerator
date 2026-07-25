@@ -123,7 +123,7 @@
       </div>
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>
-        <button class="btn btn-primary" :disabled="!joinCode.trim() || !onlineDisplayName.trim() || joiningRoom" @click="joinOnlineRoom">
+        <button class="btn btn-primary" :disabled="!joinCode.trim() || !onlineDisplayName.trim() || joiningRoom" @click="joinOnlineRoom()">
           {{ joiningRoom ? 'Joining…' : 'Join' }}
         </button>
       </div>
@@ -166,6 +166,7 @@
       v-else-if="stage === 'onlineGame'"
       :room-code="onlineRoom?.roomCode"
       :your-participant-id="onlineRoom?.yourParticipantId"
+      :is-host="isHost"
       @game-over="onOnlineGameOver"
       @leave="leaveGame"
     />

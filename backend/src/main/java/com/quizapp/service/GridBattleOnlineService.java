@@ -213,6 +213,9 @@ public class GridBattleOnlineService {
 
     @Transactional
     public GridBattleStateDto advanceToNextGrid(GameRoom room, String requestingEmail) {
+        if (!room.getHostEmail().equals(requestingEmail)) {
+            throw new IllegalStateException("Only the host can move on to the next grid.");
+        }
         GridBattleStateDto current = getState(room, requestingEmail);
         if (!current.isGridComplete()) {
             throw new IllegalStateException("This grid isn't finished yet.");

@@ -59,9 +59,10 @@
 
       <div v-else class="banner success" style="text-align:center;">
         <div><strong>Grid complete!</strong></div>
-        <button class="btn btn-primary" style="margin-top:12px;" :disabled="advancing" @click="nextGrid">
+        <button v-if="isHost" class="btn btn-primary" style="margin-top:12px;" :disabled="advancing" @click="nextGrid">
           {{ advancing ? 'Loading…' : (state.currentGridIndex + 1 < state.totalGrids ? 'Next grid' : 'Finish game') }}
         </button>
+        <div v-else style="margin-top:8px; color:var(--text-dim);">Waiting for the host to continue…</div>
       </div>
 
       <div class="grid-tiles">
@@ -100,7 +101,8 @@ import { readableTextColor } from '../constants'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
-  yourParticipantId: { type: [Number, String], required: true }
+  yourParticipantId: { type: [Number, String], required: true },
+  isHost: { type: Boolean, default: false }
 })
 const emit = defineEmits(['gameOver', 'leave'])
 

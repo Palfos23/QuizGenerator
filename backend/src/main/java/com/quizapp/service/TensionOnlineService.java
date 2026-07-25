@@ -208,6 +208,9 @@ public class TensionOnlineService {
 
     @Transactional
     public TensionOnlineStateDto nextQuestion(GameRoom room, String requestingEmail) {
+        if (!room.getHostEmail().equals(requestingEmail)) {
+            throw new IllegalStateException("Only the host can move on to the next question.");
+        }
         TensionOnlineStateDto current = getState(room, requestingEmail);
         if (!current.isRoundRevealed()) {
             throw new IllegalStateException("Not everyone has answered yet.");
