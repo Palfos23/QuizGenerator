@@ -97,7 +97,10 @@
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
           <input type="text" v-model="athleteSearchTerm" placeholder="Search athletes by name…" style="flex:1; min-width:180px;" />
-          <input type="text" v-model="bulkTeam" placeholder="...or add a whole team" style="flex:1; min-width:160px;" />
+          <select v-model="bulkTeam" style="flex:1; min-width:160px;">
+            <option value="">...or add a whole team</option>
+            <option v-for="t in teamOptions" :key="t" :value="t">{{ t }}</option>
+          </select>
           <button class="btn btn-secondary btn-sm" @click="addAllByTeam" :disabled="!bulkTeam.trim()">+ Add team</button>
         </div>
 
@@ -196,6 +199,7 @@ function removeCandidate(c) {
   if (candidatePage.value > maxPage) candidatePage.value = maxPage
 }
 const clubOptions = ref([])
+const teamOptions = ref([])
 
 const athleteSearchTerm = ref('')
 const athleteSearchResults = ref([])
@@ -204,6 +208,7 @@ const bulkTeam = ref('')
 onMounted(() => {
   loadGrids()
   loadClubOptions()
+  loadTeamOptions()
 })
 
 async function loadClubOptions() {
@@ -211,6 +216,15 @@ async function loadClubOptions() {
     clubOptions.value = await api.adminSearchClubs(form.sport)
   } catch (e) {
     // non-critical - the club dropdown just stays empty
+  }
+}
+
+async function loadTeamOptions() {
+  try {
+    const athletes = await api.adminSearchAthletes({ sport: form.sport })
+    teamOptions.value = [...new Set(athletes.map(a => a.team).filter(Boolean))].sort()
+  } catch (e) {
+    // non-critical - the team dropdown just stays empty
   }
 }
 
@@ -246,6 +260,7 @@ function changeSport(code) {
   form.sport = code
   athleteSearchResults.value = []
   loadClubOptions()
+  loadTeamOptions()
 }
 
 function addCandidate(athlete) {
@@ -280,6 +295,7 @@ function resetForm() {
   athleteSearchResults.value = []
   bulkTeam.value = ''
   loadClubOptions()
+  loadTeamOptions()
 }
 
 function openCreate() {
@@ -316,6 +332,7 @@ async function openEdit(id) {
     editingGridId.value = id
     view.value = 'builder'
     loadClubOptions()
+    loadTeamOptions()
   } catch (e) {
     error.value = 'Could not load that grid.'
   }
