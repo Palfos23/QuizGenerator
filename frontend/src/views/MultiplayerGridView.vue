@@ -29,6 +29,33 @@
           <p>Everyone plays from their own device with a shared room code.</p>
         </button>
       </div>
+
+      <details class="advanced-disclosure" style="margin-top:24px;">
+        <summary>Not sure how it works? See an example</summary>
+
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.02);">
+          <p style="margin-top:0;">
+            Say the grid's theme is <em>"Top scorers for a football club last season."</em> It's a board of hidden tiles,
+            each one showing a small hint before it's solved - like <strong>"FW | 14"</strong> for a forward with 14 goals.
+          </p>
+          <p>
+            On your turn, you search for whichever player you think matches one of the hidden tiles and submit a guess.
+          </p>
+          <ul style="margin:0 0 14px; padding-left:20px; line-height:1.7;">
+            <li><strong style="color:var(--teal);">Guess right</strong> - that tile flips over to reveal the photo and name, and you score a point.</li>
+            <li><strong style="color:var(--coral);">Guess wrong</strong> - you lose one of your lives (5 by default).</li>
+          </ul>
+          <p>
+            Either way, the turn passes to the next player. Each player has their own separate lives, so getting
+            eliminated doesn't end the game for everyone else - the board keeps going until it's either fully solved,
+            or every player's out of lives.
+          </p>
+          <p style="margin-bottom:0;">
+            A full game is 2-4 grids played back to back, with everyone's points added up across all of them -
+            whoever has the highest total at the end wins.
+          </p>
+        </div>
+      </details>
     </template>
 
     <template v-else-if="stage === 'landing'">

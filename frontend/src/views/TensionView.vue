@@ -29,6 +29,31 @@
           <p>Everyone plays from their own device with a shared room code.</p>
         </button>
       </div>
+
+      <details class="advanced-disclosure" style="margin-top:24px;">
+        <summary>Not sure how it works? See an example</summary>
+
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.02);">
+          <p style="margin-top:0;">
+            Say the question is <em>"Name one of the 10 most-searched cooking ingredients on Google in 2023"</em>
+            (a made-up example, just to illustrate). There's a ranked list of 10 correct answers nobody can see yet:
+          </p>
+          <ul style="margin:0 0 14px; padding-left:20px; line-height:1.7;">
+            <li><strong>Rank 1: Salt</strong> - the obvious guess. Safe, but only worth <strong>1 point</strong>.</li>
+            <li><strong>Rank 5: Garlic</strong> - a bit less obvious. Worth <strong>5 points</strong>.</li>
+            <li><strong>Rank 10: Basil</strong> - the riskiest safe answer. Worth <strong>10 points</strong> - the closer to 10, the more you're rewarded for pushing your luck.</li>
+          </ul>
+          <p>
+            But just past the list sits a trap - a "tension" answer like <strong>Oregano</strong>. It seems just as plausible
+            as Basil, but it didn't make the top 10. Guess it and you lose <strong style="color:var(--coral);">5 points</strong>.
+            Guess something unrelated entirely, like <em>Chocolate</em>, and you lose <strong style="color:var(--coral);">3 points</strong>.
+          </p>
+          <p style="margin-bottom:0;">
+            Players take turns guessing one answer each, and nobody can repeat an answer someone else already used that round.
+            Once everyone's answered, the whole list reveals - who guessed what, and how it scored.
+          </p>
+        </div>
+      </details>
     </template>
 
     <template v-else-if="stage === 'landing'">
