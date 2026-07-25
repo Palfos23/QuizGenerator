@@ -15,8 +15,20 @@
       <div v-if="showScoreboard" class="modal-backdrop no-print" @click.self="showScoreboard = false">
         <div class="modal">
           <h2 style="margin-top:0;">Scoreboard</h2>
+
+          <div v-if="scoreboardData && scoreboardEntries.length" class="stats-panel" style="text-align:center;">
+            <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Average score</div>
+            <div style="font-size:1.5rem; font-weight:700; margin-top:2px;">{{ averageScore.toFixed(1) }} / {{ scoreboardData.entryCount }}</div>
+            <div
+              v-if="averageDelta"
+              style="margin-top:6px; font-weight:600; font-size:0.9rem;"
+              :style="{ color: averageDelta > 0 ? 'var(--teal)' : 'var(--coral)' }"
+            >{{ averageDelta > 0 ? '▲' : '▼' }} You're {{ Math.abs(averageDelta) }} {{ averageDelta > 0 ? 'above' : 'below' }} average</div>
+            <div v-else-if="yourRank" style="margin-top:6px; color:var(--text-dim); font-size:0.9rem;">Right at the average</div>
+          </div>
+
           <div v-if="scoreboardLoading" style="color:var(--text-dim); font-size:0.9rem;">Loading…</div>
-          <div v-else-if="!scoreboard.length" style="color:var(--text-dim); font-size:0.9rem;">
+          <div v-else-if="!scoreboardEntries.length" style="color:var(--text-dim); font-size:0.9rem;">
             Nobody has completed this grid yet.
           </div>
           <table v-else class="table scoreboard-table">
@@ -282,22 +294,28 @@ async function doReveal() {
 
 const showGiveUpConfirm = ref(false)
 const showScoreboard = ref(false)
-const scoreboard = ref([])
+const scoreboardData = ref(null)
 const scoreboardLoading = ref(false)
 
-const topFive = computed(() => scoreboard.value.slice(0, 5))
+const scoreboardEntries = computed(() => scoreboardData.value?.entries || [])
+const topFive = computed(() => scoreboardEntries.value.slice(0, 5))
 const yourRank = computed(() => {
-  const idx = scoreboard.value.findIndex(s => s.isYou)
+  const idx = scoreboardEntries.value.findIndex(s => s.isYou)
   if (idx === -1) return null
-  return { rank: idx + 1, entry: scoreboard.value[idx] }
+  return { rank: idx + 1, entry: scoreboardEntries.value[idx] }
+})
+const averageScore = computed(() => scoreboardData.value?.averageScore ?? 0)
+const averageDelta = computed(() => {
+  if (!yourRank.value) return null
+  return Math.round((yourRank.value.entry.guessedCount - averageScore.value) * 10) / 10
 })
 
 async function openScoreboard() {
   showScoreboard.value = true
-  if (!scoreboard.value.length) {
+  if (!scoreboardData.value) {
     scoreboardLoading.value = true
     try {
-      scoreboard.value = await api.getGridScoreboard(gridId)
+      scoreboardData.value = await api.getGridScoreboard(gridId)
     } catch (e) {
       // scoreboard is a nice-to-have - fail quietly, empty state already covers it
     } finally {

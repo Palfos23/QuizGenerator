@@ -57,12 +57,12 @@ public class GridPlayService {
     }
 
     @Transactional(readOnly = true)
-    public List<com.quizapp.dto.GridScoreboardEntryDto> getScoreboard(Long gridId, String requestingUserEmail) {
+    public com.quizapp.dto.GridScoreboardDto getScoreboard(Long gridId, String requestingUserEmail) {
         Grid grid = gridRepository.findById(gridId)
                 .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
         int entryCount = grid.getEntries().size();
 
-        return gridAttemptRepository.findByGrid_Id(gridId).stream()
+        List<com.quizapp.dto.GridScoreboardEntryDto> entries = gridAttemptRepository.findByGrid_Id(gridId).stream()
                 .filter(GridAttempt::isCompleted) // in-progress attempts aren't shown - they're still being played
                 .map(a -> {
                     // Overtime solves don't count toward the competitive score - only
@@ -80,6 +80,11 @@ public class GridPlayService {
                     return Boolean.compare(a.isUsedOvertime(), b.isUsedOvertime());
                 })
                 .collect(Collectors.toList());
+
+        double averageScore = entries.isEmpty() ? 0
+                : entries.stream().mapToInt(com.quizapp.dto.GridScoreboardEntryDto::getGuessedCount).average().orElse(0);
+
+        return new com.quizapp.dto.GridScoreboardDto(entries, averageScore, entryCount);
     }
 
     @Transactional(readOnly = true)

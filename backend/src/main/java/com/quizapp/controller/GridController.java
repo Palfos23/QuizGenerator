@@ -28,7 +28,7 @@ public class GridController {
     }
 
     @GetMapping("/{id}/scoreboard")
-    public List<com.quizapp.dto.GridScoreboardEntryDto> scoreboard(@PathVariable Long id, Authentication authentication) {
+    public com.quizapp.dto.GridScoreboardDto scoreboard(@PathVariable Long id, Authentication authentication) {
         return gridPlayService.getScoreboard(id, authentication.getName());
     }
 
