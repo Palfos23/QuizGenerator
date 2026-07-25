@@ -204,7 +204,7 @@
       <h1 style="text-align:center;">Game over!</h1>
       <h2 v-if="winner" style="text-align:center; color:var(--gold);">🏆 {{ winner }}</h2>
 
-      <table class="table" style="max-width:480px; margin:20px auto;">
+      <table class="table" style="max-width:480px; margin:20px auto; table-layout:fixed; min-width:0;">
         <thead>
           <tr><th>#</th><th>Player</th><th style="text-align:right;">Score</th></tr>
         </thead>
