@@ -93,6 +93,13 @@ public class GridAdminService {
                 .collect(Collectors.toList());
         grid.setCandidates(candidates);
 
+        // Match against existing entries by athlete so a routine hint/value edit
+        // preserves each entry's id - solvedEntryIds on every player's saved
+        // GridAttempt references these ids, so recreating them from scratch here
+        // would silently disconnect everyone's progress on this grid.
+        Map<Long, GridEntry> existingByAthleteId = grid.getEntries().stream()
+                .collect(Collectors.toMap(e -> e.getAthlete().getId(), e -> e, (a, b) -> a));
+
         int index = 0;
         List<GridEntry> entries = new ArrayList<>();
         for (GridEntryInputDto input : request.getEntries()) {
@@ -103,7 +110,7 @@ public class GridAdminService {
                 athlete = athleteRepository.findById(input.getAthleteId())
                         .orElseThrow(() -> new IllegalArgumentException("No athlete found with id " + input.getAthleteId()));
             }
-            GridEntry entry = new GridEntry();
+            GridEntry entry = existingByAthleteId.getOrDefault(input.getAthleteId(), new GridEntry());
             entry.setAthlete(athlete);
             entry.setHintLabel(input.getHintLabel());
             entry.setHintValue(input.getHintValue());
@@ -113,6 +120,8 @@ public class GridAdminService {
                 Club club = clubRepository.findById(input.getClubId())
                         .orElseThrow(() -> new IllegalArgumentException("No club found with id " + input.getClubId()));
                 entry.setClub(club);
+            } else {
+                entry.setClub(null);
             }
             entry.setShowLogo(input.getShowLogo());
 
