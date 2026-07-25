@@ -117,7 +117,7 @@
         </div>
 
         <div v-else class="candidate-list">
-          <div v-for="(c, idx) in candidates" :key="c.athleteId" class="candidate-row">
+          <div v-for="c in pagedCandidates" :key="c.athleteId" class="candidate-row">
             <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600; margin:0;">
               <input type="checkbox" v-model="c.correct" style="width:auto;" />
               {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
@@ -134,8 +134,10 @@
                 Show logo
               </label>
             </div>
-            <button class="btn btn-danger btn-sm" @click="candidates.splice(idx, 1)">✕</button>
+            <button class="btn btn-danger btn-sm" @click="removeCandidate(c)">✕</button>
           </div>
+
+          <Pagination v-model:page="candidatePage" :page-size="CANDIDATE_PAGE_SIZE" :total-items="candidates.length" />
         </div>
       </div>
 
@@ -155,10 +157,11 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import Pagination from '../components/Pagination.vue'
 import { SPORTS, sportLabel } from '../constants'
 
 const view = ref('list')
@@ -178,6 +181,20 @@ const form = reactive({
   sortAscending: false
 })
 const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue, clubId, showLogo }]
+
+const CANDIDATE_PAGE_SIZE = 25
+const candidatePage = ref(1)
+const pagedCandidates = computed(() => {
+  const start = (candidatePage.value - 1) * CANDIDATE_PAGE_SIZE
+  return candidates.value.slice(start, start + CANDIDATE_PAGE_SIZE)
+})
+
+function removeCandidate(c) {
+  const realIndex = candidates.value.indexOf(c)
+  if (realIndex !== -1) candidates.value.splice(realIndex, 1)
+  const maxPage = Math.max(1, Math.ceil(candidates.value.length / CANDIDATE_PAGE_SIZE))
+  if (candidatePage.value > maxPage) candidatePage.value = maxPage
+}
 const clubOptions = ref([])
 
 const athleteSearchTerm = ref('')
@@ -258,6 +275,7 @@ function resetForm() {
   form.maxStrikes = 5
   form.sortAscending = false
   candidates.value = []
+  candidatePage.value = 1
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
   bulkTeam.value = ''
@@ -293,6 +311,7 @@ async function openEdit(id) {
         showLogo: entry?.showLogo ?? true
       }
     })
+    candidatePage.value = 1
 
     editingGridId.value = id
     view.value = 'builder'

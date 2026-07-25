@@ -84,9 +84,15 @@ public class GridAdminService {
                     .orElseThrow(() -> new IllegalArgumentException("No athlete found with id " + athleteId)));
         }
 
+        // Reuse existing candidate rows for athletes that are still in the pool -
+        // deleting and recreating every single one on every save (even when nothing
+        // changed) is what made saving slow with a large candidate pool.
+        Map<Long, GridCandidate> existingCandidateByAthleteId = grid.getCandidates().stream()
+                .collect(Collectors.toMap(c -> c.getAthlete().getId(), c -> c, (a, b) -> a));
+
         List<GridCandidate> candidates = request.getCandidateAthleteIds().stream()
                 .map(athleteId -> {
-                    GridCandidate c = new GridCandidate();
+                    GridCandidate c = existingCandidateByAthleteId.getOrDefault(athleteId, new GridCandidate());
                     c.setAthlete(athleteById.get(athleteId));
                     return c;
                 })
