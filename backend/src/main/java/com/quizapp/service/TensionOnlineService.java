@@ -104,9 +104,25 @@ public class TensionOnlineService {
         List<TensionRoundAnswer> roundAnswers = roundAnswerRepository.findByRoomState_Id(state.getId());
         Set<Long> answeredIds = roundAnswers.stream().map(a -> a.getParticipant().getId()).collect(Collectors.toSet());
         dto.setPlayers(toPlayerDtos(participantStates, answeredIds));
+        dto.setAnswersSoFar(roundAnswers.stream()
+                .map(a -> new TensionAnsweredSoFarDto(a.getParticipant().getDisplayName(), a.getAnswerText()))
+                .collect(Collectors.toList()));
 
         boolean allAnswered = answeredIds.size() >= participantStates.size();
         dto.setRoundRevealed(allAnswered);
+
+        if (!allAnswered) {
+            List<GameRoomParticipant> ordered = room.getParticipants();
+            int idx = state.getCurrentTurnParticipantIndex();
+            for (int tries = 0; tries < ordered.size(); tries++) {
+                GameRoomParticipant candidate = ordered.get(idx % ordered.size());
+                if (!answeredIds.contains(candidate.getId())) {
+                    dto.setCurrentTurnParticipantId(candidate.getId());
+                    break;
+                }
+                idx++;
+            }
+        }
 
         if (allAnswered) {
             dto.setSafeAnswers(question.getSafeAnswers());
@@ -158,19 +174,34 @@ public class TensionOnlineService {
     @Transactional
     public TensionOnlineStateDto submitAnswer(GameRoom room, String requestingEmail, String answerText) {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
+        TensionOnlineStateDto currentView = getState(room, requestingEmail);
+
+        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
+        if (currentView.isRoundRevealed()) throw new IllegalStateException("This round is already finished.");
+        if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
+            throw new IllegalStateException("It's not your turn.");
+        }
+
+        String trimmed = answerText.trim();
+        boolean duplicate = currentView.getAnswersSoFar().stream()
+                .anyMatch(a -> a.getAnswerText().equalsIgnoreCase(trimmed));
+        if (duplicate) {
+            throw new IllegalStateException("That answer's already been used by another player this round.");
+        }
+
         TensionRoomState state = roomStateRepository.findByRoom_Id(room.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
-
-        if (state.isFinished()) throw new IllegalStateException("This game has already finished.");
-        if (roundAnswerRepository.findByRoomState_IdAndParticipant_Id(state.getId(), me.getId()).isPresent()) {
-            throw new IllegalStateException("You've already answered this round.");
-        }
 
         TensionRoundAnswer answer = new TensionRoundAnswer();
         answer.setRoomState(state);
         answer.setParticipant(me);
-        answer.setAnswerText(answerText.trim());
+        answer.setAnswerText(trimmed);
         roundAnswerRepository.save(answer);
+
+        List<GameRoomParticipant> ordered = room.getParticipants();
+        int myIndex = ordered.indexOf(me);
+        state.setCurrentTurnParticipantIndex((myIndex + 1) % ordered.size());
+        roomStateRepository.save(state);
 
         return getState(room, requestingEmail);
     }
@@ -194,6 +225,7 @@ public class TensionOnlineService {
             gameRoomRepository.save(room);
         } else {
             state.setCurrentQuestionIndex(state.getCurrentQuestionIndex() + 1);
+            state.setCurrentTurnParticipantIndex(state.getCurrentQuestionIndex() % room.getParticipants().size());
         }
         roomStateRepository.save(state);
         return getState(room, requestingEmail);

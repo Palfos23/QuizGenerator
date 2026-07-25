@@ -14,6 +14,8 @@ public class TensionOnlineStateDto {
     private String answersCategory;
     private int tensionAnswerCount;
     private List<TensionOnlinePlayerDto> players;
+    private Long currentTurnParticipantId;
+    private List<TensionAnsweredSoFarDto> answersSoFar;
     private boolean roundRevealed;
     private List<TensionAnswerEntryDto> safeAnswers;
     private List<TensionAnswerEntryDto> tensionAnswers;
@@ -38,6 +40,10 @@ public class TensionOnlineStateDto {
     public void setTensionAnswerCount(int tensionAnswerCount) { this.tensionAnswerCount = tensionAnswerCount; }
     public List<TensionOnlinePlayerDto> getPlayers() { return players; }
     public void setPlayers(List<TensionOnlinePlayerDto> players) { this.players = players; }
+    public Long getCurrentTurnParticipantId() { return currentTurnParticipantId; }
+    public void setCurrentTurnParticipantId(Long currentTurnParticipantId) { this.currentTurnParticipantId = currentTurnParticipantId; }
+    public List<TensionAnsweredSoFarDto> getAnswersSoFar() { return answersSoFar; }
+    public void setAnswersSoFar(List<TensionAnsweredSoFarDto> answersSoFar) { this.answersSoFar = answersSoFar; }
     public boolean isRoundRevealed() { return roundRevealed; }
     public void setRoundRevealed(boolean roundRevealed) { this.roundRevealed = roundRevealed; }
     public List<TensionAnswerEntryDto> getSafeAnswers() { return safeAnswers; }

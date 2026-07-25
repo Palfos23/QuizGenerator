@@ -154,9 +154,8 @@
       <h1>Who's playing?</h1>
       <p class="page-subtitle" v-if="duplicateNames">Two players can't have the same name.</p>
 
-      <div v-for="(p, i) in setupPlayers" :key="i" class="field" style="display:flex; gap:10px; align-items:center;">
-        <input type="text" v-model="p.name" :placeholder="`Player ${i + 1}`" style="flex:1;" />
-        <span class="color-swatch-btn" :style="{ background: p.color }" title="Your color"></span>
+      <div v-for="(p, i) in setupPlayers" :key="i" class="field">
+        <input type="text" v-model="p.name" :placeholder="`Player ${i + 1}`" />
       </div>
 
       <div style="display:flex; gap:12px;">

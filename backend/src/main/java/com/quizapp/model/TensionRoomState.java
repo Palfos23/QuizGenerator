@@ -29,6 +29,17 @@ public class TensionRoomState {
     private int currentQuestionIndex = 0;
 
     @Column(nullable = false)
+    private int currentTurnParticipantIndex = 0;
+
+    public int getCurrentTurnParticipantIndex() {
+        return currentTurnParticipantIndex;
+    }
+
+    public void setCurrentTurnParticipantIndex(int currentTurnParticipantIndex) {
+        this.currentTurnParticipantIndex = currentTurnParticipantIndex;
+    }
+
+    @Column(nullable = false)
     private boolean finished = false;
 
     // Guards against double-applying a round's scores to cumulative totals if the

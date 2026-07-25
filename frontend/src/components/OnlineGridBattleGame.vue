@@ -17,7 +17,7 @@
           :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.gridComplete, eliminated: p.eliminatedThisGrid }"
           :style="{ borderColor: p.color }"
         >
-          <strong>{{ p.name }}<span v-if="!p.connected" title="Disconnected" style="color:var(--coral);"> ⚠</span></strong>
+          <strong>{{ p.name }}</strong>
           <div class="lives-hearts" style="margin-top:4px;">
             <span
               v-for="i in state.maxStrikes"
