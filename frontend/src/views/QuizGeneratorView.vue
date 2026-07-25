@@ -37,8 +37,7 @@
       </div>
 
       <div class="field">
-        <label>Categories &amp; how many questions from each <span class="picker-hint">pick as many as you like</span></label>
-        <p style="color:var(--text-dim); font-size:0.85rem; margin:-4px 0 12px;">Tap a category to add it, then use +/- to set the count.</p>
+        <label>Categories &amp; how many questions from each</label>
 
         <div v-if="categoriesLoading" style="color:var(--text-dim); padding:20px;">Loading categories…</div>
         <div v-else-if="!availableCategories.length" class="empty-state friendly" style="padding:20px;">
