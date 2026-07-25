@@ -17,13 +17,13 @@
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <div class="strike-dots" style="margin-top:4px;">
+          <div class="lives-hearts" style="margin-top:4px;">
             <span
               v-for="i in gridState.maxStrikes"
               :key="i"
-              class="strike-dot"
-              :class="{ used: i <= (livesUsed[p.name] || 0) }"
-            ></span>
+              class="life-heart"
+              :class="{ lost: i <= (livesUsed[p.name] || 0) }"
+            >{{ i <= (livesUsed[p.name] || 0) ? '🖤' : '❤️' }}</span>
           </div>
           <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ scores[p.name] || 0 }}</div>
         </div>

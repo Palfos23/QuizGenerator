@@ -670,6 +670,23 @@ mark {
   font-family: var(--font-mono);
 }
 
+.lives-hearts {
+  display: flex;
+  gap: 3px;
+}
+
+.life-heart {
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.life-heart.lost {
+  opacity: 0.4;
+}
+.life-heart.just-lost {
+  animation: strike-pop 0.5s ease;
+}
+
 .strike-dots {
   display: flex;
   gap: 6px;
