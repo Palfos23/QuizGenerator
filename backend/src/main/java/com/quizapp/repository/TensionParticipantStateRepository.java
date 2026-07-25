@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface TensionParticipantStateRepository extends JpaRepository<TensionParticipantState, Long> {
     List<TensionParticipantState> findByRoomState_Id(Long roomStateId);
     Optional<TensionParticipantState> findByRoomState_IdAndParticipant_Id(Long roomStateId, Long participantId);
+    void deleteByRoomState_Id(Long roomStateId);
 }

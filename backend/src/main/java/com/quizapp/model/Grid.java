@@ -37,6 +37,21 @@ public class Grid {
     @Column(name = "max_strikes", nullable = false)
     private int maxStrikes = 5;
 
+    // Most grids rank by "biggest number wins" (goals, appearances) so tiles sort
+    // highest-value-first by default. A grid themed around finishing position
+    // (e.g. "Top 20 riders, Tour de France 2025") needs the opposite - 1st place
+    // should lead, not trail - so this lets an admin flip the sort direction.
+    @Column(name = "sort_ascending", nullable = false)
+    private boolean sortAscending = false;
+
+    public boolean isSortAscending() {
+        return sortAscending;
+    }
+
+    public void setSortAscending(boolean sortAscending) {
+        this.sortAscending = sortAscending;
+    }
+
     // The full searchable pool for this grid's guess box - includes both the correct
     // answers (see GridEntry) and any decoys the admin wants users to be able to guess
     // (and get wrong) - e.g. every other Spurs player who didn't hit 10 goals.

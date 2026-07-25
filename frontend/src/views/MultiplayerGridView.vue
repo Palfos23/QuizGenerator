@@ -1,6 +1,37 @@
 <template>
   <div>
-    <template v-if="stage === 'landing'">
+    <template v-if="stage === 'modeChoice'">
+      <h1>Grid Battle</h1>
+      <p class="page-subtitle">
+        Take turns guessing - get it right and the tile reveals (and you score a point),
+        get it wrong and you lose a life. Play continues until a grid is fully solved or everyone's out of lives.
+      </p>
+
+      <div v-if="error" class="banner error">{{ error }}</div>
+
+      <div v-if="savedRoomCode" class="banner" style="background:rgba(242,183,5,0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <span>You have a game in progress in room <strong>{{ savedRoomCode }}</strong>.</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary btn-sm" :disabled="rejoining" @click="rejoinSavedRoom">
+            {{ rejoining ? 'Rejoining…' : 'Rejoin' }}
+          </button>
+          <button class="btn btn-secondary btn-sm" @click="dismissSavedRoom">Dismiss</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:20px;">
+        <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'landing'">
+          <h3>📱 Same device</h3>
+          <p>Pass the phone around - everyone takes their turn on one screen.</p>
+        </button>
+        <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'onlineChoice'">
+          <h3>🌐 Play online</h3>
+          <p>Everyone plays from their own device with a shared room code.</p>
+        </button>
+      </div>
+    </template>
+
+    <template v-else-if="stage === 'landing'">
       <h1>Grid Battle</h1>
       <p class="page-subtitle">
         A pass-the-device multiplayer version of Weekly Grid. Take turns guessing -
@@ -33,8 +64,8 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" @click="goToSetup">Create game</button>
-      <button class="btn btn-secondary" style="margin-left:10px;" @click="stage = 'onlineChoice'">🌐 Play online instead</button>
+      <button class="btn btn-secondary" @click="stage = 'modeChoice'">← Back</button>
+      <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">Create game</button>
     </template>
 
     <template v-else-if="stage === 'onlineChoice'">
@@ -45,12 +76,17 @@
         <button class="btn btn-primary" @click="stage = 'onlineCreate'">+ Create a room</button>
         <button class="btn btn-secondary" @click="stage = 'onlineJoin'">Join with a code</button>
       </div>
-      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'landing'">← Back</button>
+      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'modeChoice'">← Back</button>
     </template>
 
     <template v-else-if="stage === 'onlineCreate'">
       <h1>Create a room</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
+
+      <div class="field">
+        <label>Your name <span class="picker-hint">shown to other players</span></label>
+        <input type="text" v-model="onlineDisplayName" placeholder="Your name" />
+      </div>
 
       <div class="field">
         <label>Grids <span class="picker-hint">2-4</span></label>
@@ -87,7 +123,7 @@
 
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>
-        <button class="btn btn-primary" :disabled="creatingRoom || (onlineGridMode === 'manual' && onlineChosenGrids.length !== onlineNumGrids)" @click="createOnlineRoom">
+        <button class="btn btn-primary" :disabled="creatingRoom || !onlineDisplayName.trim() || (onlineGridMode === 'manual' && onlineChosenGrids.length !== onlineNumGrids)" @click="createOnlineRoom">
           {{ creatingRoom ? 'Creating…' : 'Create room' }}
         </button>
       </div>
@@ -97,12 +133,16 @@
       <h1>Join a room</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div class="field">
+        <label>Your name <span class="picker-hint">shown to other players</span></label>
+        <input type="text" v-model="onlineDisplayName" placeholder="Your name" />
+      </div>
+      <div class="field">
         <label>Room code</label>
         <input type="text" v-model="joinCode" placeholder="e.g. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" />
       </div>
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>
-        <button class="btn btn-primary" :disabled="!joinCode.trim() || joiningRoom" @click="joinOnlineRoom">
+        <button class="btn btn-primary" :disabled="!joinCode.trim() || !onlineDisplayName.trim() || joiningRoom" @click="joinOnlineRoom()">
           {{ joiningRoom ? 'Joining…' : 'Join' }}
         </button>
       </div>
@@ -147,7 +187,7 @@
       :your-participant-id="onlineRoom?.yourParticipantId"
       :is-host="isHost"
       @game-over="onOnlineGameOver"
-      @leave="stage = 'landing'; resetOnline()"
+      @leave="leaveGame"
     />
 
     <template v-else-if="stage === 'setup'">
@@ -228,9 +268,10 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import api from '../services/api'
 import auth from '../services/auth'
+import activeRoom from '../services/activeRoom'
 import { sportLabel } from '../constants'
 import MultiplayerGridGame from '../components/MultiplayerGridGame.vue'
 import OnlineGridBattleGame from '../components/OnlineGridBattleGame.vue'
@@ -246,7 +287,7 @@ const colorOptions = [
   { hex: '#5D038A', name: 'Purple' }
 ]
 
-const stage = ref('landing')
+const stage = ref('modeChoice')
 const error = ref('')
 const numPlayers = ref(2)
 const numGrids = ref(2)
@@ -339,6 +380,7 @@ const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] -
 const winner = computed(() => sortedScores.value[0]?.[0] ?? null)
 
 function onGameOver(scores) {
+  lastGameWasOnline.value = false
   finalScores.value = scores
   stage.value = 'done'
 }
@@ -346,11 +388,13 @@ function onGameOver(scores) {
 function resetGame() {
   gameGrids.value = []
   finalScores.value = []
-  stage.value = 'landing'
+  stage.value = lastGameWasOnline.value ? 'modeChoice' : 'landing'
 }
 
 // --- Online multiplayer ---
 const onlineNumGrids = ref(2)
+const onlineDisplayName = ref(auth.state.displayName || '')
+const lastGameWasOnline = ref(false)
 const onlineGridMode = ref('random')
 const onlineChosenGrids = ref([])
 const joinCode = ref('')
@@ -388,7 +432,7 @@ async function createOnlineRoom() {
   try {
     const payload = {
       gameType: 'GRID_BATTLE',
-      displayName: auth.state.displayName,
+      displayName: onlineDisplayName.value.trim(),
       color: randomOnlineColor()
     }
     if (onlineGridMode.value === 'manual') {
@@ -397,6 +441,7 @@ async function createOnlineRoom() {
       payload.randomGridCount = onlineNumGrids.value
     }
     onlineRoom.value = await api.createRoom(payload)
+    activeRoom.save(onlineRoom.value.roomCode, 'GRID_BATTLE')
     stage.value = 'onlineLobby'
     startLobbyPolling()
   } catch (e) {
@@ -406,18 +451,26 @@ async function createOnlineRoom() {
   }
 }
 
-async function joinOnlineRoom() {
+async function joinOnlineRoom(codeOverride) {
   error.value = ''
   joiningRoom.value = true
   try {
-    onlineRoom.value = await api.joinRoom(joinCode.value.trim().toUpperCase(), {
-      displayName: auth.state.displayName,
+    const code = (codeOverride || joinCode.value).trim().toUpperCase()
+    onlineRoom.value = await api.joinRoom(code, {
+      displayName: onlineDisplayName.value.trim(),
       color: randomOnlineColor()
     })
-    stage.value = 'onlineLobby'
-    startLobbyPolling()
+    activeRoom.save(onlineRoom.value.roomCode, 'GRID_BATTLE')
+    if (onlineRoom.value.status === 'IN_PROGRESS') {
+      stage.value = 'onlineGame'
+    } else {
+      stage.value = 'onlineLobby'
+      startLobbyPolling()
+    }
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not join that room - check the code and try again.'
+    activeRoom.clear()
+    savedRoomCode.value = ''
   } finally {
     joiningRoom.value = false
   }
@@ -456,8 +509,15 @@ async function startOnlineRoom() {
 
 function leaveLobby() {
   clearInterval(lobbyPollTimer)
+  activeRoom.clear()
   resetOnline()
-  stage.value = 'landing'
+  stage.value = 'modeChoice'
+}
+
+function leaveGame() {
+  activeRoom.clear()
+  resetOnline()
+  stage.value = 'modeChoice'
 }
 
 function resetOnline() {
@@ -468,8 +528,30 @@ function resetOnline() {
 }
 
 function onOnlineGameOver(scores) {
+  activeRoom.clear()
+  lastGameWasOnline.value = true
   finalScores.value = scores
   resetOnline()
   stage.value = 'done'
+}
+
+const savedRoomCode = ref('')
+const rejoining = ref(false)
+
+onMounted(() => {
+  savedRoomCode.value = activeRoom.get('GRID_BATTLE') || ''
+})
+
+function dismissSavedRoom() {
+  activeRoom.clear()
+  savedRoomCode.value = ''
+}
+
+async function rejoinSavedRoom() {
+  rejoining.value = true
+  const code = savedRoomCode.value
+  savedRoomCode.value = ''
+  await joinOnlineRoom(code)
+  rejoining.value = false
 }
 </script>

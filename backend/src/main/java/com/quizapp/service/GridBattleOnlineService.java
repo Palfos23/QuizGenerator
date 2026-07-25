@@ -133,7 +133,9 @@ public class GridBattleOnlineService {
         boolean revealAll = allEliminated;
 
         dto.setEntries(grid.getEntries().stream()
-                .sorted((a, b) -> b.getHintValue() - a.getHintValue())
+                .sorted(grid.isSortAscending()
+                        ? (a, b) -> a.getHintValue() - b.getHintValue()
+                        : (a, b) -> b.getHintValue() - a.getHintValue())
                 .map(e -> {
                     GridBattleSolvedEntry s = solvedByEntryId.get(e.getId());
                     boolean isSolved = s != null;

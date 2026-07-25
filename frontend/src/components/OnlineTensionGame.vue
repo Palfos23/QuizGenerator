@@ -83,15 +83,31 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="ans in allAnswersList" :key="ans.text" :class="{ 'tension-row-trap': ans.tension }">
+                <tr
+                  v-for="(ans, idx) in allAnswersList"
+                  :key="ans.text"
+                  :class="{ 'tension-row-revealed': revealIndex > idx, 'tension-row-trap': revealIndex > idx && ans.tension }"
+                >
                   <td>{{ ans.rank }}</td>
-                  <td>{{ ans.text }}</td>
-                  <td>{{ guessedByFor(ans) }}</td>
-                  <td>{{ guessedScoreFor(ans) }}</td>
+                  <td>{{ revealIndex > idx ? ans.text : '???' }}</td>
+                  <td>{{ revealIndex > idx ? guessedByFor(ans) : '' }}</td>
+                  <td>{{ revealIndex > idx ? guessedScoreFor(ans) : '' }}</td>
                 </tr>
               </tbody>
             </table>
-            <button class="btn btn-primary" style="margin-top:16px; width:100%;" :disabled="advancing" @click="nextQuestion">
+            <button
+              v-if="revealIndex < allAnswersList.length"
+              class="btn btn-secondary"
+              style="margin-top:16px; width:100%;"
+              @click="skipReveal"
+            >Skip reveal</button>
+            <button
+              v-else
+              class="btn btn-primary"
+              style="margin-top:16px; width:100%;"
+              :disabled="advancing"
+              @click="nextQuestion"
+            >
               {{ advancing ? 'Loading…' : (state.currentQuestionIndex + 1 < state.totalQuestions ? 'Next question' : 'Finish game') }}
             </button>
           </template>
@@ -127,6 +143,9 @@ const validSelection = ref(false)
 
 let pollTimer = null
 let lastCategory = null
+let wasRevealed = false
+let revealTimer = null
+const revealIndex = ref(0)
 
 const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
 const currentTurnName = computed(() =>
@@ -173,11 +192,34 @@ function applyState(fresh) {
     lastCategory = fresh.answersCategory
     loadOptions(fresh.answersCategory)
   }
+  if (fresh.roundRevealed && !wasRevealed) {
+    revealIndex.value = 0
+    scheduleReveal()
+  } else if (!fresh.roundRevealed && wasRevealed) {
+    clearTimeout(revealTimer)
+    revealIndex.value = 0
+  }
+  wasRevealed = fresh.roundRevealed
   if (fresh.finished) {
     clearInterval(pollTimer)
     const scores = fresh.players.map(p => [p.name, p.totalScore])
     emit('gameOver', scores)
   }
+}
+
+function scheduleReveal() {
+  clearTimeout(revealTimer)
+  if (revealIndex.value < allAnswersList.value.length) {
+    revealTimer = setTimeout(() => {
+      revealIndex.value += 1
+      scheduleReveal()
+    }, 1100)
+  }
+}
+
+function skipReveal() {
+  clearTimeout(revealTimer)
+  revealIndex.value = allAnswersList.value.length
 }
 
 async function loadOptions(category) {
@@ -192,7 +234,10 @@ onMounted(() => {
   poll()
   pollTimer = setInterval(poll, 2000)
 })
-onUnmounted(() => clearInterval(pollTimer))
+onUnmounted(() => {
+  clearInterval(pollTimer)
+  clearTimeout(revealTimer)
+})
 
 function onInput() {
   validSelection.value = false

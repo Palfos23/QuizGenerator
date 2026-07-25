@@ -13,6 +13,7 @@ public class GridAdminDetailDto {
     private Sport sport;
     private LocalDate weekStartDate;
     private int maxStrikes;
+    private boolean sortAscending;
     private List<AthleteDto> candidates;
     private List<EntryDetail> entries;
 
@@ -104,6 +105,14 @@ public class GridAdminDetailDto {
 
     public void setMaxStrikes(int maxStrikes) {
         this.maxStrikes = maxStrikes;
+    }
+
+    public boolean isSortAscending() {
+        return sortAscending;
+    }
+
+    public void setSortAscending(boolean sortAscending) {
+        this.sortAscending = sortAscending;
     }
 
     public List<AthleteDto> getCandidates() {

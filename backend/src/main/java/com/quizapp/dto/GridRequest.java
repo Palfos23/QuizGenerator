@@ -25,6 +25,8 @@ public class GridRequest {
     @NotNull
     private Integer maxStrikes;
 
+    private boolean sortAscending = false;
+
     // The full searchable pool for this grid (includes both correct answers and decoys).
     @NotEmpty
     private List<Long> candidateAthleteIds;
@@ -72,6 +74,14 @@ public class GridRequest {
 
     public void setMaxStrikes(Integer maxStrikes) {
         this.maxStrikes = maxStrikes;
+    }
+
+    public boolean isSortAscending() {
+        return sortAscending;
+    }
+
+    public void setSortAscending(boolean sortAscending) {
+        this.sortAscending = sortAscending;
     }
 
     public List<Long> getCandidateAthleteIds() {

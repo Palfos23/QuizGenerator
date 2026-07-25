@@ -81,6 +81,18 @@
       </div>
 
       <div class="field">
+        <label>Tile order <span class="picker-hint">how tiles are sorted by their hint number</span></label>
+        <div class="language-row">
+          <button type="button" class="language-btn" :class="{ active: !form.sortAscending }" @click="form.sortAscending = false">
+            Highest first <span style="color:var(--text-dim); font-weight:400;">(goals, appearances…)</span>
+          </button>
+          <button type="button" class="language-btn" :class="{ active: form.sortAscending }" @click="form.sortAscending = true">
+            Lowest first <span style="color:var(--text-dim); font-weight:400;">(finishing position…)</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
         <label>Candidate pool <span class="picker-hint">everyone guessable in this grid - correct and decoy</span></label>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
@@ -162,7 +174,8 @@ const form = reactive({
   theme: '',
   sport: 'FOOTBALL',
   weekStartDate: '',
-  maxStrikes: 5
+  maxStrikes: 5,
+  sortAscending: false
 })
 const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue, clubId, showLogo }]
 const clubOptions = ref([])
@@ -243,6 +256,7 @@ function resetForm() {
   form.sport = 'FOOTBALL'
   form.weekStartDate = ''
   form.maxStrikes = 5
+  form.sortAscending = false
   candidates.value = []
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
@@ -265,6 +279,7 @@ async function openEdit(id) {
     form.sport = detail.sport
     form.weekStartDate = detail.weekStartDate
     form.maxStrikes = detail.maxStrikes
+    form.sortAscending = detail.sortAscending
 
     const entryByAthleteId = new Map(detail.entries.map(e => [e.athlete.id, e]))
     candidates.value = detail.candidates.map(a => {
@@ -309,6 +324,7 @@ async function saveGrid() {
     sport: form.sport,
     weekStartDate: form.weekStartDate,
     maxStrikes: form.maxStrikes,
+    sortAscending: form.sortAscending,
     candidateAthleteIds: candidates.value.map(c => c.athleteId),
     entries: entries.map(c => ({
       athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: c.hintValue,

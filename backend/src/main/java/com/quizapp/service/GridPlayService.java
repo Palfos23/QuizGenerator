@@ -50,7 +50,7 @@ public class GridPlayService {
         Grid grid = gridRepository.findById(gridId)
                 .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
         return grid.getEntries().stream()
-                .sorted((a, b) -> b.getHintValue() - a.getHintValue())
+                .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), true, false, false,
                         e.getAthlete().getName(), e.getAthlete().getPhotoUrl(), logoUrl(e), hintColor(e)))
                 .collect(Collectors.toList());
@@ -168,7 +168,7 @@ public class GridPlayService {
         dto.setOvertime(false);
         dto.setRevealed(false);
         dto.setEntries(grid.getEntries().stream()
-                .sorted((a, b) -> b.getHintValue() - a.getHintValue())
+                .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), false, false, false,
                         null, null, logoUrl(e), hintColor(e)))
                 .collect(Collectors.toList()));
@@ -308,7 +308,7 @@ public class GridPlayService {
 
         boolean revealAll = attempt.isRevealed();
         List<GridEntryViewDto> entries = grid.getEntries().stream()
-                .sorted((a, b) -> b.getHintValue() - a.getHintValue())
+                .sorted(entrySortOrder(grid))
                 .map(e -> {
                     boolean guessedByUser = attempt.getSolvedEntryIds().contains(e.getId());
                     boolean solved = revealAll || guessedByUser;
@@ -322,6 +322,12 @@ public class GridPlayService {
                 .collect(Collectors.toList());
         dto.setEntries(entries);
         return dto;
+    }
+
+    private java.util.Comparator<GridEntry> entrySortOrder(Grid grid) {
+        return grid.isSortAscending()
+                ? (a, b) -> a.getHintValue() - b.getHintValue()
+                : (a, b) -> b.getHintValue() - a.getHintValue();
     }
 
     private String hintColor(GridEntry entry) {

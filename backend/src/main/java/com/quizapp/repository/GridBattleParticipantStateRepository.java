@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface GridBattleParticipantStateRepository extends JpaRepository<GridBattleParticipantState, Long> {
     List<GridBattleParticipantState> findByRoomState_Id(Long roomStateId);
     Optional<GridBattleParticipantState> findByRoomState_IdAndParticipant_Id(Long roomStateId, Long participantId);
+    void deleteByRoomState_Id(Long roomStateId);
 }

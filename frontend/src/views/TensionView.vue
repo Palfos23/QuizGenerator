@@ -1,6 +1,37 @@
 <template>
   <div>
-    <template v-if="stage === 'landing'">
+    <template v-if="stage === 'modeChoice'">
+      <h1>Tension</h1>
+      <p class="page-subtitle">
+        Guess as close to position 10 on the list as you dare -
+        go too far past it into "tension" territory and it costs you.
+      </p>
+
+      <div v-if="error" class="banner error">{{ error }}</div>
+
+      <div v-if="savedRoomCode" class="banner" style="background:rgba(242,183,5,0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <span>You have a game in progress in room <strong>{{ savedRoomCode }}</strong>.</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary btn-sm" :disabled="rejoining" @click="rejoinSavedRoom">
+            {{ rejoining ? 'Rejoining…' : 'Rejoin' }}
+          </button>
+          <button class="btn btn-secondary btn-sm" @click="dismissSavedRoom">Dismiss</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:20px;">
+        <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'landing'">
+          <h3>📱 Same device</h3>
+          <p>Pass the phone around - everyone takes their turn on one screen.</p>
+        </button>
+        <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'onlineChoice'">
+          <h3>🌐 Play online</h3>
+          <p>Everyone plays from their own device with a shared room code.</p>
+        </button>
+      </div>
+    </template>
+
+    <template v-else-if="stage === 'landing'">
       <h1>Tension</h1>
       <p class="page-subtitle">
         A pass-the-device party quiz. Guess as close to position 10 on the list as you dare -
@@ -31,8 +62,8 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" @click="goToSetup">Create game</button>
-      <button class="btn btn-secondary" style="margin-left:10px;" @click="stage = 'onlineChoice'">🌐 Play online instead</button>
+      <button class="btn btn-secondary" @click="stage = 'modeChoice'">← Back</button>
+      <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">Create game</button>
     </template>
 
     <template v-else-if="stage === 'onlineChoice'">
@@ -43,7 +74,7 @@
         <button class="btn btn-primary" @click="stage = 'onlineCreate'">+ Create a room</button>
         <button class="btn btn-secondary" @click="stage = 'onlineJoin'">Join with a code</button>
       </div>
-      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'landing'">← Back</button>
+      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'modeChoice'">← Back</button>
     </template>
 
     <template v-else-if="stage === 'onlineCreate'">
@@ -136,7 +167,7 @@
       :room-code="onlineRoom?.roomCode"
       :your-participant-id="onlineRoom?.yourParticipantId"
       @game-over="onOnlineGameOver"
-      @leave="stage = 'landing'; resetOnline()"
+      @leave="leaveGame"
     />
 
     <template v-else-if="stage === 'setup'">
@@ -196,6 +227,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '../services/api'
 import auth from '../services/auth'
+import activeRoom from '../services/activeRoom'
 import TensionGame from '../components/TensionGame.vue'
 import OnlineTensionGame from '../components/OnlineTensionGame.vue'
 
@@ -210,7 +242,8 @@ const colorOptions = [
   { hex: '#5D038A', name: 'Purple' }
 ]
 
-const stage = ref('landing')
+const stage = ref('modeChoice')
+const lastGameWasOnline = ref(false)
 const error = ref('')
 const numPlayers = ref(2)
 const numQuestions = ref(5)
@@ -272,6 +305,7 @@ const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] -
 const winner = computed(() => sortedScores.value[0]?.[0] ?? null)
 
 function onGameOver(scores) {
+  lastGameWasOnline.value = false
   finalScores.value = scores
   stage.value = 'done'
 }
@@ -279,7 +313,7 @@ function onGameOver(scores) {
 function resetGame() {
   questions.value = []
   finalScores.value = []
-  stage.value = 'landing'
+  stage.value = lastGameWasOnline.value ? 'modeChoice' : 'landing'
 }
 
 // --- Online multiplayer ---
@@ -311,6 +345,7 @@ async function createOnlineRoom() {
       tensionNumQuestions: onlineNumQuestions.value,
       tensionCategory: onlineCategory.value || null
     })
+    activeRoom.save(onlineRoom.value.roomCode, 'TENSION')
     stage.value = 'onlineLobby'
     startLobbyPolling()
   } catch (e) {
@@ -320,18 +355,26 @@ async function createOnlineRoom() {
   }
 }
 
-async function joinOnlineRoom() {
+async function joinOnlineRoom(codeOverride) {
   error.value = ''
   joiningRoom.value = true
   try {
-    onlineRoom.value = await api.joinRoom(joinCode.value.trim().toUpperCase(), {
+    const code = (codeOverride || joinCode.value).trim().toUpperCase()
+    onlineRoom.value = await api.joinRoom(code, {
       displayName: onlineDisplayName.value.trim(),
       color: randomOnlineColor()
     })
-    stage.value = 'onlineLobby'
-    startLobbyPolling()
+    activeRoom.save(onlineRoom.value.roomCode, 'TENSION')
+    if (onlineRoom.value.status === 'IN_PROGRESS') {
+      stage.value = 'onlineGame'
+    } else {
+      stage.value = 'onlineLobby'
+      startLobbyPolling()
+    }
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not join that room - check the code and try again.'
+    activeRoom.clear()
+    savedRoomCode.value = ''
   } finally {
     joiningRoom.value = false
   }
@@ -370,8 +413,15 @@ async function startOnlineRoom() {
 
 function leaveLobby() {
   clearInterval(lobbyPollTimer)
+  activeRoom.clear()
   resetOnline()
-  stage.value = 'landing'
+  stage.value = 'modeChoice'
+}
+
+function leaveGame() {
+  activeRoom.clear()
+  resetOnline()
+  stage.value = 'modeChoice'
 }
 
 function resetOnline() {
@@ -380,8 +430,30 @@ function resetOnline() {
 }
 
 function onOnlineGameOver(scores) {
+  activeRoom.clear()
+  lastGameWasOnline.value = true
   finalScores.value = scores
   resetOnline()
   stage.value = 'done'
+}
+
+const savedRoomCode = ref('')
+const rejoining = ref(false)
+
+onMounted(() => {
+  savedRoomCode.value = activeRoom.get('TENSION') || ''
+})
+
+function dismissSavedRoom() {
+  activeRoom.clear()
+  savedRoomCode.value = ''
+}
+
+async function rejoinSavedRoom() {
+  rejoining.value = true
+  const code = savedRoomCode.value
+  savedRoomCode.value = ''
+  await joinOnlineRoom(code)
+  rejoining.value = false
 }
 </script>

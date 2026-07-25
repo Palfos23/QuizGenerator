@@ -76,6 +76,7 @@ public class GridAdminService {
         grid.setSport(request.getSport());
         grid.setWeekStartDate(request.getWeekStartDate());
         grid.setMaxStrikes(request.getMaxStrikes());
+        grid.setSortAscending(request.isSortAscending());
 
         Map<Long, Athlete> athleteById = new HashMap<>();
         for (Long athleteId : request.getCandidateAthleteIds()) {
@@ -128,6 +129,7 @@ public class GridAdminService {
         dto.setSport(grid.getSport());
         dto.setWeekStartDate(grid.getWeekStartDate());
         dto.setMaxStrikes(grid.getMaxStrikes());
+        dto.setSortAscending(grid.isSortAscending());
         dto.setCandidates(grid.getCandidates().stream()
                 .map(c -> AthleteService.toDto(c.getAthlete()))
                 .collect(Collectors.toList()));
