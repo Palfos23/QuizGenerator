@@ -64,9 +64,15 @@ public class GridPlayService {
 
         return gridAttemptRepository.findByGrid_Id(gridId).stream()
                 .filter(GridAttempt::isCompleted) // in-progress attempts aren't shown - they're still being played
-                .map(a -> new com.quizapp.dto.GridScoreboardEntryDto(
-                        a.getUser().getName(), a.getSolvedEntryIds().size(), entryCount,
-                        a.isCompleted(), a.isOvertime(), a.getUser().getEmail().equals(requestingUserEmail)))
+                .map(a -> {
+                    // Overtime solves don't count toward the competitive score - only
+                    // what you found within your original lives does.
+                    int overtimeCount = a.getOvertimeSolvedEntryIds().size();
+                    int scoredSolves = a.getSolvedEntryIds().size() - overtimeCount;
+                    return new com.quizapp.dto.GridScoreboardEntryDto(
+                            a.getUser().getName(), scoredSolves, entryCount,
+                            a.isCompleted(), a.isOvertime(), overtimeCount, a.getUser().getEmail().equals(requestingUserEmail));
+                })
                 .sorted((a, b) -> {
                     // clean solves rank ahead of overtime-assisted ones at the same score
                     int scoreCompare = b.getGuessedCount() - a.getGuessedCount();

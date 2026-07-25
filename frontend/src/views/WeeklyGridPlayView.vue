@@ -26,16 +26,22 @@
             <tbody>
               <tr v-for="(s, i) in topFive" :key="s.userName + i" :class="{ 'you-row': s.isYou }">
                 <td>{{ i + 1 }}</td>
-                <td>{{ s.userName }}<span v-if="s.usedOvertime" style="color:var(--violet); font-size:0.8rem;"> (overtime)</span></td>
-                <td style="text-align:right;">{{ s.guessedCount }} / {{ s.entryCount }}</td>
+                <td>{{ s.userName }}</td>
+                <td style="text-align:right;">
+                  {{ s.guessedCount }} / {{ s.entryCount }}
+                  <span v-if="s.usedOvertime" style="display:block; color:var(--violet); font-size:0.75rem;">+{{ s.overtimeCount }} in overtime</span>
+                </td>
               </tr>
               <tr v-if="yourRank && yourRank.rank > 5">
                 <td colspan="3" style="text-align:center; color:var(--text-dim); padding:4px 0;">···</td>
               </tr>
               <tr v-if="yourRank && yourRank.rank > 5" class="you-row">
                 <td>{{ yourRank.rank }}</td>
-                <td>{{ yourRank.entry.userName }}<span v-if="yourRank.entry.usedOvertime" style="color:var(--violet); font-size:0.8rem;"> (overtime)</span></td>
-                <td style="text-align:right;">{{ yourRank.entry.guessedCount }} / {{ yourRank.entry.entryCount }}</td>
+                <td>{{ yourRank.entry.userName }}</td>
+                <td style="text-align:right;">
+                  {{ yourRank.entry.guessedCount }} / {{ yourRank.entry.entryCount }}
+                  <span v-if="yourRank.entry.usedOvertime" style="display:block; color:var(--violet); font-size:0.75rem;">+{{ yourRank.entry.overtimeCount }} in overtime</span>
+                </td>
               </tr>
             </tbody>
           </table>

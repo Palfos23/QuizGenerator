@@ -7,15 +7,17 @@ public class GridScoreboardEntryDto {
     private int entryCount;
     private boolean completed;
     private boolean usedOvertime;
+    private int overtimeCount;
     private boolean isYou;
 
     public GridScoreboardEntryDto(String userName, int guessedCount, int entryCount, boolean completed,
-                                   boolean usedOvertime, boolean isYou) {
+                                   boolean usedOvertime, int overtimeCount, boolean isYou) {
         this.userName = userName;
         this.guessedCount = guessedCount;
         this.entryCount = entryCount;
         this.completed = completed;
         this.usedOvertime = usedOvertime;
+        this.overtimeCount = overtimeCount;
         this.isYou = isYou;
     }
 
@@ -37,6 +39,10 @@ public class GridScoreboardEntryDto {
 
     public boolean isUsedOvertime() {
         return usedOvertime;
+    }
+
+    public int getOvertimeCount() {
+        return overtimeCount;
     }
 
     public boolean isYou() {
