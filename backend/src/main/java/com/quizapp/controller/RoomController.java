@@ -7,6 +7,7 @@ import com.quizapp.model.GameRoom;
 import com.quizapp.model.RoomGameType;
 import com.quizapp.service.GridBattleOnlineService;
 import com.quizapp.service.RoomService;
+import com.quizapp.service.TensionOnlineService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
