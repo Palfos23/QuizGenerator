@@ -225,10 +225,11 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import auth from '../services/auth'
 import activeRoom from '../services/activeRoom'
+import navTrigger from '../services/navTrigger'
 import TensionGame from '../components/TensionGame.vue'
 import OnlineTensionGame from '../components/OnlineTensionGame.vue'
 
@@ -443,6 +444,15 @@ const rejoining = ref(false)
 
 onMounted(() => {
   savedRoomCode.value = activeRoom.get('TENSION') || ''
+})
+
+// Clicking the "Tension" nav tab while already on this page doesn't trigger any
+// navigation event on its own, so it needs its own trigger to jump back to the
+// very first screen - mid-game state (pass-and-play or online) is simply left
+// behind, same as if the tab had been closed and reopened.
+watch(() => navTrigger.state.tension, () => {
+  clearInterval(lobbyPollTimer)
+  stage.value = 'modeChoice'
 })
 
 function dismissSavedRoom() {

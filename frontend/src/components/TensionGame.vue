@@ -273,7 +273,11 @@ const readyForStandings = ref(false)
 // from reveal into an animated modal felt too abrupt.
 function finishReveal() {
   scores.value = pendingScores.value
-  readyForStandings.value = true
+  if (currentQuestionIndex.value + 1 >= props.questions.length) {
+    emit('gameOver', playerNames.map(name => [name, scores.value[name] || 0]))
+  } else {
+    readyForStandings.value = true
+  }
 }
 
 function openStandingsModal() {

@@ -47,12 +47,7 @@ public class TensionQuestionService {
 
     @Transactional(readOnly = true)
     public List<String> getDistinctMainCategories() {
-        return questionRepository.findAll().stream()
-                .map(TensionQuestion::getMainCategory)
-                .filter(c -> c != null && !c.isBlank())
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
+        return questionRepository.findDistinctMainCategories();
     }
 
     @Transactional

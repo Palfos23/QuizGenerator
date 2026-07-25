@@ -149,9 +149,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import api from '../services/api'
+import navTrigger from '../services/navTrigger'
 import toast from '../services/toast'
 import QuizReviewEditor from '../components/QuizReviewEditor.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
@@ -188,6 +189,13 @@ onBeforeRouteLeave(() => {
     pendingLeaveResolve = resolve
     showLeaveConfirm.value = true
   })
+})
+
+// Clicking the "My quizzes" nav tab while already on this page doesn't trigger any
+// navigation event on its own, so it needs its own trigger to close whatever quiz
+// is open and go back to the list - reusing the same discard-confirmation flow.
+watch(() => navTrigger.state.myQuizzes, () => {
+  if (openQuiz.value) backToList()
 })
 
 function confirmLeave() {

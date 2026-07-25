@@ -176,6 +176,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
+import navTrigger from '../services/navTrigger'
 import QuizReviewEditor from '../components/QuizReviewEditor.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import api from '../services/api'
@@ -217,6 +218,13 @@ onBeforeRouteLeave(() => {
     pendingLeaveResolve = resolve
     showLeaveConfirm.value = true
   })
+})
+
+// Clicking the "Create a quiz" nav tab while already on this page doesn't trigger
+// any navigation event on its own, so it needs its own trigger to reset back to
+// step 1 - reusing the same discard-confirmation flow as the in-page button.
+watch(() => navTrigger.state.generate, () => {
+  requestStartOver()
 })
 
 function confirmLeave() {

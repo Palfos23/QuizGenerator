@@ -4,11 +4,11 @@
       <router-link to="/" class="nav-brand">Quiz<span>Maker</span></router-link>
 
       <template v-if="auth.isAuthenticated.value">
-        <router-link v-if="!auth.isAdmin.value" to="/generate" class="nav-link">Create a quiz</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" class="nav-link">My quizzes</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Create a quiz</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/weekly-grid" class="nav-link">Weekly grid</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/tension" class="nav-link">Tension</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link">Grid Battle</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/tension" class="nav-link" @click="onNavClick('/tension', 'tension')">Tension</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/questions" class="nav-link">Question bank</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/athletes" class="nav-link">Athletes</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/grids" class="nav-link">Weekly grids</router-link>
@@ -30,11 +30,11 @@
 
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
-      <router-link v-if="!auth.isAdmin.value" to="/generate">Create</router-link>
-      <router-link v-if="!auth.isAdmin.value" to="/my-quizzes">My quizzes</router-link>
+      <router-link v-if="!auth.isAdmin.value" to="/generate" @click="onNavClick('/generate', 'generate')">Create</router-link>
+      <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
       <router-link v-if="!auth.isAdmin.value" to="/weekly-grid">Weekly grid</router-link>
-      <router-link v-if="!auth.isAdmin.value" to="/tension">Tension</router-link>
-      <router-link v-if="!auth.isAdmin.value" to="/grid-battle">Grid Battle</router-link>
+      <router-link v-if="!auth.isAdmin.value" to="/tension" @click="onNavClick('/tension', 'tension')">Tension</router-link>
+      <router-link v-if="!auth.isAdmin.value" to="/grid-battle" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/athletes">Athletes</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/grids">Grids</router-link>
@@ -51,9 +51,16 @@
 import { onMounted, onUnmounted } from 'vue'
 import auth from './services/auth'
 import { useRouter } from 'vue-router'
+import navTrigger from './services/navTrigger'
 import ToastHost from './components/ToastHost.vue'
 
 const router = useRouter()
+
+function onNavClick(path, key) {
+  if (router.currentRoute.value.path === path) {
+    navTrigger.fire(key)
+  }
+}
 
 function logout() {
   auth.logout()
