@@ -136,7 +136,10 @@
         <div v-else class="saved-quiz-list">
           <div v-for="g in availableGrids" :key="g.id" class="saved-quiz-row">
             <div class="saved-quiz-info">
-              <div class="saved-quiz-title">{{ g.title }}</div>
+              <div class="saved-quiz-title">
+                {{ g.title }}
+                <span v-if="isUpcoming(g)" class="tag" style="background:rgba(139,124,255,0.15); color:var(--violet); margin-left:6px;">Upcoming</span>
+              </div>
               <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} athletes</div>
             </div>
             <button
@@ -243,7 +246,10 @@
       <div v-else class="saved-quiz-list">
         <div v-for="g in availableGrids" :key="g.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
-            <div class="saved-quiz-title">{{ g.title }}</div>
+            <div class="saved-quiz-title">
+              {{ g.title }}
+              <span v-if="isUpcoming(g)" class="tag" style="background:rgba(139,124,255,0.15); color:var(--violet); margin-left:6px;">Upcoming</span>
+            </div>
             <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} athletes</div>
           </div>
           <button
@@ -351,8 +357,8 @@ const duplicateNames = computed(() => {
 async function loadAvailableGrids() {
   loadingGrids.value = true
   try {
-    const [active, archive] = await Promise.all([api.getActiveGrids(), api.getArchiveGrids()])
-    availableGrids.value = [...active, ...archive]
+    const [active, archive, future] = await Promise.all([api.getActiveGrids(), api.getArchiveGrids(), api.getFutureGrids()])
+    availableGrids.value = [...active, ...future, ...archive]
   } catch (e) {
     error.value = 'Could not load grids.'
   } finally {
@@ -379,13 +385,18 @@ async function goToGridChoice() {
 
 async function pickRandomGrids() {
   try {
-    const [active, archive] = await Promise.all([api.getActiveGrids(), api.getArchiveGrids()])
-    const pool = [...active, ...archive]
+    const [active, archive, future] = await Promise.all([api.getActiveGrids(), api.getArchiveGrids(), api.getFutureGrids()])
+    const pool = [...active, ...archive, ...future]
     const shuffled = [...pool].sort(() => Math.random() - 0.5)
     gameGrids.value = shuffled.slice(0, numGrids.value)
   } catch (e) {
     gameGrids.value = []
   }
+}
+
+function isUpcoming(g) {
+  const today = new Date().toISOString().slice(0, 10)
+  return g.weekStartDate > today
 }
 
 function isChosen(g) {

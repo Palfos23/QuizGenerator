@@ -106,6 +106,20 @@ public class GridPlayService {
         return toSummariesWithStatus(grids, userEmail);
     }
 
+    // Grids scheduled for a future week - not yet visible on the regular Weekly
+    // Grid page (which only shows what's currently active or already past), but
+    // still valid content for Grid Battle, where "this week's theme" pacing
+    // doesn't apply the same way.
+    @Transactional(readOnly = true)
+    public List<GridSummaryDto> findFuture(String userEmail) {
+        LocalDate today = LocalDate.now();
+        List<Grid> grids = gridRepository.findAll().stream()
+                .filter(g -> g.getWeekStartDate().isAfter(today))
+                .sorted((a, b) -> a.getWeekStartDate().compareTo(b.getWeekStartDate()))
+                .collect(Collectors.toList());
+        return toSummariesWithStatus(grids, userEmail);
+    }
+
     /**
      * One query for all the user's attempts across every grid being listed, rather
      * than a separate query per grid - matters once there are a lot of grids.

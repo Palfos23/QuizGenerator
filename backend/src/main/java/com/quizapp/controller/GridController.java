@@ -42,6 +42,11 @@ public class GridController {
         return gridPlayService.findArchive(authentication.getName());
     }
 
+    @GetMapping("/future")
+    public List<GridSummaryDto> future(Authentication authentication) {
+        return gridPlayService.findFuture(authentication.getName());
+    }
+
     @GetMapping("/{id}/play")
     public GridPlayStateDto play(@PathVariable Long id, Authentication authentication) {
         return gridPlayService.getPlayState(id, authentication.getName());

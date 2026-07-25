@@ -112,6 +112,9 @@ export default {
   getArchiveGrids() {
     return client.get('/grids/archive').then(r => r.data)
   },
+  getFutureGrids() {
+    return client.get('/grids/future').then(r => r.data)
+  },
   getGridPlayState(id) {
     return client.get(`/grids/${id}/play`).then(r => r.data)
   },
