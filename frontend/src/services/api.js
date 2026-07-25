@@ -295,5 +295,41 @@ export default {
   },
   adminResolveReport(id, adminNote) {
     return client.post(`/admin/reports/${id}/resolve`, { adminNote }).then(r => r.data)
+  },
+
+  // --- Online multiplayer rooms ---
+  createRoom(payload) {
+    return client.post('/rooms', payload).then(r => r.data)
+  },
+  joinRoom(code, payload) {
+    return client.post(`/rooms/${code}/join`, payload).then(r => r.data)
+  },
+  getRoom(code) {
+    return client.get(`/rooms/${code}`).then(r => r.data)
+  },
+  startRoom(code) {
+    return client.post(`/rooms/${code}/start`).then(r => r.data)
+  },
+
+  // --- Online Grid Battle ---
+  getGridBattleState(code) {
+    return client.get(`/rooms/${code}/grid-battle/state`).then(r => r.data)
+  },
+  submitGridBattleGuess(code, athleteId) {
+    return client.post(`/rooms/${code}/grid-battle/guess`, { athleteId }).then(r => r.data)
+  },
+  advanceGridBattleGrid(code) {
+    return client.post(`/rooms/${code}/grid-battle/next-grid`).then(r => r.data)
+  },
+
+  // --- Online Tension ---
+  getTensionOnlineState(code) {
+    return client.get(`/rooms/${code}/tension/state`).then(r => r.data)
+  },
+  submitTensionOnlineAnswer(code, answerText) {
+    return client.post(`/rooms/${code}/tension/answer`, { answerText }).then(r => r.data)
+  },
+  advanceTensionOnlineQuestion(code) {
+    return client.post(`/rooms/${code}/tension/next-question`).then(r => r.data)
   }
 }

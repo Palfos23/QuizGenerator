@@ -672,6 +672,7 @@ mark {
 
 .lives-hearts {
   display: flex;
+  justify-content: center;
   gap: 3px;
 }
 

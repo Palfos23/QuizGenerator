@@ -32,7 +32,103 @@
       </div>
 
       <button class="btn btn-primary" @click="goToSetup">Create game</button>
+      <button class="btn btn-secondary" style="margin-left:10px;" @click="stage = 'onlineChoice'">🌐 Play online instead</button>
     </template>
+
+    <template v-else-if="stage === 'onlineChoice'">
+      <h1>Play online</h1>
+      <p class="page-subtitle">Same game, different devices - everyone answers from their own phone instead of passing one around.</p>
+      <div v-if="error" class="banner error">{{ error }}</div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn btn-primary" @click="stage = 'onlineCreate'">+ Create a room</button>
+        <button class="btn btn-secondary" @click="stage = 'onlineJoin'">Join with a code</button>
+      </div>
+      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'landing'">← Back</button>
+    </template>
+
+    <template v-else-if="stage === 'onlineCreate'">
+      <h1>Create a room</h1>
+      <div v-if="error" class="banner error">{{ error }}</div>
+
+      <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:160px;">
+          <label>Questions</label>
+          <select v-model.number="onlineNumQuestions">
+            <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+          </select>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>Category</label>
+          <select v-model="onlineCategory">
+            <option value="">All categories</option>
+            <option v-for="c in mainCategories" :key="c" :value="c">{{ c }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>
+        <button class="btn btn-primary" :disabled="creatingRoom" @click="createOnlineRoom">
+          {{ creatingRoom ? 'Creating…' : 'Create room' }}
+        </button>
+      </div>
+    </template>
+
+    <template v-else-if="stage === 'onlineJoin'">
+      <h1>Join a room</h1>
+      <div v-if="error" class="banner error">{{ error }}</div>
+      <div class="field">
+        <label>Room code</label>
+        <input type="text" v-model="joinCode" placeholder="e.g. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" />
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>
+        <button class="btn btn-primary" :disabled="!joinCode.trim() || joiningRoom" @click="joinOnlineRoom">
+          {{ joiningRoom ? 'Joining…' : 'Join' }}
+        </button>
+      </div>
+    </template>
+
+    <template v-else-if="stage === 'onlineLobby'">
+      <h1>Room {{ onlineRoom?.roomCode }}</h1>
+      <p class="page-subtitle">Share this code with your friends. Everyone needs to join before the host starts.</p>
+      <div v-if="error" class="banner error">{{ error }}</div>
+
+      <div class="saved-quiz-list" style="max-width:420px;">
+        <div v-for="p in onlineRoom?.participants || []" :key="p.id" class="saved-quiz-row">
+          <div class="saved-quiz-info">
+            <div class="saved-quiz-title">
+              <span style="display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px;" :style="{ background: p.color }"></span>
+              {{ p.displayName }}
+            </div>
+          </div>
+          <span class="tag" :style="{ background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }">In room</span>
+        </div>
+      </div>
+
+      <p style="color:var(--text-dim); font-size:0.9rem; margin-top:16px;">
+        {{ (onlineRoom?.participants || []).length }} joined · need at least 2 to start
+      </p>
+
+      <div style="display:flex; gap:12px;">
+        <button class="btn btn-secondary" @click="leaveLobby">← Leave</button>
+        <button
+          v-if="isHost"
+          class="btn btn-primary"
+          :disabled="(onlineRoom?.participants || []).length < 2 || startingRoom"
+          @click="startOnlineRoom"
+        >{{ startingRoom ? 'Starting…' : 'Start game' }}</button>
+        <span v-else style="color:var(--text-dim); align-self:center;">Waiting for the host to start…</span>
+      </div>
+    </template>
+
+    <OnlineTensionGame
+      v-else-if="stage === 'onlineGame'"
+      :room-code="onlineRoom?.roomCode"
+      :your-participant-id="onlineRoom?.yourParticipantId"
+      @game-over="onOnlineGameOver"
+      @leave="stage = 'landing'; resetOnline()"
+    />
 
     <template v-else-if="stage === 'setup'">
       <h1>Who's playing?</h1>
@@ -40,12 +136,7 @@
 
       <div v-for="(p, i) in setupPlayers" :key="i" class="field" style="display:flex; gap:10px; align-items:center;">
         <input type="text" v-model="p.name" :placeholder="`Player ${i + 1}`" style="flex:1;" />
-        <button
-          class="color-swatch-btn"
-          :style="{ background: p.color }"
-          @click="openColorPicker(i)"
-          title="Pick a color"
-        ></button>
+        <span class="color-swatch-btn" :style="{ background: p.color }" title="Your color"></span>
       </div>
 
       <div style="display:flex; gap:12px;">
@@ -59,25 +150,6 @@
         <span class="spinner" style="width:32px; height:32px; border-width:4px; margin-bottom:20px;"></span>
         <h1>Shuffling your questions…</h1>
         <p style="margin-top:12px; color:var(--text-dim);">First round starts in just a moment.</p>
-      </div>
-
-      <div v-if="colorPickerIndex !== null" class="modal-backdrop" @click.self="colorPickerIndex = null">
-        <div class="modal">
-          <h2>Pick a color</h2>
-          <div class="color-grid">
-            <button
-              v-for="c in colorOptions"
-              :key="c.hex"
-              class="color-swatch-btn"
-              :class="{ selected: setupPlayers[colorPickerIndex].color === c.hex }"
-              :style="{ background: usedColors.includes(c.hex) && setupPlayers[colorPickerIndex].color !== c.hex ? 'rgba(255,255,255,0.1)' : c.hex, opacity: usedColors.includes(c.hex) && setupPlayers[colorPickerIndex].color !== c.hex ? 0.4 : 1 }"
-              :disabled="usedColors.includes(c.hex) && setupPlayers[colorPickerIndex].color !== c.hex"
-              :title="c.name"
-              @click="pickColor(c.hex)"
-            ></button>
-          </div>
-          <button class="btn btn-secondary" style="margin-top:16px;" @click="colorPickerIndex = null">Close</button>
-        </div>
       </div>
     </template>
 
@@ -115,7 +187,9 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '../services/api'
+import auth from '../services/auth'
 import TensionGame from '../components/TensionGame.vue'
+import OnlineTensionGame from '../components/OnlineTensionGame.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },
@@ -136,7 +210,6 @@ const category = ref('')
 const mainCategories = ref([])
 
 const setupPlayers = reactive([])
-const colorPickerIndex = ref(null)
 const starting = ref(false)
 const questions = ref([])
 const finalScores = ref({})
@@ -151,8 +224,9 @@ onMounted(async () => {
 
 function rebuildSetupPlayers() {
   setupPlayers.length = 0
+  const shuffled = [...colorOptions].sort(() => Math.random() - 0.5)
   for (let i = 0; i < numPlayers.value; i++) {
-    setupPlayers.push({ name: '', color: colorOptions[i % colorOptions.length].hex })
+    setupPlayers.push({ name: '', color: shuffled[i % shuffled.length].hex })
   }
 }
 
@@ -166,15 +240,6 @@ const duplicateNames = computed(() => {
   const names = setupPlayers.map(p => p.name.trim().toLowerCase()).filter(n => n.length > 0)
   return names.some((n, i) => names.indexOf(n) !== i)
 })
-const usedColors = computed(() => setupPlayers.map(p => p.color))
-
-function openColorPicker(i) {
-  colorPickerIndex.value = i
-}
-function pickColor(hex) {
-  setupPlayers[colorPickerIndex.value].color = hex
-  colorPickerIndex.value = null
-}
 
 async function startGame() {
   starting.value = true
@@ -207,5 +272,107 @@ function resetGame() {
   questions.value = []
   finalScores.value = {}
   stage.value = 'landing'
+}
+
+// --- Online multiplayer ---
+const onlineNumQuestions = ref(5)
+const onlineCategory = ref('')
+const joinCode = ref('')
+const onlineRoom = ref(null)
+const creatingRoom = ref(false)
+const joiningRoom = ref(false)
+const startingRoom = ref(false)
+let lobbyPollTimer = null
+
+const isHost = computed(() => !!onlineRoom.value?.host)
+
+function randomOnlineColor() {
+  const palette = ['#4f46e5', '#F22C05', '#F2BB05', '#032E8A', '#05D6F2', '#f43f5e', '#5D038A', '#22c55e']
+  return palette[Math.floor(Math.random() * palette.length)]
+}
+
+async function createOnlineRoom() {
+  error.value = ''
+  creatingRoom.value = true
+  try {
+    onlineRoom.value = await api.createRoom({
+      gameType: 'TENSION',
+      displayName: auth.state.displayName,
+      color: randomOnlineColor(),
+      tensionNumQuestions: onlineNumQuestions.value,
+      tensionCategory: onlineCategory.value || null
+    })
+    stage.value = 'onlineLobby'
+    startLobbyPolling()
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not create the room.'
+  } finally {
+    creatingRoom.value = false
+  }
+}
+
+async function joinOnlineRoom() {
+  error.value = ''
+  joiningRoom.value = true
+  try {
+    onlineRoom.value = await api.joinRoom(joinCode.value.trim().toUpperCase(), {
+      displayName: auth.state.displayName,
+      color: randomOnlineColor()
+    })
+    stage.value = 'onlineLobby'
+    startLobbyPolling()
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not join that room - check the code and try again.'
+  } finally {
+    joiningRoom.value = false
+  }
+}
+
+function startLobbyPolling() {
+  clearInterval(lobbyPollTimer)
+  lobbyPollTimer = setInterval(async () => {
+    if (!onlineRoom.value) return
+    try {
+      const updated = await api.getRoom(onlineRoom.value.roomCode)
+      onlineRoom.value = updated
+      if (updated.status === 'IN_PROGRESS') {
+        clearInterval(lobbyPollTimer)
+        stage.value = 'onlineGame'
+      }
+    } catch (e) {
+      // a transient poll failure isn't worth surfacing - it'll succeed next tick
+    }
+  }, 2000)
+}
+
+async function startOnlineRoom() {
+  error.value = ''
+  startingRoom.value = true
+  try {
+    await api.startRoom(onlineRoom.value.roomCode)
+    clearInterval(lobbyPollTimer)
+    stage.value = 'onlineGame'
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not start the game.'
+  } finally {
+    startingRoom.value = false
+  }
+}
+
+function leaveLobby() {
+  clearInterval(lobbyPollTimer)
+  resetOnline()
+  stage.value = 'landing'
+}
+
+function resetOnline() {
+  onlineRoom.value = null
+  joinCode.value = ''
+}
+
+function onOnlineGameOver(scores) {
+  finalScores.value = scores
+  resetOnline()
+  stage.value = 'done'
 }
 </script>
