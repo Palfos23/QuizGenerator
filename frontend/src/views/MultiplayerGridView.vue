@@ -258,7 +258,7 @@ const availableGrids = ref([])
 const loadingGrids = ref(false)
 const chosenGrids = ref([])
 const gameGrids = ref([])
-const finalScores = ref({})
+const finalScores = ref([])
 
 function rebuildSetupPlayers() {
   setupPlayers.length = 0
@@ -335,7 +335,7 @@ function startGame() {
   stage.value = 'game'
 }
 
-const sortedScores = computed(() => Object.entries(finalScores.value).sort((a, b) => b[1] - a[1]))
+const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] - a[1]))
 const winner = computed(() => sortedScores.value[0]?.[0] ?? null)
 
 function onGameOver(scores) {
@@ -345,7 +345,7 @@ function onGameOver(scores) {
 
 function resetGame() {
   gameGrids.value = []
-  finalScores.value = {}
+  finalScores.value = []
   stage.value = 'landing'
 }
 

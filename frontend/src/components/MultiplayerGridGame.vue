@@ -217,7 +217,7 @@ function nextGrid() {
     currentGridIndex.value += 1
     loadGrid()
   } else {
-    emit('gameOver', scores.value)
+    emit('gameOver', props.players.map(p => [p.name, scores.value[p.name] || 0]))
   }
 }
 

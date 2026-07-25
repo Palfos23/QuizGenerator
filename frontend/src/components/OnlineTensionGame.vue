@@ -175,8 +175,7 @@ function applyState(fresh) {
   }
   if (fresh.finished) {
     clearInterval(pollTimer)
-    const scores = {}
-    fresh.players.forEach(p => { scores[p.name] = p.totalScore })
+    const scores = fresh.players.map(p => [p.name, p.totalScore])
     emit('gameOver', scores)
   }
 }

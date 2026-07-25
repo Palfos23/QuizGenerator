@@ -320,7 +320,7 @@ function nextQuestion() {
     countdown.value = null
     readyForStandings.value = false
   } else {
-    emit('gameOver', scores.value)
+    emit('gameOver', playerNames.map(name => [name, scores.value[name] || 0]))
   }
 }
 </script>

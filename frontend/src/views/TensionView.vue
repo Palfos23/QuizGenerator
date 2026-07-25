@@ -50,6 +50,11 @@
       <h1>Create a room</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
 
+      <div class="field">
+        <label>Your name <span class="picker-hint">shown to other players</span></label>
+        <input type="text" v-model="onlineDisplayName" placeholder="Your name" />
+      </div>
+
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
           <label>Questions</label>
@@ -68,7 +73,7 @@
 
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>
-        <button class="btn btn-primary" :disabled="creatingRoom" @click="createOnlineRoom">
+        <button class="btn btn-primary" :disabled="creatingRoom || !onlineDisplayName.trim()" @click="createOnlineRoom">
           {{ creatingRoom ? 'Creating…' : 'Create room' }}
         </button>
       </div>
@@ -78,12 +83,16 @@
       <h1>Join a room</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div class="field">
+        <label>Your name <span class="picker-hint">shown to other players</span></label>
+        <input type="text" v-model="onlineDisplayName" placeholder="Your name" />
+      </div>
+      <div class="field">
         <label>Room code</label>
         <input type="text" v-model="joinCode" placeholder="e.g. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" />
       </div>
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>
-        <button class="btn btn-primary" :disabled="!joinCode.trim() || joiningRoom" @click="joinOnlineRoom">
+        <button class="btn btn-primary" :disabled="!joinCode.trim() || !onlineDisplayName.trim() || joiningRoom" @click="joinOnlineRoom">
           {{ joiningRoom ? 'Joining…' : 'Join' }}
         </button>
       </div>
@@ -211,7 +220,7 @@ const mainCategories = ref([])
 const setupPlayers = reactive([])
 const starting = ref(false)
 const questions = ref([])
-const finalScores = ref({})
+const finalScores = ref([])
 
 onMounted(async () => {
   try {
@@ -259,7 +268,7 @@ async function startGame() {
   }
 }
 
-const sortedScores = computed(() => Object.entries(finalScores.value).sort((a, b) => b[1] - a[1]))
+const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] - a[1]))
 const winner = computed(() => sortedScores.value[0]?.[0] ?? null)
 
 function onGameOver(scores) {
@@ -269,12 +278,13 @@ function onGameOver(scores) {
 
 function resetGame() {
   questions.value = []
-  finalScores.value = {}
+  finalScores.value = []
   stage.value = 'landing'
 }
 
 // --- Online multiplayer ---
 const onlineNumQuestions = ref(5)
+const onlineDisplayName = ref(auth.state.displayName || '')
 const onlineCategory = ref('')
 const joinCode = ref('')
 const onlineRoom = ref(null)
@@ -296,7 +306,7 @@ async function createOnlineRoom() {
   try {
     onlineRoom.value = await api.createRoom({
       gameType: 'TENSION',
-      displayName: auth.state.displayName,
+      displayName: onlineDisplayName.value.trim(),
       color: randomOnlineColor(),
       tensionNumQuestions: onlineNumQuestions.value,
       tensionCategory: onlineCategory.value || null
@@ -315,7 +325,7 @@ async function joinOnlineRoom() {
   joiningRoom.value = true
   try {
     onlineRoom.value = await api.joinRoom(joinCode.value.trim().toUpperCase(), {
-      displayName: auth.state.displayName,
+      displayName: onlineDisplayName.value.trim(),
       color: randomOnlineColor()
     })
     stage.value = 'onlineLobby'

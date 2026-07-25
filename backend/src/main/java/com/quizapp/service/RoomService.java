@@ -51,7 +51,14 @@ public class RoomService {
             if (room.getParticipants().size() >= 4) {
                 throw new IllegalStateException("This room already has the maximum of 4 players.");
             }
-            addParticipant(room, userEmail, displayName, color);
+            String chosenName = (displayName != null && !displayName.isBlank()) ? displayName.trim() : userEmail;
+            boolean nameTaken = room.getParticipants().stream()
+                    .anyMatch(p -> p.getDisplayName().equalsIgnoreCase(chosenName));
+            if (nameTaken) {
+                throw new IllegalStateException(
+                        "The name \"" + chosenName + "\" is already taken in this room - please use a different name.");
+            }
+            addParticipant(room, userEmail, chosenName, color);
         }
         return gameRoomRepository.save(room);
     }
