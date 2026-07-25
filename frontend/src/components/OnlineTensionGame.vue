@@ -72,16 +72,22 @@
           </template>
 
           <template v-else>
-            <h3 style="text-align:center; margin-top:0;">Results</h3>
+            <h3 style="text-align:center; margin-top:0;">Answers</h3>
             <table class="table scoreboard-table">
               <thead>
-                <tr><th style="width:40%;">Player</th><th style="width:35%;">Answer</th><th style="width:25%; text-align:right;">Score</th></tr>
+                <tr>
+                  <th style="width:10%;">#</th>
+                  <th style="width:45%;">Answer</th>
+                  <th style="width:25%;">Player</th>
+                  <th style="width:20%;">Score</th>
+                </tr>
               </thead>
               <tbody>
-                <tr v-for="r in state.roundResults" :key="r.participantId" :class="{ 'tension-row-trap': r.matchedTension }">
-                  <td>{{ r.name }}</td>
-                  <td>{{ r.answerText }}</td>
-                  <td style="text-align:right;">{{ r.score > 0 ? '+' + r.score : r.score }}</td>
+                <tr v-for="ans in allAnswersList" :key="ans.text" :class="{ 'tension-row-trap': ans.tension }">
+                  <td>{{ ans.rank }}</td>
+                  <td>{{ ans.text }}</td>
+                  <td>{{ guessedByFor(ans) }}</td>
+                  <td>{{ guessedScoreFor(ans) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -126,6 +132,28 @@ const isYourTurn = computed(() => !!state.value && state.value.currentTurnPartic
 const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )
+
+const allAnswersList = computed(() => {
+  if (!state.value?.safeAnswers) return []
+  return [
+    ...state.value.safeAnswers.map(a => ({ text: a.text, rank: a.rank, tension: false })),
+    ...state.value.tensionAnswers.map(a => ({ text: a.text, rank: a.rank, tension: true }))
+  ]
+})
+
+function guessedByFor(ans) {
+  return (state.value?.roundResults || [])
+    .filter(r => r.answerText.toLowerCase() === ans.text.toLowerCase())
+    .map(r => r.name)
+    .join(', ')
+}
+
+function guessedScoreFor(ans) {
+  return (state.value?.roundResults || [])
+    .filter(r => r.answerText.toLowerCase() === ans.text.toLowerCase())
+    .map(r => (r.score > 0 ? '+' + r.score : r.score))
+    .join(', ')
+}
 
 async function poll() {
   try {

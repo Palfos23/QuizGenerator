@@ -117,19 +117,6 @@ public class GridBattleOnlineService {
         Map<Long, GridBattleSolvedEntry> solvedByEntryId = solved.stream()
                 .collect(Collectors.toMap(GridBattleSolvedEntry::getGridEntryId, s -> s));
 
-        dto.setEntries(grid.getEntries().stream()
-                .sorted((a, b) -> b.getHintValue() - a.getHintValue())
-                .map(e -> {
-                    GridBattleSolvedEntry s = solvedByEntryId.get(e.getId());
-                    boolean isSolved = s != null;
-                    return new GridBattleEntryDto(e.getId(), e.getHintLabel(), e.getHintValue(), isSolved,
-                            isSolved ? e.getAthlete().getName() : null,
-                            isSolved ? e.getAthlete().getPhotoUrl() : null,
-                            logoUrl(e), hintColor(e),
-                            isSolved ? s.getSolvedBy().getDisplayName() : null);
-                })
-                .collect(Collectors.toList()));
-
         Set<Long> eliminatedIds = participantStates.stream()
                 .filter(ps -> ps.getLivesUsedThisGrid() >= grid.getMaxStrikes())
                 .map(ps -> ps.getParticipant().getId())
@@ -139,6 +126,25 @@ public class GridBattleOnlineService {
         boolean allSolved = solved.size() >= grid.getEntries().size();
         boolean allEliminated = eliminatedIds.size() >= participantStates.size();
         dto.setGridComplete(allSolved || allEliminated);
+
+        // Once everyone's out of lives, reveal every remaining tile - matching the
+        // single-player Weekly Grid's "reveal" behavior - rather than leaving unsolved
+        // answers hidden forever with no way to see what they were.
+        boolean revealAll = allEliminated;
+
+        dto.setEntries(grid.getEntries().stream()
+                .sorted((a, b) -> b.getHintValue() - a.getHintValue())
+                .map(e -> {
+                    GridBattleSolvedEntry s = solvedByEntryId.get(e.getId());
+                    boolean isSolved = s != null;
+                    boolean visible = isSolved || revealAll;
+                    return new GridBattleEntryDto(e.getId(), e.getHintLabel(), e.getHintValue(), isSolved,
+                            visible ? e.getAthlete().getName() : null,
+                            visible ? e.getAthlete().getPhotoUrl() : null,
+                            logoUrl(e), hintColor(e),
+                            isSolved ? s.getSolvedBy().getDisplayName() : null);
+                })
+                .collect(Collectors.toList()));
 
         if (!dto.isGridComplete()) {
             List<GameRoomParticipant> ordered = room.getParticipants();

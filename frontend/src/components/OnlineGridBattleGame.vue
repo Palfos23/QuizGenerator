@@ -23,8 +23,8 @@
               v-for="i in state.maxStrikes"
               :key="i"
               class="life-heart"
-              :class="{ lost: i <= p.livesUsed }"
-            >{{ i <= p.livesUsed ? '🖤' : '❤️' }}</span>
+              :class="{ lost: i > state.maxStrikes - p.livesUsed }"
+            >{{ i > state.maxStrikes - p.livesUsed ? '🖤' : '❤️' }}</span>
           </div>
           <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ p.totalScore }}</div>
         </div>
@@ -69,21 +69,22 @@
           v-for="e in state.entries"
           :key="e.id"
           class="grid-tile"
-          :class="{ correct: e.solved, 'just-solved': e.id === justSolvedId }"
+          :class="{ correct: e.solved, 'revealed-only': !e.solved && e.athleteName, 'just-solved': e.id === justSolvedId }"
         >
           <span v-if="e.solved" class="grid-tile-status correct">✓</span>
+          <span v-else-if="e.athleteName" class="grid-tile-status wrong">✕</span>
           <img
             v-if="tileImage(e)"
             :src="tileImage(e)"
             alt=""
             class="grid-tile-logo"
-            :class="{ 'is-photo': e.solved && e.athletePhotoUrl }"
+            :class="{ 'is-photo': e.athletePhotoUrl }"
           />
           <div
             class="grid-tile-hint"
             :style="{ background: e.hintColor || 'var(--gold)', color: readableTextColor(e.hintColor) }"
           >{{ e.hintLabel }} | {{ e.hintValue }}</div>
-          <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
+          <div class="grid-tile-name">{{ e.athleteName || '?' }}</div>
         </div>
       </div>
     </template>
@@ -121,7 +122,7 @@ const currentTurnName = computed(() =>
 )
 
 function tileImage(e) {
-  return e.solved && e.athletePhotoUrl ? e.athletePhotoUrl : e.logoUrl
+  return e.athletePhotoUrl || e.logoUrl
 }
 
 async function poll() {

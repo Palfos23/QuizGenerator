@@ -136,6 +136,9 @@ export default {
   getGridScoreboard(id) {
     return client.get(`/grids/${id}/scoreboard`).then(r => r.data)
   },
+  revealAllGridEntries(id) {
+    return client.get(`/grids/${id}/reveal-all`).then(r => r.data)
+  },
 
   // --- Weekly grids: admin ---
   adminListGrids() {

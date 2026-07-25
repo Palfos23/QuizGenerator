@@ -22,8 +22,8 @@
               v-for="i in gridState.maxStrikes"
               :key="i"
               class="life-heart"
-              :class="{ lost: i <= (livesUsed[p.name] || 0) }"
-            >{{ i <= (livesUsed[p.name] || 0) ? '🖤' : '❤️' }}</span>
+              :class="{ lost: i > gridState.maxStrikes - (livesUsed[p.name] || 0) }"
+            >{{ i > gridState.maxStrikes - (livesUsed[p.name] || 0) ? '🖤' : '❤️' }}</span>
           </div>
           <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ scores[p.name] || 0 }}</div>
         </div>
@@ -64,9 +64,10 @@
           v-for="e in gridState.entries"
           :key="e.id"
           class="grid-tile"
-          :class="{ correct: e.solved, 'just-solved': e.id === justSolvedId }"
+          :class="{ correct: e.guessedByUser, 'revealed-only': e.solved && !e.guessedByUser, 'just-solved': e.id === justSolvedId }"
         >
-          <span v-if="e.solved" class="grid-tile-status correct">✓</span>
+          <span v-if="e.guessedByUser" class="grid-tile-status correct">✓</span>
+          <span v-else-if="e.solved" class="grid-tile-status wrong">✕</span>
           <img
             v-if="tileImage(e)"
             :src="tileImage(e)"
@@ -177,6 +178,7 @@ async function submitGuess(athlete) {
       }
       if (eliminatedPlayers.value.length >= props.players.length) {
         gridComplete.value = true
+        await revealRemaining()
         return
       }
     }
@@ -194,6 +196,19 @@ function advanceTurn() {
       currentPlayerIdx.value = candidateIdx
       return
     }
+  }
+}
+
+async function revealRemaining() {
+  try {
+    const revealed = await api.revealAllGridEntries(props.grids[currentGridIndex.value].id)
+    gridState.value.entries = gridState.value.entries.map(e => {
+      if (e.solved) return e // already correctly guessed - keep as-is
+      const match = revealed.find(r => r.id === e.id)
+      return match || e
+    })
+  } catch (e) {
+    // if this fails, tiles just stay hidden - not worth blocking the game-over flow over
   }
 }
 

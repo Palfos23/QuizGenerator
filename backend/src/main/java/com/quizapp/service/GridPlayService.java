@@ -38,6 +38,24 @@ public class GridPlayService {
         this.appUserRepository = appUserRepository;
     }
 
+    /**
+     * Reveals every entry on a grid regardless of solved status - used when a
+     * pass-and-play Grid Battle session ends because everyone ran out of lives, so
+     * players can see what the remaining answers actually were. No persisted state
+     * to check here (pass-and-play tracks nothing server-side), so this trusts the
+     * client to only call it once the session has genuinely ended.
+     */
+    @Transactional(readOnly = true)
+    public List<GridEntryViewDto> revealAllEntries(Long gridId) {
+        Grid grid = gridRepository.findById(gridId)
+                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+        return grid.getEntries().stream()
+                .sorted((a, b) -> b.getHintValue() - a.getHintValue())
+                .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), true, false, false,
+                        e.getAthlete().getName(), e.getAthlete().getPhotoUrl(), logoUrl(e), hintColor(e)))
+                .collect(Collectors.toList());
+    }
+
     @Transactional(readOnly = true)
     public List<com.quizapp.dto.GridScoreboardEntryDto> getScoreboard(Long gridId, String requestingUserEmail) {
         Grid grid = gridRepository.findById(gridId)
