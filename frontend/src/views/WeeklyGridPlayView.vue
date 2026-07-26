@@ -38,7 +38,7 @@
             <tbody>
               <tr v-for="(s, i) in topFive" :key="s.userName + i" :class="{ 'you-row': s.isYou }">
                 <td>{{ i + 1 }}</td>
-                <td>{{ s.userName }}</td>
+                <td>{{ firstName(s.userName) }}</td>
                 <td style="text-align:right;">
                   {{ s.guessedCount }} / {{ s.entryCount }}
                   <span v-if="s.usedOvertime" style="display:block; color:var(--violet); font-size:0.75rem;">+{{ s.overtimeCount }} in overtime</span>
@@ -49,7 +49,7 @@
               </tr>
               <tr v-if="yourRank && yourRank.rank > 5" class="you-row">
                 <td>{{ yourRank.rank }}</td>
-                <td>{{ yourRank.entry.userName }}</td>
+                <td>{{ firstName(yourRank.entry.userName) }}</td>
                 <td style="text-align:right;">
                   {{ yourRank.entry.guessedCount }} / {{ yourRank.entry.entryCount }}
                   <span v-if="yourRank.entry.usedOvertime" style="display:block; color:var(--violet); font-size:0.75rem;">+{{ yourRank.entry.overtimeCount }} in overtime</span>
@@ -309,6 +309,10 @@ const averageDelta = computed(() => {
   if (!yourRank.value) return null
   return Math.round((yourRank.value.entry.guessedCount - averageScore.value) * 10) / 10
 })
+
+function firstName(fullName) {
+  return fullName ? fullName.trim().split(/\s+/)[0] : fullName
+}
 
 async function openScoreboard() {
   showScoreboard.value = true

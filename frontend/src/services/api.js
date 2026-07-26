@@ -337,5 +337,30 @@ export default {
   },
   advanceTensionOnlineQuestion(code) {
     return client.post(`/rooms/${code}/tension/next-question`).then(r => r.data)
+  },
+
+  // --- 501: user-facing ---
+  listFiveOhOneCategories() {
+    return client.get('/501/categories').then(r => r.data)
+  },
+  getFiveOhOneCategory(id) {
+    return client.get(`/501/categories/${id}`).then(r => r.data)
+  },
+
+  // --- 501: admin ---
+  adminListFiveOhOneCategories() {
+    return client.get('/admin/501/categories').then(r => r.data)
+  },
+  adminGetFiveOhOneCategory(id) {
+    return client.get(`/admin/501/categories/${id}`).then(r => r.data)
+  },
+  adminCreateFiveOhOneCategory(payload) {
+    return client.post('/admin/501/categories', payload).then(r => r.data)
+  },
+  adminUpdateFiveOhOneCategory(id, payload) {
+    return client.put(`/admin/501/categories/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteFiveOhOneCategory(id) {
+    return client.delete(`/admin/501/categories/${id}`)
   }
 }

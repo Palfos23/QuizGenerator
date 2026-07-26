@@ -62,8 +62,11 @@
         Skip reveal
       </button>
 
-      <button v-if="readyForStandings" class="btn btn-primary" @click="openStandingsModal">
+      <button v-if="readyForStandings && !isLastQuestion" class="btn btn-primary" @click="openStandingsModal">
         Show standings
+      </button>
+      <button v-if="readyForStandings && isLastQuestion" class="btn btn-primary" @click="nextQuestion">
+        Finish
       </button>
     </div>
 
@@ -267,17 +270,14 @@ function skipReveal() {
 const showStandingsModal = ref(false)
 const displayedStandings = ref([])
 const readyForStandings = ref(false)
+const isLastQuestion = computed(() => currentQuestionIndex.value + 1 >= props.questions.length)
 
 // Applies this round's scores immediately (so player cards update right away), but
-// waits for an explicit click before showing the standings modal - going straight
-// from reveal into an animated modal felt too abrupt.
+// waits for an explicit click before moving on - going straight into an animated
+// modal (or straight to game over) felt too abrupt.
 function finishReveal() {
   scores.value = pendingScores.value
-  if (currentQuestionIndex.value + 1 >= props.questions.length) {
-    emit('gameOver', playerNames.map(name => [name, scores.value[name] || 0]))
-  } else {
-    readyForStandings.value = true
-  }
+  readyForStandings.value = true
 }
 
 function openStandingsModal() {

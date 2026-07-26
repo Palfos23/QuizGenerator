@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/quiz-templates/**").authenticated()
                         // online multiplayer rooms (Grid Battle, and Tension later): any logged-in user
                         .requestMatchers("/api/rooms/**").authenticated()
+                        .requestMatchers("/api/501/**").authenticated()
                         .anyRequest().authenticated())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // needed for the H2 console
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);

@@ -12,6 +12,8 @@ import AdminAthletesView from '../views/AdminAthletesView.vue'
 import AdminGridsView from '../views/AdminGridsView.vue'
 import AdminClubsView from '../views/AdminClubsView.vue'
 import TensionView from '../views/TensionView.vue'
+import FiveOhOneView from '../views/FiveOhOneView.vue'
+import AdminFiveOhOneView from '../views/AdminFiveOhOneView.vue'
 import AdminTensionQuestionsView from '../views/AdminTensionQuestionsView.vue'
 import AdminTensionCategoriesView from '../views/AdminTensionCategoriesView.vue'
 import SuggestQuestionView from '../views/SuggestQuestionView.vue'
@@ -42,6 +44,8 @@ const routes = [
   { path: '/admin/grids', name: 'admin-grids', component: AdminGridsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/clubs', name: 'admin-clubs', component: AdminClubsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/tension', name: 'tension', component: TensionView, meta: { requiresAuth: true } },
+  { path: '/501', name: 'five-oh-one', component: FiveOhOneView, meta: { requiresAuth: true } },
+  { path: '/admin/501', name: 'admin-501', component: AdminFiveOhOneView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/tension-questions', name: 'admin-tension-questions', component: AdminTensionQuestionsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/tension-categories', name: 'admin-tension-categories', component: AdminTensionCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/suggest-question', name: 'suggest-question', component: SuggestQuestionView, meta: { requiresAuth: true } },

@@ -27,6 +27,10 @@
         <h3>Tension</h3>
         <p>A pass-the-device party quiz - push for a high-value guess, or play it safe.</p>
       </router-link>
+      <router-link to="/501" class="dashboard-feature-card">
+        <h3>501</h3>
+        <p>A darts-style countdown from 501 - 1v1, checkout between 0 and -10 to win.</p>
+      </router-link>
       <router-link to="/my-quizzes" class="dashboard-feature-card">
         <h3>My quizzes</h3>
         <p>Revisit, edit or re-download anything you've saved.</p>
