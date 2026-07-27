@@ -97,11 +97,28 @@
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
           <input type="text" v-model="athleteSearchTerm" placeholder="Search athletes by name…" style="flex:1; min-width:180px;" />
-          <select v-model="bulkTeam" style="flex:1; min-width:160px;">
-            <option value="">...or add a whole team</option>
-            <option v-for="t in teamOptions" :key="t" :value="t">{{ t }}</option>
-          </select>
-          <button class="btn btn-secondary btn-sm" @click="addAllByTeam" :disabled="!bulkTeam.trim()">+ Add team</button>
+        </div>
+
+        <div v-if="teamOptions.length" style="margin-bottom:10px;">
+          <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
+            ...or add whole teams <span class="picker-hint" v-if="bulkTeams.length">{{ bulkTeams.length }} selected</span>
+          </label>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+            <button
+              v-for="t in teamOptions"
+              :key="t"
+              type="button"
+              class="team-chip"
+              :class="{ active: bulkTeams.includes(t) }"
+              @click="toggleBulkTeam(t)"
+            >{{ t }}</button>
+          </div>
+          <button
+            class="btn btn-secondary btn-sm"
+            style="margin-top:10px;"
+            :disabled="!bulkTeams.length"
+            @click="addAllByTeam"
+          >+ Add {{ bulkTeams.length > 1 ? `${bulkTeams.length} teams` : 'team' }}</button>
         </div>
 
         <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
@@ -261,7 +278,15 @@ const teamOptions = ref([])
 
 const athleteSearchTerm = ref('')
 const athleteSearchResults = ref([])
-const bulkTeam = ref('')
+const bulkTeams = ref([])
+
+function toggleBulkTeam(team) {
+  if (bulkTeams.value.includes(team)) {
+    bulkTeams.value = bulkTeams.value.filter(t => t !== team)
+  } else {
+    bulkTeams.value = [...bulkTeams.value, team]
+  }
+}
 
 onMounted(() => {
   loadGrids()
@@ -332,11 +357,14 @@ function addCandidate(athlete) {
 async function addAllByTeam() {
   error.value = ''
   try {
-    const results = await api.adminSearchAthletes({ sport: form.sport, team: bulkTeam.value.trim() })
-    results.forEach(addCandidate)
-    bulkTeam.value = ''
+    const resultsPerTeam = await Promise.all(
+      bulkTeams.value.map(team => api.adminSearchAthletes({ sport: form.sport, team }))
+    )
+    resultsPerTeam.flat().forEach(addCandidate)
+    toast.show(`Added athletes from ${bulkTeams.value.length} team(s).`)
+    bulkTeams.value = []
   } catch (e) {
-    error.value = 'Could not search for that team.'
+    error.value = 'Could not search for those teams.'
   }
 }
 
@@ -351,7 +379,7 @@ function resetForm() {
   candidatePage.value = 1
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
-  bulkTeam.value = ''
+  bulkTeams.value = []
   loadClubOptions()
   loadTeamOptions()
 }
