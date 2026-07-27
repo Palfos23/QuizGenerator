@@ -60,10 +60,24 @@
       </div>
 
       <div class="field">
+        <label>Source <span class="picker-hint">optional - shown to players so they know where the data came from</span></label>
+        <input type="text" v-model="form.source" placeholder="e.g. Lionpopulation.com" />
+      </div>
+
+      <div class="field">
         <label>Safe answers <span class="picker-hint">ranked 1-10 - higher rank scores more points</span></label>
+        <p v-if="!form.answersCategory.trim()" style="color:var(--text-dim); font-size:0.85rem; margin-top:-4px;">
+          Set an answers category above to choose from its option list.
+        </p>
+        <p v-else-if="!categoryOptions.length" style="color:var(--coral); font-size:0.85rem; margin-top:-4px;">
+          No options found for "{{ form.answersCategory }}" - add some on the Tension categories page first.
+        </p>
         <div v-for="(a, idx) in form.safeAnswers" :key="idx" class="candidate-row">
           <input type="number" min="1" max="10" v-model.number="a.rank" style="width:70px;" placeholder="Rank" />
-          <input type="text" v-model="a.text" style="flex:1;" placeholder="Answer text" />
+          <select v-model="a.text" style="flex:1;" :disabled="!categoryOptions.length">
+            <option value="" disabled>Choose an answer…</option>
+            <option v-for="opt in categoryOptions" :key="opt" :value="opt">{{ opt }}</option>
+          </select>
           <button class="btn btn-danger btn-sm" @click="form.safeAnswers.splice(idx, 1)">✕</button>
         </div>
         <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addSafeAnswer">+ Add safe answer</button>
@@ -73,7 +87,10 @@
         <label>Tension answers <span class="picker-hint">ranked separately - any of these costs -5 if guessed</span></label>
         <div v-for="(a, idx) in form.tensionAnswers" :key="idx" class="candidate-row">
           <input type="number" min="1" v-model.number="a.rank" style="width:70px;" placeholder="Rank" />
-          <input type="text" v-model="a.text" style="flex:1;" placeholder="Answer text" />
+          <select v-model="a.text" style="flex:1;" :disabled="!categoryOptions.length">
+            <option value="" disabled>Choose an answer…</option>
+            <option v-for="opt in categoryOptions" :key="opt" :value="opt">{{ opt }}</option>
+          </select>
           <button class="btn btn-danger btn-sm" @click="form.tensionAnswers.splice(idx, 1)">✕</button>
         </div>
         <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addTensionAnswer">+ Add tension answer</button>
@@ -93,7 +110,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
@@ -107,7 +124,24 @@ const editingId = ref(null)
 const pendingDelete = ref(null)
 
 const form = reactive({
-  title: '', mainCategory: '', answersCategory: '', safeAnswers: [], tensionAnswers: []
+  title: '', mainCategory: '', answersCategory: '', source: '', safeAnswers: [], tensionAnswers: []
+})
+
+const categoryOptions = ref([])
+let categoryOptionsDebounce = null
+watch(() => form.answersCategory, (val) => {
+  clearTimeout(categoryOptionsDebounce)
+  if (!val.trim()) {
+    categoryOptions.value = []
+    return
+  }
+  categoryOptionsDebounce = setTimeout(async () => {
+    try {
+      categoryOptions.value = await api.fetchTensionAnswerOptions(val.trim())
+    } catch (e) {
+      categoryOptions.value = []
+    }
+  }, 400)
 })
 
 onMounted(loadQuestions)
@@ -128,6 +162,7 @@ function resetForm() {
   form.title = ''
   form.mainCategory = ''
   form.answersCategory = ''
+  form.source = ''
   form.safeAnswers = []
   form.tensionAnswers = []
 }
@@ -154,6 +189,7 @@ async function openEdit(id) {
     form.title = detail.title
     form.mainCategory = detail.mainCategory || ''
     form.answersCategory = detail.answersCategory || ''
+    form.source = detail.source || ''
     form.safeAnswers = detail.safeAnswers.map(a => ({ rank: a.rank, text: a.text }))
     form.tensionAnswers = detail.tensionAnswers.map(a => ({ rank: a.rank, text: a.text }))
     editingId.value = id

@@ -12,6 +12,7 @@ public class TensionOnlineStateDto {
     private int totalQuestions;
     private String questionTitle;
     private String answersCategory;
+    private String source;
     private int tensionAnswerCount;
     private List<TensionOnlinePlayerDto> players;
     private Long currentTurnParticipantId;
@@ -36,6 +37,8 @@ public class TensionOnlineStateDto {
     public void setQuestionTitle(String questionTitle) { this.questionTitle = questionTitle; }
     public String getAnswersCategory() { return answersCategory; }
     public void setAnswersCategory(String answersCategory) { this.answersCategory = answersCategory; }
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
     public int getTensionAnswerCount() { return tensionAnswerCount; }
     public void setTensionAnswerCount(int tensionAnswerCount) { this.tensionAnswerCount = tensionAnswerCount; }
     public List<TensionOnlinePlayerDto> getPlayers() { return players; }

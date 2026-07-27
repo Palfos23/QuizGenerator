@@ -77,6 +77,7 @@ public class TensionQuestionService {
         q.setTitle(dto.getTitle());
         q.setMainCategory(dto.getMainCategory());
         q.setAnswersCategory(dto.getAnswersCategory());
+        q.setSource(dto.getSource());
         q.setSafeAnswers(toEntryEntities(dto.getSafeAnswers()));
         q.setTensionAnswers(toEntryEntities(dto.getTensionAnswers()));
     }
@@ -97,6 +98,7 @@ public class TensionQuestionService {
         dto.setTitle(q.getTitle());
         dto.setMainCategory(q.getMainCategory());
         dto.setAnswersCategory(q.getAnswersCategory());
+        dto.setSource(q.getSource());
         dto.setSafeAnswers(q.getSafeAnswers().stream()
                 .sorted((a, b) -> a.getRank() - b.getRank())
                 .map(TensionQuestionService::toEntryDto)

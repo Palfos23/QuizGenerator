@@ -28,6 +28,19 @@ public class TensionQuestion {
     @Column(name = "answers_category")
     private String answersCategory;
 
+    // Where the underlying data/ranking came from (e.g. "Lionpopulation.com") -
+    // shown to players so they can see the source behind a question's answers.
+    @Column(name = "source", length = 300)
+    private String source;
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
     // The safe list - correct answers ranked 1..10. Position 10 (the least obvious
     // still-safe answer) is worth the most; position 1 is worth the least.
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

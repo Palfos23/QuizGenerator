@@ -99,6 +99,7 @@ public class TensionOnlineService {
         TensionQuestionDto question = tensionQuestionService.getOne(currentQuestionId);
         dto.setQuestionTitle(question.getTitle());
         dto.setAnswersCategory(question.getAnswersCategory());
+        dto.setSource(question.getSource());
         dto.setTensionAnswerCount(question.getTensionAnswers().size());
 
         List<TensionRoundAnswer> roundAnswers = roundAnswerRepository.findByRoomState_Id(state.getId());

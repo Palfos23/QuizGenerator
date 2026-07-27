@@ -32,6 +32,9 @@
 
       <div class="tension-answers-panel">
         <h3 style="text-align:center; margin-top:0;">Answers</h3>
+        <p v-if="question.source" style="text-align:center; margin-top:-8px; color:var(--text-dim); font-size:0.8rem;">
+          Source: {{ question.source }}
+        </p>
         <table class="table">
           <thead>
             <tr>

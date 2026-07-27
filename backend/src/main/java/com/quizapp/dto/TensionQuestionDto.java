@@ -16,6 +16,7 @@ public class TensionQuestionDto {
     private String mainCategory;
 
     private String answersCategory;
+    private String source;
 
     @NotEmpty
     @Valid
@@ -54,6 +55,14 @@ public class TensionQuestionDto {
 
     public void setAnswersCategory(String answersCategory) {
         this.answersCategory = answersCategory;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public List<TensionAnswerEntryDto> getSafeAnswers() {
