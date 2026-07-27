@@ -92,8 +92,6 @@ textarea:focus-visible {
   margin-right: 16px;
 }
 
-.nav-brand span { color: var(--text); }
-
 .nav-link {
   display: flex;
   align-items: center;

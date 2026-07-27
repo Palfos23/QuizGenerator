@@ -1,7 +1,7 @@
 <template>
   <div class="app-shell">
     <nav class="top-nav">
-      <router-link to="/" class="nav-brand">Quiz<span>Maker</span></router-link>
+      <router-link to="/" class="nav-brand">Quizzes</router-link>
 
       <template v-if="auth.isAuthenticated.value">
         <router-link v-if="!auth.isAdmin.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Create a quiz</router-link>
