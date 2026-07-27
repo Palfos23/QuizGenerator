@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import QuizGeneratorView from '../views/QuizGeneratorView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import MultiplayerGridView from '../views/MultiplayerGridView.vue'
@@ -56,7 +56,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
 
