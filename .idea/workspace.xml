@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="" />
+    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/frontend/public/CNAME" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/deploy-frontend.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/deploy-frontend.yml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

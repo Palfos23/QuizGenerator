@@ -39,7 +39,7 @@ jobs:
           # way), so plain repo "Variables" are the right place for them, not "Secrets".
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
-          BASE_PATH: /${{ github.event.repository.name }}/
+          BASE_PATH: /
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
