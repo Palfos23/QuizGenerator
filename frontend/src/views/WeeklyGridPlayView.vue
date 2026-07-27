@@ -141,6 +141,7 @@
             alt=""
             class="grid-tile-logo"
             :class="{ 'is-photo': e.solved && e.athletePhotoUrl }"
+            @error="$event.target.style.display = 'none'"
           />
           <div
             class="grid-tile-hint"
@@ -159,6 +160,32 @@
       @confirm="confirmGiveUp"
       @cancel="showGiveUpConfirm = false"
     />
+
+    <div v-if="completionPopup" class="modal-backdrop" @click.self="completionPopup = null">
+      <div class="completion-popup" :class="completionPopup">
+        <div v-if="completionPopup === 'full'" class="confetti-container">
+          <span v-for="(piece, i) in confettiPieces" :key="i" class="confetti-piece" :style="piece"></span>
+        </div>
+
+        <template v-if="completionPopup === 'full'">
+          <div class="completion-icon">🎉</div>
+          <h2>Perfect clear!</h2>
+          <p>You found all {{ state.entries.length }} - no Overtime needed.</p>
+        </template>
+        <template v-else-if="completionPopup === 'overtime'">
+          <div class="completion-icon">⏱</div>
+          <h2>Got there in the end!</h2>
+          <p>You completed the grid, with a little help from Overtime.</p>
+        </template>
+        <template v-else-if="completionPopup === 'given-up'">
+          <div class="completion-icon">🏳️</div>
+          <h2>No shame in that</h2>
+          <p>You found {{ guessedCount }} / {{ state.entries.length }} - take a look at what you missed below.</p>
+        </template>
+
+        <button class="btn btn-primary" style="margin-top:8px;" @click="completionPopup = null">Continue</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -261,6 +288,9 @@ async function submitGuess(athlete) {
     if (result.gameOver || result.allSolved) {
       state.value.completed = true
     }
+    if (result.allSolved) {
+      triggerCompletionPopup(overtimeSolvedCount.value > 0 ? 'overtime' : 'full')
+    }
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
   } finally {
@@ -285,6 +315,7 @@ async function doReveal() {
   error.value = ''
   try {
     state.value = await api.revealGrid(gridId)
+    triggerCompletionPopup('given-up')
   } catch (e) {
     error.value = 'Could not reveal the answers.'
   } finally {
@@ -296,6 +327,22 @@ const showGiveUpConfirm = ref(false)
 const showScoreboard = ref(false)
 const scoreboardData = ref(null)
 const scoreboardLoading = ref(false)
+
+const completionPopup = ref(null) // null | 'full' | 'overtime' | 'given-up'
+const confettiPieces = ref([])
+const CONFETTI_COLORS = ['var(--gold)', 'var(--teal)', 'var(--coral)', 'var(--violet)', '#ffffff']
+
+function triggerCompletionPopup(type) {
+  if (type === 'full') {
+    confettiPieces.value = Array.from({ length: 36 }, (_, i) => ({
+      left: Math.random() * 100 + '%',
+      background: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+      animationDuration: (1.1 + Math.random() * 0.9).toFixed(2) + 's',
+      animationDelay: (Math.random() * 0.35).toFixed(2) + 's'
+    }))
+  }
+  completionPopup.value = type
+}
 
 const scoreboardEntries = computed(() => scoreboardData.value?.entries || [])
 const topFive = computed(() => scoreboardEntries.value.slice(0, 5))

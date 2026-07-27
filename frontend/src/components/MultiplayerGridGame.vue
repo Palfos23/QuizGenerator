@@ -74,6 +74,7 @@
             alt=""
             class="grid-tile-logo"
             :class="{ 'is-photo': e.solved && e.athletePhotoUrl }"
+            @error="$event.target.style.display = 'none'"
           />
           <div
             class="grid-tile-hint"

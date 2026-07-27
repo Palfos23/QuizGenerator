@@ -144,10 +144,48 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" :disabled="saving" @click="saveGrid">
-        {{ saving ? 'Saving…' : 'Save grid' }}
-      </button>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-secondary" :disabled="!correctCandidates.length" @click="showPreview = true">
+          👁 Preview ({{ correctCandidates.length }} tiles)
+        </button>
+        <button class="btn btn-primary" :disabled="saving" @click="saveGrid">
+          {{ saving ? 'Saving…' : 'Save grid' }}
+        </button>
+      </div>
     </template>
+
+    <div v-if="showPreview" class="modal-backdrop" @click.self="showPreview = false">
+      <div class="modal" style="max-width:800px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <h2 style="margin:0;">{{ form.title || 'Untitled grid' }}</h2>
+          <button class="btn btn-secondary btn-sm" @click="showPreview = false">Close</button>
+        </div>
+        <p class="page-subtitle" style="margin-top:0;">
+          Everything shown revealed, for a quick check that hints, logos, and photos look right.
+        </p>
+
+        <div v-if="!correctCandidates.length" class="empty-state" style="padding:20px;">
+          No tiles marked "correct" yet - check the box next to a candidate above.
+        </div>
+        <div v-else class="grid-tiles">
+          <div v-for="c in sortedCorrectCandidates" :key="c.athleteId" class="grid-tile correct">
+            <span class="grid-tile-status correct">✓</span>
+            <img
+              v-if="previewImage(c)"
+              :src="previewImage(c)"
+              alt=""
+              class="grid-tile-logo"
+              :class="{ 'is-photo': c.photoUrl }"
+              @error="$event.target.style.display = 'none'"
+            />
+            <div class="grid-tile-hint" :style="{ background: previewClubColor(c) || 'var(--gold)', color: readableTextColor(previewClubColor(c)) }">
+              {{ c.hintLabel || '?' }} | {{ c.hintValue ?? '?' }}
+            </div>
+            <div class="grid-tile-name">{{ c.name }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <ConfirmModal
       v-if="pendingDelete"
@@ -165,7 +203,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import Pagination from '../components/Pagination.vue'
-import { SPORTS, sportLabel } from '../constants'
+import { SPORTS, sportLabel, readableTextColor } from '../constants'
 
 const view = ref('list')
 const grids = ref([])
@@ -191,6 +229,26 @@ const pagedCandidates = computed(() => {
   const start = (candidatePage.value - 1) * CANDIDATE_PAGE_SIZE
   return candidates.value.slice(start, start + CANDIDATE_PAGE_SIZE)
 })
+
+const showPreview = ref(false)
+const correctCandidates = computed(() => candidates.value.filter(c => c.correct))
+const sortedCorrectCandidates = computed(() =>
+  form.sortAscending
+    ? [...correctCandidates.value].sort((a, b) => (a.hintValue ?? 0) - (b.hintValue ?? 0))
+    : [...correctCandidates.value].sort((a, b) => (b.hintValue ?? 0) - (a.hintValue ?? 0))
+)
+
+function previewClub(c) {
+  return clubOptions.value.find(club => club.id === c.clubId) || null
+}
+function previewClubColor(c) {
+  return previewClub(c)?.color || null
+}
+function previewImage(c) {
+  if (c.photoUrl) return c.photoUrl
+  if (c.showLogo) return previewClub(c)?.logoUrl || null
+  return null
+}
 
 function removeCandidate(c) {
   const realIndex = candidates.value.indexOf(c)
@@ -266,7 +324,7 @@ function changeSport(code) {
 function addCandidate(athlete) {
   if (candidates.value.some(c => c.athleteId === athlete.id)) return
   candidates.value.push({
-    athleteId: athlete.id, name: athlete.name, team: athlete.team,
+    athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
     correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true
   })
 }
@@ -319,7 +377,7 @@ async function openEdit(id) {
     candidates.value = detail.candidates.map(a => {
       const entry = entryByAthleteId.get(a.id)
       return {
-        athleteId: a.id, name: a.name, team: a.team,
+        athleteId: a.id, name: a.name, team: a.team, photoUrl: a.photoUrl,
         correct: !!entry,
         hintLabel: entry?.hintLabel || '',
         hintValue: entry?.hintValue ?? null,
