@@ -55,10 +55,11 @@
         </div>
         <div style="flex:1; min-width:200px;">
           <label>Answers category <span class="picker-hint">powers the answer-box autocomplete</span></label>
-          <select v-model="form.answersCategory">
-            <option value="" disabled>Choose a category…</option>
-            <option v-for="c in tensionCategories" :key="c.name" :value="c.name">{{ c.name }}</option>
-          </select>
+          <SearchableSelect
+            v-model="form.answersCategory"
+            :options="tensionCategories.map(c => c.name)"
+            placeholder="Search categories…"
+          />
           <p v-if="!tensionCategories.length" style="color:var(--coral); font-size:0.85rem; margin-top:6px;">
             No categories exist yet - add one on the Tension categories page first.
           </p>
@@ -80,10 +81,9 @@
         </p>
         <div v-for="(a, idx) in form.safeAnswers" :key="idx" class="candidate-row">
           <input type="number" min="1" max="10" v-model.number="a.rank" style="width:70px;" placeholder="Rank" />
-          <select v-model="a.text" style="flex:1;" :disabled="!categoryOptions.length">
-            <option value="" disabled>Choose an answer…</option>
-            <option v-for="opt in categoryOptions" :key="opt" :value="opt">{{ opt }}</option>
-          </select>
+          <div style="flex:1;">
+            <SearchableSelect v-model="a.text" :options="categoryOptions" placeholder="Search answers…" />
+          </div>
           <button class="btn btn-danger btn-sm" @click="form.safeAnswers.splice(idx, 1)">✕</button>
         </div>
         <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addSafeAnswer">+ Add safe answer</button>
@@ -93,10 +93,9 @@
         <label>Tension answers <span class="picker-hint">ranked separately - any of these costs -5 if guessed</span></label>
         <div v-for="(a, idx) in form.tensionAnswers" :key="idx" class="candidate-row">
           <input type="number" min="1" v-model.number="a.rank" style="width:70px;" placeholder="Rank" />
-          <select v-model="a.text" style="flex:1;" :disabled="!categoryOptions.length">
-            <option value="" disabled>Choose an answer…</option>
-            <option v-for="opt in categoryOptions" :key="opt" :value="opt">{{ opt }}</option>
-          </select>
+          <div style="flex:1;">
+            <SearchableSelect v-model="a.text" :options="categoryOptions" placeholder="Search answers…" />
+          </div>
           <button class="btn btn-danger btn-sm" @click="form.tensionAnswers.splice(idx, 1)">✕</button>
         </div>
         <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addTensionAnswer">+ Add tension answer</button>
@@ -120,6 +119,7 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import SearchableSelect from '../components/SearchableSelect.vue'
 
 const view = ref('list')
 const questions = ref([])

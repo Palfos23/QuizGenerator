@@ -5,7 +5,10 @@
       <div style="color:var(--text-dim); font-size:0.85rem;">Tension answers: {{ question.tensionAnswers.length }}</div>
     </div>
 
-    <h1 style="text-align:center; margin:6px 0 24px;">{{ question.title }}</h1>
+    <h1 style="text-align:center; margin:6px 0 4px;">{{ question.title }}</h1>
+    <p v-if="question.source" style="text-align:center; margin:0 0 20px; color:var(--text-dim); font-size:0.8rem;">
+      Source: {{ question.source }}
+    </p>
 
     <div class="tension-layout">
       <div class="tension-player-col">
@@ -32,9 +35,6 @@
 
       <div class="tension-answers-panel">
         <h3 style="text-align:center; margin-top:0;">Answers</h3>
-        <p v-if="question.source" style="text-align:center; margin-top:-8px; color:var(--text-dim); font-size:0.8rem;">
-          Source: {{ question.source }}
-        </p>
         <table class="table">
           <thead>
             <tr>

@@ -9,7 +9,10 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
-      <h1 style="text-align:center; margin:6px 0 24px;">{{ state.questionTitle }}</h1>
+      <h1 style="text-align:center; margin:6px 0 4px;">{{ state.questionTitle }}</h1>
+      <p v-if="state.source" style="text-align:center; margin:0 0 20px; color:var(--text-dim); font-size:0.8rem;">
+        Source: {{ state.source }}
+      </p>
 
       <div class="tension-layout">
         <div class="tension-player-col">
@@ -73,9 +76,6 @@
 
           <template v-else>
             <h3 style="text-align:center; margin-top:0;">Answers</h3>
-            <p v-if="state.source" style="text-align:center; margin-top:-8px; color:var(--text-dim); font-size:0.8rem;">
-              Source: {{ state.source }}
-            </p>
             <table class="table scoreboard-table">
               <thead>
                 <tr>
