@@ -55,7 +55,13 @@
         </div>
         <div style="flex:1; min-width:200px;">
           <label>Answers category <span class="picker-hint">powers the answer-box autocomplete</span></label>
-          <input type="text" v-model="form.answersCategory" placeholder="e.g. countries" />
+          <select v-model="form.answersCategory">
+            <option value="" disabled>Choose a category…</option>
+            <option v-for="c in tensionCategories" :key="c.name" :value="c.name">{{ c.name }}</option>
+          </select>
+          <p v-if="!tensionCategories.length" style="color:var(--coral); font-size:0.85rem; margin-top:6px;">
+            No categories exist yet - add one on the Tension categories page first.
+          </p>
         </div>
       </div>
 
@@ -145,6 +151,15 @@ watch(() => form.answersCategory, (val) => {
 })
 
 onMounted(loadQuestions)
+
+const tensionCategories = ref([])
+onMounted(async () => {
+  try {
+    tensionCategories.value = await api.adminListTensionCategories()
+  } catch (e) {
+    // non-critical - the dropdown just stays empty, with its own message shown
+  }
+})
 
 async function loadQuestions() {
   loading.value = true
