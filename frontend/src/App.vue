@@ -35,9 +35,15 @@
       <router-link v-if="!auth.isAdmin.value" to="/generate" @click="onNavClick('/generate', 'generate')">Create</router-link>
       <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
       <router-link v-if="!auth.isAdmin.value" to="/weekly-grid">Weekly grid</router-link>
-      <router-link v-if="!auth.isAdmin.value" to="/tension" @click="onNavClick('/tension', 'tension')">Tension</router-link>
-      <router-link v-if="!auth.isAdmin.value" to="/501">501</router-link>
-      <router-link v-if="!auth.isAdmin.value" to="/grid-battle" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
+      <div v-if="!auth.isAdmin.value" style="position:relative; flex:1; display:flex;">
+        <div v-if="showGamesMenu" class="bottom-nav-backdrop" @click="showGamesMenu = false"></div>
+        <button @click="showGamesMenu = !showGamesMenu" :class="{ active: isGameRoute }">Games ▾</button>
+        <div v-if="showGamesMenu" class="games-popup">
+          <router-link to="/tension" @click="closeGamesMenu('/tension', 'tension')">Tension</router-link>
+          <router-link to="/501" @click="closeGamesMenu('/501')">501</router-link>
+          <router-link to="/grid-battle" @click="closeGamesMenu('/grid-battle', 'gridBattle')">Grid Battle</router-link>
+        </div>
+      </div>
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/athletes">Athletes</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/grids">Grids</router-link>
@@ -52,13 +58,22 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import auth from './services/auth'
 import { useRouter } from 'vue-router'
 import navTrigger from './services/navTrigger'
 import ToastHost from './components/ToastHost.vue'
 
 const router = useRouter()
+
+const GAME_PATHS = ['/tension', '/501', '/grid-battle']
+const showGamesMenu = ref(false)
+const isGameRoute = computed(() => GAME_PATHS.includes(router.currentRoute.value.path))
+
+function closeGamesMenu(path, key) {
+  showGamesMenu.value = false
+  if (key) onNavClick(path, key)
+}
 
 function onNavClick(path, key) {
   if (router.currentRoute.value.path === path) {

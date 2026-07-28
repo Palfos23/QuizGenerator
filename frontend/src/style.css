@@ -1600,6 +1600,46 @@ table.scoreboard-table {
   }
 
   .bottom-nav a.router-link-exact-active { color: var(--gold); }
+  .bottom-nav button.active { color: var(--gold); }
+
+  .bottom-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+  }
+
+  .games-popup {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
+    background: var(--ink-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    min-width: 170px;
+    z-index: 50;
+  }
+  .bottom-nav .games-popup a {
+    flex: none;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    color: var(--text);
+  }
+  .bottom-nav .games-popup a:hover,
+  .bottom-nav .games-popup a.router-link-exact-active {
+    background: rgba(242,183,5,0.12);
+    color: var(--gold);
+  }
 }
 
 @media print {
