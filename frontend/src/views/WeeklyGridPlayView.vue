@@ -246,7 +246,7 @@ async function loadState() {
 let searchDebounce = null
 watch(searchTerm, (val) => {
   clearTimeout(searchDebounce)
-  if (!val || val.trim().length < 2) {
+  if (!val || val.trim().length < 3) {
     searchResults.value = []
     return
   }

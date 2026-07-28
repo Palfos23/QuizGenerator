@@ -37,7 +37,12 @@ public class GridAdminService {
     public List<GridSummaryDto> findAll() {
         return gridRepository.findAll().stream()
                 .sorted((a, b) -> a.getWeekStartDate().compareTo(b.getWeekStartDate()))
-                .map(g -> new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(), g.getEntries().size(), null, null))
+                .map(g -> {
+                    GridSummaryDto dto = new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(),
+                            g.getEntries().size(), null, null);
+                    dto.setMaxStrikes(g.getMaxStrikes());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

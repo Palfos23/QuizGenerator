@@ -17,6 +17,18 @@ public class GridSummaryDto {
     private String status; // "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"
     private Integer guessedCount;
 
+    // Only set on the admin management list - lets an admin see strike count
+    // at a glance without opening each grid to edit it.
+    private Integer maxStrikes;
+
+    public Integer getMaxStrikes() {
+        return maxStrikes;
+    }
+
+    public void setMaxStrikes(Integer maxStrikes) {
+        this.maxStrikes = maxStrikes;
+    }
+
     public GridSummaryDto(Long id, String title, Sport sport, LocalDate weekStartDate, int entryCount,
                            String status, Integer guessedCount) {
         this.id = id;

@@ -246,7 +246,7 @@ onUnmounted(() => {
 
 function onInput() {
   validSelection.value = false
-  if (value.value.trim().length >= 2) {
+  if (value.value.trim().length >= 3) {
     const term = value.value.toLowerCase()
     filteredOptions.value = allOptions.value.filter(o => o.toLowerCase().includes(term)).slice(0, 12)
     showDropdown.value = true
