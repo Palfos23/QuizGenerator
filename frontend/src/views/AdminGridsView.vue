@@ -93,6 +93,19 @@
       </div>
 
       <div class="field">
+        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
+          <input type="checkbox" v-model="form.excludedFromGridBattle" style="width:auto;" />
+          Exclude from Grid Battle
+        </label>
+        <p class="page-subtitle" style="margin-top:4px;">
+          Use this once a grid's roster is outdated (e.g. a player crossed a stat threshold) -
+          it stays fully intact for anyone who already played it, and still shows in the regular
+          Weekly Grid archive, but stops being offered to Grid Battle's random or manual pick.
+          Duplicate it first to create an updated version with the same content to edit.
+        </p>
+      </div>
+
+      <div class="field">
         <label>Candidate pool <span class="picker-hint">everyone guessable in this grid - correct and decoy</span></label>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
@@ -161,9 +174,12 @@
         </div>
       </div>
 
-      <div style="display:flex; gap:10px;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" :disabled="!correctCandidates.length" @click="showPreview = true">
           👁 Preview ({{ correctCandidates.length }} tiles)
+        </button>
+        <button v-if="editingId" class="btn btn-secondary" @click="duplicateAsNewVersion">
+          ⧉ Duplicate as new version
         </button>
         <button class="btn btn-primary" :disabled="saving" @click="saveGrid">
           {{ saving ? 'Saving…' : 'Save grid' }}
@@ -236,7 +252,8 @@ const form = reactive({
   sport: 'FOOTBALL',
   weekStartDate: '',
   maxStrikes: 5,
-  sortAscending: false
+  sortAscending: false,
+  excludedFromGridBattle: false
 })
 const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue, clubId, showLogo }]
 
@@ -375,6 +392,7 @@ function resetForm() {
   form.weekStartDate = ''
   form.maxStrikes = 5
   form.sortAscending = false
+  form.excludedFromGridBattle = false
   candidates.value = []
   candidatePage.value = 1
   athleteSearchTerm.value = ''
@@ -400,6 +418,7 @@ async function openEdit(id) {
     form.weekStartDate = detail.weekStartDate
     form.maxStrikes = detail.maxStrikes
     form.sortAscending = detail.sortAscending
+    form.excludedFromGridBattle = detail.excludedFromGridBattle
 
     const entryByAthleteId = new Map(detail.entries.map(e => [e.athlete.id, e]))
     candidates.value = detail.candidates.map(a => {
@@ -422,6 +441,18 @@ async function openEdit(id) {
   } catch (e) {
     error.value = 'Could not load that grid.'
   }
+}
+
+function duplicateAsNewVersion() {
+  // Keeps every current form field and candidate/entry exactly as-is - only
+  // clearing the editing id, so the next save creates a brand new grid via
+  // POST instead of overwriting the original via PUT. The original stays
+  // completely untouched until you separately go back and check "Exclude
+  // from Grid Battle" on it once you're happy with this copy.
+  editingGridId.value = null
+  form.title = form.title + ' (updated)'
+  form.excludedFromGridBattle = false
+  toast.show('Now editing a new duplicate - the original grid is untouched. Remember to save this copy.')
 }
 
 async function saveGrid() {
@@ -447,6 +478,7 @@ async function saveGrid() {
     weekStartDate: form.weekStartDate,
     maxStrikes: form.maxStrikes,
     sortAscending: form.sortAscending,
+    excludedFromGridBattle: form.excludedFromGridBattle,
     candidateAthleteIds: candidates.value.map(c => c.athleteId),
     entries: entries.map(c => ({
       athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: c.hintValue,

@@ -357,8 +357,7 @@ const duplicateNames = computed(() => {
 async function loadAvailableGrids() {
   loadingGrids.value = true
   try {
-    const [active, archive, future] = await Promise.all([api.getActiveGrids(), api.getArchiveGrids(), api.getFutureGrids()])
-    availableGrids.value = [...active, ...future, ...archive]
+    availableGrids.value = await api.getBattleEligibleGrids()
   } catch (e) {
     error.value = 'Could not load grids.'
   } finally {
@@ -385,8 +384,7 @@ async function goToGridChoice() {
 
 async function pickRandomGrids() {
   try {
-    const [active, archive, future] = await Promise.all([api.getActiveGrids(), api.getArchiveGrids(), api.getFutureGrids()])
-    const pool = [...active, ...archive, ...future]
+    const pool = await api.getBattleEligibleGrids()
     const shuffled = [...pool].sort(() => Math.random() - 0.5)
     gameGrids.value = shuffled.slice(0, numGrids.value)
   } catch (e) {

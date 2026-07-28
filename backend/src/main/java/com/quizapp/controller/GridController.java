@@ -47,6 +47,11 @@ public class GridController {
         return gridPlayService.findFuture(authentication.getName());
     }
 
+    @GetMapping("/battle-eligible")
+    public List<GridSummaryDto> battleEligible(Authentication authentication) {
+        return gridPlayService.findEligibleForGridBattle(authentication.getName());
+    }
+
     @GetMapping("/{id}/play")
     public GridPlayStateDto play(@PathVariable Long id, Authentication authentication) {
         return gridPlayService.getPlayState(id, authentication.getName());

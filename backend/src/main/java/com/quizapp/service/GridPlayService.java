@@ -120,6 +120,19 @@ public class GridPlayService {
         return toSummariesWithStatus(grids, userEmail);
     }
 
+    // Grid Battle draws from every grid regardless of date (past, current, or
+    // future) since it doesn't have "this week's theme" pacing - the one thing
+    // it excludes is a grid an admin has explicitly retired after duplicating
+    // it forward with updated content.
+    @Transactional(readOnly = true)
+    public List<GridSummaryDto> findEligibleForGridBattle(String userEmail) {
+        List<Grid> grids = gridRepository.findAll().stream()
+                .filter(g -> !g.isExcludedFromGridBattle())
+                .sorted((a, b) -> b.getWeekStartDate().compareTo(a.getWeekStartDate()))
+                .collect(Collectors.toList());
+        return toSummariesWithStatus(grids, userEmail);
+    }
+
     /**
      * One query for all the user's attempts across every grid being listed, rather
      * than a separate query per grid - matters once there are a lot of grids.
@@ -138,8 +151,10 @@ public class GridPlayService {
             // included) - never entries that were merely revealed - so this is the
             // same "found" count shown during actual play, not an inflated one.
             Integer guessedCount = attempt == null ? null : attempt.getSolvedEntryIds().size();
-            return new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(),
+            GridSummaryDto dto = new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(),
                     g.getEntries().size(), status, guessedCount);
+            dto.setExcludedFromGridBattle(g.isExcludedFromGridBattle());
+            return dto;
         }).collect(Collectors.toList());
     }
 

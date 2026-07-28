@@ -41,6 +41,7 @@ public class GridAdminService {
                     GridSummaryDto dto = new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(),
                             g.getEntries().size(), null, null);
                     dto.setMaxStrikes(g.getMaxStrikes());
+                    dto.setExcludedFromGridBattle(g.isExcludedFromGridBattle());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -83,6 +84,7 @@ public class GridAdminService {
         grid.setWeekStartDate(request.getWeekStartDate());
         grid.setMaxStrikes(request.getMaxStrikes());
         grid.setSortAscending(request.isSortAscending());
+        grid.setExcludedFromGridBattle(request.isExcludedFromGridBattle());
 
         Map<Long, Athlete> athleteById = new HashMap<>();
         for (Long athleteId : request.getCandidateAthleteIds()) {
@@ -151,6 +153,7 @@ public class GridAdminService {
         dto.setWeekStartDate(grid.getWeekStartDate());
         dto.setMaxStrikes(grid.getMaxStrikes());
         dto.setSortAscending(grid.isSortAscending());
+        dto.setExcludedFromGridBattle(grid.isExcludedFromGridBattle());
         dto.setCandidates(grid.getCandidates().stream()
                 .map(c -> AthleteService.toDto(c.getAthlete()))
                 .collect(Collectors.toList()));

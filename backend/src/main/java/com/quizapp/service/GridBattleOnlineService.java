@@ -44,7 +44,9 @@ public class GridBattleOnlineService {
             sequence = gridIds;
         } else {
             int count = (randomCount != null && randomCount >= 2 && randomCount <= 4) ? randomCount : 2;
-            List<Grid> all = gridRepository.findAll();
+            List<Grid> all = gridRepository.findAll().stream()
+                    .filter(g -> !g.isExcludedFromGridBattle())
+                    .collect(Collectors.toList());
             Collections.shuffle(all);
             sequence = all.stream().limit(count).map(Grid::getId).collect(Collectors.toList());
         }

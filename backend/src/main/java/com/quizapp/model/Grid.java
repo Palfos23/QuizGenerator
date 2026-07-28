@@ -44,6 +44,25 @@ public class Grid {
     @Column(name = "sort_ascending", nullable = false)
     private boolean sortAscending = false;
 
+    // For when a grid needs updated content (e.g. a player crosses a stat
+    // threshold) - rather than editing the original in place (which would
+    // retroactively change what "complete" means for anyone who already
+    // played it), the intended workflow is to duplicate it, edit the copy,
+    // and mark the original excluded here. It stays fully intact and playable
+    // on the regular Weekly Grid page - this only removes it from Grid
+    // Battle's random/manual pick pool, since that's where stale content
+    // would actually matter.
+    @Column(name = "excluded_from_grid_battle", nullable = false)
+    private boolean excludedFromGridBattle = false;
+
+    public boolean isExcludedFromGridBattle() {
+        return excludedFromGridBattle;
+    }
+
+    public void setExcludedFromGridBattle(boolean excludedFromGridBattle) {
+        this.excludedFromGridBattle = excludedFromGridBattle;
+    }
+
     public boolean isSortAscending() {
         return sortAscending;
     }

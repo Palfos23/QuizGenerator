@@ -14,6 +14,7 @@ public class GridAdminDetailDto {
     private LocalDate weekStartDate;
     private int maxStrikes;
     private boolean sortAscending;
+    private boolean excludedFromGridBattle;
     private List<AthleteDto> candidates;
     private List<EntryDetail> entries;
 
@@ -113,6 +114,14 @@ public class GridAdminDetailDto {
 
     public void setSortAscending(boolean sortAscending) {
         this.sortAscending = sortAscending;
+    }
+
+    public boolean isExcludedFromGridBattle() {
+        return excludedFromGridBattle;
+    }
+
+    public void setExcludedFromGridBattle(boolean excludedFromGridBattle) {
+        this.excludedFromGridBattle = excludedFromGridBattle;
     }
 
     public List<AthleteDto> getCandidates() {

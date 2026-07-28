@@ -29,6 +29,19 @@ public class GridSummaryDto {
         this.maxStrikes = maxStrikes;
     }
 
+    // Whether this grid should be hidden from Grid Battle's random/manual pick
+    // pool - set once a newer, corrected version of this grid exists. Doesn't
+    // affect visibility on the regular Weekly Grid page at all.
+    private boolean excludedFromGridBattle;
+
+    public boolean isExcludedFromGridBattle() {
+        return excludedFromGridBattle;
+    }
+
+    public void setExcludedFromGridBattle(boolean excludedFromGridBattle) {
+        this.excludedFromGridBattle = excludedFromGridBattle;
+    }
+
     public GridSummaryDto(Long id, String title, Sport sport, LocalDate weekStartDate, int entryCount,
                            String status, Integer guessedCount) {
         this.id = id;

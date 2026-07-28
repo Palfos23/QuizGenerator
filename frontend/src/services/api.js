@@ -115,6 +115,9 @@ export default {
   getFutureGrids() {
     return client.get('/grids/future').then(r => r.data)
   },
+  getBattleEligibleGrids() {
+    return client.get('/grids/battle-eligible').then(r => r.data)
+  },
   getGridPlayState(id) {
     return client.get(`/grids/${id}/play`).then(r => r.data)
   },
