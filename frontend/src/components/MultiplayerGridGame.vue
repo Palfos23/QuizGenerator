@@ -90,6 +90,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
+import passAndPlayState from '../services/passAndPlayState'
 import { readableTextColor } from '../constants'
 
 const props = defineProps({
@@ -222,5 +223,60 @@ function nextGrid() {
   }
 }
 
-onMounted(loadGrid)
+function progressIdentity() {
+  return {
+    gridIds: props.grids.map(g => g.id),
+    playerNames: props.players.map(p => p.name)
+  }
+}
+
+function identityMatches(saved) {
+  const current = progressIdentity()
+  return JSON.stringify(saved.gridIds) === JSON.stringify(current.gridIds)
+      && JSON.stringify(saved.playerNames) === JSON.stringify(current.playerNames)
+}
+
+function saveProgress() {
+  passAndPlayState.save('grid-battle-progress', {
+    ...progressIdentity(),
+    currentGridIndex: currentGridIndex.value,
+    revealedEntryIds: revealedEntryIds.value,
+    livesUsed: livesUsed.value,
+    eliminatedPlayers: eliminatedPlayers.value,
+    currentPlayerIdx: currentPlayerIdx.value,
+    scores: scores.value,
+    gridComplete: gridComplete.value,
+    // The entries array already safely mixes solved (full name/photo, from the
+    // server's guess response) and unsolved (hint only, name withheld) tiles -
+    // exactly what this browser legitimately saw. Saving it directly means
+    // restoring a solved tile never needs to reconstruct its revealed data
+    // from scratch, which isn't otherwise derivable from just its ID.
+    entries: gridState.value?.entries
+  })
+}
+
+async function initGame() {
+  const saved = passAndPlayState.load('grid-battle-progress')
+  if (saved && identityMatches(saved)) {
+    currentGridIndex.value = saved.currentGridIndex
+    await loadGrid()
+    revealedEntryIds.value = saved.revealedEntryIds
+    livesUsed.value = saved.livesUsed
+    eliminatedPlayers.value = saved.eliminatedPlayers
+    currentPlayerIdx.value = saved.currentPlayerIdx
+    scores.value = saved.scores
+    gridComplete.value = saved.gridComplete
+    // loadGrid() just fetched this same grid fresh (all-unsolved) - replace its
+    // entries with the saved mix of solved/unsolved tiles instead.
+    if (gridState.value && saved.entries) {
+      gridState.value.entries = saved.entries
+    }
+  } else {
+    await loadGrid()
+  }
+}
+
+watch([revealedEntryIds, livesUsed, eliminatedPlayers, currentPlayerIdx, scores, gridComplete, currentGridIndex], saveProgress, { deep: true })
+
+onMounted(initGame)
 </script>

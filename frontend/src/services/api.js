@@ -142,6 +142,9 @@ export default {
   getGridScoreboard(id) {
     return client.get(`/grids/${id}/scoreboard`).then(r => r.data)
   },
+  setGridLeaderboardPreference(id, include) {
+    return client.put(`/grids/${id}/leaderboard-preference?include=${include}`)
+  },
   revealAllGridEntries(id) {
     return client.get(`/grids/${id}/reveal-all`).then(r => r.data)
   },

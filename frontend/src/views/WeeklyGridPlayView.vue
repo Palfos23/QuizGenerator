@@ -57,6 +57,15 @@
               </tr>
             </tbody>
           </table>
+
+          <label
+            v-if="scoreboardData && scoreboardData.yourLeaderboardPreference !== null"
+            style="display:flex; align-items:center; gap:8px; margin-top:16px; text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.9rem; cursor:pointer;"
+          >
+            <input type="checkbox" v-model="leaderboardOptIn" @change="updateLeaderboardPreference" style="width:auto;" />
+            Show my name on this leaderboard
+          </label>
+
           <button class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="showScoreboard = false">Close</button>
         </div>
       </div>
@@ -367,11 +376,23 @@ async function openScoreboard() {
     scoreboardLoading.value = true
     try {
       scoreboardData.value = await api.getGridScoreboard(gridId)
+      leaderboardOptIn.value = scoreboardData.value.yourLeaderboardPreference ?? true
     } catch (e) {
       // scoreboard is a nice-to-have - fail quietly, empty state already covers it
     } finally {
       scoreboardLoading.value = false
     }
+  }
+}
+
+const leaderboardOptIn = ref(true)
+async function updateLeaderboardPreference() {
+  try {
+    await api.setGridLeaderboardPreference(gridId, leaderboardOptIn.value)
+    scoreboardData.value = await api.getGridScoreboard(gridId)
+  } catch (e) {
+    toast.show('Could not update your leaderboard preference.')
+    leaderboardOptIn.value = !leaderboardOptIn.value
   }
 }
 

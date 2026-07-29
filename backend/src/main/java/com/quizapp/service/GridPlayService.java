@@ -56,14 +56,29 @@ public class GridPlayService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void setLeaderboardPreference(Long gridId, String userEmail, boolean includeOnLeaderboard) {
+        GridAttempt attempt = gridAttemptRepository.findByGrid_IdAndUser_Email(gridId, userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("No attempt found for this grid."));
+        attempt.setIncludeOnLeaderboard(includeOnLeaderboard);
+        gridAttemptRepository.save(attempt);
+    }
+
     @Transactional(readOnly = true)
     public com.quizapp.dto.GridScoreboardDto getScoreboard(Long gridId, String requestingUserEmail) {
         Grid grid = gridRepository.findById(gridId)
                 .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
         int entryCount = grid.getEntries().size();
 
-        List<com.quizapp.dto.GridScoreboardEntryDto> entries = gridAttemptRepository.findByGrid_Id(gridId).stream()
+        List<GridAttempt> completedAttempts = gridAttemptRepository.findByGrid_Id(gridId).stream()
                 .filter(GridAttempt::isCompleted) // in-progress attempts aren't shown - they're still being played
+                .collect(Collectors.toList());
+
+        List<com.quizapp.dto.GridScoreboardEntryDto> entries = completedAttempts.stream()
+                // Opted-out players are still counted in the average (it's just a
+                // number, doesn't reveal who they are) but excluded from the visible
+                // ranked list - except your own row, which you can always see.
+                .filter(a -> a.isIncludeOnLeaderboard() || a.getUser().getEmail().equals(requestingUserEmail))
                 .map(a -> {
                     // Overtime solves don't count toward the competitive score - only
                     // what you found within your original lives does.
@@ -81,10 +96,17 @@ public class GridPlayService {
                 })
                 .collect(Collectors.toList());
 
-        double averageScore = entries.isEmpty() ? 0
-                : entries.stream().mapToInt(com.quizapp.dto.GridScoreboardEntryDto::getGuessedCount).average().orElse(0);
+        double averageScore = completedAttempts.isEmpty() ? 0
+                : completedAttempts.stream()
+                        .mapToInt(a -> a.getSolvedEntryIds().size() - a.getOvertimeSolvedEntryIds().size())
+                        .average().orElse(0);
 
-        return new com.quizapp.dto.GridScoreboardDto(entries, averageScore, entryCount);
+        com.quizapp.dto.GridScoreboardDto dto = new com.quizapp.dto.GridScoreboardDto(entries, averageScore, entryCount);
+        completedAttempts.stream()
+                .filter(a -> a.getUser().getEmail().equals(requestingUserEmail))
+                .findFirst()
+                .ifPresent(a -> dto.setYourLeaderboardPreference(a.isIncludeOnLeaderboard()));
+        return dto;
     }
 
     @Transactional(readOnly = true)

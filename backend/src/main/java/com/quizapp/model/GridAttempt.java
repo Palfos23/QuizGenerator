@@ -38,6 +38,20 @@ public class GridAttempt {
     @Column(nullable = false)
     private boolean revealed = false;
 
+    // Lets a player keep their own progress/score without appearing on the
+    // shared scoreboard others see - defaults to visible, since that matches
+    // how the scoreboard already behaved before this existed.
+    @Column(name = "include_on_leaderboard", nullable = false)
+    private boolean includeOnLeaderboard = true;
+
+    public boolean isIncludeOnLeaderboard() {
+        return includeOnLeaderboard;
+    }
+
+    public void setIncludeOnLeaderboard(boolean includeOnLeaderboard) {
+        this.includeOnLeaderboard = includeOnLeaderboard;
+    }
+
     @ElementCollection
     @CollectionTable(name = "grid_attempt_solved_entries", joinColumns = @JoinColumn(name = "attempt_id"))
     @Column(name = "grid_entry_id")

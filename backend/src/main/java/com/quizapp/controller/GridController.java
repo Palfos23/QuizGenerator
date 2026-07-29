@@ -32,6 +32,11 @@ public class GridController {
         return gridPlayService.getScoreboard(id, authentication.getName());
     }
 
+    @PutMapping("/{id}/leaderboard-preference")
+    public void setLeaderboardPreference(@PathVariable Long id, @RequestParam boolean include, Authentication authentication) {
+        gridPlayService.setLeaderboardPreference(id, authentication.getName(), include);
+    }
+
     @GetMapping("/{id}/reveal-all")
     public List<com.quizapp.dto.GridEntryViewDto> revealAll(@PathVariable Long id) {
         return gridPlayService.revealAllEntries(id);
