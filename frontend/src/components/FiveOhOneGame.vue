@@ -71,7 +71,8 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import passAndPlayState from '../services/passAndPlayState'
 
 const props = defineProps({
   category: { type: Object, required: true },
@@ -93,6 +94,43 @@ const lastThrow = ref(null)
 const shakeGuessBox = ref(false)
 
 const searchTerm = ref('')
+
+function progressIdentity() {
+  return { categoryId: props.category.id, players: props.players }
+}
+
+function identityMatches(saved) {
+  const current = progressIdentity()
+  return saved.categoryId === current.categoryId
+      && JSON.stringify(saved.players) === JSON.stringify(current.players)
+}
+
+function saveProgress() {
+  passAndPlayState.save('501-progress', {
+    ...progressIdentity(),
+    totals: { ...totals },
+    usedEntryIds: [...usedEntryIds.value],
+    currentPlayerIdx: currentPlayerIdx.value,
+    windowReacher: windowReacher.value,
+    winner: winner.value,
+    history: history.value
+  })
+}
+
+onMounted(() => {
+  const saved = passAndPlayState.load('501-progress')
+  if (saved && identityMatches(saved)) {
+    Object.assign(totals, saved.totals)
+    usedEntryIds.value = new Set(saved.usedEntryIds)
+    currentPlayerIdx.value = saved.currentPlayerIdx
+    windowReacher.value = saved.windowReacher
+    winner.value = saved.winner
+    history.value = saved.history
+  }
+})
+
+watch([totals, () => [...usedEntryIds.value], currentPlayerIdx, windowReacher, winner, history], saveProgress, { deep: true })
+
 const searchResults = computed(() => {
   const term = searchTerm.value.trim().toLowerCase()
   if (term.length < 3) return []

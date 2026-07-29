@@ -19,6 +19,14 @@
         </div>
       </div>
 
+      <div v-if="savedPassAndPlay" class="banner" style="background:rgba(242,183,5,0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <span>You have a pass-the-device game in progress.</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Resume</button>
+          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">Dismiss</button>
+        </div>
+      </div>
+
       <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:20px;">
         <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'landing'">
           <h3>📱 Same device</h3>
@@ -254,6 +262,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import auth from '../services/auth'
 import activeRoom from '../services/activeRoom'
+import passAndPlayState from '../services/passAndPlayState'
 import navTrigger from '../services/navTrigger'
 import TensionGame from '../components/TensionGame.vue'
 import OnlineTensionGame from '../components/OnlineTensionGame.vue'
@@ -319,6 +328,8 @@ async function startGame() {
       stage.value = 'landing'
       return
     }
+    passAndPlayState.save('tension', { questions: questions.value, players: [...setupPlayers] })
+    savedPassAndPlay.value = passAndPlayState.load('tension')
     stage.value = 'game'
   } catch (e) {
     error.value = 'Could not load questions.'
@@ -332,12 +343,18 @@ const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] -
 const winner = computed(() => sortedScores.value[0]?.[0] ?? null)
 
 function onGameOver(scores) {
+  passAndPlayState.clear('tension')
+  passAndPlayState.clear('tension-progress')
+  savedPassAndPlay.value = null
   lastGameWasOnline.value = false
   finalScores.value = scores
   stage.value = 'done'
 }
 
 function resetGame() {
+  passAndPlayState.clear('tension')
+  passAndPlayState.clear('tension-progress')
+  savedPassAndPlay.value = null
   questions.value = []
   finalScores.value = []
   stage.value = lastGameWasOnline.value ? 'modeChoice' : 'landing'
@@ -470,6 +487,26 @@ const rejoining = ref(false)
 onMounted(() => {
   savedRoomCode.value = activeRoom.get('TENSION') || ''
 })
+
+const savedPassAndPlay = ref(null)
+onMounted(() => {
+  savedPassAndPlay.value = passAndPlayState.load('tension')
+})
+
+function resumePassAndPlay() {
+  const saved = savedPassAndPlay.value
+  questions.value = saved.questions
+  setupPlayers.length = 0
+  saved.players.forEach(p => setupPlayers.push(p))
+  lastGameWasOnline.value = false
+  stage.value = 'game'
+}
+
+function dismissPassAndPlay() {
+  passAndPlayState.clear('tension')
+  passAndPlayState.clear('tension-progress')
+  savedPassAndPlay.value = null
+}
 
 // Clicking the "Tension" nav tab while already on this page doesn't trigger any
 // navigation event on its own, so it needs its own trigger to jump back to the

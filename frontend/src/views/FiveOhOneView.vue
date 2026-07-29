@@ -8,6 +8,13 @@
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
+      <div v-if="savedPassAndPlay" class="banner" style="background:rgba(242,183,5,0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <span>You have a game in progress.</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Resume</button>
+          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">Dismiss</button>
+        </div>
+      </div>
       <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
       <div v-else-if="!categories.length" class="empty-state friendly">No categories yet - ask an admin to add one.</div>
 
@@ -96,6 +103,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
+import passAndPlayState from '../services/passAndPlayState'
 import FiveOhOneGame from '../components/FiveOhOneGame.vue'
 
 const stage = ref('category')
@@ -110,6 +118,24 @@ const bothNamed = computed(() => playerNames.value[0].trim().length > 0 && playe
 const winner = computed(() => finalTotals.value[0]?.[0] ?? null)
 
 onMounted(loadCategories)
+
+const savedPassAndPlay = ref(null)
+onMounted(() => {
+  savedPassAndPlay.value = passAndPlayState.load('501')
+})
+
+function resumePassAndPlay() {
+  const saved = savedPassAndPlay.value
+  chosenCategory.value = saved.category
+  playerNames.value = saved.players
+  stage.value = 'game'
+}
+
+function dismissPassAndPlay() {
+  passAndPlayState.clear('501')
+  passAndPlayState.clear('501-progress')
+  savedPassAndPlay.value = null
+}
 
 async function loadCategories() {
   loading.value = true
@@ -135,10 +161,15 @@ async function chooseCategory(id) {
 
 function startGame() {
   playerNames.value = [playerNames.value[0].trim(), playerNames.value[1].trim()]
+  passAndPlayState.save('501', { category: chosenCategory.value, players: playerNames.value })
+  savedPassAndPlay.value = passAndPlayState.load('501')
   stage.value = 'game'
 }
 
 function onGameOver(totals) {
+  passAndPlayState.clear('501')
+  passAndPlayState.clear('501-progress')
+  savedPassAndPlay.value = null
   // sort by distance from zero (the actual winner is whoever's closer, matching the game's own win logic)
   finalTotals.value = [...totals].sort((a, b) => Math.abs(a[1]) - Math.abs(b[1]))
   stage.value = 'done'

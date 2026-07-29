@@ -354,6 +354,7 @@ function resumePassAndPlay() {
 
 function dismissPassAndPlay() {
   passAndPlayState.clear('grid-battle')
+  passAndPlayState.clear('grid-battle-progress')
   savedPassAndPlay.value = null
 }
 

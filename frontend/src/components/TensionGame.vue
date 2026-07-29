@@ -125,6 +125,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import passAndPlayState from '../services/passAndPlayState'
 import TensionAnswerModal from './TensionAnswerModal.vue'
 
 const props = defineProps({
@@ -314,7 +315,44 @@ function startIntro() {
   }, 1000)
 }
 
-onMounted(startIntro)
+function progressIdentity() {
+  return {
+    questionIds: props.questions.map(q => q.id),
+    playerNames: props.players.map(p => p.name)
+  }
+}
+
+function identityMatches(saved) {
+  const current = progressIdentity()
+  return JSON.stringify(saved.questionIds) === JSON.stringify(current.questionIds)
+      && JSON.stringify(saved.playerNames) === JSON.stringify(current.playerNames)
+}
+
+function saveProgress() {
+  passAndPlayState.save('tension-progress', {
+    ...progressIdentity(),
+    currentQuestionIndex: currentQuestionIndex.value,
+    scores: scores.value
+  })
+}
+
+function initGame() {
+  // Resuming mid-round (some but not all answers submitted for the current
+  // question) isn't reconstructed exactly - the current question just restarts
+  // fresh instead, which is simple and safe rather than trying to replay whose
+  // turn it was and who'd already answered what. Everything from every
+  // question before this one - scores included - carries over exactly.
+  const saved = passAndPlayState.load('tension-progress')
+  if (saved && identityMatches(saved)) {
+    scores.value = saved.scores
+    currentQuestionIndex.value = saved.currentQuestionIndex
+  }
+  startIntro()
+}
+
+watch([currentQuestionIndex, scores], saveProgress, { deep: true })
+
+onMounted(initGame)
 watch(currentQuestionIndex, startIntro)
 
 function nextQuestion() {
