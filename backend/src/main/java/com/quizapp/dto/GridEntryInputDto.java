@@ -1,6 +1,5 @@
 package com.quizapp.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public class GridEntryInputDto {
@@ -8,7 +7,8 @@ public class GridEntryInputDto {
     @NotNull
     private Long athleteId;
 
-    @NotBlank
+    // Optional - an admin can leave this blank if just the value is enough
+    // (e.g. some hints are too easy to guess with a label attached).
     private String hintLabel;
 
     @NotNull

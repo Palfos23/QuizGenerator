@@ -156,7 +156,7 @@
               {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
             </label>
             <div v-if="c.correct" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-              <input type="text" v-model="c.hintLabel" placeholder="Label (e.g. FW)" style="width:110px;" />
+              <input type="text" v-model="c.hintLabel" placeholder="Label (optional, e.g. FW)" style="width:110px;" />
               <input type="number" v-model.number="c.hintValue" placeholder="Value" style="width:80px;" />
               <select v-model="c.clubId" style="width:170px;">
                 <option :value="null">No logo</option>
@@ -212,7 +212,7 @@
               @error="$event.target.style.display = 'none'"
             />
             <div class="grid-tile-hint" :style="{ background: previewClubColor(c) || 'var(--gold)', color: readableTextColor(previewClubColor(c)) }">
-              {{ c.hintLabel || '?' }} | {{ c.hintValue ?? '?' }}
+              {{ formatHint(c.hintLabel, c.hintValue ?? '?') }}
             </div>
             <div class="grid-tile-name">{{ c.name }}</div>
           </div>
@@ -236,7 +236,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import Pagination from '../components/Pagination.vue'
-import { SPORTS, sportLabel, readableTextColor } from '../constants'
+import { SPORTS, sportLabel, readableTextColor, formatHint } from '../constants'
 
 const view = ref('list')
 const grids = ref([])
@@ -466,8 +466,8 @@ async function saveGrid() {
     error.value = 'Mark at least one candidate as a correct answer.'
     return
   }
-  if (entries.some(c => !c.hintLabel?.trim() || c.hintValue === null || c.hintValue === '')) {
-    error.value = 'Every correct answer needs both a hint label and a hint value.'
+  if (entries.some(c => c.hintValue === null || c.hintValue === '')) {
+    error.value = 'Every correct answer needs a hint value (the label is optional).'
     return
   }
 

@@ -79,7 +79,7 @@
           <div
             class="grid-tile-hint"
             :style="{ background: e.hintColor || 'var(--gold)', color: readableTextColor(e.hintColor) }"
-          >{{ e.hintLabel }} | {{ e.hintValue }}</div>
+          >{{ formatHint(e.hintLabel, e.hintValue) }}</div>
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>
       </div>
@@ -91,7 +91,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
-import { readableTextColor } from '../constants'
+import { readableTextColor, formatHint } from '../constants'
 
 const props = defineProps({
   grids: { type: Array, required: true }, // [{ id, title, ... }]

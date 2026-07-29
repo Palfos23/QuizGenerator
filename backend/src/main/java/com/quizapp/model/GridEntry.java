@@ -2,7 +2,6 @@ package com.quizapp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "grid_entries")
@@ -21,9 +20,9 @@ public class GridEntry {
     @JoinColumn(name = "athlete_id", nullable = false)
     private Athlete athlete;
 
-    // Short label shown on the tile, e.g. "FW", "WR", "GC" (general classification) - admin's choice.
-    @NotBlank
-    @Column(name = "hint_label", nullable = false)
+    // Short label shown on the tile, e.g. "FW", "WR", "GC" (general classification) -
+    // admin's choice, and optional - some hints are too easy to guess with a label attached.
+    @Column(name = "hint_label")
     private String hintLabel;
 
     // The number shown alongside the label, e.g. goals scored, races won.

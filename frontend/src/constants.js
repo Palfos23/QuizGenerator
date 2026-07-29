@@ -26,6 +26,13 @@ export function difficultyColor(level) {
 }
 
 // Club hint-badge colors are admin-chosen and can be light or dark, so the badge
+// A grid tile's hint is "LABEL | VALUE" (e.g. "FW | 14"), but the label is
+// optional - an admin might want the value to stand alone. Falls back to just
+// the value, with no stray "|" left over, when there's no label to show.
+export function formatHint(label, value) {
+  return label && label.trim() ? `${label} | ${value}` : `${value}`
+}
+
 // text color has to adapt rather than always being the same dark shade - this picks
 // black or white based on the background's relative luminance (WCAG-style).
 export function readableTextColor(hex) {
