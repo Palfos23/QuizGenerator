@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -24,6 +25,14 @@ public class TensionQuestionController {
             @RequestParam(defaultValue = "5") int count,
             @RequestParam(required = false) String category) {
         return questionService.getRandom(count, category);
+    }
+
+    @GetMapping("/round-choices")
+    public List<TensionQuestionDto> roundChoices(
+            @RequestParam(defaultValue = "3") int count,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) List<Long> excludeIds) {
+        return questionService.getRoundChoices(count, category, excludeIds == null ? Collections.emptyList() : excludeIds);
     }
 
     @GetMapping("/categories")

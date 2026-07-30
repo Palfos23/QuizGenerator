@@ -19,17 +19,32 @@
       No answer categories yet. Add one (e.g. "countries") with a list of suggestion words.
     </div>
 
-    <div v-else class="saved-quiz-list">
-      <div v-for="c in categories" :key="c.id" class="saved-quiz-row">
-        <div class="saved-quiz-info">
-          <div class="saved-quiz-title">{{ c.name }}</div>
-          <div class="saved-quiz-meta">{{ c.options.length }} suggestion word(s)</div>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-secondary btn-sm" @click="openEdit(c)">Edit</button>
-          <button class="btn btn-danger btn-sm" @click="requestDelete(c)">Delete</button>
+    <div v-else>
+      <input
+        type="text"
+        v-model="categorySearchTerm"
+        placeholder="Search category names…"
+        style="margin-bottom:16px;"
+      />
+
+      <div v-if="!filteredCategories.length" class="empty-state" style="padding:20px;">
+        No categories match "{{ categorySearchTerm }}".
+      </div>
+
+      <div v-else class="saved-quiz-list">
+        <div v-for="c in pagedCategories" :key="c.id" class="saved-quiz-row">
+          <div class="saved-quiz-info">
+            <div class="saved-quiz-title">{{ c.name }}</div>
+            <div class="saved-quiz-meta">{{ c.options.length }} suggestion word(s)</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm" @click="openEdit(c)">Edit</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(c)">Delete</button>
+          </div>
         </div>
       </div>
+
+      <Pagination v-model:page="categoryPage" :page-size="CATEGORY_PAGE_SIZE" :total-items="filteredCategories.length" />
     </div>
 
     <div v-if="showModal" class="modal-backdrop" @click.self="showModal = false">
@@ -65,12 +80,27 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import Pagination from '../components/Pagination.vue'
 
 const categories = ref([])
+
+const categorySearchTerm = ref('')
+const filteredCategories = computed(() => {
+  const term = categorySearchTerm.value.trim().toLowerCase()
+  if (!term) return categories.value
+  return categories.value.filter(c => c.name.toLowerCase().includes(term))
+})
+const CATEGORY_PAGE_SIZE = 25
+const categoryPage = ref(1)
+const pagedCategories = computed(() => {
+  const start = (categoryPage.value - 1) * CATEGORY_PAGE_SIZE
+  return filteredCategories.value.slice(start, start + CATEGORY_PAGE_SIZE)
+})
+watch(categorySearchTerm, () => { categoryPage.value = 1 })
 const loading = ref(true)
 const error = ref('')
 const showModal = ref(false)

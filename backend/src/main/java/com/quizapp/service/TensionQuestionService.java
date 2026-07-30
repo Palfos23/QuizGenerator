@@ -45,6 +45,21 @@ public class TensionQuestionService {
         return shuffled.stream().limit(count).map(TensionQuestionService::toDto).collect(Collectors.toList());
     }
 
+    // For the "pick your question" round-start screen: a small pool of
+    // candidates for this specific round, excluding whatever's already been
+    // played this game so a repeat never gets offered.
+    @Transactional(readOnly = true)
+    public List<TensionQuestionDto> getRoundChoices(int count, String mainCategory, List<Long> excludeIds) {
+        List<TensionQuestion> pool = (mainCategory == null || mainCategory.isBlank())
+                ? questionRepository.findAll()
+                : questionRepository.findByMainCategoryIgnoreCase(mainCategory);
+        List<TensionQuestion> available = pool.stream()
+                .filter(q -> excludeIds == null || !excludeIds.contains(q.getId()))
+                .collect(Collectors.toList());
+        Collections.shuffle(available);
+        return available.stream().limit(count).map(TensionQuestionService::toDto).collect(Collectors.toList());
+    }
+
     @Transactional(readOnly = true)
     public List<String> getDistinctMainCategories() {
         return questionRepository.findDistinctMainCategories();

@@ -1,7 +1,24 @@
 <template>
   <div>
+    <div v-if="loadingChoices" style="text-align:center; padding:60px 0; color:var(--text-dim);">
+      Loading question choices…
+    </div>
+
+    <div v-else-if="roundChoices.length" class="tension-choice-overlay">
+      <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
+        Question {{ currentQuestionIndex + 1 }} / {{ roundCount }}
+      </div>
+      <h2 style="margin:0 0 24px;">{{ rotatedPlayers[0] }}, choose a question</h2>
+      <div class="tension-choice-grid">
+        <button v-for="q in roundChoices" :key="q.id" class="tension-choice-card" @click="chooseQuestion(q)">
+          {{ q.title }}
+        </button>
+      </div>
+    </div>
+
+    <template v-else>
     <div class="grid-status-bar">
-      <div class="grid-progress">Question {{ currentQuestionIndex + 1 }} / {{ questions.length }}</div>
+      <div class="grid-progress">Question {{ currentQuestionIndex + 1 }} / {{ roundCount }}</div>
       <div style="color:var(--text-dim); font-size:0.85rem;">Tension answers: {{ question.tensionAnswers.length }}</div>
     </div>
 
@@ -95,14 +112,14 @@
         </TransitionGroup>
 
         <button class="btn btn-primary" style="width:100%; margin-top:20px;" @click="closeStandingsAndContinue">
-          {{ currentQuestionIndex + 1 < questions.length ? 'Next question' : 'Finish game' }}
+          {{ currentQuestionIndex + 1 < roundCount ? 'Next question' : 'Finish game' }}
         </button>
       </div>
     </div>
 
     <div v-if="showIntro" class="tension-intro-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:10px;">
-        Question {{ currentQuestionIndex + 1 }} / {{ questions.length }}
+        Question {{ currentQuestionIndex + 1 }} / {{ roundCount }}
       </div>
       <h1 style="max-width:80%; margin:0 auto;">{{ question.title }}</h1>
       <p style="margin-top:20px; font-size:1.1rem;">First up: <strong>{{ rotatedPlayers[0] }}</strong></p>
@@ -120,21 +137,27 @@
       :used-answers="roundAnswers.map(a => a.answer)"
       @submit="submitAnswer"
     />
+    </template>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
 import TensionAnswerModal from './TensionAnswerModal.vue'
 
 const props = defineProps({
-  questions: { type: Array, required: true },
+  category: { type: String, default: '' },
+  roundCount: { type: Number, required: true },
   players: { type: Array, required: true } // [{ name, color }]
 })
 const emit = defineEmits(['gameOver'])
 
 const currentQuestionIndex = ref(0)
+const chosenQuestions = ref([]) // questions actually played/chosen so far, index-aligned with currentQuestionIndex
+const roundChoices = ref([]) // this round's 3 candidate questions, before a choice is made
+const loadingChoices = ref(false)
 const roundAnswers = ref([]) // [{ player, answer, score?, rank?, tension? }]
 const currentPlayerIdx = ref(0)
 const revealed = ref(false)
@@ -142,12 +165,12 @@ const scores = ref(Object.fromEntries(props.players.map(p => [p.name, 0])))
 const pendingScores = ref({})
 const revealIndex = ref(0)
 const countdown = ref(null)
-const showIntro = ref(true)
+const showIntro = ref(false)
 const introCountdown = ref(4)
 const rankBeforeRound = ref([]) // player names, ordered by score, captured at the start of this question
 
 const playerNames = props.players.map(p => p.name)
-const question = computed(() => props.questions[currentQuestionIndex.value])
+const question = computed(() => chosenQuestions.value[currentQuestionIndex.value])
 
 function colorOf(name) {
   return props.players.find(p => p.name === name)?.color || 'var(--border)'
@@ -274,7 +297,7 @@ function skipReveal() {
 const showStandingsModal = ref(false)
 const displayedStandings = ref([])
 const readyForStandings = ref(false)
-const isLastQuestion = computed(() => currentQuestionIndex.value + 1 >= props.questions.length)
+const isLastQuestion = computed(() => currentQuestionIndex.value + 1 >= props.roundCount)
 
 // Applies this round's scores immediately (so player cards update right away), but
 // waits for an explicit click before moving on - going straight into an animated
@@ -317,14 +340,16 @@ function startIntro() {
 
 function progressIdentity() {
   return {
-    questionIds: props.questions.map(q => q.id),
+    category: props.category,
+    roundCount: props.roundCount,
     playerNames: props.players.map(p => p.name)
   }
 }
 
 function identityMatches(saved) {
   const current = progressIdentity()
-  return JSON.stringify(saved.questionIds) === JSON.stringify(current.questionIds)
+  return saved.category === current.category
+      && saved.roundCount === current.roundCount
       && JSON.stringify(saved.playerNames) === JSON.stringify(current.playerNames)
 }
 
@@ -332,8 +357,35 @@ function saveProgress() {
   passAndPlayState.save('tension-progress', {
     ...progressIdentity(),
     currentQuestionIndex: currentQuestionIndex.value,
-    scores: scores.value
+    scores: scores.value,
+    chosenQuestions: chosenQuestions.value
   })
+}
+
+async function loadRoundChoices() {
+  loadingChoices.value = true
+  try {
+    roundChoices.value = await api.fetchTensionRoundChoices(3, props.category, chosenQuestions.value.map(q => q.id))
+  } finally {
+    loadingChoices.value = false
+  }
+}
+
+function chooseQuestion(q) {
+  chosenQuestions.value = [...chosenQuestions.value, q]
+  roundChoices.value = []
+  startIntro()
+}
+
+function proceedToCurrentRound() {
+  // This round's question was already chosen before a refresh - resume
+  // straight into it rather than offering a fresh (and potentially different)
+  // choice, since a choice already made is a commitment, not something to redo.
+  if (chosenQuestions.value.length > currentQuestionIndex.value) {
+    startIntro()
+  } else {
+    loadRoundChoices()
+  }
 }
 
 function initGame() {
@@ -341,22 +393,24 @@ function initGame() {
   // question) isn't reconstructed exactly - the current question just restarts
   // fresh instead, which is simple and safe rather than trying to replay whose
   // turn it was and who'd already answered what. Everything from every
-  // question before this one - scores included - carries over exactly.
+  // question before this one - scores and the actual questions played - carries
+  // over exactly.
   const saved = passAndPlayState.load('tension-progress')
   if (saved && identityMatches(saved)) {
     scores.value = saved.scores
     currentQuestionIndex.value = saved.currentQuestionIndex
+    chosenQuestions.value = saved.chosenQuestions || []
   }
-  startIntro()
+  proceedToCurrentRound()
 }
 
-watch([currentQuestionIndex, scores], saveProgress, { deep: true })
+watch([currentQuestionIndex, scores, chosenQuestions], saveProgress, { deep: true })
 
 onMounted(initGame)
-watch(currentQuestionIndex, startIntro)
+watch(currentQuestionIndex, proceedToCurrentRound)
 
 function nextQuestion() {
-  if (currentQuestionIndex.value + 1 < props.questions.length) {
+  if (currentQuestionIndex.value + 1 < props.roundCount) {
     currentQuestionIndex.value += 1
     roundAnswers.value = []
     revealed.value = false

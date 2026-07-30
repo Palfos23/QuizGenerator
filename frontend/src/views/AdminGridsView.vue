@@ -261,7 +261,7 @@ const CANDIDATE_PAGE_SIZE = 25
 const candidatePage = ref(1)
 const pagedCandidates = computed(() => {
   const start = (candidatePage.value - 1) * CANDIDATE_PAGE_SIZE
-  return candidates.value.slice(start, start + CANDIDATE_PAGE_SIZE)
+  return candidatesForEditing.value.slice(start, start + CANDIDATE_PAGE_SIZE)
 })
 
 const showPreview = ref(false)
@@ -271,6 +271,14 @@ const sortedCorrectCandidates = computed(() =>
     ? [...correctCandidates.value].sort((a, b) => (a.hintValue ?? 0) - (b.hintValue ?? 0))
     : [...correctCandidates.value].sort((a, b) => (b.hintValue ?? 0) - (a.hintValue ?? 0))
 )
+
+// For the editable candidate list specifically: correct answers first (in the
+// same order they'll actually appear in the grid), then everyone else -
+// makes it easy to find and adjust the answers that matter most.
+const candidatesForEditing = computed(() => {
+  const notCorrect = candidates.value.filter(c => !c.correct)
+  return [...sortedCorrectCandidates.value, ...notCorrect]
+})
 
 function previewClub(c) {
   return clubOptions.value.find(club => club.id === c.clubId) || null

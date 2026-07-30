@@ -19,19 +19,34 @@
         No tension questions yet. Create your first one to be able to start a game.
       </div>
 
-      <div v-else class="saved-quiz-list">
-        <div v-for="q in questions" :key="q.id" class="saved-quiz-row">
-          <div class="saved-quiz-info">
-            <div class="saved-quiz-title">{{ q.title }}</div>
-            <div class="saved-quiz-meta">
-              {{ q.mainCategory || 'Uncategorized' }} · {{ q.safeAnswers.length }} safe · {{ q.tensionAnswers.length }} tension
+      <div v-else>
+        <input
+          type="text"
+          v-model="questionSearchTerm"
+          placeholder="Search by title or category…"
+          style="margin-bottom:16px;"
+        />
+
+        <div v-if="!filteredQuestions.length" class="empty-state" style="padding:20px;">
+          No questions match "{{ questionSearchTerm }}".
+        </div>
+
+        <div v-else class="saved-quiz-list">
+          <div v-for="q in pagedQuestions" :key="q.id" class="saved-quiz-row">
+            <div class="saved-quiz-info">
+              <div class="saved-quiz-title">{{ q.title }}</div>
+              <div class="saved-quiz-meta">
+                {{ q.mainCategory || 'Uncategorized' }} · {{ q.safeAnswers.length }} safe · {{ q.tensionAnswers.length }} tension
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-secondary btn-sm" @click="openEdit(q.id)">Edit</button>
+              <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Delete</button>
             </div>
           </div>
-          <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(q.id)">Edit</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Delete</button>
-          </div>
         </div>
+
+        <Pagination v-model:page="questionPage" :page-size="QUESTION_PAGE_SIZE" :total-items="filteredQuestions.length" />
       </div>
     </template>
 
@@ -115,14 +130,33 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import Pagination from '../components/Pagination.vue'
 import SearchableSelect from '../components/SearchableSelect.vue'
 
 const view = ref('list')
 const questions = ref([])
+
+const questionSearchTerm = ref('')
+const filteredQuestions = computed(() => {
+  const term = questionSearchTerm.value.trim().toLowerCase()
+  if (!term) return questions.value
+  return questions.value.filter(q =>
+    q.title.toLowerCase().includes(term) ||
+    (q.mainCategory || '').toLowerCase().includes(term) ||
+    (q.answersCategory || '').toLowerCase().includes(term)
+  )
+})
+const QUESTION_PAGE_SIZE = 25
+const questionPage = ref(1)
+const pagedQuestions = computed(() => {
+  const start = (questionPage.value - 1) * QUESTION_PAGE_SIZE
+  return filteredQuestions.value.slice(start, start + QUESTION_PAGE_SIZE)
+})
+watch(questionSearchTerm, () => { questionPage.value = 1 })
 const loading = ref(true)
 const error = ref('')
 const saving = ref(false)

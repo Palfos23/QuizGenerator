@@ -228,7 +228,8 @@
 
     <TensionGame
       v-else-if="stage === 'game'"
-      :questions="questions"
+      :category="category"
+      :round-count="numQuestions"
       :players="setupPlayers"
       @game-over="onGameOver"
     />
@@ -288,7 +289,6 @@ const mainCategories = ref([])
 
 const setupPlayers = reactive([])
 const starting = ref(false)
-const questions = ref([])
 const finalScores = ref([])
 
 onMounted(async () => {
@@ -322,13 +322,15 @@ async function startGame() {
   starting.value = true
   error.value = ''
   try {
-    questions.value = await api.fetchTensionQuestions(numQuestions.value, category.value)
-    if (!questions.value.length) {
-      error.value = 'No tension questions available yet - ask an admin to add some.'
+    // Just a availability check - the actual per-round questions are now
+    // fetched one round at a time (with a choice of a few), not all upfront.
+    const sample = await api.fetchTensionQuestions(numQuestions.value, category.value)
+    if (sample.length < numQuestions.value) {
+      error.value = `Only found ${sample.length} question(s) in this category - need at least ${numQuestions.value}. Try a different category or ask an admin to add more.`
       stage.value = 'landing'
       return
     }
-    passAndPlayState.save('tension', { questions: questions.value, players: [...setupPlayers] })
+    passAndPlayState.save('tension', { category: category.value, roundCount: numQuestions.value, players: [...setupPlayers] })
     savedPassAndPlay.value = passAndPlayState.load('tension')
     stage.value = 'game'
   } catch (e) {
@@ -355,7 +357,6 @@ function resetGame() {
   passAndPlayState.clear('tension')
   passAndPlayState.clear('tension-progress')
   savedPassAndPlay.value = null
-  questions.value = []
   finalScores.value = []
   stage.value = lastGameWasOnline.value ? 'modeChoice' : 'landing'
 }
@@ -495,7 +496,8 @@ onMounted(() => {
 
 function resumePassAndPlay() {
   const saved = savedPassAndPlay.value
-  questions.value = saved.questions
+  category.value = saved.category
+  numQuestions.value = saved.roundCount
   setupPlayers.length = 0
   saved.players.forEach(p => setupPlayers.push(p))
   lastGameWasOnline.value = false

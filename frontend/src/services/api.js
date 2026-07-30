@@ -207,6 +207,12 @@ export default {
     if (category) query.set('category', category)
     return client.get(`/tension/questions/random?${query.toString()}`).then(r => r.data)
   },
+  fetchTensionRoundChoices(count, category, excludeIds) {
+    const query = new URLSearchParams({ count: String(count) })
+    if (category) query.set('category', category)
+    excludeIds.forEach(id => query.append('excludeIds', String(id)))
+    return client.get(`/tension/questions/round-choices?${query.toString()}`).then(r => r.data)
+  },
   fetchTensionAnswerOptions(categoryName) {
     if (!categoryName) return Promise.resolve([])
     return client.get(`/tension/categories/${encodeURIComponent(categoryName)}/options`).then(r => r.data)
