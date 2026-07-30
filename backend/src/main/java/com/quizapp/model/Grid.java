@@ -135,9 +135,21 @@ public class Grid {
     }
 
     public void setCandidates(List<GridCandidate> candidates) {
-        this.candidates.clear();
-        if (candidates != null) {
-            for (GridCandidate c : candidates) {
+        // Hibernate treats a List-mapped @OneToMany as a "bag" with no reliable way
+        // to diff it - clearing and re-adding, even with the same reused instances,
+        // makes it delete every row and re-insert everything on every save. Since the
+        // service layer already reuses existing managed instances by athlete ID for
+        // anything unchanged, diffing by reference here means only genuine
+        // additions/removals actually touch the database.
+        List<GridCandidate> incoming = candidates != null ? candidates : new ArrayList<>();
+        java.util.Set<GridCandidate> incomingSet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        incomingSet.addAll(incoming);
+        this.candidates.removeIf(existing -> !incomingSet.contains(existing));
+
+        java.util.Set<GridCandidate> currentSet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        currentSet.addAll(this.candidates);
+        for (GridCandidate c : incoming) {
+            if (!currentSet.contains(c)) {
                 c.setGrid(this);
                 this.candidates.add(c);
             }
@@ -149,9 +161,16 @@ public class Grid {
     }
 
     public void setEntries(List<GridEntry> entries) {
-        this.entries.clear();
-        if (entries != null) {
-            for (GridEntry e : entries) {
+        // Same bag-collection fix as setCandidates() above.
+        List<GridEntry> incoming = entries != null ? entries : new ArrayList<>();
+        java.util.Set<GridEntry> incomingSet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        incomingSet.addAll(incoming);
+        this.entries.removeIf(existing -> !incomingSet.contains(existing));
+
+        java.util.Set<GridEntry> currentSet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        currentSet.addAll(this.entries);
+        for (GridEntry e : incoming) {
+            if (!currentSet.contains(e)) {
                 e.setGrid(this);
                 this.entries.add(e);
             }

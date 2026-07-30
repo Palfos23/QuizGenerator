@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -86,10 +85,17 @@ public class GridAdminService {
         grid.setSortAscending(request.isSortAscending());
         grid.setExcludedFromGridBattle(request.isExcludedFromGridBattle());
 
-        Map<Long, Athlete> athleteById = new HashMap<>();
-        for (Long athleteId : request.getCandidateAthleteIds()) {
-            athleteById.put(athleteId, athleteRepository.findById(athleteId)
-                    .orElseThrow(() -> new IllegalArgumentException("No athlete found with id " + athleteId)));
+        // Single batch fetch instead of one query per athlete - looking each one
+        // up individually is exactly the kind of thing that gets slower the bigger
+        // the candidate pool is, which matches what a large grid was experiencing.
+        List<Athlete> foundAthletes = athleteRepository.findAllById(request.getCandidateAthleteIds());
+        Map<Long, Athlete> athleteById = foundAthletes.stream()
+                .collect(Collectors.toMap(Athlete::getId, a -> a));
+        if (athleteById.size() != new java.util.HashSet<>(request.getCandidateAthleteIds()).size()) {
+            List<Long> missing = request.getCandidateAthleteIds().stream()
+                    .filter(id -> !athleteById.containsKey(id))
+                    .collect(Collectors.toList());
+            throw new IllegalArgumentException("No athlete found with id(s) " + missing);
         }
 
         // Reuse existing candidate rows for athletes that are still in the pool -

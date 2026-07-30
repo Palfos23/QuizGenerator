@@ -150,6 +150,19 @@
         </div>
 
         <div v-else class="candidate-list">
+          <input
+            type="text"
+            v-model="candidateFilterTerm"
+            placeholder="Find someone already in this pool…"
+            class="search-input"
+            style="margin-bottom:12px;"
+          />
+
+          <div v-if="!filteredCandidatesForEditing.length" class="empty-state" style="padding:20px;">
+            Nobody in this pool matches "{{ candidateFilterTerm }}".
+          </div>
+
+          <template v-else>
           <div v-for="c in pagedCandidates" :key="c.athleteId" class="candidate-row">
             <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600; margin:0;">
               <input type="checkbox" v-model="c.correct" style="width:auto;" />
@@ -170,7 +183,8 @@
             <button class="btn btn-danger btn-sm" @click="removeCandidate(c)">✕</button>
           </div>
 
-          <Pagination v-model:page="candidatePage" :page-size="CANDIDATE_PAGE_SIZE" :total-items="candidates.length" />
+          <Pagination v-model:page="candidatePage" :page-size="CANDIDATE_PAGE_SIZE" :total-items="filteredCandidatesForEditing.length" />
+          </template>
         </div>
       </div>
 
@@ -259,9 +273,19 @@ const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hint
 
 const CANDIDATE_PAGE_SIZE = 25
 const candidatePage = ref(1)
+const candidateFilterTerm = ref('')
+const filteredCandidatesForEditing = computed(() => {
+  const term = candidateFilterTerm.value.trim().toLowerCase()
+  if (!term) return candidatesForEditing.value
+  return candidatesForEditing.value.filter(c =>
+    c.name.toLowerCase().includes(term) || (c.team || '').toLowerCase().includes(term)
+  )
+})
+watch(candidateFilterTerm, () => { candidatePage.value = 1 })
+
 const pagedCandidates = computed(() => {
   const start = (candidatePage.value - 1) * CANDIDATE_PAGE_SIZE
-  return candidatesForEditing.value.slice(start, start + CANDIDATE_PAGE_SIZE)
+  return filteredCandidatesForEditing.value.slice(start, start + CANDIDATE_PAGE_SIZE)
 })
 
 const showPreview = ref(false)
@@ -403,6 +427,7 @@ function resetForm() {
   form.excludedFromGridBattle = false
   candidates.value = []
   candidatePage.value = 1
+  candidateFilterTerm.value = ''
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
   bulkTeams.value = []
@@ -441,6 +466,7 @@ async function openEdit(id) {
       }
     })
     candidatePage.value = 1
+    candidateFilterTerm.value = ''
 
     editingGridId.value = id
     view.value = 'builder'
