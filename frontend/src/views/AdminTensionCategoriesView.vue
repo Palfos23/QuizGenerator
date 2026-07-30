@@ -24,6 +24,7 @@
         type="text"
         v-model="categorySearchTerm"
         placeholder="Search category names…"
+        class="search-input"
         style="margin-bottom:16px;"
       />
 
@@ -35,7 +36,7 @@
         <div v-for="c in pagedCategories" :key="c.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ c.name }}</div>
-            <div class="saved-quiz-meta">{{ c.options.length }} suggestion word(s)</div>
+            <div class="saved-quiz-meta">{{ c.optionCount }} suggestion word(s)</div>
           </div>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-secondary btn-sm" @click="openEdit(c)">Edit</button>
@@ -134,12 +135,17 @@ function openCreate() {
   showModal.value = true
 }
 
-function openEdit(c) {
-  form.name = c.name
-  optionsText.value = c.options.join('\n')
-  editingId.value = c.id
+async function openEdit(c) {
   modalError.value = ''
-  showModal.value = true
+  try {
+    const detail = await api.adminGetTensionCategory(c.id)
+    form.name = detail.name
+    optionsText.value = detail.options.join('\n')
+    editingId.value = detail.id
+    showModal.value = true
+  } catch (e) {
+    error.value = 'Could not load that category.'
+  }
 }
 
 async function save() {

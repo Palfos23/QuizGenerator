@@ -1,6 +1,7 @@
 package com.quizapp.controller;
 
 import com.quizapp.dto.TensionCategoryDto;
+import com.quizapp.dto.TensionCategorySummaryDto;
 import com.quizapp.service.TensionCategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,8 +21,13 @@ public class AdminTensionCategoryController {
     }
 
     @GetMapping
-    public List<TensionCategoryDto> findAll() {
+    public List<TensionCategorySummaryDto> findAll() {
         return categoryService.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public TensionCategoryDto getOne(@PathVariable Long id) {
+        return categoryService.getOne(id);
     }
 
     @PostMapping

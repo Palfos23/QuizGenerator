@@ -242,6 +242,9 @@ export default {
   adminListTensionCategories() {
     return client.get('/admin/tension/categories').then(r => r.data)
   },
+  adminGetTensionCategory(id) {
+    return client.get(`/admin/tension/categories/${id}`).then(r => r.data)
+  },
   adminCreateTensionCategory(payload) {
     return client.post('/admin/tension/categories', payload).then(r => r.data)
   },

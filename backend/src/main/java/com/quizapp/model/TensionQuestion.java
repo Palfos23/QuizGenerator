@@ -43,13 +43,15 @@ public class TensionQuestion {
 
     // The safe list - correct answers ranked 1..10. Position 10 (the least obvious
     // still-safe answer) is worth the most; position 1 is worth the least.
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    // Lazy - loading every question's answers eagerly made any bulk query (the
+    // admin list, random-question fetching) load the entire answer table too.
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @SQLRestriction("tension = false")
     private List<TensionAnswerEntry> safeAnswers = new ArrayList<>();
 
     // The tension list - answers ranked just past the safe cutoff. Guessing one of
     // these costs a flat -5, regardless of its own rank.
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @SQLRestriction("tension = true")
     private List<TensionAnswerEntry> tensionAnswers = new ArrayList<>();
 

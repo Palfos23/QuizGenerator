@@ -24,6 +24,7 @@
           type="text"
           v-model="questionSearchTerm"
           placeholder="Search by title or category…"
+          class="search-input"
           style="margin-bottom:16px;"
         />
 
@@ -36,7 +37,7 @@
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ q.title }}</div>
               <div class="saved-quiz-meta">
-                {{ q.mainCategory || 'Uncategorized' }} · {{ q.safeAnswers.length }} safe · {{ q.tensionAnswers.length }} tension
+                {{ q.mainCategory || 'Uncategorized' }} · {{ q.safeCount }} safe · {{ q.tensionCount }} tension
               </div>
             </div>
             <div style="display:flex; gap:8px;">

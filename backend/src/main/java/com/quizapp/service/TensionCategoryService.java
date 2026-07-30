@@ -22,8 +22,17 @@ public class TensionCategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<TensionCategoryDto> findAll() {
-        return categoryRepository.findAll().stream().map(TensionCategoryService::toDto).collect(Collectors.toList());
+    public List<com.quizapp.dto.TensionCategorySummaryDto> findAll() {
+        return categoryRepository.findAllSummaries().stream()
+                .map(p -> new com.quizapp.dto.TensionCategorySummaryDto(p.getId(), p.getName(), p.getOptionCount()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public TensionCategoryDto getOne(Long id) {
+        TensionAnswerCategory c = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No tension category found with id " + id));
+        return toDto(c);
     }
 
     /**

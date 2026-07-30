@@ -1,6 +1,7 @@
 package com.quizapp.controller;
 
 import com.quizapp.dto.TensionQuestionDto;
+import com.quizapp.dto.TensionQuestionSummaryDto;
 import com.quizapp.service.TensionQuestionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public class AdminTensionQuestionController {
     }
 
     @GetMapping
-    public List<TensionQuestionDto> findAll() {
+    public List<TensionQuestionSummaryDto> findAll() {
         return questionService.findAll();
     }
 

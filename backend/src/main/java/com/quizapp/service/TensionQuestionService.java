@@ -24,8 +24,12 @@ public class TensionQuestionService {
     }
 
     @Transactional(readOnly = true)
-    public List<TensionQuestionDto> findAll() {
-        return questionRepository.findAll().stream().map(TensionQuestionService::toDto).collect(Collectors.toList());
+    public List<com.quizapp.dto.TensionQuestionSummaryDto> findAll() {
+        return questionRepository.findAllSummaries().stream()
+                .map(p -> new com.quizapp.dto.TensionQuestionSummaryDto(
+                        p.getId(), p.getTitle(), p.getMainCategory(), p.getAnswersCategory(),
+                        p.getSource(), p.getSafeCount(), p.getTensionCount()))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -37,12 +41,10 @@ public class TensionQuestionService {
 
     @Transactional(readOnly = true)
     public List<TensionQuestionDto> getRandom(int count, String mainCategory) {
-        List<TensionQuestion> pool = (mainCategory == null || mainCategory.isBlank())
-                ? questionRepository.findAll()
-                : questionRepository.findByMainCategoryIgnoreCase(mainCategory);
-        List<TensionQuestion> shuffled = new ArrayList<>(pool);
-        Collections.shuffle(shuffled);
-        return shuffled.stream().limit(count).map(TensionQuestionService::toDto).collect(Collectors.toList());
+        List<Long> ids = (mainCategory == null || mainCategory.isBlank())
+                ? questionRepository.findAllIds()
+                : questionRepository.findIdsByMainCategoryIgnoreCase(mainCategory);
+        return loadRandomSubset(ids, count);
     }
 
     // For the "pick your question" round-start screen: a small pool of
@@ -50,14 +52,25 @@ public class TensionQuestionService {
     // played this game so a repeat never gets offered.
     @Transactional(readOnly = true)
     public List<TensionQuestionDto> getRoundChoices(int count, String mainCategory, List<Long> excludeIds) {
-        List<TensionQuestion> pool = (mainCategory == null || mainCategory.isBlank())
-                ? questionRepository.findAll()
-                : questionRepository.findByMainCategoryIgnoreCase(mainCategory);
-        List<TensionQuestion> available = pool.stream()
-                .filter(q -> excludeIds == null || !excludeIds.contains(q.getId()))
+        List<Long> ids = (mainCategory == null || mainCategory.isBlank())
+                ? questionRepository.findAllIds()
+                : questionRepository.findIdsByMainCategoryIgnoreCase(mainCategory);
+        List<Long> available = ids.stream()
+                .filter(id -> excludeIds == null || !excludeIds.contains(id))
                 .collect(Collectors.toList());
-        Collections.shuffle(available);
-        return available.stream().limit(count).map(TensionQuestionService::toDto).collect(Collectors.toList());
+        return loadRandomSubset(available, count);
+    }
+
+    // Shuffling and sampling at the ID level is cheap regardless of how many
+    // questions exist in the category - only the small sampled subset actually
+    // gets its full entity (and answer lists) loaded.
+    private List<TensionQuestionDto> loadRandomSubset(List<Long> ids, int count) {
+        List<Long> shuffled = new ArrayList<>(ids);
+        Collections.shuffle(shuffled);
+        List<Long> sampled = shuffled.stream().limit(count).collect(Collectors.toList());
+        return questionRepository.findAllById(sampled).stream()
+                .map(TensionQuestionService::toDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
