@@ -192,7 +192,7 @@
         <button class="btn btn-secondary" :disabled="!correctCandidates.length" @click="showPreview = true">
           👁 Preview ({{ correctCandidates.length }} tiles)
         </button>
-        <button v-if="editingId" class="btn btn-secondary" @click="duplicateAsNewVersion">
+        <button v-if="editingGridId" class="btn btn-secondary" @click="duplicateAsNewVersion">
           ⧉ Duplicate as new version
         </button>
         <button class="btn btn-primary" :disabled="saving" @click="saveGrid">
