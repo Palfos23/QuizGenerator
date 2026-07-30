@@ -198,16 +198,24 @@ function onFileSelected(event) {
     }
 
     const validSportCodes = SPORTS.map(s => s.code)
+    const existingKeys = new Set(athletes.value.map(a => `${a.sport}::${a.name.trim().toLowerCase()}`))
+    const seenInFile = new Set()
+
     importRows.value = lines.slice(1).map(line => {
       const cells = parseCsvLine(line)
       const name = cells[nameIdx] || ''
       const sport = (cells[sportIdx] || '').toUpperCase()
       const team = teamIdx !== -1 ? (cells[teamIdx] || '') : ''
       const photoUrl = photoIdx !== -1 ? (cells[photoIdx] || '') : ''
+      const key = `${sport}::${name.trim().toLowerCase()}`
 
       let rowError = ''
       if (!name) rowError = 'Missing name'
       else if (!validSportCodes.includes(sport)) rowError = `Invalid sport (must be ${validSportCodes.join('/')})`
+      else if (existingKeys.has(key)) rowError = 'Duplicate - already exists'
+      else if (seenInFile.has(key)) rowError = 'Duplicate - repeated in this file'
+
+      if (!rowError) seenInFile.add(key)
 
       return { name, sport, team, photoUrl, valid: !rowError, error: rowError }
     })
