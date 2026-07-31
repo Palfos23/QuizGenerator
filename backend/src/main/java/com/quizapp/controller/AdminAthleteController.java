@@ -38,9 +38,15 @@ public class AdminAthleteController {
         return athleteService.update(id, dto);
     }
 
+    @GetMapping("/{id}/grid-usage")
+    public List<com.quizapp.dto.AthleteGridUsageDto> gridUsage(@PathVariable Long id) {
+        return athleteService.findGridUsage(id);
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        athleteService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id,
+                                        @RequestParam(defaultValue = "false") boolean removeFromGrids) {
+        athleteService.delete(id, removeFromGrids);
         return ResponseEntity.noContent().build();
     }
 }

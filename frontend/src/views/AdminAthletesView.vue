@@ -79,6 +79,30 @@
       @cancel="pendingDelete = null"
     />
 
+    <div v-if="pendingGridUsage" class="modal-backdrop" @click.self="pendingGridUsage = null">
+      <div class="modal">
+        <h2 style="margin-top:0;">'{{ pendingGridUsage.athlete.name }}' is used in {{ pendingGridUsage.usage.length }} grid(s)</h2>
+        <p class="page-subtitle" style="margin-top:0;">
+          Deleting this athlete first removes them from every grid listed below.
+        </p>
+        <ul style="margin:0 0 16px; padding-left:20px; line-height:1.8;">
+          <li v-for="u in pendingGridUsage.usage" :key="u.gridId">
+            {{ u.gridTitle }}
+            <span v-if="u.isCorrectAnswer" style="color:var(--coral); font-weight:600;"> - a correct answer here, not just a decoy</span>
+          </li>
+        </ul>
+        <p v-if="pendingGridUsage.usage.some(u => u.isCorrectAnswer)" style="color:var(--coral); font-size:0.9rem;">
+          For the grid(s) marked above, this genuinely changes that grid's answer key - including for anyone who's
+          already played it. If that grid is meant to stay exactly as-is, consider duplicating it as a new version
+          and editing the copy instead, rather than deleting this athlete outright.
+        </p>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn btn-secondary" @click="pendingGridUsage = null">Cancel</button>
+          <button class="btn btn-danger" @click="confirmRemoveFromGridsAndDelete">Remove from grids and delete</button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="showImportPreview" class="modal-backdrop" @click.self="closeImportPreview">
       <div class="modal" style="max-width:640px;">
         <h2 style="margin-top:0;">Import from CSV</h2>
@@ -137,6 +161,7 @@ const sportFilter = ref('ALL')
 const showModal = ref(false)
 const editingAthlete = ref(null)
 const pendingDelete = ref(null)
+const pendingGridUsage = ref(null)
 
 const fileInput = ref(null)
 const showImportPreview = ref(false)
@@ -313,6 +338,28 @@ async function doDelete() {
   try {
     await api.adminDeleteAthlete(a.id)
     toast.show('Athlete deleted.')
+    loadAthletes()
+  } catch (e) {
+    if (e.response?.status === 400) {
+      try {
+        const usage = await api.adminGetAthleteGridUsage(a.id)
+        pendingGridUsage.value = { athlete: a, usage }
+        return
+      } catch (e2) {
+        // fall through to the generic error below
+      }
+    }
+    error.value = e.response?.data?.message || 'Could not delete that athlete.'
+  }
+}
+
+async function confirmRemoveFromGridsAndDelete() {
+  const { athlete } = pendingGridUsage.value
+  pendingGridUsage.value = null
+  error.value = ''
+  try {
+    await api.adminDeleteAthlete(athlete.id, true)
+    toast.show('Athlete removed from those grids and deleted.')
     loadAthletes()
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not delete that athlete.'

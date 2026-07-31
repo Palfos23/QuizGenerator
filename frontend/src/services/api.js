@@ -180,8 +180,11 @@ export default {
   adminUpdateAthlete(id, payload) {
     return client.put(`/admin/athletes/${id}`, payload).then(r => r.data)
   },
-  adminDeleteAthlete(id) {
-    return client.delete(`/admin/athletes/${id}`)
+  adminGetAthleteGridUsage(id) {
+    return client.get(`/admin/athletes/${id}/grid-usage`).then(r => r.data)
+  },
+  adminDeleteAthlete(id, removeFromGrids = false) {
+    return client.delete(`/admin/athletes/${id}?removeFromGrids=${removeFromGrids}`)
   },
 
   // --- Clubs: admin ---
