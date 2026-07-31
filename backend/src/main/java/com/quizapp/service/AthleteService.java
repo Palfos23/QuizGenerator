@@ -65,9 +65,16 @@ public class AthleteService {
         return toDto(athleteRepository.save(athlete));
     }
 
+    private List<Grid> findGridsReferencingAthlete(Long athleteId) {
+        java.util.Map<Long, Grid> byId = new java.util.LinkedHashMap<>();
+        gridRepository.findByCandidateAthleteId(athleteId).forEach(g -> byId.put(g.getId(), g));
+        gridRepository.findByEntryAthleteId(athleteId).forEach(g -> byId.put(g.getId(), g));
+        return new java.util.ArrayList<>(byId.values());
+    }
+
     @Transactional(readOnly = true)
     public List<com.quizapp.dto.AthleteGridUsageDto> findGridUsage(Long athleteId) {
-        return gridRepository.findDistinctByAthleteId(athleteId).stream()
+        return findGridsReferencingAthlete(athleteId).stream()
                 .map(g -> new com.quizapp.dto.AthleteGridUsageDto(
                         g.getId(), g.getTitle(),
                         g.getEntries().stream().anyMatch(e -> e.getAthlete().getId().equals(athleteId))))
@@ -87,8 +94,8 @@ public class AthleteService {
             // Targeted removal from the already-managed collections, not a
             // clear()-and-re-add - keeps this from re-triggering the same
             // full delete-and-reinsert behavior that was already fixed
-            // elsewhere for these same List-mapped collections.
-            List<Grid> affectedGrids = gridRepository.findDistinctByAthleteId(id);
+            // elsewhere for these same collections.
+            List<Grid> affectedGrids = findGridsReferencingAthlete(id);
             for (Grid grid : affectedGrids) {
                 grid.getCandidates().removeIf(c -> c.getAthlete().getId().equals(id));
                 grid.getEntries().removeIf(e -> e.getAthlete().getId().equals(id));
