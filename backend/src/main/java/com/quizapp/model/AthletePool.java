@@ -64,6 +64,18 @@ public class AthletePool {
     }
 
     public void setMembers(Set<Athlete> members) {
-        this.members = members != null ? members : new HashSet<>();
+        // Mutates the existing managed collection in place, rather than
+        // reassigning this field to a brand-new Set - reassigning means
+        // Hibernate can't diff against what it was already tracking, so it
+        // deletes every join-table row and re-inserts every row on every
+        // save, regardless of how little actually changed. Same fix already
+        // proven necessary for Grid's own candidates/entries collections.
+        Set<Athlete> incoming = members != null ? members : new HashSet<>();
+        this.members.removeIf(existing -> !incoming.contains(existing));
+        for (Athlete a : incoming) {
+            if (!this.members.contains(a)) {
+                this.members.add(a);
+            }
+        }
     }
 }
