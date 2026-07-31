@@ -7,6 +7,7 @@ import com.quizapp.model.Grid;
 import com.quizapp.model.Sport;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.GridCandidateRepository;
+import com.quizapp.repository.GridEntryRepository;
 import com.quizapp.repository.GridRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,12 +20,14 @@ public class AthleteService {
 
     private final AthleteRepository athleteRepository;
     private final GridCandidateRepository gridCandidateRepository;
+    private final GridEntryRepository gridEntryRepository;
     private final GridRepository gridRepository;
 
     public AthleteService(AthleteRepository athleteRepository, GridCandidateRepository gridCandidateRepository,
-                           GridRepository gridRepository) {
+                           GridEntryRepository gridEntryRepository, GridRepository gridRepository) {
         this.athleteRepository = athleteRepository;
         this.gridCandidateRepository = gridCandidateRepository;
+        this.gridEntryRepository = gridEntryRepository;
         this.gridRepository = gridRepository;
     }
 
@@ -91,16 +94,13 @@ public class AthleteService {
                 throw new IllegalArgumentException(
                         "This athlete is used in one or more grids - remove them from those grids first.");
             }
-            // Targeted removal from the already-managed collections, not a
-            // clear()-and-re-add - keeps this from re-triggering the same
-            // full delete-and-reinsert behavior that was already fixed
-            // elsewhere for these same collections.
-            List<Grid> affectedGrids = findGridsReferencingAthlete(id);
-            for (Grid grid : affectedGrids) {
-                grid.getCandidates().removeIf(c -> c.getAthlete().getId().equals(id));
-                grid.getEntries().removeIf(e -> e.getAthlete().getId().equals(id));
-            }
-            gridRepository.saveAll(affectedGrids);
+            // Direct delete statements, not collection-based removal (load the
+            // collection, remove an element, let Hibernate's orphanRemoval figure
+            // out the SQL). That approach proved unreliable across several attempts
+            // for this exact scenario - a plain DELETE ... WHERE athlete_id = ? has
+            // no ambiguity for Hibernate to get wrong.
+            gridEntryRepository.deleteByAthlete_Id(id);
+            gridCandidateRepository.deleteByAthlete_Id(id);
         }
         athleteRepository.deleteById(id);
     }
