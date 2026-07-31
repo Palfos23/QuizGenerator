@@ -146,12 +146,18 @@ public class Grid {
         incomingSet.addAll(incoming);
         this.candidates.removeIf(existing -> !incomingSet.contains(existing));
 
+        // Tracks what's actually in this.candidates as the loop progresses, not just
+        // a snapshot from before it started - otherwise the same object reference
+        // appearing twice in `incoming` (which happens with a duplicate athlete id
+        // in the request, since the reuse-by-id lookup returns that same instance
+        // both times) gets added to the collection twice.
         java.util.Set<GridCandidate> currentSet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
         currentSet.addAll(this.candidates);
         for (GridCandidate c : incoming) {
             if (!currentSet.contains(c)) {
                 c.setGrid(this);
                 this.candidates.add(c);
+                currentSet.add(c);
             }
         }
     }
@@ -161,7 +167,8 @@ public class Grid {
     }
 
     public void setEntries(List<GridEntry> entries) {
-        // Same bag-collection fix as setCandidates() above.
+        // Same bag-collection fix as setCandidates() above, including the same
+        // fix for tracking additions incrementally as the loop progresses.
         List<GridEntry> incoming = entries != null ? entries : new ArrayList<>();
         java.util.Set<GridEntry> incomingSet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
         incomingSet.addAll(incoming);
@@ -173,6 +180,7 @@ public class Grid {
             if (!currentSet.contains(e)) {
                 e.setGrid(this);
                 this.entries.add(e);
+                currentSet.add(e);
             }
         }
     }

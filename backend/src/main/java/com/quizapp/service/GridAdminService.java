@@ -100,11 +100,16 @@ public class GridAdminService {
         // Single batch fetch instead of one query per athlete - looking each one
         // up individually is exactly the kind of thing that gets slower the bigger
         // the candidate pool is, which matches what a large grid was experiencing.
-        List<Athlete> foundAthletes = athleteRepository.findAllById(request.getCandidateAthleteIds());
+        // Deduplicated defensively - a repeated id here would otherwise make the
+        // same reused GridCandidate get processed twice below.
+        List<Long> candidateAthleteIds = request.getCandidateAthleteIds().stream()
+                .distinct()
+                .collect(Collectors.toList());
+        List<Athlete> foundAthletes = athleteRepository.findAllById(candidateAthleteIds);
         Map<Long, Athlete> athleteById = foundAthletes.stream()
                 .collect(Collectors.toMap(Athlete::getId, a -> a));
-        if (athleteById.size() != new java.util.HashSet<>(request.getCandidateAthleteIds()).size()) {
-            List<Long> missing = request.getCandidateAthleteIds().stream()
+        if (athleteById.size() != candidateAthleteIds.size()) {
+            List<Long> missing = candidateAthleteIds.stream()
                     .filter(id -> !athleteById.containsKey(id))
                     .collect(Collectors.toList());
             throw new IllegalArgumentException("No athlete found with id(s) " + missing);
@@ -116,13 +121,16 @@ public class GridAdminService {
         Map<Long, GridCandidate> existingCandidateByAthleteId = grid.getCandidates().stream()
                 .collect(Collectors.toMap(c -> c.getAthlete().getId(), c -> c, (a, b) -> a));
 
-        List<GridCandidate> candidates = request.getCandidateAthleteIds().stream()
+        List<GridCandidate> candidates = candidateAthleteIds.stream()
                 .map(athleteId -> {
                     GridCandidate c = existingCandidateByAthleteId.getOrDefault(athleteId, new GridCandidate());
                     c.setAthlete(athleteById.get(athleteId));
                     return c;
                 })
                 .collect(Collectors.toList());
+        if (candidates.stream().anyMatch(c -> c.getAthlete() == null)) {
+            throw new IllegalStateException("Internal error building the candidate list - please try saving again.");
+        }
         grid.setCandidates(candidates);
 
         // Match against existing entries by athlete so a routine hint/value edit
