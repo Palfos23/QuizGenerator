@@ -279,8 +279,8 @@ const candidatePage = ref(1)
 const candidateFilterTerm = ref('')
 const filteredCandidatesForEditing = computed(() => {
   const term = candidateFilterTerm.value.trim().toLowerCase()
-  if (!term) return candidatesForEditing.value
-  return candidatesForEditing.value.filter(c =>
+  if (!term) return candidateDisplayOrder.value
+  return candidateDisplayOrder.value.filter(c =>
     c.name.toLowerCase().includes(term) || (c.team || '').toLowerCase().includes(term)
   )
 })
@@ -300,12 +300,26 @@ const sortedCorrectCandidates = computed(() =>
 )
 
 // For the editable candidate list specifically: correct answers first (in the
-// same order they'll actually appear in the grid), then everyone else -
-// makes it easy to find and adjust the answers that matter most.
-const candidatesForEditing = computed(() => {
+// same order they'll actually appear in the grid), then everyone else - makes
+// it easy to find and adjust the answers that matter most.
+//
+// This is a frozen snapshot, not a live computed - rebuilt explicitly when
+// candidates are loaded/added/removed or the sort direction is toggled, but
+// deliberately NOT reactive to editing a candidate's own hint value or
+// correct/decoy status. Otherwise a row could jump to a different position in
+// the list the moment you changed the very value you were editing.
+const candidateDisplayOrder = ref([])
+
+function rebuildCandidateDisplayOrder() {
+  const correct = candidates.value.filter(c => c.correct)
+  const sortedCorrect = form.sortAscending
+    ? [...correct].sort((a, b) => (a.hintValue ?? 0) - (b.hintValue ?? 0))
+    : [...correct].sort((a, b) => (b.hintValue ?? 0) - (a.hintValue ?? 0))
   const notCorrect = candidates.value.filter(c => !c.correct)
-  return [...sortedCorrectCandidates.value, ...notCorrect]
-})
+  candidateDisplayOrder.value = [...sortedCorrect, ...notCorrect]
+}
+
+watch(() => form.sortAscending, rebuildCandidateDisplayOrder)
 
 function previewClub(c) {
   return clubOptions.value.find(club => club.id === c.clubId) || null
@@ -324,6 +338,7 @@ function removeCandidate(c) {
   if (realIndex !== -1) candidates.value.splice(realIndex, 1)
   const maxPage = Math.max(1, Math.ceil(candidates.value.length / CANDIDATE_PAGE_SIZE))
   if (candidatePage.value > maxPage) candidatePage.value = maxPage
+  rebuildCandidateDisplayOrder()
 }
 const clubOptions = ref([])
 const teamOptions = ref([])
@@ -404,6 +419,7 @@ function addCandidate(athlete) {
     athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
     correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true
   })
+  rebuildCandidateDisplayOrder()
 }
 
 async function addAllByTeam() {
@@ -436,6 +452,7 @@ function resetForm() {
   bulkTeams.value = []
   loadClubOptions()
   loadTeamOptions()
+  rebuildCandidateDisplayOrder()
 }
 
 function openCreate() {
@@ -475,6 +492,7 @@ async function openEdit(id) {
     view.value = 'builder'
     loadClubOptions()
     loadTeamOptions()
+    rebuildCandidateDisplayOrder()
   } catch (e) {
     error.value = 'Could not load that grid.'
   }
