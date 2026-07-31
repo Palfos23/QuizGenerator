@@ -159,6 +159,23 @@ export default {
   adminCreateGrid(payload) {
     return client.post('/admin/grids', payload).then(r => r.data)
   },
+
+  // --- Athlete pools: admin ---
+  adminListAthletePools() {
+    return client.get('/admin/athlete-pools').then(r => r.data)
+  },
+  adminGetAthletePool(id) {
+    return client.get(`/admin/athlete-pools/${id}`).then(r => r.data)
+  },
+  adminCreateAthletePool(payload) {
+    return client.post('/admin/athlete-pools', payload).then(r => r.data)
+  },
+  adminUpdateAthletePool(id, payload) {
+    return client.put(`/admin/athlete-pools/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteAthletePool(id) {
+    return client.delete(`/admin/athlete-pools/${id}`)
+  },
   adminUpdateGrid(id, payload) {
     return client.put(`/admin/grids/${id}`, payload).then(r => r.data)
   },

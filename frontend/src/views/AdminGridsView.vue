@@ -115,26 +115,19 @@
           <input type="text" v-model="athleteSearchTerm" placeholder="Search athletes by name…" style="flex:1; min-width:180px;" />
         </div>
 
-        <div v-if="teamOptions.length" style="margin-bottom:10px;">
+        <div v-if="poolsForSport.length" style="margin-bottom:10px;">
           <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
-            ...or add whole teams <span class="picker-hint" v-if="bulkTeams.length">{{ bulkTeams.length }} selected</span>
+            ...or import from a saved pool
           </label>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
-            <button
-              v-for="t in teamOptions"
-              :key="t"
-              type="button"
-              class="team-chip"
-              :class="{ active: bulkTeams.includes(t) }"
-              @click="toggleBulkTeam(t)"
-            >{{ t }}</button>
+          <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+            <select v-model="selectedPoolId" style="flex:1; min-width:200px;">
+              <option :value="null">Choose a pool…</option>
+              <option v-for="p in poolsForSport" :key="p.id" :value="p.id">{{ p.name }} ({{ p.memberCount }})</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" :disabled="!selectedPoolId" @click="importFromPool">
+              + Import pool
+            </button>
           </div>
-          <button
-            class="btn btn-secondary btn-sm"
-            style="margin-top:10px;"
-            :disabled="!bulkTeams.length"
-            @click="addAllByTeam"
-          >+ Add {{ bulkTeams.length > 1 ? `${bulkTeams.length} teams` : 'team' }}</button>
         </div>
 
         <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
@@ -341,24 +334,17 @@ function removeCandidate(c) {
   rebuildCandidateDisplayOrder()
 }
 const clubOptions = ref([])
-const teamOptions = ref([])
+const athletePools = ref([])
+const selectedPoolId = ref(null)
+const poolsForSport = computed(() => athletePools.value.filter(p => p.sport === form.sport))
 
 const athleteSearchTerm = ref('')
 const athleteSearchResults = ref([])
-const bulkTeams = ref([])
-
-function toggleBulkTeam(team) {
-  if (bulkTeams.value.includes(team)) {
-    bulkTeams.value = bulkTeams.value.filter(t => t !== team)
-  } else {
-    bulkTeams.value = [...bulkTeams.value, team]
-  }
-}
 
 onMounted(() => {
   loadGrids()
   loadClubOptions()
-  loadTeamOptions()
+  loadAthletePools()
 })
 
 async function loadClubOptions() {
@@ -369,12 +355,11 @@ async function loadClubOptions() {
   }
 }
 
-async function loadTeamOptions() {
+async function loadAthletePools() {
   try {
-    const athletes = await api.adminSearchAthletes({ sport: form.sport })
-    teamOptions.value = [...new Set(athletes.map(a => a.team).filter(Boolean))].sort()
+    athletePools.value = await api.adminListAthletePools()
   } catch (e) {
-    // non-critical - the team dropdown just stays empty
+    // non-critical - the pool dropdown just stays empty
   }
 }
 
@@ -410,7 +395,6 @@ function changeSport(code) {
   form.sport = code
   athleteSearchResults.value = []
   loadClubOptions()
-  loadTeamOptions()
 }
 
 function addCandidate(athlete) {
@@ -422,17 +406,16 @@ function addCandidate(athlete) {
   rebuildCandidateDisplayOrder()
 }
 
-async function addAllByTeam() {
+async function importFromPool() {
+  if (!selectedPoolId.value) return
   error.value = ''
   try {
-    const resultsPerTeam = await Promise.all(
-      bulkTeams.value.map(team => api.adminSearchAthletes({ sport: form.sport, team }))
-    )
-    resultsPerTeam.flat().forEach(addCandidate)
-    toast.show(`Added athletes from ${bulkTeams.value.length} team(s).`)
-    bulkTeams.value = []
+    const pool = await api.adminGetAthletePool(selectedPoolId.value)
+    pool.members.forEach(addCandidate)
+    toast.show(`Imported ${pool.members.length} athlete(s) from "${pool.name}".`)
+    selectedPoolId.value = null
   } catch (e) {
-    error.value = 'Could not search for those teams.'
+    error.value = 'Could not import that pool.'
   }
 }
 
@@ -449,9 +432,9 @@ function resetForm() {
   candidateFilterTerm.value = ''
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
-  bulkTeams.value = []
+  selectedPoolId.value = null
   loadClubOptions()
-  loadTeamOptions()
+  loadAthletePools()
   rebuildCandidateDisplayOrder()
 }
 
@@ -491,7 +474,7 @@ async function openEdit(id) {
     editingGridId.value = id
     view.value = 'builder'
     loadClubOptions()
-    loadTeamOptions()
+    loadAthletePools()
     rebuildCandidateDisplayOrder()
   } catch (e) {
     error.value = 'Could not load that grid.'

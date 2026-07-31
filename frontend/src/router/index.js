@@ -10,6 +10,7 @@ import WeeklyGridListView from '../views/WeeklyGridListView.vue'
 import WeeklyGridPlayView from '../views/WeeklyGridPlayView.vue'
 import AdminAthletesView from '../views/AdminAthletesView.vue'
 import AdminGridsView from '../views/AdminGridsView.vue'
+import AdminAthletePoolsView from '../views/AdminAthletePoolsView.vue'
 import AdminClubsView from '../views/AdminClubsView.vue'
 import TensionView from '../views/TensionView.vue'
 import FiveOhOneView from '../views/FiveOhOneView.vue'
@@ -42,6 +43,7 @@ const routes = [
   { path: '/admin/questions', name: 'admin', component: AdminView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/athletes', name: 'admin-athletes', component: AdminAthletesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/grids', name: 'admin-grids', component: AdminGridsView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/athlete-pools', name: 'admin-athlete-pools', component: AdminAthletePoolsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/clubs', name: 'admin-clubs', component: AdminClubsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/tension', name: 'tension', component: TensionView, meta: { requiresAuth: true } },
   { path: '/501', name: 'five-oh-one', component: FiveOhOneView, meta: { requiresAuth: true } },
