@@ -24,7 +24,10 @@
       <div v-else class="saved-quiz-list">
         <div v-for="g in grids" :key="g.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
-            <div class="saved-quiz-title">{{ g.title }}</div>
+            <div class="saved-quiz-title">
+              {{ g.title }}
+              <span v-if="g.excludedFromGridBattle" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Grid Battle</span>
+            </div>
             <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} entries · {{ g.maxStrikes }} {{ g.maxStrikes === 1 ? 'life' : 'lives' }} · week of {{ g.weekStartDate }}</div>
           </div>
           <div style="display:flex; gap:8px;">

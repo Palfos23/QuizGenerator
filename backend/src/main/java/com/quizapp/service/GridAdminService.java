@@ -55,6 +55,7 @@ public class GridAdminService {
 
     @Transactional
     public GridAdminDetailDto create(GridRequest request) {
+        validateDateNotTaken(request.getWeekStartDate(), null);
         Grid grid = new Grid();
         applyRequest(grid, request);
         return toDetailDto(gridRepository.save(grid));
@@ -62,10 +63,21 @@ public class GridAdminService {
 
     @Transactional
     public GridAdminDetailDto update(Long id, GridRequest request) {
+        validateDateNotTaken(request.getWeekStartDate(), id);
         Grid grid = gridRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + id));
         applyRequest(grid, request);
         return toDetailDto(gridRepository.save(grid));
+    }
+
+    // excludeGridId lets an edit keep its own existing date without flagging
+    // itself as a conflict.
+    private void validateDateNotTaken(java.time.LocalDate weekStartDate, Long excludeGridId) {
+        boolean taken = gridRepository.findByWeekStartDate(weekStartDate).stream()
+                .anyMatch(g -> !g.getId().equals(excludeGridId));
+        if (taken) {
+            throw new IllegalStateException("Another grid already uses the week of " + weekStartDate + ".");
+        }
     }
 
     @Transactional

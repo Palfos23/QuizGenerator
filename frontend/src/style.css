@@ -817,7 +817,7 @@ mark {
 .grid-tile-logo.is-photo {
   object-fit: cover;
   object-position: top center;
-  padding: 0;
+  padding: 4px;
 }
 
 .grid-tile-hint {
