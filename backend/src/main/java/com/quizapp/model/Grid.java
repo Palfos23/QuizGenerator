@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "grids")
@@ -74,13 +74,23 @@ public class Grid {
     // The full searchable pool for this grid's guess box - includes both the correct
     // answers (see GridEntry) and any decoys the admin wants users to be able to guess
     // (and get wrong) - e.g. every other Spurs player who didn't hit 10 goals.
+    //
+    // Set, not List: Hibernate maps a List-mapped @OneToMany as an unordered "bag",
+    // which has no reliable way to diff removals - in some cases it issues an UPDATE
+    // nulling out the foreign key instead of a clean DELETE, which fails outright on
+    // a NOT NULL column. A Set sidesteps this entirely, using proper equality-based
+    // diffing instead of Hibernate's ambiguous bag-position tracking. Order was never
+    // meaningful for this collection anyway.
     @OneToMany(mappedBy = "grid", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<GridCandidate> candidates = new ArrayList<>();
+    private Set<GridCandidate> candidates = new HashSet<>();
 
     // The correct answers - a subset of candidates, each annotated with the hint
     // shown on its tile before it's solved (e.g. "FW" / 14).
+    // Same Set-not-List reasoning as candidates above. Display order is unrelated -
+    // it's always driven by an explicit sort at read time (see entrySortOrder in
+    // GridPlayService), never by this collection's own iteration order.
     @OneToMany(mappedBy = "grid", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<GridEntry> entries = new ArrayList<>();
+    private Set<GridEntry> entries = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -130,57 +140,32 @@ public class Grid {
         this.maxStrikes = maxStrikes;
     }
 
-    public List<GridCandidate> getCandidates() {
+    public Set<GridCandidate> getCandidates() {
         return candidates;
     }
 
-    public void setCandidates(List<GridCandidate> candidates) {
-        // Hibernate treats a List-mapped @OneToMany as a "bag" with no reliable way
-        // to diff it - clearing and re-adding, even with the same reused instances,
-        // makes it delete every row and re-insert everything on every save. Since the
-        // service layer already reuses existing managed instances by athlete ID for
-        // anything unchanged, diffing by reference here means only genuine
-        // additions/removals actually touch the database.
-        List<GridCandidate> incoming = candidates != null ? candidates : new ArrayList<>();
-        java.util.Set<GridCandidate> incomingSet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
-        incomingSet.addAll(incoming);
-        this.candidates.removeIf(existing -> !incomingSet.contains(existing));
-
-        // Tracks what's actually in this.candidates as the loop progresses, not just
-        // a snapshot from before it started - otherwise the same object reference
-        // appearing twice in `incoming` (which happens with a duplicate athlete id
-        // in the request, since the reuse-by-id lookup returns that same instance
-        // both times) gets added to the collection twice.
-        java.util.Set<GridCandidate> currentSet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
-        currentSet.addAll(this.candidates);
+    public void setCandidates(Set<GridCandidate> candidates) {
+        Set<GridCandidate> incoming = candidates != null ? candidates : new HashSet<>();
+        this.candidates.removeIf(existing -> !incoming.contains(existing));
         for (GridCandidate c : incoming) {
-            if (!currentSet.contains(c)) {
+            if (!this.candidates.contains(c)) {
                 c.setGrid(this);
                 this.candidates.add(c);
-                currentSet.add(c);
             }
         }
     }
 
-    public List<GridEntry> getEntries() {
+    public Set<GridEntry> getEntries() {
         return entries;
     }
 
-    public void setEntries(List<GridEntry> entries) {
-        // Same bag-collection fix as setCandidates() above, including the same
-        // fix for tracking additions incrementally as the loop progresses.
-        List<GridEntry> incoming = entries != null ? entries : new ArrayList<>();
-        java.util.Set<GridEntry> incomingSet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
-        incomingSet.addAll(incoming);
-        this.entries.removeIf(existing -> !incomingSet.contains(existing));
-
-        java.util.Set<GridEntry> currentSet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
-        currentSet.addAll(this.entries);
+    public void setEntries(Set<GridEntry> entries) {
+        Set<GridEntry> incoming = entries != null ? entries : new HashSet<>();
+        this.entries.removeIf(existing -> !incoming.contains(existing));
         for (GridEntry e : incoming) {
-            if (!currentSet.contains(e)) {
+            if (!this.entries.contains(e)) {
                 e.setGrid(this);
                 this.entries.add(e);
-                currentSet.add(e);
             }
         }
     }

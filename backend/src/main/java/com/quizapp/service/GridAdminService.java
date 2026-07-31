@@ -13,9 +13,10 @@ import com.quizapp.repository.GridRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -121,13 +122,13 @@ public class GridAdminService {
         Map<Long, GridCandidate> existingCandidateByAthleteId = grid.getCandidates().stream()
                 .collect(Collectors.toMap(c -> c.getAthlete().getId(), c -> c, (a, b) -> a));
 
-        List<GridCandidate> candidates = candidateAthleteIds.stream()
+        Set<GridCandidate> candidates = candidateAthleteIds.stream()
                 .map(athleteId -> {
                     GridCandidate c = existingCandidateByAthleteId.getOrDefault(athleteId, new GridCandidate());
                     c.setAthlete(athleteById.get(athleteId));
                     return c;
                 })
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         if (candidates.stream().anyMatch(c -> c.getAthlete() == null)) {
             throw new IllegalStateException("Internal error building the candidate list - please try saving again.");
         }
@@ -141,7 +142,7 @@ public class GridAdminService {
                 .collect(Collectors.toMap(e -> e.getAthlete().getId(), e -> e, (a, b) -> a));
 
         int index = 0;
-        List<GridEntry> entries = new ArrayList<>();
+        Set<GridEntry> entries = new HashSet<>();
         for (GridEntryInputDto input : request.getEntries()) {
             Athlete athlete = athleteById.get(input.getAthleteId());
             if (athlete == null) {
