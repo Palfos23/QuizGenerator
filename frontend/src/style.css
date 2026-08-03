@@ -775,15 +775,18 @@ mark {
 }
 .grid-tile.correct {
   background: rgba(61, 220, 151, 0.08);
-  border-color: rgba(61, 220, 151, 0.4);
+  border-width: 3px;
+  border-color: rgb(61, 220, 151);
 }
 .grid-tile.solved-overtime {
   background: rgba(139, 124, 255, 0.1);
-  border-color: rgba(139, 124, 255, 0.4);
+  border-width: 3px;
+  border-color: rgb(139, 124, 255);
 }
 .grid-tile.revealed-only {
   background: rgba(255, 77, 109, 0.06);
-  border-color: rgba(255, 77, 109, 0.3);
+  border-width: 3px;
+  border-color: rgb(255, 77, 109);
 }
 .grid-tile.just-solved {
   animation: tile-pop 0.55s ease;
