@@ -135,9 +135,15 @@ public class GridBattleOnlineService {
         boolean revealAll = allEliminated;
 
         dto.setEntries(grid.getEntries().stream()
-                .sorted(grid.isSortAscending()
-                        ? (a, b) -> a.getHintValue() - b.getHintValue()
-                        : (a, b) -> b.getHintValue() - a.getHintValue())
+                .sorted((grid.isSortAscending()
+                        ? java.util.Comparator.<GridEntry>comparingInt(GridEntry::getHintValue)
+                        : java.util.Comparator.<GridEntry>comparingInt(GridEntry::getHintValue).reversed()
+                ).thenComparing(GridEntry::getId))
+                // Tie-broken by id - entries is a Set with no guaranteed iteration
+                // order, so without this, tiles with the same hint value (e.g. two
+                // players tied on goals) had no defined relative order and could
+                // visibly swap position between polls despite nothing having
+                // actually changed.
                 .map(e -> {
                     GridBattleSolvedEntry s = solvedByEntryId.get(e.getId());
                     boolean isSolved = s != null;

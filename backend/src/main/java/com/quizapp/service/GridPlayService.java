@@ -387,9 +387,16 @@ public class GridPlayService {
     }
 
     private java.util.Comparator<GridEntry> entrySortOrder(Grid grid) {
-        return grid.isSortAscending()
+        // Tie-broken by id - without this, two entries with the exact same hint
+        // value (e.g. two players tied on goals) have no defined relative order,
+        // since entries is a Set with no guaranteed iteration order. That let their
+        // relative position visibly shuffle between reads for no reason a player
+        // could see, which is especially noticeable anywhere polling re-fetches
+        // this repeatedly (online Grid Battle).
+        java.util.Comparator<GridEntry> byValue = grid.isSortAscending()
                 ? (a, b) -> a.getHintValue() - b.getHintValue()
                 : (a, b) -> b.getHintValue() - a.getHintValue();
+        return byValue.thenComparing(GridEntry::getId);
     }
 
     private String hintColor(GridEntry entry) {
