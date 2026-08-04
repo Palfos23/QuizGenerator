@@ -108,13 +108,32 @@ function checkInactivity() {
 
 const activityEvents = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll']
 
+// On mobile, or an installed/standalone Chrome or Safari "app", the tab can sit
+// backgrounded for arbitrarily long stretches - background timers get
+// throttled or suspended entirely to save battery, so the 60-second interval
+// below isn't reliable while backgrounded. Worse, the very act of returning
+// and clicking something resets `lastActivity` before checkInactivity() ever
+// gets a chance to notice the gap - so by the time a request goes out on the
+// stale token, nothing about the UI looks wrong yet. Checking the token's own
+// expiry the instant the tab becomes visible again catches this proactively,
+// before that first click can mask it.
+function checkTokenOnResume() {
+  if (document.visibilityState === 'visible' && auth.isAuthenticated.value && auth.isTokenExpired()) {
+    auth.logout()
+    router.push('/?sessionExpired=1')
+  }
+}
+
 onMounted(() => {
   activityEvents.forEach(evt => window.addEventListener(evt, resetActivity, { passive: true }))
   inactivityTimer = setInterval(checkInactivity, 60 * 1000)
+  document.addEventListener('visibilitychange', checkTokenOnResume)
+  checkTokenOnResume()
 })
 
 onUnmounted(() => {
   activityEvents.forEach(evt => window.removeEventListener(evt, resetActivity))
   clearInterval(inactivityTimer)
+  document.removeEventListener('visibilitychange', checkTokenOnResume)
 })
 </script>

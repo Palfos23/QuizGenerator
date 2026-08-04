@@ -136,7 +136,7 @@ const searchResults = computed(() => {
   if (term.length < 3) return []
   return props.category.entries
     .filter(e => !usedEntryIds.value.has(e.id) && e.name.toLowerCase().includes(term))
-    .slice(0, 10)
+    .slice(0, 8)
 })
 
 function effectiveScore(rawValue) {

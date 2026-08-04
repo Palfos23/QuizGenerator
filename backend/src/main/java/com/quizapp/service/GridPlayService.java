@@ -204,7 +204,7 @@ public class GridPlayService {
                 .map(GridCandidate::getAthlete)
                 .filter(a -> term.isEmpty() || a.getName().toLowerCase().contains(term))
                 .map(AthleteService::toDto)
-                .limit(20)
+                .limit(8)
                 .collect(Collectors.toList());
     }
 
