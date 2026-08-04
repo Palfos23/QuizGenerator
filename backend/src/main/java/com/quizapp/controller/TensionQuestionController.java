@@ -23,16 +23,20 @@ public class TensionQuestionController {
     @GetMapping("/random")
     public List<TensionQuestionDto> random(
             @RequestParam(defaultValue = "5") int count,
-            @RequestParam(required = false) String category) {
-        return questionService.getRandom(count, category);
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) List<String> excludeCategories) {
+        return questionService.getRandom(count, category, excludeCategories == null ? Collections.emptyList() : excludeCategories);
     }
 
     @GetMapping("/round-choices")
     public List<TensionQuestionDto> roundChoices(
             @RequestParam(defaultValue = "3") int count,
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) List<String> excludeCategories,
             @RequestParam(required = false) List<Long> excludeIds) {
-        return questionService.getRoundChoices(count, category, excludeIds == null ? Collections.emptyList() : excludeIds);
+        return questionService.getRoundChoices(count, category,
+                excludeCategories == null ? Collections.emptyList() : excludeCategories,
+                excludeIds == null ? Collections.emptyList() : excludeIds);
     }
 
     @GetMapping("/categories")

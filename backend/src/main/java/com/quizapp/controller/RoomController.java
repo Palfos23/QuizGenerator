@@ -37,7 +37,8 @@ public class RoomController {
         if (request.getGameType() == RoomGameType.GRID_BATTLE) {
             gridBattleOnlineService.initializeGridSequence(room, request.getGridIds(), request.getRandomGridCount());
         } else if (request.getGameType() == RoomGameType.TENSION) {
-            tensionOnlineService.initializeQuestionSequence(room, request.getTensionNumQuestions(), request.getTensionCategory());
+            tensionOnlineService.initializeQuestionSequence(room, request.getTensionNumQuestions(),
+                    request.getTensionCategory(), request.getTensionExcludeCategories());
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(roomService.toDto(room, email));

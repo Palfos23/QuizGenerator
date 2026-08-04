@@ -40,25 +40,35 @@ public class TensionQuestionService {
     }
 
     @Transactional(readOnly = true)
-    public List<TensionQuestionDto> getRandom(int count, String mainCategory) {
-        List<Long> ids = (mainCategory == null || mainCategory.isBlank())
-                ? questionRepository.findAllIds()
-                : questionRepository.findIdsByMainCategoryIgnoreCase(mainCategory);
-        return loadRandomSubset(ids, count);
+    public List<TensionQuestionDto> getRandom(int count, String mainCategory, List<String> excludeCategories) {
+        return loadRandomSubset(candidateIds(mainCategory, excludeCategories), count);
     }
 
     // For the "pick your question" round-start screen: a small pool of
     // candidates for this specific round, excluding whatever's already been
     // played this game so a repeat never gets offered.
     @Transactional(readOnly = true)
-    public List<TensionQuestionDto> getRoundChoices(int count, String mainCategory, List<Long> excludeIds) {
-        List<Long> ids = (mainCategory == null || mainCategory.isBlank())
-                ? questionRepository.findAllIds()
-                : questionRepository.findIdsByMainCategoryIgnoreCase(mainCategory);
+    public List<TensionQuestionDto> getRoundChoices(int count, String mainCategory, List<String> excludeCategories, List<Long> excludeIds) {
+        List<Long> ids = candidateIds(mainCategory, excludeCategories);
         List<Long> available = ids.stream()
                 .filter(id -> excludeIds == null || !excludeIds.contains(id))
                 .collect(Collectors.toList());
         return loadRandomSubset(available, count);
+    }
+
+    // A specific category (if set) takes priority - excluding categories only
+    // makes sense for the "draw from everything" case, not "just this one".
+    private List<Long> candidateIds(String mainCategory, List<String> excludeCategories) {
+        if (mainCategory != null && !mainCategory.isBlank()) {
+            return questionRepository.findIdsByMainCategoryIgnoreCase(mainCategory);
+        }
+        if (excludeCategories != null && !excludeCategories.isEmpty()) {
+            List<String> excludedLower = excludeCategories.stream()
+                    .map(String::toLowerCase)
+                    .collect(Collectors.toList());
+            return questionRepository.findIdsByMainCategoryNotIn(excludedLower);
+        }
+        return questionRepository.findAllIds();
     }
 
     // Shuffling and sampling at the ID level is cheap regardless of how many

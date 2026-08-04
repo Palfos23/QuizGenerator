@@ -20,11 +20,14 @@ public class CreateRoomRequest {
     // Tension only.
     private Integer tensionNumQuestions;
     private String tensionCategory;
+    private List<String> tensionExcludeCategories;
 
     public Integer getTensionNumQuestions() { return tensionNumQuestions; }
     public void setTensionNumQuestions(Integer tensionNumQuestions) { this.tensionNumQuestions = tensionNumQuestions; }
     public String getTensionCategory() { return tensionCategory; }
     public void setTensionCategory(String tensionCategory) { this.tensionCategory = tensionCategory; }
+    public List<String> getTensionExcludeCategories() { return tensionExcludeCategories; }
+    public void setTensionExcludeCategories(List<String> tensionExcludeCategories) { this.tensionExcludeCategories = tensionExcludeCategories; }
 
     public RoomGameType getGameType() { return gameType; }
     public void setGameType(RoomGameType gameType) { this.gameType = gameType; }

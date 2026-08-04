@@ -22,6 +22,11 @@ public interface TensionQuestionRepository extends JpaRepository<TensionQuestion
     @Query("SELECT q.id FROM TensionQuestion q WHERE lower(q.mainCategory) = lower(:category)")
     List<Long> findIdsByMainCategoryIgnoreCase(String category);
 
+    // For "all categories except these" - used when a game excludes a few
+    // categories (e.g. no football) rather than narrowing to just one.
+    @Query("SELECT q.id FROM TensionQuestion q WHERE q.mainCategory IS NULL OR lower(q.mainCategory) NOT IN :excludedLower")
+    List<Long> findIdsByMainCategoryNotIn(List<String> excludedLower);
+
     // For the admin list specifically - counts are computed in the query itself,
     // so listing every question never has to load (or lazily trigger a query
     // for) any question's actual answer entries just to show how many there are.

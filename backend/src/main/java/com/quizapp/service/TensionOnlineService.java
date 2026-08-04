@@ -35,9 +35,9 @@ public class TensionOnlineService {
     }
 
     @Transactional
-    public void initializeQuestionSequence(GameRoom room, Integer numQuestions, String category) {
+    public void initializeQuestionSequence(GameRoom room, Integer numQuestions, String category, List<String> excludeCategories) {
         int count = (numQuestions != null && numQuestions >= 2 && numQuestions <= 10) ? numQuestions : 5;
-        List<TensionQuestionDto> questions = tensionQuestionService.getRandom(count, category);
+        List<TensionQuestionDto> questions = tensionQuestionService.getRandom(count, category, excludeCategories);
         if (questions.size() < 2) {
             throw new IllegalArgumentException("Not enough tension questions available for that category yet.");
         }

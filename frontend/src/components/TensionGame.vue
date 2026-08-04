@@ -149,6 +149,7 @@ import TensionAnswerModal from './TensionAnswerModal.vue'
 
 const props = defineProps({
   category: { type: String, default: '' },
+  excludeCategories: { type: Array, default: () => [] },
   roundCount: { type: Number, required: true },
   players: { type: Array, required: true } // [{ name, color }]
 })
@@ -341,6 +342,7 @@ function startIntro() {
 function progressIdentity() {
   return {
     category: props.category,
+    excludeCategories: props.excludeCategories,
     roundCount: props.roundCount,
     playerNames: props.players.map(p => p.name)
   }
@@ -349,6 +351,7 @@ function progressIdentity() {
 function identityMatches(saved) {
   const current = progressIdentity()
   return saved.category === current.category
+      && JSON.stringify(saved.excludeCategories || []) === JSON.stringify(current.excludeCategories)
       && saved.roundCount === current.roundCount
       && JSON.stringify(saved.playerNames) === JSON.stringify(current.playerNames)
 }
@@ -365,7 +368,9 @@ function saveProgress() {
 async function loadRoundChoices() {
   loadingChoices.value = true
   try {
-    roundChoices.value = await api.fetchTensionRoundChoices(3, props.category, chosenQuestions.value.map(q => q.id))
+    roundChoices.value = await api.fetchTensionRoundChoices(
+      3, props.category, props.excludeCategories, chosenQuestions.value.map(q => q.id)
+    )
   } finally {
     loadingChoices.value = false
   }

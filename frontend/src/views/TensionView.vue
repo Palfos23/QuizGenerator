@@ -95,6 +95,23 @@
         </div>
       </div>
 
+      <div v-if="!category && mainCategories.length" class="field">
+        <label style="text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.85rem;">
+          Exclude any categories you'd rather not get questions from
+          <span class="picker-hint" v-if="excludeCategories.length">{{ excludeCategories.length }} excluded</span>
+        </label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+          <button
+            v-for="c in mainCategories"
+            :key="c"
+            type="button"
+            class="team-chip"
+            :class="{ active: excludeCategories.includes(c) }"
+            @click="toggleExcludeCategory(excludeCategories, c)"
+          >{{ c }}</button>
+        </div>
+      </div>
+
       <button class="btn btn-secondary" @click="stage = 'modeChoice'">← Back</button>
       <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">Create game</button>
     </template>
@@ -132,6 +149,23 @@
             <option value="">All categories</option>
             <option v-for="c in mainCategories" :key="c" :value="c">{{ c }}</option>
           </select>
+        </div>
+      </div>
+
+      <div v-if="!onlineCategory && mainCategories.length" class="field">
+        <label style="text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.85rem;">
+          Exclude any categories you'd rather not get questions from
+          <span class="picker-hint" v-if="onlineExcludeCategories.length">{{ onlineExcludeCategories.length }} excluded</span>
+        </label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+          <button
+            v-for="c in mainCategories"
+            :key="c"
+            type="button"
+            class="team-chip"
+            :class="{ active: onlineExcludeCategories.includes(c) }"
+            @click="toggleExcludeCategory(onlineExcludeCategories, c)"
+          >{{ c }}</button>
         </div>
       </div>
 
@@ -229,6 +263,7 @@
     <TensionGame
       v-else-if="stage === 'game'"
       :category="category"
+      :exclude-categories="excludeCategories"
       :round-count="numQuestions"
       :players="setupPlayers"
       @game-over="onGameOver"
@@ -285,7 +320,14 @@ const error = ref('')
 const numPlayers = ref(2)
 const numQuestions = ref(5)
 const category = ref('')
+const excludeCategories = ref([])
 const mainCategories = ref([])
+
+function toggleExcludeCategory(list, name) {
+  const idx = list.indexOf(name)
+  if (idx === -1) list.push(name)
+  else list.splice(idx, 1)
+}
 
 const setupPlayers = reactive([])
 const starting = ref(false)
@@ -324,13 +366,18 @@ async function startGame() {
   try {
     // Just a availability check - the actual per-round questions are now
     // fetched one round at a time (with a choice of a few), not all upfront.
-    const sample = await api.fetchTensionQuestions(numQuestions.value, category.value)
+    const sample = await api.fetchTensionQuestions(numQuestions.value, category.value, excludeCategories.value)
     if (sample.length < numQuestions.value) {
       error.value = `Only found ${sample.length} question(s) in this category - need at least ${numQuestions.value}. Try a different category or ask an admin to add more.`
       stage.value = 'landing'
       return
     }
-    passAndPlayState.save('tension', { category: category.value, roundCount: numQuestions.value, players: [...setupPlayers] })
+    passAndPlayState.save('tension', {
+      category: category.value,
+      excludeCategories: excludeCategories.value,
+      roundCount: numQuestions.value,
+      players: [...setupPlayers]
+    })
     savedPassAndPlay.value = passAndPlayState.load('tension')
     stage.value = 'game'
   } catch (e) {
@@ -365,6 +412,7 @@ function resetGame() {
 const onlineNumQuestions = ref(5)
 const onlineDisplayName = ref(auth.state.displayName || '')
 const onlineCategory = ref('')
+const onlineExcludeCategories = ref([])
 const joinCode = ref('')
 const onlineRoom = ref(null)
 const creatingRoom = ref(false)
@@ -388,7 +436,8 @@ async function createOnlineRoom() {
       displayName: onlineDisplayName.value.trim(),
       color: randomOnlineColor(),
       tensionNumQuestions: onlineNumQuestions.value,
-      tensionCategory: onlineCategory.value || null
+      tensionCategory: onlineCategory.value || null,
+      tensionExcludeCategories: onlineExcludeCategories.value
     })
     activeRoom.save(onlineRoom.value.roomCode, 'TENSION')
     stage.value = 'onlineLobby'
@@ -497,6 +546,7 @@ onMounted(() => {
 function resumePassAndPlay() {
   const saved = savedPassAndPlay.value
   category.value = saved.category
+  excludeCategories.value = saved.excludeCategories || []
   numQuestions.value = saved.roundCount
   setupPlayers.length = 0
   saved.players.forEach(p => setupPlayers.push(p))

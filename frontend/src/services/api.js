@@ -222,14 +222,16 @@ export default {
   },
 
   // --- Tension: gameplay ---
-  fetchTensionQuestions(count, category) {
+  fetchTensionQuestions(count, category, excludeCategories = []) {
     const query = new URLSearchParams({ count: String(count) })
     if (category) query.set('category', category)
+    excludeCategories.forEach(c => query.append('excludeCategories', c))
     return client.get(`/tension/questions/random?${query.toString()}`).then(r => r.data)
   },
-  fetchTensionRoundChoices(count, category, excludeIds) {
+  fetchTensionRoundChoices(count, category, excludeCategories, excludeIds) {
     const query = new URLSearchParams({ count: String(count) })
     if (category) query.set('category', category)
+    excludeCategories.forEach(c => query.append('excludeCategories', c))
     excludeIds.forEach(id => query.append('excludeIds', String(id)))
     return client.get(`/tension/questions/round-choices?${query.toString()}`).then(r => r.data)
   },
