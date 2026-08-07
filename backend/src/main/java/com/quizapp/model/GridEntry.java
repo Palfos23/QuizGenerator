@@ -26,8 +26,10 @@ public class GridEntry {
     private String hintLabel;
 
     // The number shown alongside the label, e.g. goals scored, races won.
-    @Column(name = "hint_value", nullable = false)
-    private int hintValue;
+    // Null for entries in an unranked grid (see Grid.ranked) - there's
+    // nothing to show or sort by in that mode, the image itself is the hint.
+    @Column(name = "hint_value")
+    private Integer hintValue;
 
     // Display order for the tiles - the reference game sorts by hint value descending.
     @Column(name = "order_index", nullable = false)
@@ -94,11 +96,11 @@ public class GridEntry {
         this.hintLabel = hintLabel;
     }
 
-    public int getHintValue() {
+    public Integer getHintValue() {
         return hintValue;
     }
 
-    public void setHintValue(int hintValue) {
+    public void setHintValue(Integer hintValue) {
         this.hintValue = hintValue;
     }
 

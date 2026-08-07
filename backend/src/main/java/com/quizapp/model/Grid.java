@@ -43,6 +43,14 @@ public class Grid {
     @Column(name = "sort_ascending", nullable = false)
     private boolean sortAscending = false;
 
+    // A grid can skip ranking entirely - e.g. movie covers with no numeric
+    // score at all, where the image itself is the hint rather than something
+    // revealed after a separate abstract hint. Defaults to true so every
+    // existing grid keeps behaving exactly as it always has; sortAscending is
+    // simply ignored when this is false.
+    @Column(nullable = false)
+    private boolean ranked = true;
+
     // For when a grid needs updated content (e.g. a player crosses a stat
     // threshold) - rather than editing the original in place (which would
     // retroactively change what "complete" means for anyone who already
@@ -68,6 +76,14 @@ public class Grid {
 
     public void setSortAscending(boolean sortAscending) {
         this.sortAscending = sortAscending;
+    }
+
+    public boolean isRanked() {
+        return ranked;
+    }
+
+    public void setRanked(boolean ranked) {
+        this.ranked = ranked;
     }
 
     // The full searchable pool for this grid's guess box - includes both the correct

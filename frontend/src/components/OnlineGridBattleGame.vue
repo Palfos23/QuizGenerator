@@ -83,9 +83,10 @@
             @error="$event.target.style.display = 'none'"
           />
           <div
+            v-if="e.hintValue != null || e.hintLabel"
             class="grid-tile-hint"
             :style="{ background: e.hintColor || 'var(--gold)', color: readableTextColor(e.hintColor) }"
-          >{{ formatHint(e.hintLabel, e.hintValue) }}</div>
+          >{{ e.hintValue != null ? formatHint(e.hintLabel, e.hintValue) : e.hintLabel }}</div>
           <div class="grid-tile-name">{{ e.athleteName || '?' }}</div>
         </div>
       </div>

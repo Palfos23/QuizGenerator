@@ -13,6 +13,7 @@ public class GridAdminDetailDto {
     private LocalDate weekStartDate;
     private int maxStrikes;
     private boolean sortAscending;
+    private boolean ranked;
     private boolean excludedFromGridBattle;
     private List<AthleteDto> candidates;
     private List<EntryDetail> entries;
@@ -21,11 +22,11 @@ public class GridAdminDetailDto {
         private Long id;
         private AthleteDto athlete;
         private String hintLabel;
-        private int hintValue;
+        private Integer hintValue;
         private ClubDto club;
         private boolean showLogo;
 
-        public EntryDetail(Long id, AthleteDto athlete, String hintLabel, int hintValue, ClubDto club, boolean showLogo) {
+        public EntryDetail(Long id, AthleteDto athlete, String hintLabel, Integer hintValue, ClubDto club, boolean showLogo) {
             this.id = id;
             this.athlete = athlete;
             this.hintLabel = hintLabel;
@@ -46,7 +47,7 @@ public class GridAdminDetailDto {
             return hintLabel;
         }
 
-        public int getHintValue() {
+        public Integer getHintValue() {
             return hintValue;
         }
 
@@ -109,6 +110,14 @@ public class GridAdminDetailDto {
 
     public boolean isSortAscending() {
         return sortAscending;
+    }
+
+    public boolean isRanked() {
+        return ranked;
+    }
+
+    public void setRanked(boolean ranked) {
+        this.ranked = ranked;
     }
 
     public void setSortAscending(boolean sortAscending) {

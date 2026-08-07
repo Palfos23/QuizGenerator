@@ -25,6 +25,7 @@ public class GridRequest {
     private Integer maxStrikes;
 
     private boolean sortAscending = false;
+    private boolean ranked = true;
     private boolean excludedFromGridBattle = false;
 
     // The full searchable pool for this grid (includes both correct answers and decoys).
@@ -78,6 +79,14 @@ public class GridRequest {
 
     public boolean isSortAscending() {
         return sortAscending;
+    }
+
+    public boolean isRanked() {
+        return ranked;
+    }
+
+    public void setRanked(boolean ranked) {
+        this.ranked = ranked;
     }
 
     public void setSortAscending(boolean sortAscending) {

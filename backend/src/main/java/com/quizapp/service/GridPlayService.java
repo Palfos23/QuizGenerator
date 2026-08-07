@@ -232,7 +232,7 @@ public class GridPlayService {
         dto.setEntries(grid.getEntries().stream()
                 .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), false, false, false,
-                        null, null, logoUrl(e), hintColor(e)))
+                        null, grid.isRanked() ? null : e.getAthlete().getPhotoUrl(), logoUrl(e), hintColor(e)))
                 .collect(Collectors.toList()));
         return dto;
     }
@@ -375,10 +375,11 @@ public class GridPlayService {
                     boolean guessedByUser = attempt.getSolvedEntryIds().contains(e.getId());
                     boolean solved = revealAll || guessedByUser;
                     boolean solvedInOvertime = attempt.getOvertimeSolvedEntryIds().contains(e.getId());
+                    boolean photoVisible = solved || !grid.isRanked();
                     return new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), solved, guessedByUser,
                             solvedInOvertime,
                             solved ? e.getAthlete().getName() : null,
-                            solved ? e.getAthlete().getPhotoUrl() : null,
+                            photoVisible ? e.getAthlete().getPhotoUrl() : null,
                             logoUrl(e), hintColor(e));
                 })
                 .collect(Collectors.toList());
@@ -393,9 +394,14 @@ public class GridPlayService {
         // relative position visibly shuffle between reads for no reason a player
         // could see, which is especially noticeable anywhere polling re-fetches
         // this repeatedly (online Grid Battle).
+        if (!grid.isRanked()) {
+            // No hint value to sort by at all - use the order the admin actually
+            // built the entries in instead.
+            return java.util.Comparator.comparingInt(GridEntry::getOrderIndex).thenComparing(GridEntry::getId);
+        }
         java.util.Comparator<GridEntry> byValue = grid.isSortAscending()
-                ? (a, b) -> a.getHintValue() - b.getHintValue()
-                : (a, b) -> b.getHintValue() - a.getHintValue();
+                ? java.util.Comparator.comparingInt(GridEntry::getHintValue)
+                : java.util.Comparator.comparingInt(GridEntry::getHintValue).reversed();
         return byValue.thenComparing(GridEntry::getId);
     }
 

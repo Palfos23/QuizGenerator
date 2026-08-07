@@ -135,10 +135,7 @@ public class GridBattleOnlineService {
         boolean revealAll = allEliminated;
 
         dto.setEntries(grid.getEntries().stream()
-                .sorted((grid.isSortAscending()
-                        ? java.util.Comparator.<GridEntry>comparingInt(GridEntry::getHintValue)
-                        : java.util.Comparator.<GridEntry>comparingInt(GridEntry::getHintValue).reversed()
-                ).thenComparing(GridEntry::getId))
+                .sorted(entrySortOrderForOnline(grid))
                 // Tie-broken by id - entries is a Set with no guaranteed iteration
                 // order, so without this, tiles with the same hint value (e.g. two
                 // players tied on goals) had no defined relative order and could
@@ -148,9 +145,10 @@ public class GridBattleOnlineService {
                     GridBattleSolvedEntry s = solvedByEntryId.get(e.getId());
                     boolean isSolved = s != null;
                     boolean visible = isSolved || revealAll;
+                    boolean photoVisible = visible || !grid.isRanked();
                     return new GridBattleEntryDto(e.getId(), e.getHintLabel(), e.getHintValue(), isSolved,
                             visible ? e.getAthlete().getName() : null,
-                            visible ? e.getAthlete().getPhotoUrl() : null,
+                            photoVisible ? e.getAthlete().getPhotoUrl() : null,
                             logoUrl(e), hintColor(e),
                             isSolved ? s.getSolvedBy().getDisplayName() : null);
                 })
@@ -265,5 +263,15 @@ public class GridBattleOnlineService {
 
     private String logoUrl(GridEntry entry) {
         return (entry.isShowLogo() && entry.getClub() != null) ? entry.getClub().getLogoUrl() : null;
+    }
+
+    private java.util.Comparator<GridEntry> entrySortOrderForOnline(Grid grid) {
+        if (!grid.isRanked()) {
+            return java.util.Comparator.comparingInt(GridEntry::getOrderIndex).thenComparing(GridEntry::getId);
+        }
+        java.util.Comparator<GridEntry> byValue = grid.isSortAscending()
+                ? java.util.Comparator.comparingInt(GridEntry::getHintValue)
+                : java.util.Comparator.comparingInt(GridEntry::getHintValue).reversed();
+        return byValue.thenComparing(GridEntry::getId);
     }
 }

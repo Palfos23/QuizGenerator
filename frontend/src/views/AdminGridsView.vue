@@ -84,13 +84,16 @@
       </div>
 
       <div class="field">
-        <label>Tile order <span class="picker-hint">how tiles are sorted by their hint number</span></label>
+        <label>Tile order <span class="picker-hint">how tiles are sorted, or whether they're ranked at all</span></label>
         <div class="language-row">
-          <button type="button" class="language-btn" :class="{ active: !form.sortAscending }" @click="form.sortAscending = false">
+          <button type="button" class="language-btn" :class="{ active: form.ranked && !form.sortAscending }" @click="form.ranked = true; form.sortAscending = false">
             Highest first <span style="color:var(--text-dim); font-weight:400;">(goals, appearances…)</span>
           </button>
-          <button type="button" class="language-btn" :class="{ active: form.sortAscending }" @click="form.sortAscending = true">
+          <button type="button" class="language-btn" :class="{ active: form.ranked && form.sortAscending }" @click="form.ranked = true; form.sortAscending = true">
             Lowest first <span style="color:var(--text-dim); font-weight:400;">(finishing position…)</span>
+          </button>
+          <button type="button" class="language-btn" :class="{ active: !form.ranked }" @click="form.ranked = false">
+            No ranking <span style="color:var(--text-dim); font-weight:400;">(image is the hint - movie covers…)</span>
           </button>
         </div>
       </div>
@@ -166,7 +169,7 @@
             </label>
             <div v-if="c.correct" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input type="text" v-model="c.hintLabel" placeholder="Label (optional, e.g. FW)" style="width:110px;" />
-              <input type="number" v-model.number="c.hintValue" placeholder="Value" style="width:80px;" />
+              <input v-if="form.ranked" type="number" v-model.number="c.hintValue" placeholder="Value" style="width:80px;" />
               <select v-model="c.clubId" style="width:170px;">
                 <option :value="null">No logo</option>
                 <option v-for="club in clubOptions" :key="club.id" :value="club.id">{{ club.name }}</option>
@@ -221,8 +224,8 @@
               :class="{ 'is-photo': c.photoUrl }"
               @error="$event.target.style.display = 'none'"
             />
-            <div class="grid-tile-hint" :style="{ background: previewClubColor(c) || 'var(--gold)', color: readableTextColor(previewClubColor(c)) }">
-              {{ formatHint(c.hintLabel, c.hintValue ?? '?') }}
+            <div v-if="form.ranked || c.hintLabel" class="grid-tile-hint" :style="{ background: previewClubColor(c) || 'var(--gold)', color: readableTextColor(previewClubColor(c)) }">
+              {{ form.ranked ? formatHint(c.hintLabel, c.hintValue ?? '?') : c.hintLabel }}
             </div>
             <div class="grid-tile-name">{{ c.name }}</div>
           </div>
@@ -264,6 +267,7 @@ const form = reactive({
   weekStartDate: '',
   maxStrikes: 5,
   sortAscending: false,
+  ranked: true,
   excludedFromGridBattle: false
 })
 const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue, clubId, showLogo }]
@@ -287,11 +291,12 @@ const pagedCandidates = computed(() => {
 
 const showPreview = ref(false)
 const correctCandidates = computed(() => candidates.value.filter(c => c.correct))
-const sortedCorrectCandidates = computed(() =>
-  form.sortAscending
+const sortedCorrectCandidates = computed(() => {
+  if (!form.ranked) return correctCandidates.value
+  return form.sortAscending
     ? [...correctCandidates.value].sort((a, b) => (a.hintValue ?? 0) - (b.hintValue ?? 0))
     : [...correctCandidates.value].sort((a, b) => (b.hintValue ?? 0) - (a.hintValue ?? 0))
-)
+})
 
 // For the editable candidate list specifically: correct answers first (in the
 // same order they'll actually appear in the grid), then everyone else - makes
@@ -306,13 +311,16 @@ const candidateDisplayOrder = ref([])
 
 function rebuildCandidateDisplayOrder() {
   const correct = candidates.value.filter(c => c.correct)
-  const sortedCorrect = form.sortAscending
-    ? [...correct].sort((a, b) => (a.hintValue ?? 0) - (b.hintValue ?? 0))
-    : [...correct].sort((a, b) => (b.hintValue ?? 0) - (a.hintValue ?? 0))
+  const sortedCorrect = !form.ranked
+    ? correct
+    : form.sortAscending
+      ? [...correct].sort((a, b) => (a.hintValue ?? 0) - (b.hintValue ?? 0))
+      : [...correct].sort((a, b) => (b.hintValue ?? 0) - (a.hintValue ?? 0))
   const notCorrect = candidates.value.filter(c => !c.correct)
   candidateDisplayOrder.value = [...sortedCorrect, ...notCorrect]
 }
 
+watch(() => form.ranked, rebuildCandidateDisplayOrder)
 watch(() => form.sortAscending, rebuildCandidateDisplayOrder)
 
 function previewClub(c) {
@@ -429,6 +437,7 @@ function resetForm() {
   form.weekStartDate = ''
   form.maxStrikes = 5
   form.sortAscending = false
+  form.ranked = true
   form.excludedFromGridBattle = false
   candidates.value = []
   candidatePage.value = 1
@@ -457,6 +466,7 @@ async function openEdit(id) {
     form.weekStartDate = detail.weekStartDate
     form.maxStrikes = detail.maxStrikes
     form.sortAscending = detail.sortAscending
+    form.ranked = detail.ranked
     form.excludedFromGridBattle = detail.excludedFromGridBattle
 
     const entryByAthleteId = new Map(detail.entries.map(e => [e.athlete.id, e]))
@@ -507,7 +517,7 @@ async function saveGrid() {
     error.value = 'Mark at least one candidate as a correct answer.'
     return
   }
-  if (entries.some(c => c.hintValue === null || c.hintValue === '')) {
+  if (form.ranked && entries.some(c => c.hintValue === null || c.hintValue === '')) {
     error.value = 'Every correct answer needs a hint value (the label is optional).'
     return
   }
@@ -519,10 +529,11 @@ async function saveGrid() {
     weekStartDate: form.weekStartDate,
     maxStrikes: form.maxStrikes,
     sortAscending: form.sortAscending,
+    ranked: form.ranked,
     excludedFromGridBattle: form.excludedFromGridBattle,
     candidateAthleteIds: candidates.value.map(c => c.athleteId),
     entries: entries.map(c => ({
-      athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: c.hintValue,
+      athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: form.ranked ? c.hintValue : null,
       clubId: c.clubId, showLogo: c.showLogo
     }))
   }

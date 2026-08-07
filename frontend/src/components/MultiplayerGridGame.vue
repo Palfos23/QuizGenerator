@@ -73,13 +73,14 @@
             :src="tileImage(e)"
             alt=""
             class="grid-tile-logo"
-            :class="{ 'is-photo': e.solved && e.athletePhotoUrl }"
+            :class="{ 'is-photo': !!e.athletePhotoUrl }"
             @error="$event.target.style.display = 'none'"
           />
           <div
+            v-if="e.hintValue != null || e.hintLabel"
             class="grid-tile-hint"
             :style="{ background: e.hintColor || 'var(--gold)', color: readableTextColor(e.hintColor) }"
-          >{{ formatHint(e.hintLabel, e.hintValue) }}</div>
+          >{{ e.hintValue != null ? formatHint(e.hintLabel, e.hintValue) : e.hintLabel }}</div>
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>
       </div>
@@ -117,7 +118,7 @@ const shakeGuessBox = ref(false)
 const currentPlayerName = computed(() => props.players[currentPlayerIdx.value]?.name)
 
 function tileImage(entry) {
-  if (entry.solved && entry.athletePhotoUrl) return entry.athletePhotoUrl
+  if (entry.athletePhotoUrl) return entry.athletePhotoUrl
   return entry.logoUrl
 }
 

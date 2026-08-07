@@ -96,6 +96,7 @@ public class GridAdminService {
         grid.setWeekStartDate(request.getWeekStartDate());
         grid.setMaxStrikes(request.getMaxStrikes());
         grid.setSortAscending(request.isSortAscending());
+        grid.setRanked(request.isRanked());
         grid.setExcludedFromGridBattle(request.isExcludedFromGridBattle());
 
         // Single batch fetch instead of one query per athlete - looking each one
@@ -154,7 +155,19 @@ public class GridAdminService {
             GridEntry entry = existingByAthleteId.getOrDefault(input.getAthleteId(), new GridEntry());
             entry.setAthlete(athlete);
             entry.setHintLabel(input.getHintLabel());
-            entry.setHintValue(input.getHintValue());
+            if (request.isRanked()) {
+                if (input.getHintValue() == null) {
+                    throw new IllegalArgumentException(
+                            "'" + athlete.getName() + "' is missing a hint value - required for a ranked grid.");
+                }
+                entry.setHintValue(input.getHintValue());
+            } else {
+                // Unranked grids don't sort or display a number at all - force
+                // null here rather than trust the payload, so a stale value
+                // from before an admin switched a grid to unranked can't
+                // linger unused in the database.
+                entry.setHintValue(null);
+            }
             entry.setOrderIndex(index++);
 
             if (input.getClubId() != null) {
@@ -180,6 +193,7 @@ public class GridAdminService {
         dto.setWeekStartDate(grid.getWeekStartDate());
         dto.setMaxStrikes(grid.getMaxStrikes());
         dto.setSortAscending(grid.isSortAscending());
+        dto.setRanked(grid.isRanked());
         dto.setExcludedFromGridBattle(grid.isExcludedFromGridBattle());
         dto.setCandidates(grid.getCandidates().stream()
                 .map(c -> AthleteService.toDto(c.getAthlete()))

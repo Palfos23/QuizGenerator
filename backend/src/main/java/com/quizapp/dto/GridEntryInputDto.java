@@ -11,7 +11,9 @@ public class GridEntryInputDto {
     // (e.g. some hints are too easy to guess with a label attached).
     private String hintLabel;
 
-    @NotNull
+    // Required when the grid is ranked, null when it isn't - validated in
+    // GridAdminService rather than here, since the requirement depends on
+    // the parent grid's own ranked flag.
     private Integer hintValue;
 
     // Optional - which club's crest to show as an extra hint. Null = no logo shown.
