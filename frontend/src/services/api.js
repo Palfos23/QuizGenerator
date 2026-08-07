@@ -212,11 +212,11 @@ export default {
   adminListGridCategories() {
     return client.get('/admin/grid-categories').then(r => r.data)
   },
-  adminCreateGridCategory(name) {
-    return client.post('/admin/grid-categories', { name }).then(r => r.data)
+  adminCreateGridCategory(name, groupLabel) {
+    return client.post('/admin/grid-categories', { name, groupLabel }).then(r => r.data)
   },
-  adminUpdateGridCategory(id, name) {
-    return client.put(`/admin/grid-categories/${id}`, { name }).then(r => r.data)
+  adminUpdateGridCategory(id, name, groupLabel) {
+    return client.put(`/admin/grid-categories/${id}`, { name, groupLabel }).then(r => r.data)
   },
   adminDeleteGridCategory(id) {
     return client.delete(`/admin/grid-categories/${id}`)

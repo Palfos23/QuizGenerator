@@ -69,7 +69,7 @@
 
         <div v-if="teamOptions.length" style="margin-bottom:10px;">
           <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
-            ...or add whole teams <span class="picker-hint" v-if="bulkTeams.length">{{ bulkTeams.length }} selected</span>
+            ...or add whole {{ groupLabelPluralLower }} <span class="picker-hint" v-if="bulkTeams.length">{{ bulkTeams.length }} selected</span>
           </label>
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
             <button
@@ -82,7 +82,7 @@
             >{{ t }}</button>
           </div>
           <button class="btn btn-secondary btn-sm" style="margin-top:10px;" :disabled="!bulkTeams.length" @click="addAllByTeam">
-            + Add {{ bulkTeams.length > 1 ? `${bulkTeams.length} teams` : 'team' }}
+            + Add {{ bulkTeams.length > 1 ? `${bulkTeams.length} ${groupLabelPluralLower}` : groupLabelSingularLower }}
           </button>
         </div>
 
@@ -93,7 +93,7 @@
         </div>
 
         <div v-if="!members.length" class="empty-state" style="padding:20px;">
-          No members yet - search above or add a whole team.
+          No members yet - search above or add a whole {{ groupLabelSingularLower }}.
         </div>
         <div v-else class="candidate-list">
           <div v-for="m in pagedMembers" :key="m.athleteId" class="candidate-row">
@@ -137,6 +137,8 @@ const editingId = ref(null)
 const pendingDelete = ref(null)
 
 const form = reactive({ name: '', sport: '' })
+const groupLabelSingularLower = computed(() => gridCategories.groupLabelFor(form.sport).toLowerCase())
+const groupLabelPluralLower = computed(() => `${groupLabelSingularLower.value}s`)
 const members = ref([]) // [{ athleteId, name, team }]
 
 const poolSearchTerm = ref('')

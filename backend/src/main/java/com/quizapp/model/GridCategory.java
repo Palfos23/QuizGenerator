@@ -21,6 +21,15 @@ public class GridCategory {
     @Column(nullable = false, unique = true)
     private String name;
 
+    // What to call the grouping field for this category - "Team" for sports,
+    // but "Continent" for countries, "Label" for artists, "Studio" for
+    // movies, whatever fits. The underlying data (Athlete.team) doesn't
+    // change at all - it was always free text - only the word shown for it
+    // in the UI does. Defaults to "Team" so Football/Cycling need no changes.
+    @NotBlank
+    @Column(name = "group_label", nullable = false)
+    private String groupLabel = "Team";
+
     public Long getId() {
         return id;
     }
@@ -35,5 +44,13 @@ public class GridCategory {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getGroupLabel() {
+        return groupLabel;
+    }
+
+    public void setGroupLabel(String groupLabel) {
+        this.groupLabel = groupLabel;
     }
 }

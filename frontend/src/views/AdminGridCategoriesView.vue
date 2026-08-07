@@ -4,15 +4,21 @@
     <p class="page-subtitle">
       The list of categories available when creating athletes, clubs, grids, and pools -
       no longer limited to just Football and Cycling. Renaming a category here automatically
-      updates every athlete, club, grid, and pool that already uses it.
+      updates every athlete, club, grid, and pool that already uses it. Each category also has
+      its own "grouping" word - "Team" for a sport, "Continent" for countries, "Label" for
+      artists - used for the bulk-add-a-group feature and shown next to each athlete.
     </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
-    <div class="field" style="display:flex; gap:10px; align-items:flex-end; max-width:420px;">
-      <div style="flex:1;">
+    <div class="field" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; max-width:560px;">
+      <div style="flex:1; min-width:200px;">
         <label>New category</label>
-        <input type="text" v-model="newName" placeholder="e.g. Countries by population" @keyup.enter="createCategory" />
+        <input type="text" v-model="newName" placeholder="e.g. Countries by population" />
+      </div>
+      <div style="flex:1; min-width:160px;">
+        <label>Grouping word <span class="picker-hint">optional, defaults to "Team"</span></label>
+        <input type="text" v-model="newGroupLabel" placeholder="e.g. Continent" @keyup.enter="createCategory" />
       </div>
       <button class="btn btn-primary" :disabled="!newName.trim() || saving" @click="createCategory">+ Add</button>
     </div>
@@ -23,16 +29,27 @@
     <div v-else class="saved-quiz-list" style="margin-top:20px;">
       <div v-for="c in categories" :key="c.id" class="saved-quiz-row">
         <div class="saved-quiz-info">
-          <input
-            v-if="editingId === c.id"
-            type="text"
-            v-model="editingName"
-            class="saved-quiz-title"
-            style="width:100%; background:transparent; border:1px solid var(--border); border-radius:6px; padding:4px 8px;"
-            @keyup.enter="confirmRename(c)"
-            @keyup.esc="editingId = null"
-          />
-          <div v-else class="saved-quiz-title">{{ c.name }}</div>
+          <template v-if="editingId === c.id">
+            <input
+              type="text"
+              v-model="editingName"
+              class="saved-quiz-title"
+              style="width:100%; background:transparent; border:1px solid var(--border); border-radius:6px; padding:4px 8px; margin-bottom:6px;"
+              @keyup.esc="editingId = null"
+            />
+            <input
+              type="text"
+              v-model="editingGroupLabel"
+              placeholder="Grouping word, e.g. Team"
+              style="width:100%; background:transparent; border:1px solid var(--border); border-radius:6px; padding:4px 8px; font-size:0.85rem;"
+              @keyup.enter="confirmRename(c)"
+              @keyup.esc="editingId = null"
+            />
+          </template>
+          <template v-else>
+            <div class="saved-quiz-title">{{ c.name }}</div>
+            <div class="saved-quiz-meta">Grouping word: {{ c.groupLabel }}</div>
+          </template>
         </div>
         <div style="display:flex; gap:8px;">
           <template v-if="editingId === c.id">
@@ -69,8 +86,10 @@ const loading = ref(true)
 const saving = ref(false)
 const error = ref('')
 const newName = ref('')
+const newGroupLabel = ref('')
 const editingId = ref(null)
 const editingName = ref('')
+const editingGroupLabel = ref('')
 const pendingDelete = ref(null)
 
 onMounted(loadCategories)
@@ -93,8 +112,9 @@ async function createCategory() {
   saving.value = true
   error.value = ''
   try {
-    await api.adminCreateGridCategory(name)
+    await api.adminCreateGridCategory(name, newGroupLabel.value.trim())
     newName.value = ''
+    newGroupLabel.value = ''
     toast.show('Category added.')
     gridCategories.invalidate()
     loadCategories()
@@ -108,6 +128,9 @@ async function createCategory() {
 function startRename(c) {
   editingId.value = c.id
   editingName.value = c.name
+  // Pre-fill the existing value - critical so saving without touching this
+  // field doesn't accidentally reset a custom grouping word back to "Team".
+  editingGroupLabel.value = c.groupLabel
 }
 
 async function confirmRename(c) {
@@ -116,13 +139,13 @@ async function confirmRename(c) {
   saving.value = true
   error.value = ''
   try {
-    await api.adminUpdateGridCategory(c.id, name)
+    await api.adminUpdateGridCategory(c.id, name, editingGroupLabel.value.trim())
     editingId.value = null
-    toast.show('Category renamed - updated everywhere it was already used.')
+    toast.show('Category updated - changes applied everywhere it was already used.')
     gridCategories.invalidate()
     loadCategories()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not rename that category.'
+    error.value = e.response?.data?.message || 'Could not update that category.'
   } finally {
     saving.value = false
   }

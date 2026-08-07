@@ -37,7 +37,7 @@ public class GridCategoryService {
     @Transactional(readOnly = true)
     public List<GridCategoryDto> findAll() {
         return categoryRepository.findAllByOrderByNameAsc().stream()
-                .map(c -> new GridCategoryDto(c.getId(), c.getName()))
+                .map(c -> new GridCategoryDto(c.getId(), c.getName(), c.getGroupLabel()))
                 .collect(Collectors.toList());
     }
 
@@ -49,7 +49,12 @@ public class GridCategoryService {
         }
         GridCategory category = new GridCategory();
         category.setName(name);
+        category.setGroupLabel(blankToTeam(request.getGroupLabel()));
         return toDto(categoryRepository.save(category));
+    }
+
+    private static String blankToTeam(String groupLabel) {
+        return (groupLabel == null || groupLabel.isBlank()) ? "Team" : groupLabel.trim();
     }
 
     // Renaming cascades to every athlete/club/grid/pool currently using the old
@@ -68,6 +73,7 @@ public class GridCategoryService {
         }
 
         category.setName(newName);
+        category.setGroupLabel(blankToTeam(request.getGroupLabel()));
         categoryRepository.save(category);
 
         if (!oldName.equals(newName)) {
@@ -101,6 +107,6 @@ public class GridCategoryService {
     }
 
     private GridCategoryDto toDto(GridCategory c) {
-        return new GridCategoryDto(c.getId(), c.getName());
+        return new GridCategoryDto(c.getId(), c.getName(), c.getGroupLabel());
     }
 }

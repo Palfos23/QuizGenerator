@@ -26,7 +26,7 @@
       </div>
 
       <div class="field">
-        <label>Team</label>
+        <label>{{ gridCategories.groupLabelFor(local.sport) }}</label>
         <input type="text" v-model="local.team" placeholder="e.g. Tottenham Hotspur" />
       </div>
 
