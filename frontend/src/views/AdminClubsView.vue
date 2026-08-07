@@ -19,7 +19,7 @@
         <label>Sport</label>
         <select v-model="sportFilter">
           <option value="ALL">All sports</option>
-          <option v-for="s in SPORTS" :key="s.code" :value="s.code">{{ s.label }}</option>
+          <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
         </select>
       </div>
     </div>
@@ -84,7 +84,8 @@ import toast from '../services/toast'
 import ClubFormModal from '../components/ClubFormModal.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import Pagination from '../components/Pagination.vue'
-import { SPORTS, sportLabel } from '../constants'
+import { sportLabel } from '../constants'
+import gridCategories from '../services/gridCategories'
 
 const clubs = ref([])
 const loading = ref(true)
@@ -113,7 +114,10 @@ const pagedClubs = computed(() => {
 })
 watch([searchText, sportFilter], () => { page.value = 1 })
 
-onMounted(loadClubs)
+onMounted(() => {
+  loadClubs()
+  gridCategories.ensureLoaded()
+})
 
 async function loadClubs() {
   loading.value = true

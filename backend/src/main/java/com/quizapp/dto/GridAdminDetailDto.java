@@ -1,6 +1,5 @@
 package com.quizapp.dto;
 
-import com.quizapp.model.Sport;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -10,7 +9,7 @@ public class GridAdminDetailDto {
     private Long id;
     private String title;
     private String theme;
-    private Sport sport;
+    private String sport;
     private LocalDate weekStartDate;
     private int maxStrikes;
     private boolean sortAscending;
@@ -84,11 +83,11 @@ public class GridAdminDetailDto {
         this.theme = theme;
     }
 
-    public Sport getSport() {
+    public String getSport() {
         return sport;
     }
 
-    public void setSport(Sport sport) {
+    public void setSport(String sport) {
         this.sport = sport;
     }
 

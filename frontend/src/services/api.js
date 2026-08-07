@@ -205,6 +205,23 @@ export default {
   },
 
   // --- Clubs: admin ---
+  // --- Grid categories (replaces the old fixed Sport list) ---
+  fetchGridCategories() {
+    return client.get('/grids/categories').then(r => r.data)
+  },
+  adminListGridCategories() {
+    return client.get('/admin/grid-categories').then(r => r.data)
+  },
+  adminCreateGridCategory(name) {
+    return client.post('/admin/grid-categories', { name }).then(r => r.data)
+  },
+  adminUpdateGridCategory(id, name) {
+    return client.put(`/admin/grid-categories/${id}`, { name }).then(r => r.data)
+  },
+  adminDeleteGridCategory(id) {
+    return client.delete(`/admin/grid-categories/${id}`)
+  },
+
   adminSearchClubs(sport, name) {
     const query = new URLSearchParams()
     if (sport) query.set('sport', sport)

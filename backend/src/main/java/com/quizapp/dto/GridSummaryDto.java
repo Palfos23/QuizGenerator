@@ -1,6 +1,5 @@
 package com.quizapp.dto;
 
-import com.quizapp.model.Sport;
 
 import java.time.LocalDate;
 
@@ -8,7 +7,7 @@ public class GridSummaryDto {
 
     private Long id;
     private String title;
-    private Sport sport;
+    private String sport;
     private LocalDate weekStartDate;
     private int entryCount;
 
@@ -42,7 +41,7 @@ public class GridSummaryDto {
         this.excludedFromGridBattle = excludedFromGridBattle;
     }
 
-    public GridSummaryDto(Long id, String title, Sport sport, LocalDate weekStartDate, int entryCount,
+    public GridSummaryDto(Long id, String title, String sport, LocalDate weekStartDate, int entryCount,
                            String status, Integer guessedCount) {
         this.id = id;
         this.title = title;
@@ -61,7 +60,7 @@ public class GridSummaryDto {
         return title;
     }
 
-    public Sport getSport() {
+    public String getSport() {
         return sport;
     }
 

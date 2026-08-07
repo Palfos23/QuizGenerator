@@ -14,13 +14,13 @@
         <label>Sport <span class="picker-hint">choose one</span></label>
         <div class="language-row">
           <button
-            v-for="s in SPORTS"
-            :key="s.code"
+            v-for="s in gridCategories.categories.value"
+            :key="s"
             class="language-btn"
-            :class="{ active: local.sport === s.code }"
-            @click="local.sport = s.code"
+            :class="{ active: local.sport === s }"
+            @click="local.sport = s"
           >
-            {{ s.label }}
+            {{ s }}
           </button>
         </div>
       </div>
@@ -49,14 +49,19 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import api from '../services/api'
-import { SPORTS } from '../constants'
+import gridCategories from '../services/gridCategories'
 
 const props = defineProps({
   athlete: { type: Object, default: null }
 })
 const emit = defineEmits(['close', 'saved'])
+
+onMounted(async () => {
+  await gridCategories.ensureLoaded()
+  if (!isEdit && !local.sport) local.sport = gridCategories.categories.value[0] || ''
+})
 
 const isEdit = !!props.athlete
 const saving = ref(false)
@@ -64,7 +69,7 @@ const localError = ref('')
 
 const local = reactive(props.athlete
   ? { ...props.athlete }
-  : { name: '', sport: 'FOOTBALL', team: '', photoUrl: '' })
+  : { name: '', sport: '', team: '', photoUrl: '' })
 
 async function save() {
   localError.value = ''

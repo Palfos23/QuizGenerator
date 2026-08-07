@@ -24,10 +24,9 @@ public class Grid {
     @Column(length = 1000)
     private String theme;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
+    @NotBlank
     @Column(nullable = false)
-    private Sport sport;
+    private String sport;
 
     // The Monday this grid is "live" for. Active window is [weekStartDate, weekStartDate + 6 days].
     @NotNull
@@ -116,11 +115,11 @@ public class Grid {
         this.theme = theme;
     }
 
-    public Sport getSport() {
+    public String getSport() {
         return sport;
     }
 
-    public void setSport(Sport sport) {
+    public void setSport(String sport) {
         this.sport = sport;
     }
 

@@ -4,7 +4,6 @@ import com.quizapp.dto.AthleteDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
 import com.quizapp.model.Grid;
-import com.quizapp.model.Sport;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.GridCandidateRepository;
 import com.quizapp.repository.GridEntryRepository;
@@ -37,7 +36,7 @@ public class AthleteService {
     }
 
     @Transactional(readOnly = true)
-    public List<AthleteDto> search(Sport sport, String team, String nameContains) {
+    public List<AthleteDto> search(String sport, String team, String nameContains) {
         List<Athlete> pool = sport != null ? athleteRepository.findBySport(sport) : athleteRepository.findAll();
         return pool.stream()
                 .filter(a -> team == null || team.isBlank() || (a.getTeam() != null && a.getTeam().equalsIgnoreCase(team)))

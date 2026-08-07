@@ -57,7 +57,7 @@
         <div style="flex:1; min-width:200px;">
           <label>Sport</label>
           <select v-model="form.sport" @change="onSportChange">
-            <option v-for="s in SPORTS" :key="s.code" :value="s.code">{{ s.label }}</option>
+            <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
           </select>
         </div>
       </div>
@@ -125,7 +125,8 @@ import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import Pagination from '../components/Pagination.vue'
-import { SPORTS, sportLabel } from '../constants'
+import { sportLabel } from '../constants'
+import gridCategories from '../services/gridCategories'
 
 const view = ref('list')
 const error = ref('')
@@ -135,7 +136,7 @@ const saving = ref(false)
 const editingId = ref(null)
 const pendingDelete = ref(null)
 
-const form = reactive({ name: '', sport: 'FOOTBALL' })
+const form = reactive({ name: '', sport: '' })
 const members = ref([]) // [{ athleteId, name, team }]
 
 const poolSearchTerm = ref('')
@@ -202,7 +203,10 @@ function onSportChange() {
   loadTeamOptions()
 }
 
-onMounted(loadPools)
+onMounted(() => {
+  loadPools()
+  gridCategories.ensureLoaded()
+})
 
 async function loadPools() {
   loading.value = true
@@ -219,7 +223,7 @@ async function loadPools() {
 function openCreate() {
   editingId.value = null
   form.name = ''
-  form.sport = 'FOOTBALL'
+  form.sport = gridCategories.categories.value[0] || ''
   members.value = []
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []

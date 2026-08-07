@@ -1,10 +1,12 @@
 package com.quizapp.controller;
 
 import com.quizapp.dto.AthleteDto;
+import com.quizapp.dto.GridCategoryDto;
 import com.quizapp.dto.GridPlayStateDto;
 import com.quizapp.dto.GridSummaryDto;
 import com.quizapp.dto.GuessRequest;
 import com.quizapp.dto.GuessResultDto;
+import com.quizapp.service.GridCategoryService;
 import com.quizapp.service.GridPlayService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -17,9 +19,16 @@ import java.util.List;
 public class GridController {
 
     private final GridPlayService gridPlayService;
+    private final GridCategoryService gridCategoryService;
 
-    public GridController(GridPlayService gridPlayService) {
+    public GridController(GridPlayService gridPlayService, GridCategoryService gridCategoryService) {
         this.gridPlayService = gridPlayService;
+        this.gridCategoryService = gridCategoryService;
+    }
+
+    @GetMapping("/categories")
+    public List<GridCategoryDto> categories() {
+        return gridCategoryService.findAll();
     }
 
     @GetMapping("/active")

@@ -23,7 +23,7 @@
         <label>Sport</label>
         <select v-model="sportFilter">
           <option value="ALL">All sports</option>
-          <option v-for="s in SPORTS" :key="s.code" :value="s.code">{{ s.label }}</option>
+          <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
         </select>
       </div>
     </div>
@@ -108,7 +108,7 @@
         <h2 style="margin-top:0;">Import from CSV</h2>
         <p class="page-subtitle">
           Expected columns: <code>name, sport, team, photoUrl</code> (photoUrl optional).
-          Sport must be {{ SPORTS.map(s => s.code).join(' or ') }}.
+          Sport must be one of: {{ gridCategories.categories.value.join(', ') }}.
         </p>
 
         <div v-if="importRows.length" style="max-height:320px; overflow-y:auto; margin-bottom:16px;">
@@ -150,7 +150,8 @@ import toast from '../services/toast'
 import AthleteFormModal from '../components/AthleteFormModal.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import Pagination from '../components/Pagination.vue'
-import { SPORTS, sportLabel } from '../constants'
+import { sportLabel } from '../constants'
+import gridCategories from '../services/gridCategories'
 
 const athletes = ref([])
 const loading = ref(true)
@@ -222,21 +223,26 @@ function onFileSelected(event) {
       return
     }
 
-    const validSportCodes = SPORTS.map(s => s.code)
+    const validSports = gridCategories.categories.value
     const existingKeys = new Set(athletes.value.map(a => `${a.sport}::${a.name.trim().toLowerCase()}`))
     const seenInFile = new Set()
 
     importRows.value = lines.slice(1).map(line => {
       const cells = parseCsvLine(line)
       const name = cells[nameIdx] || ''
-      const sport = (cells[sportIdx] || '').toUpperCase()
+      const rawSport = (cells[sportIdx] || '').trim()
+      // Case-insensitive match against the real category list, normalized to
+      // that category's actual stored casing - so "football" in a CSV still
+      // correctly matches the "Football" category rather than being rejected.
+      const matchedSport = validSports.find(s => s.toLowerCase() === rawSport.toLowerCase())
+      const sport = matchedSport || rawSport
       const team = teamIdx !== -1 ? (cells[teamIdx] || '') : ''
       const photoUrl = photoIdx !== -1 ? (cells[photoIdx] || '') : ''
       const key = `${sport}::${name.trim().toLowerCase()}`
 
       let rowError = ''
       if (!name) rowError = 'Missing name'
-      else if (!validSportCodes.includes(sport)) rowError = `Invalid sport (must be ${validSportCodes.join('/')})`
+      else if (!matchedSport) rowError = `Invalid sport (must be one of: ${validSports.join(', ')})`
       else if (existingKeys.has(key)) rowError = 'Duplicate - already exists'
       else if (seenInFile.has(key)) rowError = 'Duplicate - repeated in this file'
 
@@ -297,7 +303,10 @@ const pagedAthletes = computed(() => {
 })
 watch([searchText, sportFilter], () => { page.value = 1 })
 
-onMounted(loadAthletes)
+onMounted(() => {
+  loadAthletes()
+  gridCategories.ensureLoaded()
+})
 
 async function loadAthletes() {
   loading.value = true

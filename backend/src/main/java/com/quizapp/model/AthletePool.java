@@ -2,7 +2,6 @@ package com.quizapp.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,10 +18,9 @@ public class AthletePool {
     @Column(nullable = false)
     private String name;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
+    @NotBlank
     @Column(nullable = false)
-    private Sport sport;
+    private String sport;
 
     // Just a set of athletes - no per-membership data at all. A grid's own
     // candidates carry hint/correct-answer info specific to that grid; a pool
@@ -51,11 +49,11 @@ public class AthletePool {
         this.name = name;
     }
 
-    public Sport getSport() {
+    public String getSport() {
         return sport;
     }
 
-    public void setSport(Sport sport) {
+    public void setSport(String sport) {
         this.sport = sport;
     }
 

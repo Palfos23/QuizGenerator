@@ -61,13 +61,13 @@
         <label>Sport <span class="picker-hint">choose one</span></label>
         <div class="language-row">
           <button
-            v-for="s in SPORTS"
-            :key="s.code"
+            v-for="s in gridCategories.categories.value"
+            :key="s"
             class="language-btn"
-            :class="{ active: form.sport === s.code }"
-            @click="changeSport(s.code)"
+            :class="{ active: form.sport === s }"
+            @click="changeSport(s)"
           >
-            {{ s.label }}
+            {{ s }}
           </button>
         </div>
       </div>
@@ -246,7 +246,8 @@ import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import Pagination from '../components/Pagination.vue'
-import { SPORTS, sportLabel, readableTextColor, formatHint } from '../constants'
+import { sportLabel, readableTextColor, formatHint } from '../constants'
+import gridCategories from '../services/gridCategories'
 
 const view = ref('list')
 const grids = ref([])
@@ -259,7 +260,7 @@ const editingGridId = ref(null)
 const form = reactive({
   title: '',
   theme: '',
-  sport: 'FOOTBALL',
+  sport: gridCategories.categories.value[0] || '',
   weekStartDate: '',
   maxStrikes: 5,
   sortAscending: false,
@@ -341,10 +342,12 @@ const poolsForSport = computed(() => athletePools.value.filter(p => p.sport === 
 const athleteSearchTerm = ref('')
 const athleteSearchResults = ref([])
 
-onMounted(() => {
+onMounted(async () => {
   loadGrids()
   loadClubOptions()
   loadAthletePools()
+  await gridCategories.ensureLoaded()
+  if (!form.sport) form.sport = gridCategories.categories.value[0] || ''
 })
 
 async function loadClubOptions() {
@@ -422,7 +425,7 @@ async function importFromPool() {
 function resetForm() {
   form.title = ''
   form.theme = ''
-  form.sport = 'FOOTBALL'
+  form.sport = gridCategories.categories.value[0] || ''
   form.weekStartDate = ''
   form.maxStrikes = 5
   form.sortAscending = false

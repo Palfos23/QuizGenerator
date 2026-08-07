@@ -1,6 +1,5 @@
 package com.quizapp.dto;
 
-import com.quizapp.model.Sport;
 
 import java.util.List;
 
@@ -9,7 +8,7 @@ public class GridPlayStateDto {
     private Long id;
     private String title;
     private String theme;
-    private Sport sport;
+    private String sport;
     private int maxStrikes;
     private int strikesUsed;
     private boolean completed;
@@ -41,11 +40,11 @@ public class GridPlayStateDto {
         this.theme = theme;
     }
 
-    public Sport getSport() {
+    public String getSport() {
         return sport;
     }
 
-    public void setSport(Sport sport) {
+    public void setSport(String sport) {
         this.sport = sport;
     }
 

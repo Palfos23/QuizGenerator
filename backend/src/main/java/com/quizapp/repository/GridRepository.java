@@ -1,16 +1,23 @@
 package com.quizapp.repository;
 
 import com.quizapp.model.Grid;
-import com.quizapp.model.Sport;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public interface GridRepository extends JpaRepository<Grid, Long> {
-    List<Grid> findBySport(Sport sport);
+    List<Grid> findBySport(String sport);
     List<Grid> findByWeekStartDate(LocalDate weekStartDate);
+    boolean existsBySport(String sport);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Grid g SET g.sport = :newName WHERE g.sport = :oldName")
+    int renameSport(String oldName, String newName);
 
     // For the "remove this athlete from grids before deleting" flow - every
     // grid that references this athlete at all, as a candidate or an entry.

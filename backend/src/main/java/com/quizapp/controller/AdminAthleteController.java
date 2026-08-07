@@ -1,7 +1,6 @@
 package com.quizapp.controller;
 
 import com.quizapp.dto.AthleteDto;
-import com.quizapp.model.Sport;
 import com.quizapp.service.AthleteService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -22,7 +21,7 @@ public class AdminAthleteController {
 
     @GetMapping
     public List<AthleteDto> search(
-            @RequestParam(required = false) Sport sport,
+            @RequestParam(required = false) String sport,
             @RequestParam(required = false) String team,
             @RequestParam(required = false) String name) {
         return athleteService.search(sport, team, name);

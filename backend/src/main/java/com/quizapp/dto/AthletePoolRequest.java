@@ -1,6 +1,5 @@
 package com.quizapp.dto;
 
-import com.quizapp.model.Sport;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -12,15 +11,15 @@ public class AthletePoolRequest {
     private String name;
 
     @NotNull
-    private Sport sport;
+    private String sport;
 
     @NotEmpty
     private List<Long> athleteIds;
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public Sport getSport() { return sport; }
-    public void setSport(Sport sport) { this.sport = sport; }
+    public String getSport() { return sport; }
+    public void setSport(String sport) { this.sport = sport; }
     public List<Long> getAthleteIds() { return athleteIds; }
     public void setAthleteIds(List<Long> athleteIds) { this.athleteIds = athleteIds; }
 }

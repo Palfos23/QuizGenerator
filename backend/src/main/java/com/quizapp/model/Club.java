@@ -2,7 +2,6 @@ package com.quizapp.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "clubs")
@@ -16,10 +15,9 @@ public class Club {
     @Column(nullable = false)
     private String name;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
+    @NotBlank
     @Column(nullable = false)
-    private Sport sport;
+    private String sport;
 
     // Plain URL to a hosted crest image - not a file upload (Render's filesystem is
     // ephemeral, so storing uploaded files locally would be lost on every redeploy).
@@ -56,11 +54,11 @@ public class Club {
         this.name = name;
     }
 
-    public Sport getSport() {
+    public String getSport() {
         return sport;
     }
 
-    public void setSport(Sport sport) {
+    public void setSport(String sport) {
         this.sport = sport;
     }
 

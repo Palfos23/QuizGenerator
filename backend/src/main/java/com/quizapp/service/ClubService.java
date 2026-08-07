@@ -3,7 +3,6 @@ package com.quizapp.service;
 import com.quizapp.dto.ClubDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Club;
-import com.quizapp.model.Sport;
 import com.quizapp.repository.ClubRepository;
 import com.quizapp.repository.GridEntryRepository;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,7 @@ public class ClubService {
     }
 
     @Transactional(readOnly = true)
-    public List<ClubDto> search(Sport sport, String nameContains) {
+    public List<ClubDto> search(String sport, String nameContains) {
         List<Club> pool = sport != null ? clubRepository.findBySport(sport) : clubRepository.findAll();
         return pool.stream()
                 .filter(c -> nameContains == null || nameContains.isBlank()

@@ -1,6 +1,5 @@
 package com.quizapp.dto;
 
-import com.quizapp.model.Sport;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -17,7 +16,7 @@ public class GridRequest {
     private String theme;
 
     @NotNull
-    private Sport sport;
+    private String sport;
 
     @NotNull
     private LocalDate weekStartDate;
@@ -53,11 +52,11 @@ public class GridRequest {
         this.theme = theme;
     }
 
-    public Sport getSport() {
+    public String getSport() {
         return sport;
     }
 
-    public void setSport(Sport sport) {
+    public void setSport(String sport) {
         this.sport = sport;
     }
 

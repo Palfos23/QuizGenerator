@@ -14,13 +14,13 @@
         <label>Sport <span class="picker-hint">choose one</span></label>
         <div class="language-row">
           <button
-            v-for="s in SPORTS"
-            :key="s.code"
+            v-for="s in gridCategories.categories.value"
+            :key="s"
             class="language-btn"
-            :class="{ active: local.sport === s.code }"
-            @click="local.sport = s.code"
+            :class="{ active: local.sport === s }"
+            @click="local.sport = s"
           >
-            {{ s.label }}
+            {{ s }}
           </button>
         </div>
       </div>
@@ -55,14 +55,19 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import api from '../services/api'
-import { SPORTS } from '../constants'
+import gridCategories from '../services/gridCategories'
 
 const props = defineProps({
   club: { type: Object, default: null }
 })
 const emit = defineEmits(['close', 'saved'])
+
+onMounted(async () => {
+  await gridCategories.ensureLoaded()
+  if (!isEdit && !local.sport) local.sport = gridCategories.categories.value[0] || ''
+})
 
 const isEdit = !!props.club
 const saving = ref(false)
@@ -71,7 +76,7 @@ const previewFailed = ref(false)
 
 const local = reactive(props.club
   ? { ...props.club }
-  : { name: '', sport: 'FOOTBALL', logoUrl: '', color: '' })
+  : { name: '', sport: '', logoUrl: '', color: '' })
 
 // The native color picker needs a valid hex value at all times, but the text field
 // (and the club itself) is fine with no color set - fall back to the app's default

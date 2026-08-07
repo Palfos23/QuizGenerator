@@ -2,7 +2,6 @@ package com.quizapp.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "athletes")
@@ -16,10 +15,9 @@ public class Athlete {
     @Column(nullable = false)
     private String name;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
+    @NotBlank
     @Column(nullable = false)
-    private Sport sport;
+    private String sport;
 
     // Free text: club name for football, team name for cycling. Used both to help
     // an admin quickly find "everyone on team X" and shown alongside the name in
@@ -57,11 +55,11 @@ public class Athlete {
         this.name = name;
     }
 
-    public Sport getSport() {
+    public String getSport() {
         return sport;
     }
 
-    public void setSport(Sport sport) {
+    public void setSport(String sport) {
         this.sport = sport;
     }
 
