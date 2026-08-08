@@ -201,14 +201,20 @@ import { LANGUAGES, languageLabel } from '../constants'
 
 const DRAFT_KEY = 'quiz_draft_form'
 
-const form = reactive(loadDraft() || {
+// Merged with the defaults, not replaced by them - an old draft saved before
+// a field like labelIds existed would otherwise permanently miss that field,
+// since it would just become the entire form object as-is. Spreading the
+// draft's own values second means anything it does have still wins, while
+// anything it's missing falls back to the default.
+const form = reactive({
   title: '',
   language: 'EN',
   minDifficulty: 1,
   maxDifficulty: 10,
   categorySelections: [], // [{ category, numberOfQuestions }]
   includeMySubmissions: false,
-  labelIds: []
+  labelIds: [],
+  ...(loadDraft() || {})
 })
 const allLabels = ref([])
 
