@@ -2,12 +2,12 @@
   <div>
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-        <h1 style="margin:0;">Athlete pools</h1>
+        <h1 style="margin:0;">Subject pools</h1>
         <button class="btn btn-primary" @click="openCreate">+ New pool</button>
       </div>
       <p class="page-subtitle">
-        Reusable, curated lists of athletes - import one into any grid's candidate pool in one click,
-        instead of searching and adding the same players over and over.
+        Reusable, curated lists of subjects - import one into any grid's candidate pool in one click,
+        instead of searching and adding the same ones over and over.
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
@@ -29,7 +29,7 @@
         <div v-for="p in pagedPools" :key="p.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ p.name }}</div>
-            <div class="saved-quiz-meta">{{ sportLabel(p.sport) }} · {{ p.memberCount }} athlete(s)</div>
+            <div class="saved-quiz-meta">{{ sportLabel(p.sport) }} · {{ p.memberCount }} subject(s)</div>
           </div>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-secondary btn-sm" @click="openEdit(p.id)">Edit</button>
@@ -63,9 +63,9 @@
       </div>
 
       <div class="field">
-        <label>Members <span class="picker-hint">{{ members.length }} athlete(s)</span></label>
+        <label>Members <span class="picker-hint">{{ members.length }} subject(s)</span></label>
 
-        <input type="text" v-model="athleteSearchTerm" placeholder="Search athletes by name…" style="margin-bottom:10px;" />
+        <input type="text" v-model="athleteSearchTerm" placeholder="Search subjects by name…" style="margin-bottom:10px;" />
 
         <div v-if="teamOptions.length" style="margin-bottom:10px;">
           <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
@@ -267,7 +267,7 @@ async function addAllByTeam() {
       bulkTeams.value.map(team => api.adminSearchAthletes({ sport: form.sport, team }))
     )
     resultsPerTeam.flat().forEach(addMember)
-    toast.show(`Added athletes from ${bulkTeams.value.length} team(s).`)
+    toast.show(`Added subjects from ${bulkTeams.value.length} group(s).`)
     bulkTeams.value = []
   } catch (e) {
     error.value = 'Could not search for those teams.'
@@ -288,7 +288,7 @@ async function savePool() {
     return
   }
   if (!members.value.length) {
-    error.value = 'Add at least one athlete.'
+    error.value = 'Add at least one subject.'
     return
   }
   saving.value = true

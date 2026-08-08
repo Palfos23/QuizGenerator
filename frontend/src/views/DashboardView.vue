@@ -17,7 +17,7 @@
       </router-link>
       <router-link to="/weekly-grid" class="dashboard-feature-card">
         <h3>Weekly grid</h3>
-        <p>Guess every athlete that fits this week's theme before you run out of strikes.</p>
+        <p>Guess every answer that fits this week's theme before you run out of strikes.</p>
       </router-link>
       <router-link to="/grid-battle" class="dashboard-feature-card">
         <h3>Grid Battle</h3>

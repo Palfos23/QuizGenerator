@@ -1,13 +1,13 @@
 <template>
   <div class="modal-backdrop" @click.self="$emit('close')">
     <div class="modal">
-      <h2>{{ isEdit ? 'Edit athlete' : 'Add an athlete' }}</h2>
+      <h2>{{ isEdit ? 'Edit subject' : 'Add a subject' }}</h2>
 
       <div v-if="localError" class="banner error">{{ localError }}</div>
 
       <div class="field">
         <label>Name</label>
-        <input type="text" v-model="local.name" placeholder="e.g. Harry Kane" />
+        <input type="text" v-model="local.name" placeholder="e.g. Harry Kane, or The Godfather" />
       </div>
 
       <div class="field">
@@ -27,7 +27,7 @@
 
       <div class="field">
         <label>{{ gridCategories.groupLabelFor(local.sport) }}</label>
-        <input type="text" v-model="local.team" placeholder="e.g. Tottenham Hotspur" />
+        <input type="text" v-model="local.team" placeholder="e.g. Tottenham Hotspur, or Warner Bros." />
       </div>
 
       <div class="field">
@@ -84,7 +84,7 @@ async function save() {
       : await api.adminCreateAthlete(local)
     emit('saved', saved)
   } catch (e) {
-    localError.value = e.response?.data?.message || 'Could not save the athlete.'
+    localError.value = e.response?.data?.message || 'Could not save the subject.'
   } finally {
     saving.value = false
   }

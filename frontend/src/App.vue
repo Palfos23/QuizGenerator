@@ -12,7 +12,7 @@
         <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/questions" class="nav-link">Question bank</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/question-labels" class="nav-link">Labels</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/athletes" class="nav-link">Athletes</router-link>
+        <router-link v-if="auth.isAdmin.value" to="/admin/athletes" class="nav-link">Subjects</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/athlete-pools" class="nav-link">Pools</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/grid-categories" class="nav-link">Categories</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/grids" class="nav-link">Weekly grids</router-link>
@@ -49,7 +49,7 @@
       </div>
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/question-labels">Labels</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/athletes">Athletes</router-link>
+      <router-link v-if="auth.isAdmin.value" to="/admin/athletes">Subjects</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/athlete-pools">Pools</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/grid-categories">Categories</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/grids">Grids</router-link>

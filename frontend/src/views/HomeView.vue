@@ -15,7 +15,7 @@
       </div>
       <div class="feature-card">
         <h3>Weekly grid</h3>
-        <p>Guess every athlete that fits the week's theme before you run out of strikes.</p>
+        <p>Guess every answer that fits the week's theme before you run out of strikes.</p>
       </div>
       <div class="feature-card">
         <h3>Tension</h3>

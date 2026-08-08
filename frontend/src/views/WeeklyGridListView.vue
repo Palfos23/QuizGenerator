@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Weekly grid</h1>
-    <p class="page-subtitle">Guess every athlete that fits the week's theme. Wrong guesses cost you a strike.</p>
+    <p class="page-subtitle">Guess every answer that fits the week's theme. Wrong guesses cost you a strike.</p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -16,7 +16,7 @@
         <div class="saved-quiz-info">
           <div class="saved-quiz-title">{{ g.title }}</div>
           <div class="saved-quiz-meta">
-            {{ sportLabel(g.sport) }} · {{ g.entryCount }} athletes to find · week of {{ formatDate(g.weekStartDate) }}
+            {{ sportLabel(g.sport) }} · {{ g.entryCount }} to find · week of {{ formatDate(g.weekStartDate) }}
           </div>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
@@ -39,7 +39,7 @@
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ g.title }}</div>
               <div class="saved-quiz-meta">
-                {{ sportLabel(g.sport) }} · {{ g.entryCount }} athletes to find · week of {{ formatDate(g.weekStartDate) }}
+                {{ sportLabel(g.sport) }} · {{ g.entryCount }} to find · week of {{ formatDate(g.weekStartDate) }}
               </div>
             </div>
             <div style="display:flex; align-items:center; gap:12px;">

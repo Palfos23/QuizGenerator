@@ -2,11 +2,11 @@
   <div>
     <h1 style="margin:0;">Grid categories</h1>
     <p class="page-subtitle">
-      The list of categories available when creating athletes, clubs, grids, and pools -
+      The list of categories available when creating subjects, clubs, grids, and pools -
       no longer limited to just Football and Cycling. Renaming a category here automatically
-      updates every athlete, club, grid, and pool that already uses it. Each category also has
+      updates every subject, club, grid, and pool that already uses it. Each category also has
       its own "grouping" word - "Team" for a sport, "Continent" for countries, "Label" for
-      artists - used for the bulk-add-a-group feature and shown next to each athlete.
+      artists - used for the bulk-add-a-group feature and shown next to each subject.
     </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
@@ -67,7 +67,7 @@
     <ConfirmModal
       v-if="pendingDelete"
       title="Delete this category?"
-      :message="`'${pendingDelete.name}' will be removed. If any athlete, club, grid, or pool still uses it, this will be blocked until you reassign them first.`"
+      :message="`'${pendingDelete.name}' will be removed. If any subject, club, grid, or pool still uses it, this will be blocked until you reassign them first.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />

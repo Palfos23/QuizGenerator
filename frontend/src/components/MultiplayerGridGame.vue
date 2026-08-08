@@ -35,7 +35,7 @@
           type="text"
           v-model="searchTerm"
           placeholder="Search for a player…"
-          aria-label="Search for an athlete"
+          aria-label="Search for an answer"
           autocomplete="off"
           @keydown.esc="searchTerm = ''"
         />

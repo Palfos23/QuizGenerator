@@ -148,7 +148,7 @@
                 {{ g.title }}
                 <span v-if="isUpcoming(g)" class="tag" style="background:rgba(139,124,255,0.15); color:var(--violet); margin-left:6px;">Upcoming</span>
               </div>
-              <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} athletes</div>
+              <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} to find</div>
             </div>
             <button
               class="btn btn-sm"
@@ -258,7 +258,7 @@
               {{ g.title }}
               <span v-if="isUpcoming(g)" class="tag" style="background:rgba(139,124,255,0.15); color:var(--violet); margin-left:6px;">Upcoming</span>
             </div>
-            <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} athletes</div>
+            <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} to find</div>
           </div>
           <button
             class="btn btn-sm"

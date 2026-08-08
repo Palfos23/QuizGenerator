@@ -2,12 +2,12 @@
   <div>
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
       <div>
-        <h1>Athletes</h1>
-        <p class="page-subtitle">The roster used to build weekly grid candidate pools.</p>
+        <h1>Subjects</h1>
+        <p class="page-subtitle">Whoever or whatever a grid is about - people, movies, countries, anything - used to build weekly grid candidate pools.</p>
       </div>
       <div style="display:flex; gap:8px;">
         <button class="btn btn-secondary" @click="triggerFilePicker">📄 Import CSV</button>
-        <button class="btn btn-primary" @click="openCreate">+ Add athlete</button>
+        <button class="btn btn-primary" @click="openCreate">+ Add subject</button>
       </div>
       <input ref="fileInput" type="file" accept=".csv,text/csv" style="display:none;" @change="onFileSelected" />
     </div>
@@ -31,10 +31,10 @@
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
     <div v-else-if="!athletes.length" class="empty-state friendly">
-      No athletes yet. Add a few here before building a weekly grid.
+      No subjects yet. Add a few here before building a weekly grid.
     </div>
 
-    <div v-else-if="!filteredAthletes.length" class="empty-state">No athletes match those filters.</div>
+    <div v-else-if="!filteredAthletes.length" class="empty-state">No subjects match those filters.</div>
 
     <div v-else class="table-scroll">
       <table class="table">
@@ -73,7 +73,7 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this athlete?"
+      title="Delete this subject?"
       :message="`'${pendingDelete.name}' will be removed from the roster.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
@@ -83,7 +83,7 @@
       <div class="modal">
         <h2 style="margin-top:0;">'{{ pendingGridUsage.athlete.name }}' is used in {{ pendingGridUsage.usage.length }} grid(s)</h2>
         <p class="page-subtitle" style="margin-top:0;">
-          Deleting this athlete first removes them from every grid listed below.
+          Deleting this subject first removes them from every grid listed below.
         </p>
         <ul style="margin:0 0 16px; padding-left:20px; line-height:1.8;">
           <li v-for="u in pendingGridUsage.usage" :key="u.gridId">
@@ -94,7 +94,7 @@
         <p v-if="pendingGridUsage.usage.some(u => u.isCorrectAnswer)" style="color:var(--coral); font-size:0.9rem;">
           For the grid(s) marked above, this genuinely changes that grid's answer key - including for anyone who's
           already played it. If that grid is meant to stay exactly as-is, consider duplicating it as a new version
-          and editing the copy instead, rather than deleting this athlete outright.
+          and editing the copy instead, rather than deleting this subject outright.
         </p>
         <div style="display:flex; gap:10px; justify-content:flex-end;">
           <button class="btn btn-secondary" @click="pendingGridUsage = null">Cancel</button>
@@ -135,7 +135,7 @@
         <div style="display:flex; gap:10px; justify-content:flex-end;">
           <button class="btn btn-secondary" @click="closeImportPreview">Cancel</button>
           <button class="btn btn-primary" :disabled="!validImportCount || importing" @click="confirmImport">
-            {{ importing ? `Importing… (${importProgress}/${validImportCount})` : `Import ${validImportCount} athlete(s)` }}
+            {{ importing ? `Importing… (${importProgress}/${validImportCount})` : `Import ${validImportCount} subject(s)` }}
           </button>
         </div>
       </div>
@@ -283,7 +283,7 @@ async function confirmImport() {
   loadAthletes()
   toast.show(failed
     ? `Imported ${toImport.length - failed} of ${toImport.length} - ${failed} failed.`
-    : `Imported ${toImport.length} athlete(s).`)
+    : `Imported ${toImport.length} subject(s).`)
 }
 
 const filteredAthletes = computed(() => {
@@ -314,7 +314,7 @@ async function loadAthletes() {
   try {
     athletes.value = await api.adminSearchAthletes()
   } catch (e) {
-    error.value = 'Could not load athletes.'
+    error.value = 'Could not load subjects.'
   } finally {
     loading.value = false
   }
@@ -332,7 +332,7 @@ function openEdit(a) {
 
 function onSaved() {
   showModal.value = false
-  toast.show('Athlete saved.')
+  toast.show('Subject saved.')
   loadAthletes()
 }
 
@@ -346,7 +346,7 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteAthlete(a.id)
-    toast.show('Athlete deleted.')
+    toast.show('Subject deleted.')
     loadAthletes()
   } catch (e) {
     if (e.response?.status === 400) {
@@ -358,7 +358,7 @@ async function doDelete() {
         // fall through to the generic error below
       }
     }
-    error.value = e.response?.data?.message || 'Could not delete that athlete.'
+    error.value = e.response?.data?.message || 'Could not delete that subject.'
   }
 }
 
@@ -368,10 +368,10 @@ async function confirmRemoveFromGridsAndDelete() {
   error.value = ''
   try {
     await api.adminDeleteAthlete(athlete.id, true)
-    toast.show('Athlete removed from those grids and deleted.')
+    toast.show('Subject removed from those grids and deleted.')
     loadAthletes()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not delete that athlete.'
+    error.value = e.response?.data?.message || 'Could not delete that subject.'
   }
 }
 </script>

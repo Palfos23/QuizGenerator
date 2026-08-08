@@ -18,7 +18,7 @@
       <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
       <div v-else-if="!grids.length" class="empty-state friendly">
-        No grids yet. Add a few athletes on the Athletes page, then create your first grid here.
+        No grids yet. Add a few subjects on the Subjects page, then create your first grid here.
       </div>
 
       <div v-else class="saved-quiz-list">
@@ -115,7 +115,7 @@
         <label>Candidate pool <span class="picker-hint">everyone guessable in this grid - correct and decoy</span></label>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-          <input type="text" v-model="athleteSearchTerm" placeholder="Search athletes by name…" style="flex:1; min-width:180px;" />
+          <input type="text" v-model="athleteSearchTerm" placeholder="Search subjects by name…" style="flex:1; min-width:180px;" />
         </div>
 
         <div v-if="poolsForSport.length" style="margin-bottom:10px;">
@@ -145,7 +145,7 @@
         </div>
 
         <div v-if="!candidates.length" class="empty-state" style="padding:20px;">
-          No athletes added yet - search above or add a whole team.
+          No subjects added yet - search above, or import a saved pool.
         </div>
 
         <div v-else class="candidate-list">
