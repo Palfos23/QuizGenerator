@@ -43,6 +43,25 @@
         <input type="text" v-model="local.answer" placeholder="e.g. Paris" />
       </div>
 
+      <div class="field">
+        <label>Photo URL <span class="picker-hint">optional - shown to players and included in PDF downloads</span></label>
+        <input type="text" v-model="local.photoUrl" placeholder="https://…" />
+      </div>
+
+      <div v-if="allLabels.length" class="field">
+        <label>Labels <span class="picker-hint">optional - lets a quiz be generated to pull questions by theme</span></label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button
+            v-for="l in allLabels"
+            :key="l.id"
+            type="button"
+            class="team-chip"
+            :class="{ active: local.labelIds.includes(l.id) }"
+            @click="toggleLabel(l.id)"
+          >{{ l.name }}</button>
+        </div>
+      </div>
+
       <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
         <input type="checkbox" id="couldChange" v-model="local.couldChange" style="width:auto; margin-top:3px;" />
         <label for="couldChange" style="margin:0; text-transform:none; font-weight:400;">
@@ -65,7 +84,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import api from '../services/api'
 import { LANGUAGES } from '../constants'
 
@@ -77,6 +96,7 @@ const emit = defineEmits(['close', 'saved'])
 const isEdit = !!props.question
 const saving = ref(false)
 const localError = ref('')
+const allLabels = ref([])
 
 const local = reactive(props.question
   ? JSON.parse(JSON.stringify(props.question))
@@ -86,8 +106,24 @@ const local = reactive(props.question
       difficultyLevel: 5,
       language: 'EN',
       answer: '',
-      couldChange: false
+      couldChange: false,
+      photoUrl: '',
+      labelIds: []
     })
+
+onMounted(async () => {
+  try {
+    allLabels.value = await api.adminListQuestionLabels()
+  } catch (e) {
+    // non-critical - the label picker just stays empty
+  }
+})
+
+function toggleLabel(id) {
+  const idx = local.labelIds.indexOf(id)
+  if (idx === -1) local.labelIds.push(id)
+  else local.labelIds.splice(idx, 1)
+}
 
 async function save() {
   localError.value = ''

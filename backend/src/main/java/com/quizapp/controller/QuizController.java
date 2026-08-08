@@ -19,11 +19,20 @@ public class QuizController {
     private final QuizService quizService;
     private final PdfService pdfService;
     private final QuestionService questionService;
+    private final com.quizapp.service.QuestionLabelService questionLabelService;
 
-    public QuizController(QuizService quizService, PdfService pdfService, QuestionService questionService) {
+    public QuizController(QuizService quizService, PdfService pdfService, QuestionService questionService,
+                           com.quizapp.service.QuestionLabelService questionLabelService) {
         this.quizService = quizService;
         this.pdfService = pdfService;
         this.questionService = questionService;
+        this.questionLabelService = questionLabelService;
+    }
+
+    /** Labels available to filter by when generating a quiz. */
+    @GetMapping("/labels")
+    public List<QuestionLabelDto> labels() {
+        return questionLabelService.findAll();
     }
 
     /** Use case 1 & 2: generate a quiz with N questions, a difficulty and one or more categories. */

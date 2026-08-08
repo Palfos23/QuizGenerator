@@ -7,10 +7,19 @@
         <span class="tag difficulty-tag" :style="{ background: difficultyColor(question.difficultyLevel) }">
           {{ question.difficultyLevel }}/10
         </span>
+        <span v-for="name in (question.labelNames || [])" :key="name" class="tag" style="background:rgba(139,124,255,0.15); color:#8b7cff;">{{ name }}</span>
       </div>
     </div>
 
     <div class="question-text">{{ question.questionText }}</div>
+
+    <img
+      v-if="question.photoUrl"
+      :src="question.photoUrl"
+      alt=""
+      style="max-width:220px; max-height:220px; border-radius:8px; margin:8px 0; display:block;"
+      @error="$event.target.style.display = 'none'"
+    />
 
     <div class="answer-box" v-if="showAnswer">
       <span class="answer-label">Answer</span>

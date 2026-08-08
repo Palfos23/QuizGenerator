@@ -29,6 +29,15 @@ public class QuestionDto {
 
     private boolean couldChange = false;
 
+    // Optional hosted image URL - null for most questions.
+    private String photoUrl;
+
+    // labelIds is what the admin form sends when saving; labelNames is what
+    // display views (QuestionCard, quiz generator) read to show the actual
+    // tag text - both populated on read, only labelIds used on write.
+    private java.util.List<Long> labelIds = new java.util.ArrayList<>();
+    private java.util.List<String> labelNames = new java.util.ArrayList<>();
+
     public QuestionDto() {
     }
 
@@ -86,5 +95,29 @@ public class QuestionDto {
 
     public void setCouldChange(boolean couldChange) {
         this.couldChange = couldChange;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
+    public java.util.List<Long> getLabelIds() {
+        return labelIds;
+    }
+
+    public void setLabelIds(java.util.List<Long> labelIds) {
+        this.labelIds = labelIds;
+    }
+
+    public java.util.List<String> getLabelNames() {
+        return labelNames;
+    }
+
+    public void setLabelNames(java.util.List<String> labelNames) {
+        this.labelNames = labelNames;
     }
 }

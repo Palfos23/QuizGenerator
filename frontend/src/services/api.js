@@ -85,6 +85,23 @@ export default {
   adminCreateQuestion(payload) {
     return client.post('/admin/questions', payload).then(r => r.data)
   },
+
+  // --- Question labels ---
+  fetchQuestionLabels() {
+    return client.get('/quiz/labels').then(r => r.data)
+  },
+  adminListQuestionLabels() {
+    return client.get('/admin/question-labels').then(r => r.data)
+  },
+  adminCreateQuestionLabel(name) {
+    return client.post('/admin/question-labels', { name }).then(r => r.data)
+  },
+  adminUpdateQuestionLabel(id, name) {
+    return client.put(`/admin/question-labels/${id}`, { name }).then(r => r.data)
+  },
+  adminDeleteQuestionLabel(id) {
+    return client.delete(`/admin/question-labels/${id}`)
+  },
   adminUpdateQuestion(id, payload) {
     return client.put(`/admin/questions/${id}`, payload).then(r => r.data)
   },

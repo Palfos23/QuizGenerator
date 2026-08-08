@@ -51,6 +51,13 @@ public class QuizService {
                         request.getMinDifficulty(), request.getMaxDifficulty(), selection.getCategory()));
             }
 
+            if (request.getLabelIds() != null && !request.getLabelIds().isEmpty()) {
+                Set<Long> wantedLabels = Set.copyOf(request.getLabelIds());
+                candidates = candidates.stream()
+                        .filter(c -> c.getLabelIds().stream().anyMatch(wantedLabels::contains))
+                        .collect(Collectors.toList());
+            }
+
             Collections.shuffle(candidates);
 
             int wanted = selection.getNumberOfQuestions();

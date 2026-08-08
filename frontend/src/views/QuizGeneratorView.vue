@@ -96,6 +96,23 @@
           <input type="checkbox" v-model="form.includeMySubmissions" style="width:auto;" />
           Include my own submitted questions <span class="picker-hint">even ones still pending or rejected - only you can draw from these</span>
         </label>
+
+        <div v-if="allLabels.length" style="margin-top:14px;">
+          <label style="text-transform:none; font-weight:400;">
+            Only questions tagged with any of these labels
+            <span class="picker-hint" v-if="form.labelIds.length">{{ form.labelIds.length }} selected</span>
+          </label>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+            <button
+              v-for="l in allLabels"
+              :key="l.id"
+              type="button"
+              class="team-chip"
+              :class="{ active: form.labelIds.includes(l.id) }"
+              @click="toggleLabelFilter(l.id)"
+            >{{ l.name }}</button>
+          </div>
+        </div>
       </details>
 
       <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:20px;">
@@ -190,8 +207,10 @@ const form = reactive(loadDraft() || {
   minDifficulty: 1,
   maxDifficulty: 10,
   categorySelections: [], // [{ category, numberOfQuestions }]
-  includeMySubmissions: false
+  includeMySubmissions: false,
+  labelIds: []
 })
+const allLabels = ref([])
 
 const availableCategories = ref([])
 const categoriesLoading = ref(true)
@@ -254,7 +273,16 @@ watch(form, (value) => {
   }
 }, { deep: true })
 
-onMounted(loadCategories)
+onMounted(() => {
+  loadCategories()
+  api.fetchQuestionLabels().then(list => { allLabels.value = list }).catch(() => {})
+})
+
+function toggleLabelFilter(id) {
+  const idx = form.labelIds.indexOf(id)
+  if (idx === -1) form.labelIds.push(id)
+  else form.labelIds.splice(idx, 1)
+}
 
 async function loadCategories() {
   categoriesLoading.value = true
@@ -333,7 +361,8 @@ async function generateQuiz() {
       minDifficulty: form.minDifficulty,
       maxDifficulty: form.maxDifficulty,
       categorySelections: form.categorySelections,
-      includeMySubmissions: form.includeMySubmissions
+      includeMySubmissions: form.includeMySubmissions,
+      labelIds: form.labelIds
     })
     quiz.value = result
     reviewDirty.value = false

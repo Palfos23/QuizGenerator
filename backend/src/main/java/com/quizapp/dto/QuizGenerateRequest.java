@@ -33,6 +33,19 @@ public class QuizGenerateRequest {
     // quizzes, never for anyone else's.
     private boolean includeMySubmissions = false;
 
+    // Optional - when set, only questions tagged with at least one of these labels
+    // are eligible, across every category selection (labels can span categories,
+    // e.g. "Lord of the Rings" on both a Literature and a Movies question).
+    private List<Long> labelIds;
+
+    public List<Long> getLabelIds() {
+        return labelIds;
+    }
+
+    public void setLabelIds(List<Long> labelIds) {
+        this.labelIds = labelIds;
+    }
+
     public boolean isIncludeMySubmissions() {
         return includeMySubmissions;
     }

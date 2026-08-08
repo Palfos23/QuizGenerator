@@ -3,6 +3,8 @@ package com.quizapp.service;
 import com.quizapp.dto.QuestionDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Question;
+import com.quizapp.model.QuestionLabel;
+import com.quizapp.repository.QuestionLabelRepository;
 import com.quizapp.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,15 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
+    private final QuestionLabelRepository questionLabelRepository;
 
-    public QuestionService(QuestionRepository questionRepository) {
+    public QuestionService(QuestionRepository questionRepository, QuestionLabelRepository questionLabelRepository) {
         this.questionRepository = questionRepository;
+        this.questionLabelRepository = questionLabelRepository;
     }
 
     @Transactional(readOnly = true)
@@ -97,7 +102,9 @@ public class QuestionService {
 
     @Transactional
     public QuestionDto create(QuestionDto dto) {
-        Question saved = questionRepository.save(QuestionMapper.toEntity(dto));
+        Question question = QuestionMapper.toEntity(dto);
+        question.setLabels(resolveLabels(dto.getLabelIds()));
+        Question saved = questionRepository.save(question);
         return QuestionMapper.toDto(saved);
     }
 
@@ -112,6 +119,8 @@ public class QuestionService {
         existing.setLanguage(dto.getLanguage());
         existing.setAnswer(dto.getAnswer());
         existing.setCouldChange(dto.isCouldChange());
+        existing.setPhotoUrl(dto.getPhotoUrl());
+        existing.setLabels(resolveLabels(dto.getLabelIds()));
 
         Question saved = questionRepository.save(existing);
         return QuestionMapper.toDto(saved);
@@ -136,5 +145,18 @@ public class QuestionService {
         List<Question> starterPack = com.quizapp.config.SampleQuestions.build();
         questionRepository.saveAll(starterPack);
         return new com.quizapp.dto.StarterPackResultDto(starterPack.size());
+    }
+
+    private Set<QuestionLabel> resolveLabels(List<Long> labelIds) {
+        if (labelIds == null || labelIds.isEmpty()) {
+            return java.util.Collections.emptySet();
+        }
+        List<QuestionLabel> found = questionLabelRepository.findAllById(labelIds);
+        if (found.size() != Set.copyOf(labelIds).size()) {
+            List<Long> foundIds = found.stream().map(QuestionLabel::getId).collect(Collectors.toList());
+            List<Long> missing = labelIds.stream().filter(id -> !foundIds.contains(id)).collect(Collectors.toList());
+            throw new IllegalArgumentException("No label found with id(s) " + missing);
+        }
+        return Set.copyOf(found);
     }
 }

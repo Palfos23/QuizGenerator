@@ -17,6 +17,9 @@ public final class QuestionMapper {
         dto.setLanguage(question.getLanguage());
         dto.setAnswer(question.getAnswer());
         dto.setCouldChange(question.isCouldChange());
+        dto.setPhotoUrl(question.getPhotoUrl());
+        dto.setLabelIds(question.getLabels().stream().map(com.quizapp.model.QuestionLabel::getId).collect(java.util.stream.Collectors.toList()));
+        dto.setLabelNames(question.getLabels().stream().map(com.quizapp.model.QuestionLabel::getName).sorted().collect(java.util.stream.Collectors.toList()));
         return dto;
     }
 
@@ -29,6 +32,7 @@ public final class QuestionMapper {
         question.setLanguage(dto.getLanguage());
         question.setAnswer(dto.getAnswer());
         question.setCouldChange(dto.isCouldChange());
+        question.setPhotoUrl(dto.getPhotoUrl());
         return question;
     }
 }
