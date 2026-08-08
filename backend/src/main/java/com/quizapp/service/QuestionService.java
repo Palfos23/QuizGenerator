@@ -28,7 +28,7 @@ public class QuestionService {
 
     @Transactional(readOnly = true)
     public List<QuestionDto> findAll() {
-        return questionRepository.findAll().stream()
+        return questionRepository.findAllWithLabels().stream()
                 .map(QuestionMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -64,7 +64,7 @@ public class QuestionService {
         String needle = term == null ? "" : term.trim().toLowerCase();
         String wantedCategory = category == null ? "" : category.trim().toLowerCase();
 
-        return questionRepository.findByLanguage(language).stream()
+        return questionRepository.findByLanguageWithLabels(language).stream()
                 .filter(q -> wantedCategory.isEmpty() || q.getCategory().trim().toLowerCase().equals(wantedCategory))
                 .filter(q -> needle.isEmpty()
                         || q.getQuestionText().toLowerCase().contains(needle)
