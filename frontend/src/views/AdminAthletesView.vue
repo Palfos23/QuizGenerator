@@ -107,7 +107,8 @@
       <div class="modal" style="max-width:640px;">
         <h2 style="margin-top:0;">Import from CSV</h2>
         <p class="page-subtitle">
-          Expected columns: <code>name, sport, team, photoUrl</code> (photoUrl optional).
+          Expected columns: <code>name, category, group, photoUrl</code> (group and photoUrl optional) - "group" is
+          whatever fits the category: team, director, nationality, studio, anything.
           Category must be one of: {{ gridCategories.categories.value.join(', ') }}.
         </p>
 
@@ -214,8 +215,8 @@ function onFileSelected(event) {
 
     const header = parseCsvLine(lines[0]).map(h => h.toLowerCase())
     const nameIdx = header.indexOf('name')
-    const sportIdx = header.indexOf('sport')
-    const teamIdx = header.indexOf('team')
+    const sportIdx = header.indexOf('category') !== -1 ? header.indexOf('category') : header.indexOf('sport')
+    const teamIdx = header.indexOf('group') !== -1 ? header.indexOf('group') : header.indexOf('team')
     const photoIdx = header.indexOf('photourl')
 
     if (nameIdx === -1 || sportIdx === -1) {
