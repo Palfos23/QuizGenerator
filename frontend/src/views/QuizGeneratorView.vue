@@ -99,8 +99,7 @@
 
         <div v-if="allLabels.length" style="margin-top:14px;">
           <label style="text-transform:none; font-weight:400;">
-            Only questions tagged with any of these labels
-            <span class="picker-hint" v-if="form.labelIds.length">{{ form.labelIds.length }} selected</span>
+            Also pull questions tagged with any of these labels <span class="picker-hint">from any category, independent of your picks above</span>
           </label>
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
             <button
@@ -112,11 +111,15 @@
               @click="toggleLabelFilter(l.id)"
             >{{ l.name }}</button>
           </div>
+          <div v-if="form.labelIds.length" style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+            <label style="text-transform:none; font-weight:400; margin:0;">How many</label>
+            <input type="number" min="1" max="20" v-model.number="form.labelQuestionCount" style="width:70px;" />
+          </div>
         </div>
       </details>
 
       <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:20px;">
-        <button class="btn btn-primary" :disabled="generating || !form.categorySelections.length" @click="generateQuiz">
+        <button class="btn btn-primary" :disabled="generating || !canGenerate" @click="generateQuiz">
           {{ generating ? 'Generating…' : 'Generate quiz' }}
         </button>
         <button class="btn btn-secondary" @click="startBlank">
@@ -214,6 +217,7 @@ const form = reactive({
   categorySelections: [], // [{ category, numberOfQuestions }]
   includeMySubmissions: false,
   labelIds: [],
+  labelQuestionCount: 5,
   ...(loadDraft() || {})
 })
 const allLabels = ref([])
@@ -289,6 +293,12 @@ function toggleLabelFilter(id) {
   if (idx === -1) form.labelIds.push(id)
   else form.labelIds.splice(idx, 1)
 }
+
+const canGenerate = computed(() => {
+  const hasCategoryPicks = form.categorySelections.length > 0
+  const hasLabelPicks = form.labelIds.length > 0 && form.labelQuestionCount > 0
+  return hasCategoryPicks || hasLabelPicks
+})
 
 async function loadCategories() {
   categoriesLoading.value = true
@@ -368,7 +378,8 @@ async function generateQuiz() {
       maxDifficulty: form.maxDifficulty,
       categorySelections: form.categorySelections,
       includeMySubmissions: form.includeMySubmissions,
-      labelIds: form.labelIds
+      labelIds: form.labelIds,
+      labelQuestionCount: form.labelQuestionCount
     })
     quiz.value = result
     reviewDirty.value = false

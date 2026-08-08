@@ -40,7 +40,9 @@ public class QuizService {
         List<QuestionDto> picked = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
 
-        for (CategorySelectionDto selection : request.getCategorySelections()) {
+        List<CategorySelectionDto> selections = request.getCategorySelections() == null
+                ? Collections.emptyList() : request.getCategorySelections();
+        for (CategorySelectionDto selection : selections) {
             List<QuestionDto> candidates = candidatePool(
                     request.getLanguage(), request.getMinDifficulty(), request.getMaxDifficulty(),
                     selection.getCategory())
@@ -49,13 +51,6 @@ public class QuizService {
             if (request.isIncludeMySubmissions()) {
                 candidates.addAll(personalCandidatePool(requestingUserEmail, request.getLanguage(),
                         request.getMinDifficulty(), request.getMaxDifficulty(), selection.getCategory()));
-            }
-
-            if (request.getLabelIds() != null && !request.getLabelIds().isEmpty()) {
-                Set<Long> wantedLabels = Set.copyOf(request.getLabelIds());
-                candidates = candidates.stream()
-                        .filter(c -> c.getLabelIds().stream().anyMatch(wantedLabels::contains))
-                        .collect(Collectors.toList());
             }
 
             Collections.shuffle(candidates);
@@ -71,9 +66,40 @@ public class QuizService {
             }
         }
 
+        // Independent of category selections entirely - pulls from any category,
+        // so a label like "Lord of the Rings" spanning Literature and Movies
+        // doesn't require picking either category first. Excludes anything
+        // already picked above, so the same question can't appear twice if it
+        // happens to match both a category selection and the label filter.
+        if (request.getLabelIds() != null && !request.getLabelIds().isEmpty()
+                && request.getLabelQuestionCount() != null && request.getLabelQuestionCount() > 0) {
+            Set<Long> wantedLabels = Set.copyOf(request.getLabelIds());
+            Set<Long> alreadyPickedIds = picked.stream().map(QuestionDto::getId).collect(Collectors.toSet());
+            int min = request.getMinDifficulty() == null ? 1 : request.getMinDifficulty();
+            int max = request.getMaxDifficulty() == null ? 10 : request.getMaxDifficulty();
+
+            List<QuestionDto> labelCandidates = questionRepository.findByLanguageWithLabels(request.getLanguage())
+                    .stream()
+                    .map(QuestionMapper::toDto)
+                    .filter(c -> !alreadyPickedIds.contains(c.getId()))
+                    .filter(c -> c.getDifficultyLevel() >= min && c.getDifficultyLevel() <= max)
+                    .filter(c -> c.getLabelIds().stream().anyMatch(wantedLabels::contains))
+                    .collect(Collectors.toList());
+            Collections.shuffle(labelCandidates);
+
+            int wanted = request.getLabelQuestionCount();
+            int available = Math.min(wanted, labelCandidates.size());
+            picked.addAll(labelCandidates.subList(0, available));
+
+            if (available < wanted) {
+                warnings.add("Only found " + available + " of the " + wanted +
+                        " requested question(s) matching those labels in that language/difficulty range.");
+            }
+        }
+
         if (picked.isEmpty()) {
             throw new IllegalArgumentException(
-                    "No questions in the bank match those categories/language/difficulty yet. " +
+                    "No questions in the bank match those categories/labels/language/difficulty yet. " +
                             "Ask an admin to add some first.");
         }
 

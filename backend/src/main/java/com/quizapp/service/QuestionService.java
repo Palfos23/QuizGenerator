@@ -60,9 +60,12 @@ public class QuestionService {
      * at 30 results since this backs a live-typing search box, not a management table.
      */
     @Transactional(readOnly = true)
-    public List<QuestionDto> searchForUser(com.quizapp.model.Language language, String term, String category) {
+    public List<QuestionDto> searchForUser(com.quizapp.model.Language language, String term, String category,
+                                            List<Long> labelIds) {
         String needle = term == null ? "" : term.trim().toLowerCase();
         String wantedCategory = category == null ? "" : category.trim().toLowerCase();
+        java.util.Set<Long> wantedLabels = (labelIds == null || labelIds.isEmpty())
+                ? java.util.Collections.emptySet() : Set.copyOf(labelIds);
 
         return questionRepository.findByLanguageWithLabels(language).stream()
                 .filter(q -> wantedCategory.isEmpty() || q.getCategory().trim().toLowerCase().equals(wantedCategory))
@@ -70,6 +73,8 @@ public class QuestionService {
                         || q.getQuestionText().toLowerCase().contains(needle)
                         || q.getCategory().toLowerCase().contains(needle)
                         || q.getAnswer().toLowerCase().contains(needle))
+                .filter(q -> wantedLabels.isEmpty()
+                        || q.getLabels().stream().map(com.quizapp.model.QuestionLabel::getId).anyMatch(wantedLabels::contains))
                 .limit(30)
                 .map(QuestionMapper::toDto)
                 .collect(Collectors.toList());

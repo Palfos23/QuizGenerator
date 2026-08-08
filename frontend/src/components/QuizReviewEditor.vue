@@ -52,7 +52,24 @@
           >
             {{ r.questionText }}
             <span style="color:var(--text-dim); font-size:0.85rem;">{{ r.category }} · {{ r.difficultyLevel }}/10</span>
+            <span v-for="name in (r.labelNames || [])" :key="name" class="tag" style="background:rgba(139,124,255,0.15); color:#8b7cff; margin-left:6px;">{{ name }}</span>
           </button>
+        </div>
+      </div>
+
+      <div v-if="allLabels.length" style="margin-top:8px;">
+        <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">
+          Only show results tagged with any of these labels <span class="picker-hint" v-if="labelFilter.length">{{ labelFilter.length }} selected</span>
+        </label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+          <button
+            v-for="l in allLabels"
+            :key="l.id"
+            type="button"
+            class="team-chip"
+            :class="{ active: labelFilter.includes(l.id) }"
+            @click="toggleLabelFilter(l.id)"
+          >{{ l.name }}</button>
         </div>
       </div>
     </div>
@@ -83,8 +100,13 @@ const addCount = ref(3)
 const adding = ref(false)
 const searchTerm = ref('')
 const searchResults = ref([])
+const allLabels = ref([])
+const labelFilter = ref([])
 
-onMounted(loadCategories)
+onMounted(() => {
+  loadCategories()
+  api.fetchQuestionLabels().then(list => { allLabels.value = list }).catch(() => {})
+})
 watch(() => props.quiz.language, loadCategories)
 
 async function loadCategories() {
@@ -95,23 +117,35 @@ async function loadCategories() {
   }
 }
 
+function toggleLabelFilter(id) {
+  const idx = labelFilter.value.indexOf(id)
+  if (idx === -1) labelFilter.value.push(id)
+  else labelFilter.value.splice(idx, 1)
+}
+
 let searchDebounce = null
-watch(searchTerm, (val) => {
+function runSearch() {
   clearTimeout(searchDebounce)
-  if (!val || val.trim().length < 2) {
+  const val = searchTerm.value
+  // Runs on text (2+ characters) OR a label filter alone - picking a label
+  // with no text typed should still show matching questions, not require
+  // text first.
+  if ((!val || val.trim().length < 2) && !labelFilter.value.length) {
     searchResults.value = []
     return
   }
   searchDebounce = setTimeout(async () => {
     try {
-      const results = await api.searchQuestions(props.quiz.language, val)
+      const results = await api.searchQuestions(props.quiz.language, val, undefined, labelFilter.value)
       const usedIds = new Set(props.quiz.questions.map(q => q.id))
       searchResults.value = results.filter(r => !usedIds.has(r.id))
     } catch (e) {
       // search failures are non-critical - just show no results
     }
   }, 250)
-})
+}
+watch(searchTerm, runSearch)
+watch(labelFilter, runSearch, { deep: true })
 
 function addSpecific(question) {
   props.quiz.questions.push(question)

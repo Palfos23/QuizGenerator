@@ -43,10 +43,11 @@ export default {
   addQuestions(payload) {
     return client.post('/quiz/add-questions', payload).then(r => r.data)
   },
-  searchQuestions(language, search, category) {
+  searchQuestions(language, search, category, labelIds = []) {
     const query = new URLSearchParams({ language })
     if (search) query.set('search', search)
     if (category) query.set('category', category)
+    labelIds.forEach(id => query.append('labelIds', String(id)))
     return client.get(`/quiz/search-questions?${query.toString()}`).then(r => r.data)
   },
   getCategories(language) {

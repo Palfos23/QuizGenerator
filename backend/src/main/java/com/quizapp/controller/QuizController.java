@@ -64,8 +64,9 @@ public class QuizController {
     public List<QuestionDto> searchQuestions(
             @RequestParam(defaultValue = "EN") com.quizapp.model.Language language,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String category) {
-        return questionService.searchForUser(language, search, category);
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) List<Long> labelIds) {
+        return questionService.searchForUser(language, search, category, labelIds);
     }
 
     /** Use case 4: download the finalized quiz as a PDF. */
