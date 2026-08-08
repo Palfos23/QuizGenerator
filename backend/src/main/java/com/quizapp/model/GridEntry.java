@@ -48,6 +48,15 @@ public class GridEntry {
     @Column(name = "show_logo")
     private Boolean showLogo;
 
+    // When true, this entry's hint-badge image comes directly from its own
+    // athlete's photoUrl instead of a Club - for content where every entry's
+    // image is genuinely unique to itself (e.g. movie posters), rather than
+    // shared across many entries the way a sports team's crest is. Mutually
+    // exclusive with club in practice, though not enforced at the database
+    // level - the read-side logic simply checks this first.
+    @Column(name = "use_own_photo_as_logo", nullable = false)
+    private boolean useOwnPhotoAsLogo = false;
+
     public Club getClub() {
         return club;
     }
@@ -62,6 +71,14 @@ public class GridEntry {
 
     public void setShowLogo(Boolean showLogo) {
         this.showLogo = showLogo;
+    }
+
+    public boolean isUseOwnPhotoAsLogo() {
+        return useOwnPhotoAsLogo;
+    }
+
+    public void setUseOwnPhotoAsLogo(boolean useOwnPhotoAsLogo) {
+        this.useOwnPhotoAsLogo = useOwnPhotoAsLogo;
     }
 
     public Long getId() {

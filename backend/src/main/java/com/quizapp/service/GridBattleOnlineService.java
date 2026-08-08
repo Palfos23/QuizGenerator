@@ -262,7 +262,9 @@ public class GridBattleOnlineService {
     }
 
     private String logoUrl(GridEntry entry) {
-        return (entry.isShowLogo() && entry.getClub() != null) ? entry.getClub().getLogoUrl() : null;
+        if (!entry.isShowLogo()) return null;
+        if (entry.isUseOwnPhotoAsLogo()) return entry.getAthlete().getPhotoUrl();
+        return entry.getClub() != null ? entry.getClub().getLogoUrl() : null;
     }
 
     private java.util.Comparator<GridEntry> entrySortOrderForOnline(Grid grid) {

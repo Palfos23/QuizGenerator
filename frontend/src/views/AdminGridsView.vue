@@ -133,6 +133,12 @@
           </div>
         </div>
 
+        <div style="margin-bottom:10px;">
+          <button class="btn btn-secondary btn-sm" :disabled="!form.sport || importingAllInCategory" @click="importAllInCategory">
+            {{ importingAllInCategory ? 'Importing…' : `+ Import every subject in "${form.sport || '…'}"` }}
+          </button>
+        </div>
+
         <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
           <button
             v-for="a in athleteSearchResults"
@@ -170,12 +176,13 @@
             <div v-if="c.correct" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input type="text" v-model="c.hintLabel" placeholder="Label (optional, e.g. FW)" style="width:110px;" />
               <input v-if="form.ranked" type="number" v-model.number="c.hintValue" placeholder="Value" style="width:80px;" />
-              <select v-model="c.clubId" style="width:170px;">
-                <option :value="null">No logo</option>
-                <option v-for="club in clubOptions" :key="club.id" :value="club.id">{{ club.name }}</option>
+              <select :value="logoSelectValue(c)" @change="onLogoSelectChange(c, $event.target.value)" style="width:190px;">
+                <option value="none">No logo</option>
+                <option v-if="c.photoUrl" value="own">Use this subject's own photo</option>
+                <option v-for="club in clubOptions" :key="club.id" :value="String(club.id)">{{ club.name }}</option>
               </select>
               <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400; font-size:0.82rem; color:var(--text-dim); margin:0;">
-                <input type="checkbox" v-model="c.showLogo" style="width:auto;" :disabled="!c.clubId" />
+                <input type="checkbox" v-model="c.showLogo" style="width:auto;" :disabled="!c.clubId && !c.useOwnPhotoAsLogo" />
                 Show logo
               </label>
             </div>
@@ -270,7 +277,7 @@ const form = reactive({
   ranked: true,
   excludedFromGridBattle: false
 })
-const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue, clubId, showLogo }]
+const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue, clubId, showLogo, useOwnPhotoAsLogo }]
 
 const CANDIDATE_PAGE_SIZE = 25
 const candidatePage = ref(1)
@@ -333,6 +340,24 @@ function previewImage(c) {
   if (c.photoUrl) return c.photoUrl
   if (c.showLogo) return previewClub(c)?.logoUrl || null
   return null
+}
+
+function logoSelectValue(c) {
+  if (c.useOwnPhotoAsLogo) return 'own'
+  if (c.clubId) return String(c.clubId)
+  return 'none'
+}
+function onLogoSelectChange(c, value) {
+  if (value === 'none') {
+    c.clubId = null
+    c.useOwnPhotoAsLogo = false
+  } else if (value === 'own') {
+    c.clubId = null
+    c.useOwnPhotoAsLogo = true
+  } else {
+    c.clubId = Number(value)
+    c.useOwnPhotoAsLogo = false
+  }
 }
 
 function removeCandidate(c) {
@@ -412,9 +437,28 @@ function addCandidate(athlete) {
   if (candidates.value.some(c => c.athleteId === athlete.id)) return
   candidates.value.push({
     athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
-    correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true
+    correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true, useOwnPhotoAsLogo: false
   })
   rebuildCandidateDisplayOrder()
+}
+
+// For adding many at once (pool import, whole-category import) - rebuilds the
+// display order once at the end instead of once per item, which matters once
+// the list being imported gets into the hundreds.
+function addCandidatesBulk(athleteList) {
+  const existingIds = new Set(candidates.value.map(c => c.athleteId))
+  let added = 0
+  for (const athlete of athleteList) {
+    if (existingIds.has(athlete.id)) continue
+    existingIds.add(athlete.id)
+    candidates.value.push({
+      athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
+      correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true, useOwnPhotoAsLogo: false
+    })
+    added++
+  }
+  rebuildCandidateDisplayOrder()
+  return added
 }
 
 async function importFromPool() {
@@ -422,11 +466,27 @@ async function importFromPool() {
   error.value = ''
   try {
     const pool = await api.adminGetAthletePool(selectedPoolId.value)
-    pool.members.forEach(addCandidate)
-    toast.show(`Imported ${pool.members.length} athlete(s) from "${pool.name}".`)
+    const added = addCandidatesBulk(pool.members)
+    toast.show(`Imported ${added} subject(s) from "${pool.name}".`)
     selectedPoolId.value = null
   } catch (e) {
     error.value = 'Could not import that pool.'
+  }
+}
+
+const importingAllInCategory = ref(false)
+async function importAllInCategory() {
+  if (!form.sport) return
+  error.value = ''
+  importingAllInCategory.value = true
+  try {
+    const all = await api.adminSearchAthletes({ sport: form.sport })
+    const added = addCandidatesBulk(all)
+    toast.show(`Imported ${added} subject(s) from "${form.sport}" (${all.length - added} were already in this grid).`)
+  } catch (e) {
+    error.value = 'Could not import subjects for that category.'
+  } finally {
+    importingAllInCategory.value = false
   }
 }
 
@@ -478,7 +538,8 @@ async function openEdit(id) {
         hintLabel: entry?.hintLabel || '',
         hintValue: entry?.hintValue ?? null,
         clubId: entry?.club?.id ?? null,
-        showLogo: entry?.showLogo ?? true
+        showLogo: entry?.showLogo ?? true,
+        useOwnPhotoAsLogo: entry?.useOwnPhotoAsLogo ?? false
       }
     })
     candidatePage.value = 1
@@ -534,7 +595,7 @@ async function saveGrid() {
     candidateAthleteIds: candidates.value.map(c => c.athleteId),
     entries: entries.map(c => ({
       athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: form.ranked ? c.hintValue : null,
-      clubId: c.clubId, showLogo: c.showLogo
+      clubId: c.clubId, showLogo: c.showLogo, useOwnPhotoAsLogo: c.useOwnPhotoAsLogo
     }))
   }
 

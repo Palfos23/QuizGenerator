@@ -23,6 +23,19 @@ public class GridEntryInputDto {
     // easy answer without needing to touch every other entry's payload.
     private Boolean showLogo;
 
+    // When true, use this entry's own subject photo as the hint-badge image
+    // instead of a club's crest - for content where every entry's image is
+    // unique to itself (movie posters), not shared across entries.
+    private boolean useOwnPhotoAsLogo = false;
+
+    public boolean isUseOwnPhotoAsLogo() {
+        return useOwnPhotoAsLogo;
+    }
+
+    public void setUseOwnPhotoAsLogo(boolean useOwnPhotoAsLogo) {
+        this.useOwnPhotoAsLogo = useOwnPhotoAsLogo;
+    }
+
     public Long getClubId() {
         return clubId;
     }

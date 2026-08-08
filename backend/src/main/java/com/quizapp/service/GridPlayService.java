@@ -413,6 +413,8 @@ public class GridPlayService {
     // tile is solved yet - unless the admin explicitly hid it for this entry, or no
     // club was set at all.
     private String logoUrl(GridEntry entry) {
-        return (entry.isShowLogo() && entry.getClub() != null) ? entry.getClub().getLogoUrl() : null;
+        if (!entry.isShowLogo()) return null;
+        if (entry.isUseOwnPhotoAsLogo()) return entry.getAthlete().getPhotoUrl();
+        return entry.getClub() != null ? entry.getClub().getLogoUrl() : null;
     }
 }

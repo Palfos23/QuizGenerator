@@ -178,6 +178,7 @@ public class GridAdminService {
                 entry.setClub(null);
             }
             entry.setShowLogo(input.getShowLogo());
+            entry.setUseOwnPhotoAsLogo(input.isUseOwnPhotoAsLogo());
 
             entries.add(entry);
         }
@@ -201,7 +202,8 @@ public class GridAdminService {
         dto.setEntries(grid.getEntries().stream()
                 .map(e -> new GridAdminDetailDto.EntryDetail(
                         e.getId(), AthleteService.toDto(e.getAthlete()), e.getHintLabel(), e.getHintValue(),
-                        e.getClub() != null ? ClubService.toDto(e.getClub()) : null, e.isShowLogo()))
+                        e.getClub() != null ? ClubService.toDto(e.getClub()) : null, e.isShowLogo(),
+                        e.isUseOwnPhotoAsLogo()))
                 .collect(Collectors.toList()));
         return dto;
     }

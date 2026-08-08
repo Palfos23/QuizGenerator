@@ -25,14 +25,17 @@ public class GridAdminDetailDto {
         private Integer hintValue;
         private ClubDto club;
         private boolean showLogo;
+        private boolean useOwnPhotoAsLogo;
 
-        public EntryDetail(Long id, AthleteDto athlete, String hintLabel, Integer hintValue, ClubDto club, boolean showLogo) {
+        public EntryDetail(Long id, AthleteDto athlete, String hintLabel, Integer hintValue, ClubDto club,
+                            boolean showLogo, boolean useOwnPhotoAsLogo) {
             this.id = id;
             this.athlete = athlete;
             this.hintLabel = hintLabel;
             this.hintValue = hintValue;
             this.club = club;
             this.showLogo = showLogo;
+            this.useOwnPhotoAsLogo = useOwnPhotoAsLogo;
         }
 
         public Long getId() {
@@ -57,6 +60,10 @@ public class GridAdminDetailDto {
 
         public boolean isShowLogo() {
             return showLogo;
+        }
+
+        public boolean isUseOwnPhotoAsLogo() {
+            return useOwnPhotoAsLogo;
         }
     }
 
