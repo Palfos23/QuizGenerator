@@ -17,12 +17,12 @@
     <div class="filter-bar">
       <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
         <label>Search</label>
-        <input type="text" v-model="searchText" placeholder="Search name or team…" />
+        <input type="text" v-model="searchText" placeholder="Search name or group…" />
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Sport</label>
+        <label>Category</label>
         <select v-model="sportFilter">
-          <option value="ALL">All sports</option>
+          <option value="ALL">All categories</option>
           <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
         </select>
       </div>
@@ -42,8 +42,8 @@
           <tr>
             <th>Photo</th>
             <th>Name</th>
-            <th>Sport</th>
-            <th>Team</th>
+            <th>Category</th>
+            <th>Group</th>
             <th></th>
           </tr>
         </thead>
@@ -108,13 +108,13 @@
         <h2 style="margin-top:0;">Import from CSV</h2>
         <p class="page-subtitle">
           Expected columns: <code>name, sport, team, photoUrl</code> (photoUrl optional).
-          Sport must be one of: {{ gridCategories.categories.value.join(', ') }}.
+          Category must be one of: {{ gridCategories.categories.value.join(', ') }}.
         </p>
 
         <div v-if="importRows.length" style="max-height:320px; overflow-y:auto; margin-bottom:16px;">
           <table class="table" style="min-width:0; table-layout:fixed;">
             <thead>
-              <tr><th style="width:28%;">Name</th><th style="width:20%;">Sport</th><th style="width:28%;">Team</th><th>Status</th></tr>
+              <tr><th style="width:28%;">Name</th><th style="width:20%;">Category</th><th style="width:28%;">Group</th><th>Status</th></tr>
             </thead>
             <tbody>
               <tr v-for="(row, i) in importRows" :key="i" :class="{ 'tension-row-trap': !row.valid }">
@@ -242,7 +242,7 @@ function onFileSelected(event) {
 
       let rowError = ''
       if (!name) rowError = 'Missing name'
-      else if (!matchedSport) rowError = `Invalid sport (must be one of: ${validSports.join(', ')})`
+      else if (!matchedSport) rowError = `Invalid category (must be one of: ${validSports.join(', ')})`
       else if (existingKeys.has(key)) rowError = 'Duplicate - already exists'
       else if (seenInFile.has(key)) rowError = 'Duplicate - repeated in this file'
 

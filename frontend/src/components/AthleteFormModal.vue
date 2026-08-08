@@ -11,7 +11,7 @@
       </div>
 
       <div class="field">
-        <label>Sport <span class="picker-hint">choose one</span></label>
+        <label>Category <span class="picker-hint">choose one</span></label>
         <div class="language-row">
           <button
             v-for="s in gridCategories.categories.value"

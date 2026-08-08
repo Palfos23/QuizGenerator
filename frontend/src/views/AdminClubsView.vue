@@ -16,9 +16,9 @@
         <input type="text" v-model="searchText" placeholder="Search name…" />
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Sport</label>
+        <label>Category</label>
         <select v-model="sportFilter">
-          <option value="ALL">All sports</option>
+          <option value="ALL">All categories</option>
           <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
         </select>
       </div>
@@ -38,7 +38,7 @@
           <tr>
             <th>Logo</th>
             <th>Name</th>
-            <th>Sport</th>
+            <th>Category</th>
             <th>Color</th>
             <th></th>
           </tr>

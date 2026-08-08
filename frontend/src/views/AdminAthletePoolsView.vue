@@ -52,10 +52,10 @@
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:200px;">
           <label>Name</label>
-          <input type="text" v-model="form.name" placeholder="e.g. Tottenham PL squad" />
+          <input type="text" v-model="form.name" placeholder="e.g. Tottenham PL squad, or Best Picture winners" />
         </div>
         <div style="flex:1; min-width:200px;">
-          <label>Sport</label>
+          <label>Category</label>
           <select v-model="form.sport" @change="onSportChange">
             <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
           </select>
