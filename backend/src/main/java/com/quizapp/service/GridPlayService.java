@@ -8,6 +8,7 @@ import com.quizapp.dto.GuessResultDto;
 import com.quizapp.dto.MultiplayerGuessRequest;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.AppUser;
+import com.quizapp.model.Athlete;
 import com.quizapp.model.Grid;
 import com.quizapp.model.GridAttempt;
 import com.quizapp.model.GridCandidate;
@@ -203,9 +204,23 @@ public class GridPlayService {
         return grid.getCandidates().stream()
                 .map(GridCandidate::getAthlete)
                 .filter(a -> term.isEmpty() || a.getName().toLowerCase().contains(term))
+                .sorted(term.isEmpty() ? java.util.Comparator.comparing(Athlete::getName)
+                        : java.util.Comparator.<Athlete>comparingInt(a -> matchRank(a.getName(), term))
+                                .thenComparing(Athlete::getName))
                 .map(AthleteService::toDto)
                 .limit(8)
                 .collect(Collectors.toList());
+    }
+
+    // Lower is more relevant - an exact match should never lose its spot in the
+    // top 8 to a weaker "contains" match just because of how the candidates
+    // happened to be ordered, which is especially likely once a pool is large
+    // enough that many entries share a common substring.
+    private int matchRank(String name, String term) {
+        String lower = name.toLowerCase();
+        if (lower.equals(term)) return 0;
+        if (lower.startsWith(term)) return 1;
+        return 2;
     }
 
     /**
