@@ -22,51 +22,55 @@
     </div>
 
     <div class="add-questions-row">
-      <div class="add-more-questions no-print">
-        <span style="font-weight:600; font-size:0.9rem;">Add a random batch</span>
-        <select v-model="addCategory" style="flex:1; min-width:140px;">
-          <option value="" disabled>Choose a category…</option>
-          <option v-for="cat in availableCategories" :key="cat" :value="cat">{{ cat }}</option>
-        </select>
-        <input type="number" min="1" max="20" v-model.number="addCount" style="width:70px;" />
-        <button class="btn btn-secondary btn-sm" :disabled="!addCategory || adding" @click="addMore">
-          {{ adding ? 'Adding…' : '+ Add' }}
-        </button>
-      </div>
-
-      <div class="add-more-questions no-print" style="position:relative;">
-        <span style="font-weight:600; font-size:0.9rem;">Search and add specific questions</span>
-        <input
-          type="text"
-          v-model="searchTerm"
-          placeholder="Search question, category or answer…"
-          style="flex:1; min-width:180px;"
-        />
-        <div v-if="searchResults.length" class="guess-results" style="position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:5; max-height:260px; overflow-y:auto;">
-          <button
-            v-for="r in searchResults"
-            :key="r.id"
-            type="button"
-            class="guess-result-row"
-            @click="addSpecific(r)"
-          >
-            {{ r.questionText }}
-            <span style="color:var(--text-dim); font-size:0.85rem;">{{ r.category }} · {{ r.difficultyLevel }}/10</span>
-            <span v-for="name in (r.labelNames || [])" :key="name" class="tag" style="background:rgba(139,124,255,0.15); color:#8b7cff; margin-left:6px;">{{ name }}</span>
+      <div class="add-panel no-print">
+        <div class="add-panel-header">
+          <span class="add-panel-title">Add a random batch</span>
+          <span class="add-panel-hint">pulls unused questions from one category</span>
+        </div>
+        <div class="add-panel-row">
+          <select v-model="addCategory" style="flex:1; min-width:140px;">
+            <option value="" disabled>Choose a category…</option>
+            <option v-for="cat in availableCategories" :key="cat" :value="cat">{{ cat }}</option>
+          </select>
+          <input type="number" min="1" max="20" v-model.number="addCount" style="width:70px;" />
+          <button class="btn btn-secondary btn-sm" :disabled="!addCategory || adding" @click="addMore">
+            {{ adding ? 'Adding…' : '+ Add' }}
           </button>
         </div>
       </div>
 
-      <div v-if="allLabels.length" style="margin-top:8px;">
-        <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">
-          Only show results tagged with any of these labels <span class="picker-hint" v-if="labelFilter.length">{{ labelFilter.length }} selected</span>
-        </label>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+      <div class="add-panel no-print">
+        <div class="add-panel-header">
+          <span class="add-panel-title">Search and add specific questions</span>
+          <span class="add-panel-hint">find one question at a time, by text or label</span>
+        </div>
+        <div class="add-panel-row">
+          <input
+            type="text"
+            v-model="searchTerm"
+            placeholder="Search question, category or answer…"
+            style="flex:1; min-width:180px;"
+          />
+          <div v-if="searchResults.length" class="guess-results" style="position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:5; max-height:260px; overflow-y:auto;">
+            <button
+              v-for="r in searchResults"
+              :key="r.id"
+              type="button"
+              class="guess-result-row"
+              @click="addSpecific(r)"
+            >
+              {{ r.questionText }}
+              <span style="color:var(--text-dim); font-size:0.85rem;">{{ r.category }} · {{ r.difficultyLevel }}/10</span>
+              <span v-for="name in (r.labelNames || [])" :key="name" class="result-label" style="margin-left:6px;">{{ name }}</span>
+            </button>
+          </div>
+        </div>
+        <div v-if="allLabels.length" class="label-filter">
           <button
             v-for="l in allLabels"
             :key="l.id"
             type="button"
-            class="team-chip"
+            class="label-filter-chip"
             :class="{ active: labelFilter.includes(l.id) }"
             @click="toggleLabelFilter(l.id)"
           >{{ l.name }}</button>

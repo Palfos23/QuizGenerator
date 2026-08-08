@@ -615,27 +615,43 @@ mark {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
-  margin-top: 20px;
+  margin-top: 24px;
 }
-.add-questions-row .add-more-questions {
+.add-panel {
   flex: 1;
-  min-width: 260px;
-  margin-top: 0;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
 }
-
-.add-more-questions {
+.add-panel-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.add-panel-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.add-panel-hint {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+.add-panel-row {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin-top: 20px;
-  padding: 12px 14px;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
+  position: relative;
 }
-.add-more-questions select,
-.add-more-questions input[type="text"],
-.add-more-questions input[type="number"] {
+.add-panel select,
+.add-panel input[type="text"],
+.add-panel input[type="number"] {
   padding: 10px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
@@ -645,10 +661,68 @@ mark {
   font-family: var(--font-body);
   transition: border-color 0.15s ease, background 0.15s ease;
 }
-.add-more-questions select:focus,
-.add-more-questions input:focus {
+.add-panel select:focus,
+.add-panel input:focus {
   border-color: var(--gold);
   background: rgba(255,255,255,0.05);
+  outline: none;
+}
+.add-panel .label-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+.add-panel .label-filter-chip {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.add-panel .label-filter-chip:hover {
+  border-color: var(--violet);
+  color: var(--text);
+}
+.add-panel .label-filter-chip.active {
+  background: rgba(139, 124, 255, 0.16);
+  border-color: var(--violet);
+  color: var(--violet);
+}
+.result-label {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(139, 124, 255, 0.16);
+  color: var(--violet);
+}
+
+.review-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+.review-actions-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.review-actions-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: none;
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+.review-actions-toggle input {
+  width: auto;
 }
 
 .candidate-list {

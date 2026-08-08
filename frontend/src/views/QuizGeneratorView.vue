@@ -96,30 +96,10 @@
           <input type="checkbox" v-model="form.includeMySubmissions" style="width:auto;" />
           Include my own submitted questions <span class="picker-hint">even ones still pending or rejected - only you can draw from these</span>
         </label>
-
-        <div v-if="allLabels.length" style="margin-top:14px;">
-          <label style="text-transform:none; font-weight:400;">
-            Also pull questions tagged with any of these labels <span class="picker-hint">from any category, independent of your picks above</span>
-          </label>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
-            <button
-              v-for="l in allLabels"
-              :key="l.id"
-              type="button"
-              class="team-chip"
-              :class="{ active: form.labelIds.includes(l.id) }"
-              @click="toggleLabelFilter(l.id)"
-            >{{ l.name }}</button>
-          </div>
-          <div v-if="form.labelIds.length" style="display:flex; align-items:center; gap:8px; margin-top:10px;">
-            <label style="text-transform:none; font-weight:400; margin:0;">How many</label>
-            <input type="number" min="1" max="20" v-model.number="form.labelQuestionCount" style="width:70px;" />
-          </div>
-        </div>
       </details>
 
       <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:20px;">
-        <button class="btn btn-primary" :disabled="generating || !canGenerate" @click="generateQuiz">
+        <button class="btn btn-primary" :disabled="generating || !form.categorySelections.length" @click="generateQuiz">
           {{ generating ? 'Generating…' : 'Generate quiz' }}
         </button>
         <button class="btn btn-secondary" @click="startBlank">
@@ -147,15 +127,15 @@
         @changed="reviewDirty = true"
       >
         <template #empty>
-          No questions here yet - use the panels below to add some, or generate a random batch.
+          No questions here yet - add a random batch, or search for specific ones, below.
         </template>
         <template #actions>
-          <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
-            <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; font-size:0.9rem; color:var(--text-dim);">
-              <input type="checkbox" v-model="includeAnswersInPdf" style="width:auto;" />
+          <div class="review-actions">
+            <label class="review-actions-toggle">
+              <input type="checkbox" v-model="includeAnswersInPdf" />
               Include answers in PDF
             </label>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <div class="review-actions-buttons">
               <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
                 {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
               </button>
@@ -194,7 +174,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import navTrigger from '../services/navTrigger'
 import QuizReviewEditor from '../components/QuizReviewEditor.vue'
@@ -205,10 +185,10 @@ import { LANGUAGES, languageLabel } from '../constants'
 const DRAFT_KEY = 'quiz_draft_form'
 
 // Merged with the defaults, not replaced by them - an old draft saved before
-// a field like labelIds existed would otherwise permanently miss that field,
-// since it would just become the entire form object as-is. Spreading the
-// draft's own values second means anything it does have still wins, while
-// anything it's missing falls back to the default.
+// a new field was added to this form would otherwise permanently miss that
+// field, since it would just become the entire form object as-is. Spreading
+// the draft's own values second means anything it does have still wins,
+// while anything it's missing falls back to the default.
 const form = reactive({
   title: '',
   language: 'EN',
@@ -216,11 +196,8 @@ const form = reactive({
   maxDifficulty: 10,
   categorySelections: [], // [{ category, numberOfQuestions }]
   includeMySubmissions: false,
-  labelIds: [],
-  labelQuestionCount: 5,
   ...(loadDraft() || {})
 })
-const allLabels = ref([])
 
 const availableCategories = ref([])
 const categoriesLoading = ref(true)
@@ -283,22 +260,7 @@ watch(form, (value) => {
   }
 }, { deep: true })
 
-onMounted(() => {
-  loadCategories()
-  api.fetchQuestionLabels().then(list => { allLabels.value = list }).catch(() => {})
-})
-
-function toggleLabelFilter(id) {
-  const idx = form.labelIds.indexOf(id)
-  if (idx === -1) form.labelIds.push(id)
-  else form.labelIds.splice(idx, 1)
-}
-
-const canGenerate = computed(() => {
-  const hasCategoryPicks = form.categorySelections.length > 0
-  const hasLabelPicks = form.labelIds.length > 0 && form.labelQuestionCount > 0
-  return hasCategoryPicks || hasLabelPicks
-})
+onMounted(loadCategories)
 
 async function loadCategories() {
   categoriesLoading.value = true
@@ -377,9 +339,7 @@ async function generateQuiz() {
       minDifficulty: form.minDifficulty,
       maxDifficulty: form.maxDifficulty,
       categorySelections: form.categorySelections,
-      includeMySubmissions: form.includeMySubmissions,
-      labelIds: form.labelIds,
-      labelQuestionCount: form.labelQuestionCount
+      includeMySubmissions: form.includeMySubmissions
     })
     quiz.value = result
     reviewDirty.value = false
