@@ -947,9 +947,21 @@ mark {
   color: var(--text-dim);
 }
 
+.guess-box-wrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  background: var(--ink-raised);
+  border-top: 1px solid var(--border);
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+}
 .guess-box {
   max-width: 480px;
-  margin-bottom: 20px;
+  width: 100%;
   position: relative;
 }
 .guess-box input {
@@ -957,7 +969,7 @@ mark {
   padding: 14px 20px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: var(--ink-raised);
+  background: var(--ink);
   color: var(--text);
   font-size: 0.95rem;
   font-family: var(--font-body);
@@ -980,11 +992,19 @@ mark {
 }
 
 .guess-results {
-  margin-top: 6px;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 45vh;
+  overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  overflow: hidden;
   background: var(--ink-raised);
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.35);
+}
+.guess-box-spacer {
+  height: 110px;
 }
 
 .guess-result-row {
@@ -1646,6 +1666,9 @@ table.scoreboard-table {
 
   .top-nav { padding: 12px 16px; }
   .top-nav .nav-link, .top-nav-user, .top-nav .btn { display: none; }
+
+  .guess-box-wrap { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  .guess-box-spacer { height: 170px; }
 
   .main-content {
     padding: 20px 16px 90px; /* extra bottom padding so content clears the bottom nav */

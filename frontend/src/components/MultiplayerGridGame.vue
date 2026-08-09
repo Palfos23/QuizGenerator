@@ -29,30 +29,33 @@
         </div>
       </div>
 
-      <div v-if="!gridComplete" class="guess-box" :class="{ shake: shakeGuessBox }">
-        <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayerName }}'s turn</p>
-        <input
-          type="text"
-          v-model="searchTerm"
-          placeholder="Search for a player…"
-          aria-label="Search for an answer"
-          autocomplete="off"
-          @keydown.esc="searchTerm = ''"
-        />
-        <div v-if="searchResults.length" class="guess-results">
-          <button
-            v-for="a in searchResults"
-            :key="a.id"
-            class="guess-result-row"
-            :disabled="guessing"
-            @click="submitGuess(a)"
-          >
-            {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
-          </button>
+      <div v-if="!gridComplete" class="guess-box-wrap no-print">
+        <div class="guess-box" :class="{ shake: shakeGuessBox }">
+          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayerName }}'s turn</p>
+          <input
+            type="text"
+            v-model="searchTerm"
+            placeholder="Search for an answer…"
+            aria-label="Search for an answer"
+            autocomplete="off"
+            @keydown.esc="searchTerm = ''"
+          />
+          <div v-if="searchResults.length" class="guess-results">
+            <button
+              v-for="a in searchResults"
+              :key="a.id"
+              class="guess-result-row"
+              :disabled="guessing"
+              @click="submitGuess(a)"
+            >
+              {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
+            </button>
+          </div>
         </div>
       </div>
+      <div v-if="!gridComplete" class="guess-box-spacer"></div>
 
-      <div v-else class="banner success" style="text-align:center;">
+      <div v-if="gridComplete" class="banner success" style="text-align:center;">
         <div><strong>Grid complete!</strong></div>
         <button class="btn btn-primary" style="margin-top:12px;" @click="nextGrid">
           {{ currentGridIndex + 1 < grids.length ? 'Next grid' : 'Finish game' }}

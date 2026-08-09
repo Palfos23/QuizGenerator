@@ -98,27 +98,30 @@
         <div><strong>Game over - out of strikes.</strong> You found {{ guessedCount }} / {{ state.entries.length }}. Reveal the rest, or keep going in Overtime just for fun.</div>
       </div>
 
-      <div v-if="canStillGuess" class="guess-box" :class="{ shake: shakeGuessBox }">
-        <input
-          type="text"
-          v-model="searchTerm"
-          placeholder="Search for a player…"
-          aria-label="Search for an answer"
-          autocomplete="off"
-          @keydown.esc="searchTerm = ''"
-        />
-        <div v-if="searchResults.length" class="guess-results">
-          <button
-            v-for="a in searchResults"
-            :key="a.id"
-            class="guess-result-row"
-            :disabled="guessing"
-            @click="submitGuess(a)"
-          >
-            {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
-          </button>
+      <div v-if="canStillGuess" class="guess-box-wrap no-print">
+        <div class="guess-box" :class="{ shake: shakeGuessBox }">
+          <input
+            type="text"
+            v-model="searchTerm"
+            placeholder="Search for an answer…"
+            aria-label="Search for an answer"
+            autocomplete="off"
+            @keydown.esc="searchTerm = ''"
+          />
+          <div v-if="searchResults.length" class="guess-results">
+            <button
+              v-for="a in searchResults"
+              :key="a.id"
+              class="guess-result-row"
+              :disabled="guessing"
+              @click="submitGuess(a)"
+            >
+              {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
+            </button>
+          </div>
         </div>
       </div>
+      <div v-if="canStillGuess" class="guess-box-spacer"></div>
 
       <div v-if="canStillGuess" class="no-print" style="margin-bottom:20px;">
         <button class="btn btn-secondary btn-sm" :disabled="actionBusy" @click="showGiveUpConfirm = true">Give up &amp; reveal remaining answers</button>
@@ -133,6 +136,7 @@
         <div
           v-for="e in state.entries"
           :key="e.id"
+          :ref="el => { if (el) tileRefs[e.id] = el }"
           class="grid-tile"
           :class="{
             correct: e.guessedByUser && !e.solvedInOvertime,
@@ -200,7 +204,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -220,6 +224,20 @@ const guessing = ref(false)
 const actionBusy = ref(false)
 
 const justSolvedId = ref(null)
+const tileRefs = {} // { [entryId]: HTMLElement } - populated via the tile's :ref in the template
+
+// Scrolls the just-solved tile into view - a sticky input keeps the input box
+// reachable, but doesn't help if the specific tile that changed is scrolled
+// out of view (e.g. answering an earlier tile while looking at a later row).
+// Respects prefers-reduced-motion like the rest of this app's animations.
+function scrollSolvedTileIntoView(entryId) {
+  nextTick(() => {
+    const el = tileRefs[entryId]
+    if (!el) return
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' })
+  })
+}
 const justStruck = ref(false)
 const shakeGuessBox = ref(false)
 
