@@ -167,13 +167,17 @@ onUnmounted(() => clearInterval(pollTimer))
 let searchDebounce = null
 watch(searchTerm, (val) => {
   clearTimeout(searchDebounce)
-  if (!val || val.trim().length < 3) {
+  const trimmed = (val || '').trim()
+  if (!trimmed) {
     searchResults.value = []
     return
   }
   searchDebounce = setTimeout(async () => {
     try {
-      searchResults.value = await api.searchGridCandidates(state.value.currentGridId, val)
+      const results = await api.searchGridCandidates(state.value.currentGridId, val)
+      searchResults.value = trimmed.length < 3
+        ? results.filter(a => a.name.toLowerCase() === trimmed.toLowerCase())
+        : results
     } catch (e) {
       // autocomplete failing isn't worth surfacing - just shows no results
     }

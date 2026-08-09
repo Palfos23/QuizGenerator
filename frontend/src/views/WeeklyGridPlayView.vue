@@ -273,13 +273,17 @@ async function loadState() {
 let searchDebounce = null
 watch(searchTerm, (val) => {
   clearTimeout(searchDebounce)
-  if (!val || val.trim().length < 3) {
+  const trimmed = (val || '').trim()
+  if (!trimmed) {
     searchResults.value = []
     return
   }
   searchDebounce = setTimeout(async () => {
     try {
-      searchResults.value = await api.searchGridCandidates(gridId, val)
+      const results = await api.searchGridCandidates(gridId, val)
+      searchResults.value = trimmed.length < 3
+        ? results.filter(a => a.name.toLowerCase() === trimmed.toLowerCase())
+        : results
     } catch (e) {
       // search failures are non-critical - just show no results
     }
