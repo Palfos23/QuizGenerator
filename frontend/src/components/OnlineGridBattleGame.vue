@@ -55,8 +55,6 @@
         </div>
       </div>
 
-      <div v-if="!state.gridComplete && isYourTurn" class="guess-box-spacer"></div>
-
       <div v-if="!state.gridComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
         Waiting for {{ currentTurnName }}'s turn…
       </div>

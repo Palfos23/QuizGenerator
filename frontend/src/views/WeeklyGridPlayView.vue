@@ -121,7 +121,6 @@
           </div>
         </div>
       </div>
-      <div v-if="canStillGuess" class="guess-box-spacer"></div>
 
       <div v-if="canStillGuess" class="no-print" style="margin-bottom:20px;">
         <button class="btn btn-secondary btn-sm" :disabled="actionBusy" @click="showGiveUpConfirm = true">Give up &amp; reveal remaining answers</button>

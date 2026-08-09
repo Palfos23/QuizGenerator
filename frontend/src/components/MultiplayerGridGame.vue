@@ -53,7 +53,6 @@
           </div>
         </div>
       </div>
-      <div v-if="!gridComplete" class="guess-box-spacer"></div>
 
       <div v-if="gridComplete" class="banner success" style="text-align:center;">
         <div><strong>Grid complete!</strong></div>
