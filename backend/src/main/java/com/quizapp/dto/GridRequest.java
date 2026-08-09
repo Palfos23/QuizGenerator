@@ -37,6 +37,20 @@ public class GridRequest {
     @Valid
     private List<GridEntryInputDto> entries;
 
+    // Pools this grid has imported candidates from during this editing session -
+    // recorded so a new member added to any of these pools later can be
+    // automatically propagated here too. Optional - null/empty is fine for a
+    // grid that was never built from a pool import.
+    private List<Long> linkedPoolIds;
+
+    public List<Long> getLinkedPoolIds() {
+        return linkedPoolIds;
+    }
+
+    public void setLinkedPoolIds(List<Long> linkedPoolIds) {
+        this.linkedPoolIds = linkedPoolIds;
+    }
+
     public String getTitle() {
         return title;
     }

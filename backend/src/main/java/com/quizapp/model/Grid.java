@@ -107,6 +107,34 @@ public class Grid {
     @OneToMany(mappedBy = "grid", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<GridEntry> entries = new HashSet<>();
 
+    // Pools this grid has imported candidates from, recorded automatically the
+    // moment an admin uses "import from pool" in the grid editor. When a new
+    // member is later added to any of these pools, that member is automatically
+    // added as a candidate here too - this is what makes that propagation
+    // possible, by knowing which grids to reach.
+    @ManyToMany
+    @JoinTable(
+            name = "grid_pool_links",
+            joinColumns = @JoinColumn(name = "grid_id"),
+            inverseJoinColumns = @JoinColumn(name = "pool_id"))
+    private Set<AthletePool> linkedPools = new HashSet<>();
+
+    public Set<AthletePool> getLinkedPools() {
+        return linkedPools;
+    }
+
+    public void setLinkedPools(Set<AthletePool> linkedPools) {
+        // Same mutate-in-place reasoning as candidates/entries above - avoids
+        // Hibernate deleting and re-inserting every join-table row on every save.
+        Set<AthletePool> incoming = linkedPools != null ? linkedPools : new HashSet<>();
+        this.linkedPools.removeIf(existing -> !incoming.contains(existing));
+        for (AthletePool p : incoming) {
+            if (!this.linkedPools.contains(p)) {
+                this.linkedPools.add(p);
+            }
+        }
+    }
+
     public Long getId() {
         return id;
     }

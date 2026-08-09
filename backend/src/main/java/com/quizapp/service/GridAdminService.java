@@ -3,10 +3,12 @@ package com.quizapp.service;
 import com.quizapp.dto.*;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
+import com.quizapp.model.AthletePool;
 import com.quizapp.model.Club;
 import com.quizapp.model.Grid;
 import com.quizapp.model.GridCandidate;
 import com.quizapp.model.GridEntry;
+import com.quizapp.repository.AthletePoolRepository;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.ClubRepository;
 import com.quizapp.repository.GridRepository;
@@ -25,12 +27,14 @@ public class GridAdminService {
     private final GridRepository gridRepository;
     private final AthleteRepository athleteRepository;
     private final ClubRepository clubRepository;
+    private final AthletePoolRepository athletePoolRepository;
 
     public GridAdminService(GridRepository gridRepository, AthleteRepository athleteRepository,
-                             ClubRepository clubRepository) {
+                             ClubRepository clubRepository, AthletePoolRepository athletePoolRepository) {
         this.gridRepository = gridRepository;
         this.athleteRepository = athleteRepository;
         this.clubRepository = clubRepository;
+        this.athletePoolRepository = athletePoolRepository;
     }
 
     @Transactional(readOnly = true)
@@ -98,6 +102,13 @@ public class GridAdminService {
         grid.setSortAscending(request.isSortAscending());
         grid.setRanked(request.isRanked());
         grid.setExcludedFromGridBattle(request.isExcludedFromGridBattle());
+
+        if (request.getLinkedPoolIds() != null && !request.getLinkedPoolIds().isEmpty()) {
+            List<AthletePool> pools = athletePoolRepository.findAllById(request.getLinkedPoolIds());
+            Set<AthletePool> merged = new HashSet<>(grid.getLinkedPools());
+            merged.addAll(pools);
+            grid.setLinkedPools(merged);
+        }
 
         // Single batch fetch instead of one query per athlete - looking each one
         // up individually is exactly the kind of thing that gets slower the bigger

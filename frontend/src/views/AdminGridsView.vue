@@ -370,6 +370,7 @@ function removeCandidate(c) {
 const clubOptions = ref([])
 const athletePools = ref([])
 const selectedPoolId = ref(null)
+const linkedPoolIds = ref([]) // pools imported from during this session - sent on save
 const poolsForSport = computed(() => athletePools.value.filter(p => p.sport === form.sport))
 
 const athleteSearchTerm = ref('')
@@ -467,7 +468,8 @@ async function importFromPool() {
   try {
     const pool = await api.adminGetAthletePool(selectedPoolId.value)
     const added = addCandidatesBulk(pool.members)
-    toast.show(`Imported ${added} subject(s) from "${pool.name}".`)
+    if (!linkedPoolIds.value.includes(pool.id)) linkedPoolIds.value.push(pool.id)
+    toast.show(`Imported ${added} subject(s) from "${pool.name}". This grid will now automatically get any new members added to that pool later.`)
     selectedPoolId.value = null
   } catch (e) {
     error.value = 'Could not import that pool.'
@@ -505,6 +507,7 @@ function resetForm() {
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
   selectedPoolId.value = null
+  linkedPoolIds.value = []
   loadClubOptions()
   loadAthletePools()
   rebuildCandidateDisplayOrder()
@@ -518,6 +521,7 @@ function openCreate() {
 
 async function openEdit(id) {
   error.value = ''
+  linkedPoolIds.value = []
   try {
     const detail = await api.adminGetGrid(id)
     form.title = detail.title
@@ -593,6 +597,7 @@ async function saveGrid() {
     ranked: form.ranked,
     excludedFromGridBattle: form.excludedFromGridBattle,
     candidateAthleteIds: candidates.value.map(c => c.athleteId),
+    linkedPoolIds: linkedPoolIds.value,
     entries: entries.map(c => ({
       athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: form.ranked ? c.hintValue : null,
       clubId: c.clubId, showLogo: c.showLogo, useOwnPhotoAsLogo: c.useOwnPhotoAsLogo

@@ -31,4 +31,9 @@ public interface GridRepository extends JpaRepository<Grid, Long> {
 
     @Query("SELECT DISTINCT g FROM Grid g JOIN g.entries e WHERE e.athlete.id = :athleteId")
     List<Grid> findByEntryAthleteId(Long athleteId);
+
+    // For propagating a newly-added pool member out to every grid that
+    // previously imported from that pool.
+    @Query("SELECT DISTINCT g FROM Grid g JOIN g.linkedPools p WHERE p.id = :poolId")
+    List<Grid> findByLinkedPoolId(Long poolId);
 }
