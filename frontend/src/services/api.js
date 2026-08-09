@@ -396,6 +396,9 @@ export default {
   submitGridBattleGuess(code, athleteId) {
     return client.post(`/rooms/${code}/grid-battle/guess`, { athleteId }).then(r => r.data)
   },
+  skipGridBattleTurn(code) {
+    return client.post(`/rooms/${code}/grid-battle/skip`).then(r => r.data)
+  },
   advanceGridBattleGrid(code) {
     return client.post(`/rooms/${code}/grid-battle/next-grid`).then(r => r.data)
   },

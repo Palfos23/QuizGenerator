@@ -51,6 +51,12 @@
               {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
             </button>
           </div>
+          <button
+            class="btn btn-secondary btn-sm"
+            style="margin-top:8px; width:100%;"
+            :disabled="guessing"
+            @click="skipTurn"
+          >Pass turn (costs a life)</button>
         </div>
       </div>
 
@@ -191,6 +197,26 @@ async function submitGuess(athlete) {
   } finally {
     guessing.value = false
   }
+}
+
+function skipTurn() {
+  const player = currentPlayerName.value
+  searchTerm.value = ''
+  searchResults.value = []
+  // Same cost as a wrong guess - passing isn't a free way to stall for time
+  // to think without the same strike a bad guess would cost.
+  livesUsed.value[player] = (livesUsed.value[player] || 0) + 1
+  shakeGuessBox.value = true
+  setTimeout(() => { shakeGuessBox.value = false }, 400)
+  if (livesUsed.value[player] >= gridState.value.maxStrikes) {
+    eliminatedPlayers.value.push(player)
+  }
+  if (eliminatedPlayers.value.length >= props.players.length) {
+    gridComplete.value = true
+    revealRemaining()
+    return
+  }
+  advanceTurn()
 }
 
 function advanceTurn() {

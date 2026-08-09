@@ -218,6 +218,37 @@ public class GridBattleOnlineService {
     }
 
     @Transactional
+    public GridBattleStateDto skip(GameRoom room, String requestingEmail) {
+        GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
+        GridBattleStateDto currentView = getState(room, requestingEmail);
+
+        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
+        if (currentView.isGridComplete()) throw new IllegalStateException("This grid is already finished.");
+        if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
+            throw new IllegalStateException("It's not your turn.");
+        }
+
+        GridBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+
+        GridBattleParticipantState myState = participantStateRepository
+                .findByRoomState_IdAndParticipant_Id(state.getId(), me.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No progress state for you in this room"));
+
+        // Same cost as a wrong guess - passing isn't a free way to stall for time
+        // to think without the same strike a bad guess would cost.
+        myState.setLivesUsedThisGrid(myState.getLivesUsedThisGrid() + 1);
+        participantStateRepository.save(myState);
+
+        List<GameRoomParticipant> ordered = room.getParticipants();
+        int myIndex = ordered.indexOf(me);
+        state.setCurrentTurnParticipantIndex((myIndex + 1) % ordered.size());
+        roomStateRepository.save(state);
+
+        return getState(room, requestingEmail);
+    }
+
+    @Transactional
     public GridBattleStateDto advanceToNextGrid(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
             throw new IllegalStateException("Only the host can move on to the next grid.");

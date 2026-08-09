@@ -52,6 +52,12 @@
               {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
             </button>
           </div>
+          <button
+            class="btn btn-secondary btn-sm"
+            style="margin-top:8px; width:100%;"
+            :disabled="guessing"
+            @click="skipTurn"
+          >Pass turn (costs a life)</button>
         </div>
       </div>
 
@@ -193,6 +199,20 @@ async function submitGuess(athlete) {
     applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
+  } finally {
+    guessing.value = false
+  }
+}
+
+async function skipTurn() {
+  guessing.value = true
+  searchTerm.value = ''
+  searchResults.value = []
+  try {
+    const fresh = await api.skipGridBattleTurn(props.roomCode)
+    applyState(fresh)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not skip your turn.'
   } finally {
     guessing.value = false
   }

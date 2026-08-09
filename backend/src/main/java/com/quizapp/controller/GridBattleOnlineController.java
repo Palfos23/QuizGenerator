@@ -35,6 +35,12 @@ public class GridBattleOnlineController {
         return gridBattleOnlineService.guess(room, authentication.getName(), request.getAthleteId());
     }
 
+    @PostMapping("/skip")
+    public GridBattleStateDto skip(@PathVariable String code, Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        return gridBattleOnlineService.skip(room, authentication.getName());
+    }
+
     @PostMapping("/next-grid")
     public GridBattleStateDto nextGrid(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);
