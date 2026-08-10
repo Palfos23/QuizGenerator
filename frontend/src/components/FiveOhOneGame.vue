@@ -23,6 +23,12 @@
     <template v-if="!winner">
       <div class="guess-box" :class="{ shake: shakeGuessBox }">
         <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayer }}'s throw</p>
+        <p v-if="bestAvailableScore !== null" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
+          Best available score: <strong style="color:var(--text);">{{ bestAvailableScore }}</strong>
+        </p>
+        <p v-if="checkoutCount !== null" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
+          <strong style="color:var(--text);">{{ checkoutCount }}</strong> possible checkout<span v-if="checkoutCount !== 1">s</span> remaining
+        </p>
         <input
           type="text"
           v-model="searchTerm"
@@ -144,6 +150,33 @@ function effectiveScore(rawValue) {
   if (IMPOSSIBLE_CHECKOUTS.has(rawValue)) return 0
   return rawValue
 }
+
+const currentPlayerTotal = computed(() => totals[currentPlayer.value])
+
+const unusedEntries = computed(() =>
+  props.category.entries.filter(e => !usedEntryIds.value.has(e.id))
+)
+
+// Above 180, a checkout isn't reachable on this throw no matter what's
+// picked - the only meaningful info is the best score actually available,
+// same idea as a player checking what their highest realistic score is.
+const bestAvailableScore = computed(() => {
+  if (currentPlayerTotal.value <= 180) return null
+  if (!unusedEntries.value.length) return 0
+  return Math.max(...unusedEntries.value.map(e => effectiveScore(e.value)))
+})
+
+// At or below 180, a checkout becomes possible on this throw - shown only
+// as a count, never which names/numbers would do it, so it's a strategic
+// signal without being a hint toward any specific answer.
+const checkoutCount = computed(() => {
+  if (currentPlayerTotal.value > 180) return null
+  const total = currentPlayerTotal.value
+  return unusedEntries.value.filter(e => {
+    const resulting = total - effectiveScore(e.value)
+    return resulting >= -10 && resulting <= 0
+  }).length
+})
 
 function submitThrow(entry) {
   const player = currentPlayer.value
