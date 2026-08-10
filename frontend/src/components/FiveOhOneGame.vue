@@ -30,6 +30,7 @@
     </div>
 
     <template v-if="!winner">
+      <div class="guess-box-center">
       <div class="guess-box" :class="{ shake: shakeGuessBox }">
         <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayer }}'s throw</p>
         <p v-if="bestAvailableScore !== null" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
@@ -52,6 +53,7 @@
             @click="submitThrow(e)"
           >{{ e.name }}</button>
         </div>
+      </div>
       </div>
 
       <div v-if="lastThrow" style="text-align:center; margin-top:16px; color:var(--text-dim); font-size:0.9rem;">

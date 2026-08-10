@@ -996,6 +996,11 @@ mark {
 .guess-box.shake {
   animation: guess-shake 0.4s ease;
 }
+.guess-box-center {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 
 @keyframes guess-shake {
   0%, 100% { transform: translateX(0); }
