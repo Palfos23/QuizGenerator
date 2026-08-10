@@ -199,10 +199,11 @@ public class GridAdminService {
             entry.setUseOwnPhotoAsLogo(input.isUseOwnPhotoAsLogo());
 
             if (input.getSelectedPhotoId() != null) {
+                final Athlete entryAthlete = athlete;
                 AthletePhoto photo = athletePhotoRepository.findById(input.getSelectedPhotoId())
-                        .filter(p -> p.getAthlete().getId().equals(athlete.getId()))
+                        .filter(p -> p.getAthlete().getId().equals(entryAthlete.getId()))
                         .orElseThrow(() -> new IllegalArgumentException(
-                                "That photo doesn't belong to '" + athlete.getName() + "'."));
+                                "That photo doesn't belong to '" + entryAthlete.getName() + "'."));
                 entry.setSelectedPhoto(photo);
             } else {
                 entry.setSelectedPhoto(null);
