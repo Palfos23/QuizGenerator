@@ -1,0 +1,100 @@
+package com.quizapp.model;
+
+import jakarta.persistence.*;
+
+// One tile on an Imposter board. The subject (athlete) is always visible to
+// players before it's flipped - flipping only reveals the verdict (fits vs
+// imposter), not the identity, which is the opposite of how Grid works.
+@Entity
+@Table(name = "imposter_tiles")
+public class ImposterTile {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "imposter_grid_id", nullable = false)
+    private ImposterGrid imposterGrid;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "athlete_id", nullable = false)
+    private Athlete athlete;
+
+    @Column(nullable = false)
+    private boolean imposter = false;
+
+    // Only meaningful when imposter=true - which genuine subject this
+    // imposter took the place of (e.g. Harry Winks replacing Alan Shearer
+    // in a top-10 PL scorers grid). Revealed only after every tile on the
+    // board has been flipped, never during play.
+    @ManyToOne
+    @JoinColumn(name = "replaced_athlete_id")
+    private Athlete replacedAthlete;
+
+    // Only meaningful when the parent grid's displayMode is NAME_AND_LOGO -
+    // same optional-club concept as a regular Grid entry, for the same reason
+    // (an athlete has no logo of its own to show).
+    @ManyToOne
+    @JoinColumn(name = "club_id")
+    private Club club;
+
+    public Club getClub() {
+        return club;
+    }
+
+    public void setClub(Club club) {
+        this.club = club;
+    }
+
+    @Column(nullable = false)
+    private int orderIndex = 0;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public ImposterGrid getImposterGrid() {
+        return imposterGrid;
+    }
+
+    public void setImposterGrid(ImposterGrid imposterGrid) {
+        this.imposterGrid = imposterGrid;
+    }
+
+    public Athlete getAthlete() {
+        return athlete;
+    }
+
+    public void setAthlete(Athlete athlete) {
+        this.athlete = athlete;
+    }
+
+    public boolean isImposter() {
+        return imposter;
+    }
+
+    public void setImposter(boolean imposter) {
+        this.imposter = imposter;
+    }
+
+    public Athlete getReplacedAthlete() {
+        return replacedAthlete;
+    }
+
+    public void setReplacedAthlete(Athlete replacedAthlete) {
+        this.replacedAthlete = replacedAthlete;
+    }
+
+    public int getOrderIndex() {
+        return orderIndex;
+    }
+
+    public void setOrderIndex(int orderIndex) {
+        this.orderIndex = orderIndex;
+    }
+}

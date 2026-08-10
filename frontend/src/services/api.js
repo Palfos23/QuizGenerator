@@ -437,5 +437,37 @@ export default {
   },
   adminDeleteFiveOhOneCategory(id) {
     return client.delete(`/admin/501/categories/${id}`)
+  },
+
+  // --- Imposter: user-facing ---
+  listImposterGrids(sport) {
+    const query = sport ? `?sport=${encodeURIComponent(sport)}` : ''
+    return client.get(`/imposter-grids${query}`).then(r => r.data)
+  },
+  getImposterPlayState(id) {
+    return client.get(`/imposter-grids/${id}/play`).then(r => r.data)
+  },
+  flipImposterTile(gridId, tileId) {
+    return client.post(`/imposter-grids/${gridId}/tiles/${tileId}/flip`).then(r => r.data)
+  },
+  getImposterReveal(gridId) {
+    return client.get(`/imposter-grids/${gridId}/reveal`).then(r => r.data)
+  },
+
+  // --- Imposter: admin ---
+  adminListImposterGrids() {
+    return client.get('/admin/imposter-grids').then(r => r.data)
+  },
+  adminGetImposterGrid(id) {
+    return client.get(`/admin/imposter-grids/${id}`).then(r => r.data)
+  },
+  adminCreateImposterGrid(payload) {
+    return client.post('/admin/imposter-grids', payload).then(r => r.data)
+  },
+  adminUpdateImposterGrid(id, payload) {
+    return client.put(`/admin/imposter-grids/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteImposterGrid(id) {
+    return client.delete(`/admin/imposter-grids/${id}`)
   }
 }
