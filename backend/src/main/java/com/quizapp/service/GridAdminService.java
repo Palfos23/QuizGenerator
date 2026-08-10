@@ -225,12 +225,24 @@ public class GridAdminService {
         dto.setSortAscending(grid.isSortAscending());
         dto.setRanked(grid.isRanked());
         dto.setExcludedFromGridBattle(grid.isExcludedFromGridBattle());
+
+        // Batch-convert every distinct athlete across both candidates and
+        // entries in one call (one query for all their photos combined),
+        // then build both lists from a lookup map - avoids querying photos
+        // once per candidate/entry, which was genuinely slow for a grid with
+        // hundreds of candidates.
+        java.util.Set<Athlete> distinctAthletes = new java.util.LinkedHashSet<>();
+        grid.getCandidates().forEach(c -> distinctAthletes.add(c.getAthlete()));
+        grid.getEntries().forEach(e -> distinctAthletes.add(e.getAthlete()));
+        Map<Long, AthleteDto> athleteDtoById = athleteService.toDtosWithPhotos(new java.util.ArrayList<>(distinctAthletes)).stream()
+                .collect(Collectors.toMap(AthleteDto::getId, a -> a));
+
         dto.setCandidates(grid.getCandidates().stream()
-                .map(c -> athleteService.toDtoWithPhotos(c.getAthlete()))
+                .map(c -> athleteDtoById.get(c.getAthlete().getId()))
                 .collect(Collectors.toList()));
         dto.setEntries(grid.getEntries().stream()
                 .map(e -> new GridAdminDetailDto.EntryDetail(
-                        e.getId(), athleteService.toDtoWithPhotos(e.getAthlete()), e.getHintLabel(), e.getHintValue(),
+                        e.getId(), athleteDtoById.get(e.getAthlete().getId()), e.getHintLabel(), e.getHintValue(),
                         e.getClub() != null ? ClubService.toDto(e.getClub()) : null, e.isShowLogo(),
                         e.isUseOwnPhotoAsLogo(), e.getSelectedPhoto() != null ? e.getSelectedPhoto().getId() : null))
                 .collect(Collectors.toList()));

@@ -1,5 +1,6 @@
 package com.quizapp.service;
 
+import com.quizapp.dto.AthleteDto;
 import com.quizapp.dto.ImposterGridAdminDetailDto;
 import com.quizapp.dto.ImposterGridRequest;
 import com.quizapp.dto.ImposterGridSummaryDto;
@@ -122,13 +123,23 @@ public class ImposterGridAdminService {
         dto.setDescription(grid.getDescription());
         dto.setSport(grid.getSport());
         dto.setDisplayMode(grid.getDisplayMode().name());
-        dto.setTiles(grid.getTiles().stream()
-                .sorted((a, b) -> Integer.compare(a.getOrderIndex(), b.getOrderIndex()))
+
+        java.util.Set<Athlete> distinctAthletes = new java.util.LinkedHashSet<>();
+        for (ImposterTile t : grid.getTiles()) {
+            distinctAthletes.add(t.getAthlete());
+            if (t.getReplacedAthlete() != null) distinctAthletes.add(t.getReplacedAthlete());
+        }
+        java.util.Map<Long, AthleteDto> athleteDtoById = athleteService.toDtosWithPhotos(new java.util.ArrayList<>(distinctAthletes)).stream()
+                .collect(Collectors.toMap(AthleteDto::getId, a -> a));
+
+        List<ImposterTile> sortedTiles = new java.util.ArrayList<>(grid.getTiles());
+        sortedTiles.sort((a, b) -> Integer.compare(a.getOrderIndex(), b.getOrderIndex()));
+        dto.setTiles(sortedTiles.stream()
                 .map(t -> new ImposterGridAdminDetailDto.TileDetail(
                         t.getId(),
-                        athleteService.toDtoWithPhotos(t.getAthlete()),
+                        athleteDtoById.get(t.getAthlete().getId()),
                         t.isImposter(),
-                        t.getReplacedAthlete() != null ? athleteService.toDtoWithPhotos(t.getReplacedAthlete()) : null,
+                        t.getReplacedAthlete() != null ? athleteDtoById.get(t.getReplacedAthlete().getId()) : null,
                         t.getClub() != null ? ClubService.toDto(t.getClub()) : null))
                 .collect(Collectors.toList()));
         return dto;

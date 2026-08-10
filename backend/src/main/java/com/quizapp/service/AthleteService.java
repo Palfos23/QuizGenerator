@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,12 +45,32 @@ public class AthleteService {
     // page, the grid editor's candidate/entry picker), not every place an
     // AthleteDto gets built, to avoid an extra query per athlete in contexts
     // (player-facing search, pool listings) that never display it.
+    // For a single athlete only (create/update) - for a whole list, use
+    // toDtosWithPhotos below instead, which batches the query.
     AthleteDto toDtoWithPhotos(Athlete a) {
         AthleteDto dto = toDto(a);
         dto.setAdditionalPhotos(athletePhotoRepository.findByAthlete_Id(a.getId()).stream()
                 .map(AthleteService::toPhotoDto)
                 .collect(Collectors.toList()));
         return dto;
+    }
+
+    // Batch version for lists - one query for every athlete's photos combined,
+    // instead of one query per athlete. Critical once the list is in the
+    // thousands (findAll/search on the Subjects admin page) - the per-athlete
+    // version above does the exact same job correctly for one item, but does
+    // real damage at list scale.
+    List<AthleteDto> toDtosWithPhotos(List<Athlete> athletes) {
+        List<Long> ids = athletes.stream().map(Athlete::getId).collect(Collectors.toList());
+        Map<Long, List<AthletePhotoDto>> photosByAthleteId = athletePhotoRepository.findByAthlete_IdIn(ids).stream()
+                .collect(Collectors.groupingBy(
+                        p -> p.getAthlete().getId(),
+                        Collectors.mapping(AthleteService::toPhotoDto, Collectors.toList())));
+        return athletes.stream().map(a -> {
+            AthleteDto dto = toDto(a);
+            dto.setAdditionalPhotos(photosByAthleteId.getOrDefault(a.getId(), List.of()));
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     private static AthletePhotoDto toPhotoDto(AthletePhoto p) {
@@ -93,18 +114,18 @@ public class AthleteService {
 
     @Transactional(readOnly = true)
     public List<AthleteDto> findAll() {
-        return athleteRepository.findAll().stream().map(this::toDtoWithPhotos).collect(Collectors.toList());
+        return toDtosWithPhotos(athleteRepository.findAll());
     }
 
     @Transactional(readOnly = true)
     public List<AthleteDto> search(String sport, String team, String nameContains) {
         List<Athlete> pool = sport != null ? athleteRepository.findBySport(sport) : athleteRepository.findAll();
-        return pool.stream()
+        List<Athlete> filtered = pool.stream()
                 .filter(a -> team == null || team.isBlank() || (a.getTeam() != null && a.getTeam().equalsIgnoreCase(team)))
                 .filter(a -> nameContains == null || nameContains.isBlank()
                         || a.getName().toLowerCase().contains(nameContains.toLowerCase()))
-                .map(this::toDtoWithPhotos)
                 .collect(Collectors.toList());
+        return toDtosWithPhotos(filtered);
     }
 
     @Transactional
