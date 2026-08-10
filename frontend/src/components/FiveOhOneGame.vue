@@ -132,7 +132,7 @@ function showThrowOverlay(text, kind) {
 }
 
 function recentThrowsFor(player) {
-  return history.value.filter(t => t.player === player).slice(-5)
+  return history.value.filter(t => t.player === player).slice(-4)
 }
 
 function progressIdentity() {
