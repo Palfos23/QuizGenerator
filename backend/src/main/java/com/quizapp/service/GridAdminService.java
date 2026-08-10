@@ -3,11 +3,13 @@ package com.quizapp.service;
 import com.quizapp.dto.*;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
+import com.quizapp.model.AthletePhoto;
 import com.quizapp.model.AthletePool;
 import com.quizapp.model.Club;
 import com.quizapp.model.Grid;
 import com.quizapp.model.GridCandidate;
 import com.quizapp.model.GridEntry;
+import com.quizapp.repository.AthletePhotoRepository;
 import com.quizapp.repository.AthletePoolRepository;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.ClubRepository;
@@ -28,13 +30,18 @@ public class GridAdminService {
     private final AthleteRepository athleteRepository;
     private final ClubRepository clubRepository;
     private final AthletePoolRepository athletePoolRepository;
+    private final AthletePhotoRepository athletePhotoRepository;
+    private final AthleteService athleteService;
 
     public GridAdminService(GridRepository gridRepository, AthleteRepository athleteRepository,
-                             ClubRepository clubRepository, AthletePoolRepository athletePoolRepository) {
+                             ClubRepository clubRepository, AthletePoolRepository athletePoolRepository,
+                             AthletePhotoRepository athletePhotoRepository, AthleteService athleteService) {
         this.gridRepository = gridRepository;
         this.athleteRepository = athleteRepository;
         this.clubRepository = clubRepository;
         this.athletePoolRepository = athletePoolRepository;
+        this.athletePhotoRepository = athletePhotoRepository;
+        this.athleteService = athleteService;
     }
 
     @Transactional(readOnly = true)
@@ -191,6 +198,16 @@ public class GridAdminService {
             entry.setShowLogo(input.getShowLogo());
             entry.setUseOwnPhotoAsLogo(input.isUseOwnPhotoAsLogo());
 
+            if (input.getSelectedPhotoId() != null) {
+                AthletePhoto photo = athletePhotoRepository.findById(input.getSelectedPhotoId())
+                        .filter(p -> p.getAthlete().getId().equals(athlete.getId()))
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "That photo doesn't belong to '" + athlete.getName() + "'."));
+                entry.setSelectedPhoto(photo);
+            } else {
+                entry.setSelectedPhoto(null);
+            }
+
             entries.add(entry);
         }
         grid.setEntries(entries);
@@ -208,13 +225,13 @@ public class GridAdminService {
         dto.setRanked(grid.isRanked());
         dto.setExcludedFromGridBattle(grid.isExcludedFromGridBattle());
         dto.setCandidates(grid.getCandidates().stream()
-                .map(c -> AthleteService.toDto(c.getAthlete()))
+                .map(c -> athleteService.toDtoWithPhotos(c.getAthlete()))
                 .collect(Collectors.toList()));
         dto.setEntries(grid.getEntries().stream()
                 .map(e -> new GridAdminDetailDto.EntryDetail(
-                        e.getId(), AthleteService.toDto(e.getAthlete()), e.getHintLabel(), e.getHintValue(),
+                        e.getId(), athleteService.toDtoWithPhotos(e.getAthlete()), e.getHintLabel(), e.getHintValue(),
                         e.getClub() != null ? ClubService.toDto(e.getClub()) : null, e.isShowLogo(),
-                        e.isUseOwnPhotoAsLogo()))
+                        e.isUseOwnPhotoAsLogo(), e.getSelectedPhoto() != null ? e.getSelectedPhoto().getId() : null))
                 .collect(Collectors.toList()));
         return dto;
     }

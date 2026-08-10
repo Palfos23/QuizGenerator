@@ -148,7 +148,7 @@ public class GridBattleOnlineService {
                     boolean photoVisible = visible || !grid.isRanked();
                     return new GridBattleEntryDto(e.getId(), e.getHintLabel(), e.getHintValue(), isSolved,
                             visible ? e.getAthlete().getName() : null,
-                            photoVisible ? e.getAthlete().getPhotoUrl() : null,
+                            photoVisible ? resolvedPhotoUrl(e) : null,
                             logoUrl(e), hintColor(e),
                             isSolved ? s.getSolvedBy().getDisplayName() : null);
                 })
@@ -294,8 +294,12 @@ public class GridBattleOnlineService {
 
     private String logoUrl(GridEntry entry) {
         if (!entry.isShowLogo()) return null;
-        if (entry.isUseOwnPhotoAsLogo()) return entry.getAthlete().getPhotoUrl();
+        if (entry.isUseOwnPhotoAsLogo()) return resolvedPhotoUrl(entry);
         return entry.getClub() != null ? entry.getClub().getLogoUrl() : null;
+    }
+
+    private String resolvedPhotoUrl(GridEntry entry) {
+        return entry.getSelectedPhoto() != null ? entry.getSelectedPhoto().getPhotoUrl() : entry.getAthlete().getPhotoUrl();
     }
 
     private java.util.Comparator<GridEntry> entrySortOrderForOnline(Grid grid) {

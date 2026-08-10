@@ -38,6 +38,21 @@
         </div>
       </div>
 
+      <div class="field">
+        <label>
+          Additional photos <span class="picker-hint">optional - lets different grids using this subject show a different picture</span>
+        </label>
+        <div v-for="(photo, idx) in local.additionalPhotos" :key="idx" class="additional-photo-row">
+          <input type="text" v-model="photo.photoUrl" placeholder="https://…" style="flex:1;" />
+          <input type="text" v-model="photo.label" placeholder="Label (optional), e.g. Alternate poster" style="flex:1;" />
+          <button type="button" class="chip-remove-btn" @click="local.additionalPhotos.splice(idx, 1)">✕</button>
+          <img v-if="photo.photoUrl" :src="photo.photoUrl" alt="" class="club-logo-preview" style="width:40px; height:40px;" />
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addPhoto">
+          + Add another photo
+        </button>
+      </div>
+
       <div style="display:flex; gap:10px; justify-content:flex-end;">
         <button class="btn btn-secondary" @click="$emit('close')">Cancel</button>
         <button class="btn btn-primary" :disabled="saving" @click="save">
@@ -68,8 +83,12 @@ const saving = ref(false)
 const localError = ref('')
 
 const local = reactive(props.athlete
-  ? { ...props.athlete }
-  : { name: '', sport: '', team: '', photoUrl: '' })
+  ? { ...props.athlete, additionalPhotos: (props.athlete.additionalPhotos || []).map(p => ({ ...p })) }
+  : { name: '', sport: '', team: '', photoUrl: '', additionalPhotos: [] })
+
+function addPhoto() {
+  local.additionalPhotos.push({ photoUrl: '', label: '' })
+}
 
 async function save() {
   localError.value = ''
@@ -79,9 +98,10 @@ async function save() {
   }
   saving.value = true
   try {
+    const payload = { ...local, additionalPhotos: local.additionalPhotos.filter(p => p.photoUrl && p.photoUrl.trim()) }
     const saved = isEdit
-      ? await api.adminUpdateAthlete(local.id, local)
-      : await api.adminCreateAthlete(local)
+      ? await api.adminUpdateAthlete(local.id, payload)
+      : await api.adminCreateAthlete(payload)
     emit('saved', saved)
   } catch (e) {
     localError.value = e.response?.data?.message || 'Could not save the subject.'

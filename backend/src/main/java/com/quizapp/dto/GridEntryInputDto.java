@@ -28,6 +28,18 @@ public class GridEntryInputDto {
     // unique to itself (movie posters), not shared across entries.
     private boolean useOwnPhotoAsLogo = false;
 
+    // Which of this athlete's additional photos this entry should display,
+    // instead of the athlete's primary photoUrl. Null = use the primary photo.
+    private Long selectedPhotoId;
+
+    public Long getSelectedPhotoId() {
+        return selectedPhotoId;
+    }
+
+    public void setSelectedPhotoId(Long selectedPhotoId) {
+        this.selectedPhotoId = selectedPhotoId;
+    }
+
     public boolean isUseOwnPhotoAsLogo() {
         return useOwnPhotoAsLogo;
     }

@@ -53,7 +53,7 @@ public class GridPlayService {
         return grid.getEntries().stream()
                 .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), true, false, false,
-                        e.getAthlete().getName(), e.getAthlete().getPhotoUrl(), logoUrl(e), hintColor(e)))
+                        e.getAthlete().getName(), resolvedPhotoUrl(e), logoUrl(e), hintColor(e)))
                 .collect(Collectors.toList());
     }
 
@@ -247,7 +247,7 @@ public class GridPlayService {
         dto.setEntries(grid.getEntries().stream()
                 .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), false, false, false,
-                        null, grid.isRanked() ? null : e.getAthlete().getPhotoUrl(), logoUrl(e), hintColor(e)))
+                        null, grid.isRanked() ? null : resolvedPhotoUrl(e), logoUrl(e), hintColor(e)))
                 .collect(Collectors.toList()));
         return dto;
     }
@@ -275,7 +275,7 @@ public class GridPlayService {
         if (matched != null) {
             result.setCorrect(true);
             result.setEntry(new GridEntryViewDto(matched.getId(), matched.getHintLabel(), matched.getHintValue(),
-                    true, true, false, matched.getAthlete().getName(), matched.getAthlete().getPhotoUrl(),
+                    true, true, false, matched.getAthlete().getName(), resolvedPhotoUrl(matched),
                     logoUrl(matched), hintColor(matched)));
             result.setAllSolved(revealed.size() + 1 >= grid.getEntries().size());
         } else {
@@ -310,7 +310,7 @@ public class GridPlayService {
             }
             result.setCorrect(true);
             result.setEntry(new GridEntryViewDto(matched.getId(), matched.getHintLabel(), matched.getHintValue(),
-                    true, true, attempt.isOvertime(), matched.getAthlete().getName(), matched.getAthlete().getPhotoUrl(),
+                    true, true, attempt.isOvertime(), matched.getAthlete().getName(), resolvedPhotoUrl(matched),
                     logoUrl(matched), hintColor(matched)));
 
             boolean allSolved = attempt.getSolvedEntryIds().size() >= grid.getEntries().size();
@@ -394,7 +394,7 @@ public class GridPlayService {
                     return new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), solved, guessedByUser,
                             solvedInOvertime,
                             solved ? e.getAthlete().getName() : null,
-                            photoVisible ? e.getAthlete().getPhotoUrl() : null,
+                            photoVisible ? resolvedPhotoUrl(e) : null,
                             logoUrl(e), hintColor(e));
                 })
                 .collect(Collectors.toList());
@@ -429,7 +429,14 @@ public class GridPlayService {
     // club was set at all.
     private String logoUrl(GridEntry entry) {
         if (!entry.isShowLogo()) return null;
-        if (entry.isUseOwnPhotoAsLogo()) return entry.getAthlete().getPhotoUrl();
+        if (entry.isUseOwnPhotoAsLogo()) return resolvedPhotoUrl(entry);
         return entry.getClub() != null ? entry.getClub().getLogoUrl() : null;
+    }
+
+    // The photo to actually show for this entry - a grid-specific override if
+    // one was chosen, otherwise the athlete's own primary photo, same as
+    // before this existed.
+    private String resolvedPhotoUrl(GridEntry entry) {
+        return entry.getSelectedPhoto() != null ? entry.getSelectedPhoto().getPhotoUrl() : entry.getAthlete().getPhotoUrl();
     }
 }

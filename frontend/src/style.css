@@ -766,6 +766,22 @@ mark {
   background: rgba(255,255,255,0.03);
 }
 
+.additional-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.additional-photo-row input {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+}
+
 /* ---------- Weekly grid game ---------- */
 
 .grid-status-bar {

@@ -181,6 +181,10 @@
                 <option v-if="c.photoUrl" value="own">Use this subject's own photo</option>
                 <option v-for="club in clubOptions" :key="club.id" :value="String(club.id)">{{ club.name }}</option>
               </select>
+              <select v-if="c.additionalPhotos && c.additionalPhotos.length" v-model="c.selectedPhotoId" style="width:190px;">
+                <option :value="null">Default photo</option>
+                <option v-for="p in c.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
+              </select>
               <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400; font-size:0.82rem; color:var(--text-dim); margin:0;">
                 <input type="checkbox" v-model="c.showLogo" style="width:auto;" :disabled="!c.clubId && !c.useOwnPhotoAsLogo" />
                 Show logo
@@ -438,7 +442,9 @@ function addCandidate(athlete) {
   if (candidates.value.some(c => c.athleteId === athlete.id)) return
   candidates.value.push({
     athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
-    correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true, useOwnPhotoAsLogo: false
+    additionalPhotos: athlete.additionalPhotos || [],
+    correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true, useOwnPhotoAsLogo: false,
+    selectedPhotoId: null
   })
   rebuildCandidateDisplayOrder()
 }
@@ -454,7 +460,9 @@ function addCandidatesBulk(athleteList) {
     existingIds.add(athlete.id)
     candidates.value.push({
       athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
-      correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true, useOwnPhotoAsLogo: false
+      additionalPhotos: athlete.additionalPhotos || [],
+      correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true, useOwnPhotoAsLogo: false,
+      selectedPhotoId: null
     })
     added++
   }
@@ -538,12 +546,14 @@ async function openEdit(id) {
       const entry = entryByAthleteId.get(a.id)
       return {
         athleteId: a.id, name: a.name, team: a.team, photoUrl: a.photoUrl,
+        additionalPhotos: a.additionalPhotos || [],
         correct: !!entry,
         hintLabel: entry?.hintLabel || '',
         hintValue: entry?.hintValue ?? null,
         clubId: entry?.club?.id ?? null,
         showLogo: entry?.showLogo ?? true,
-        useOwnPhotoAsLogo: entry?.useOwnPhotoAsLogo ?? false
+        useOwnPhotoAsLogo: entry?.useOwnPhotoAsLogo ?? false,
+        selectedPhotoId: entry?.selectedPhotoId ?? null
       }
     })
     candidatePage.value = 1
@@ -600,7 +610,8 @@ async function saveGrid() {
     linkedPoolIds: linkedPoolIds.value,
     entries: entries.map(c => ({
       athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: form.ranked ? c.hintValue : null,
-      clubId: c.clubId, showLogo: c.showLogo, useOwnPhotoAsLogo: c.useOwnPhotoAsLogo
+      clubId: c.clubId, showLogo: c.showLogo, useOwnPhotoAsLogo: c.useOwnPhotoAsLogo,
+      selectedPhotoId: c.selectedPhotoId
     }))
   }
 

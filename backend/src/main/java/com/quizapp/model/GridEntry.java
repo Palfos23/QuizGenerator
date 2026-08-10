@@ -57,6 +57,22 @@ public class GridEntry {
     @Column(name = "use_own_photo_as_logo", nullable = false)
     private boolean useOwnPhotoAsLogo = false;
 
+    // Which of this athlete's additional photos to show for this specific
+    // entry, if any - lets the same subject show a different picture in
+    // different grids instead of always the one photoUrl. Null means "use the
+    // athlete's primary photoUrl", same as before this existed.
+    @ManyToOne
+    @JoinColumn(name = "selected_photo_id")
+    private AthletePhoto selectedPhoto;
+
+    public AthletePhoto getSelectedPhoto() {
+        return selectedPhoto;
+    }
+
+    public void setSelectedPhoto(AthletePhoto selectedPhoto) {
+        this.selectedPhoto = selectedPhoto;
+    }
+
     public Club getClub() {
         return club;
     }
