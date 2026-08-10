@@ -23,8 +23,8 @@
             v-for="(t, i) in recentThrowsFor(p)"
             :key="i"
             class="fiveoo-throw-chip"
-            :class="{ bust: t.bust }"
-          >{{ t.bust ? 'BUST' : t.score }}</span>
+            :class="{ bust: t.bust || t.score === 0 }"
+          >{{ t.bust ? 'BUST' : (t.score === 0 ? '✕' : t.score) }}</span>
         </div>
       </div>
     </div>
@@ -85,7 +85,7 @@
       </div>
     </details>
 
-    <div v-if="throwOverlay" class="fiveoo-throw-overlay" :class="{ hit: !throwOverlay.bust, bust: throwOverlay.bust }">
+    <div v-if="throwOverlay" class="fiveoo-throw-overlay" :class="throwOverlay.kind">
       <div class="fiveoo-overlay-text">{{ throwOverlay.text }}</div>
     </div>
   </div>
@@ -116,17 +116,17 @@ const shakeGuessBox = ref(false)
 
 const searchTerm = ref('')
 
-const throwOverlay = ref(null) // { text, bust } or null when hidden
+const throwOverlay = ref(null) // { text, kind: 'hit' | 'zero' | 'bust' } or null when hidden
 let overlayTimeout = null
 
-function showThrowOverlay(text, bust) {
+function showThrowOverlay(text, kind) {
   clearTimeout(overlayTimeout)
   // Reset first so re-triggering on back-to-back throws restarts the
   // animation cleanly instead of the new one silently no-oping because
   // the element never left the DOM.
   throwOverlay.value = null
   requestAnimationFrame(() => {
-    throwOverlay.value = { text, bust }
+    throwOverlay.value = { text, kind }
     overlayTimeout = setTimeout(() => { throwOverlay.value = null }, 1400)
   })
 }
@@ -230,7 +230,13 @@ function submitThrow(entry) {
   lastThrow.value = { player, name: entry.name, rawValue: entry.value, score, bust, resultingTotal: bust ? previousTotal : candidateTotal }
   history.value.push({ ...lastThrow.value })
 
-  showThrowOverlay(bust ? 'BUST!' : String(score), bust)
+  if (bust) {
+    showThrowOverlay('BUST!', 'bust')
+  } else if (score === 0) {
+    showThrowOverlay('✕', 'zero')
+  } else {
+    showThrowOverlay(String(score), 'hit')
+  }
 
   const landedInWindow = !bust && candidateTotal >= -10 && candidateTotal <= 0
 
