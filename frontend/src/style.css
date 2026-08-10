@@ -1806,3 +1806,93 @@ table.scoreboard-table {
   body, html { background: white; }
   .question-card { box-shadow: none; break-inside: avoid; margin-bottom: 16px; }
 }
+
+/* ---------- 501 game ---------- */
+.fiveoo-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.fiveoo-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+}
+.fiveoo-header .fiveoo-description {
+  margin: 6px 0 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+.fiveoo-header .fiveoo-rules-reminder {
+  margin: 10px auto 0;
+  max-width: 480px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.fiveoo-recent-throws {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+.fiveoo-throw-chip {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(45, 212, 191, 0.15);
+  color: var(--teal);
+}
+.fiveoo-throw-chip.bust {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--coral);
+  text-decoration: line-through;
+}
+
+.fiveoo-throw-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  pointer-events: none;
+  background: rgba(10, 11, 20, 0.35);
+  animation: fiveoo-overlay-fade 1.4s ease forwards;
+}
+.fiveoo-throw-overlay .fiveoo-overlay-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(3.5rem, 18vw, 9rem);
+  line-height: 1;
+  text-align: center;
+  animation: fiveoo-overlay-pop 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.fiveoo-throw-overlay.hit .fiveoo-overlay-text {
+  color: var(--teal);
+  text-shadow: 0 0 40px rgba(45, 212, 191, 0.5);
+}
+.fiveoo-throw-overlay.bust .fiveoo-overlay-text {
+  color: var(--coral);
+  text-shadow: 0 0 40px rgba(248, 113, 113, 0.5);
+}
+
+@keyframes fiveoo-overlay-fade {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes fiveoo-overlay-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  15% { transform: scale(1.08); opacity: 1; }
+  25% { transform: scale(1); opacity: 1; }
+  80% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.04); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fiveoo-throw-overlay, .fiveoo-throw-overlay .fiveoo-overlay-text {
+    animation: none;
+  }
+}

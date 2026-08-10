@@ -1,8 +1,9 @@
 <template>
   <div>
-    <div class="grid-status-bar">
-      <div class="grid-progress">{{ category.title }}</div>
-      <div style="color:var(--text-dim); font-size:0.85rem;">First to checkout between 0 and -10 wins</div>
+    <div class="fiveoo-header">
+      <h2>{{ category.title }}</h2>
+      <p v-if="category.description" class="fiveoo-description">{{ category.description }}</p>
+      <p class="fiveoo-rules-reminder">First to checkout between 0 and -10 wins</p>
     </div>
 
     <div class="mp-player-row">
@@ -17,6 +18,14 @@
           {{ totals[p] }}
         </div>
         <div v-if="windowReacher === p && !winner" style="font-size:0.78rem; color:var(--gold); margin-top:2px;">In the window!</div>
+        <div v-if="recentThrowsFor(p).length" class="fiveoo-recent-throws">
+          <span
+            v-for="(t, i) in recentThrowsFor(p)"
+            :key="i"
+            class="fiveoo-throw-chip"
+            :class="{ bust: t.bust }"
+          >{{ t.bust ? 'BUST' : t.score }}</span>
+        </div>
       </div>
     </div>
 
@@ -73,6 +82,10 @@
         </div>
       </div>
     </details>
+
+    <div v-if="throwOverlay" class="fiveoo-throw-overlay" :class="{ hit: !throwOverlay.bust, bust: throwOverlay.bust }">
+      <div class="fiveoo-overlay-text">{{ throwOverlay.text }}</div>
+    </div>
   </div>
 </template>
 
@@ -100,6 +113,25 @@ const lastThrow = ref(null)
 const shakeGuessBox = ref(false)
 
 const searchTerm = ref('')
+
+const throwOverlay = ref(null) // { text, bust } or null when hidden
+let overlayTimeout = null
+
+function showThrowOverlay(text, bust) {
+  clearTimeout(overlayTimeout)
+  // Reset first so re-triggering on back-to-back throws restarts the
+  // animation cleanly instead of the new one silently no-oping because
+  // the element never left the DOM.
+  throwOverlay.value = null
+  requestAnimationFrame(() => {
+    throwOverlay.value = { text, bust }
+    overlayTimeout = setTimeout(() => { throwOverlay.value = null }, 1400)
+  })
+}
+
+function recentThrowsFor(player) {
+  return history.value.filter(t => t.player === player).slice(-5)
+}
 
 function progressIdentity() {
   return { categoryId: props.category.id, players: props.players }
@@ -195,6 +227,8 @@ function submitThrow(entry) {
 
   lastThrow.value = { player, name: entry.name, rawValue: entry.value, score, bust, resultingTotal: bust ? previousTotal : candidateTotal }
   history.value.push({ ...lastThrow.value })
+
+  showThrowOverlay(bust ? 'BUST!' : String(score), bust)
 
   const landedInWindow = !bust && candidateTotal >= -10 && candidateTotal <= 0
 
