@@ -77,10 +77,21 @@ const currentGridIndex = ref(0)
 const currentPlayerIdx = ref(0)
 const scores = reactive({}) // accumulates across every board in this session
 const accumulatedReveal = ref([]) // reveal entries from every completed board so far
+const tileOrders = reactive({}) // gridId -> array of tile ids in the shuffled order for this session
 const flipOverlay = ref(null)
 const flipping = ref(false)
 let overlayTimeout = null
 let restoring = false // true while applying saved progress, so that initial restore doesn't itself get saved as a redundant write
+
+function shuffledIds(ids) {
+  // Fisher-Yates - unbiased, and doesn't mutate the input array
+  const arr = [...ids]
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
+}
 
 const currentPlayer = computed(() => props.players[currentPlayerIdx.value])
 
@@ -94,6 +105,7 @@ onMounted(async () => {
     Object.assign(flippedTiles, saved.flippedTiles || {})
     for (const p of props.players) scores[p] = saved.scores?.[p] ?? 0
     accumulatedReveal.value = saved.accumulatedReveal || []
+    Object.assign(tileOrders, saved.tileOrders || {})
   } else {
     for (const p of props.players) scores[p] = 0
   }
@@ -105,7 +117,18 @@ async function loadPlayState() {
   loading.value = true
   error.value = ''
   try {
-    playState.value = await api.getImposterPlayState(props.gridIds[currentGridIndex.value])
+    const gridId = props.gridIds[currentGridIndex.value]
+    const state = await api.getImposterPlayState(gridId)
+
+    let order = tileOrders[gridId]
+    if (!order) {
+      order = shuffledIds(state.tiles.map(t => t.id))
+      tileOrders[gridId] = order
+    }
+    const tilesById = new Map(state.tiles.map(t => [t.id, t]))
+    state.tiles = order.map(id => tilesById.get(id)).filter(Boolean)
+
+    playState.value = state
   } catch (e) {
     error.value = 'Could not load this board.'
   } finally {
@@ -133,10 +156,11 @@ function saveProgress() {
     currentPlayerIdx: currentPlayerIdx.value,
     flippedTiles: { ...flippedTiles },
     scores: { ...scores },
-    accumulatedReveal: accumulatedReveal.value
+    accumulatedReveal: accumulatedReveal.value,
+    tileOrders: { ...tileOrders }
   })
 }
-watch([currentGridIndex, currentPlayerIdx, flippedTiles, scores, accumulatedReveal], saveProgress, { deep: true })
+watch([currentGridIndex, currentPlayerIdx, flippedTiles, scores, accumulatedReveal, tileOrders], saveProgress, { deep: true })
 
 async function flipTile(t) {
   if (flipping.value || flippedTiles[t.id]) return
