@@ -6,9 +6,11 @@ import com.quizapp.dto.ImposterGridRequest;
 import com.quizapp.dto.ImposterGridSummaryDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
+import com.quizapp.model.AthletePhoto;
 import com.quizapp.model.Club;
 import com.quizapp.model.ImposterGrid;
 import com.quizapp.model.ImposterTile;
+import com.quizapp.repository.AthletePhotoRepository;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.ClubRepository;
 import com.quizapp.repository.ImposterGridRepository;
@@ -25,13 +27,16 @@ public class ImposterGridAdminService {
     private final ImposterGridRepository gridRepository;
     private final AthleteRepository athleteRepository;
     private final ClubRepository clubRepository;
+    private final AthletePhotoRepository athletePhotoRepository;
     private final AthleteService athleteService;
 
     public ImposterGridAdminService(ImposterGridRepository gridRepository, AthleteRepository athleteRepository,
-                                     ClubRepository clubRepository, AthleteService athleteService) {
+                                     ClubRepository clubRepository, AthletePhotoRepository athletePhotoRepository,
+                                     AthleteService athleteService) {
         this.gridRepository = gridRepository;
         this.athleteRepository = athleteRepository;
         this.clubRepository = clubRepository;
+        this.athletePhotoRepository = athletePhotoRepository;
         this.athleteService = athleteService;
     }
 
@@ -100,6 +105,17 @@ public class ImposterGridAdminService {
                 tile.setClub(null);
             }
 
+            if (input.getSelectedPhotoId() != null) {
+                final Athlete tileAthlete = athlete;
+                AthletePhoto photo = athletePhotoRepository.findById(input.getSelectedPhotoId())
+                        .filter(p -> p.getAthlete().getId().equals(tileAthlete.getId()))
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "That photo doesn't belong to '" + tileAthlete.getName() + "'."));
+                tile.setSelectedPhoto(photo);
+            } else {
+                tile.setSelectedPhoto(null);
+            }
+
             tiles.add(tile);
         }
         grid.setTiles(tiles);
@@ -140,7 +156,8 @@ public class ImposterGridAdminService {
                         athleteDtoById.get(t.getAthlete().getId()),
                         t.isImposter(),
                         t.getReplacedAthlete() != null ? athleteDtoById.get(t.getReplacedAthlete().getId()) : null,
-                        t.getClub() != null ? ClubService.toDto(t.getClub()) : null))
+                        t.getClub() != null ? ClubService.toDto(t.getClub()) : null,
+                        t.getSelectedPhoto() != null ? t.getSelectedPhoto().getId() : null))
                 .collect(Collectors.toList()));
         return dto;
     }

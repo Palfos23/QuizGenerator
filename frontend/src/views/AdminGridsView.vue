@@ -232,7 +232,7 @@
               :src="previewImage(c)"
               alt=""
               class="grid-tile-logo"
-              :class="{ 'is-photo': c.photoUrl }"
+              :class="{ 'is-photo': previewIsPhoto(c) }"
               @error="$event.target.style.display = 'none'"
             />
             <div v-if="form.ranked || c.hintLabel" class="grid-tile-hint" :style="{ background: previewClubColor(c) || 'var(--gold)', color: readableTextColor(previewClubColor(c)) }">
@@ -341,9 +341,17 @@ function previewClubColor(c) {
   return previewClub(c)?.color || null
 }
 function previewImage(c) {
+  if (c.selectedPhotoId && c.additionalPhotos) {
+    const selected = c.additionalPhotos.find(p => p.id === c.selectedPhotoId)
+    if (selected) return selected.photoUrl
+  }
   if (c.photoUrl) return c.photoUrl
   if (c.showLogo) return previewClub(c)?.logoUrl || null
   return null
+}
+function previewIsPhoto(c) {
+  if (c.selectedPhotoId && c.additionalPhotos?.some(p => p.id === c.selectedPhotoId)) return true
+  return !!c.photoUrl
 }
 
 function logoSelectValue(c) {

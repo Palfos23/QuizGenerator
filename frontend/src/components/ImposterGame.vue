@@ -5,6 +5,7 @@
 
     <template v-else-if="playState">
       <div class="fiveoo-header">
+        <div class="grid-progress" style="text-align:center;">Board {{ currentGridIndex + 1 }} / {{ gridIds.length }}</div>
         <h2>{{ playState.title }}</h2>
         <p v-if="playState.description" class="fiveoo-description">{{ playState.description }}</p>
         <p class="fiveoo-rules-reminder">Fewest imposter hits wins - flip a tile on your turn</p>
@@ -58,12 +59,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
 
 const props = defineProps({
-  gridId: { type: [Number, String], required: true },
+  gridIds: { type: Array, required: true },
   players: { type: Array, required: true }
 })
 const emit = defineEmits(['game-over'])
@@ -71,25 +72,40 @@ const emit = defineEmits(['game-over'])
 const loading = ref(true)
 const error = ref('')
 const playState = ref(null)
-const flippedTiles = reactive({}) // tileId -> { imposter: bool }
+const flippedTiles = reactive({}) // tileId -> { imposter: bool } - across the whole session, not just the current board
+const currentGridIndex = ref(0)
 const currentPlayerIdx = ref(0)
-const scores = reactive({})
+const scores = reactive({}) // accumulates across every board in this session
+const accumulatedReveal = ref([]) // reveal entries from every completed board so far
 const flipOverlay = ref(null)
 const flipping = ref(false)
 let overlayTimeout = null
+let restoring = false // true while applying saved progress, so that initial restore doesn't itself get saved as a redundant write
 
 const currentPlayer = computed(() => props.players[currentPlayerIdx.value])
 
 onMounted(async () => {
-  for (const p of props.players) scores[p] = 0
+  const saved = passAndPlayState.load('imposter')
+  if (saved && saved.gridIds && JSON.stringify(saved.gridIds) === JSON.stringify(props.gridIds)
+      && JSON.stringify(saved.players) === JSON.stringify(props.players)) {
+    restoring = true
+    currentGridIndex.value = saved.currentGridIndex ?? 0
+    currentPlayerIdx.value = saved.currentPlayerIdx ?? 0
+    Object.assign(flippedTiles, saved.flippedTiles || {})
+    for (const p of props.players) scores[p] = saved.scores?.[p] ?? 0
+    accumulatedReveal.value = saved.accumulatedReveal || []
+  } else {
+    for (const p of props.players) scores[p] = 0
+  }
   await loadPlayState()
+  restoring = false
 })
 
 async function loadPlayState() {
   loading.value = true
   error.value = ''
   try {
-    playState.value = await api.getImposterPlayState(props.gridId)
+    playState.value = await api.getImposterPlayState(props.gridIds[currentGridIndex.value])
   } catch (e) {
     error.value = 'Could not load this board.'
   } finally {
@@ -108,23 +124,36 @@ function tileClass(t) {
   return { correct: !flipped.imposter, 'revealed-only': flipped.imposter }
 }
 
+function saveProgress() {
+  if (restoring) return
+  passAndPlayState.save('imposter', {
+    gridIds: props.gridIds,
+    players: props.players,
+    currentGridIndex: currentGridIndex.value,
+    currentPlayerIdx: currentPlayerIdx.value,
+    flippedTiles: { ...flippedTiles },
+    scores: { ...scores },
+    accumulatedReveal: accumulatedReveal.value
+  })
+}
+watch([currentGridIndex, currentPlayerIdx, flippedTiles, scores, accumulatedReveal], saveProgress, { deep: true })
+
 async function flipTile(t) {
   if (flipping.value || flippedTiles[t.id]) return
   flipping.value = true
   try {
-    const result = await api.flipImposterTile(props.gridId, t.id)
+    const result = await api.flipImposterTile(props.gridIds[currentGridIndex.value], t.id)
     flippedTiles[t.id] = { imposter: result.imposter }
     if (result.imposter) scores[currentPlayer.value]++
     showFlipOverlay(result.imposter)
 
     const allFlipped = playState.value.tiles.every(tile => flippedTiles[tile.id])
     if (allFlipped) {
-      await finishGame()
+      await finishBoard()
       return
     }
 
     currentPlayerIdx.value = (currentPlayerIdx.value + 1) % props.players.length
-    passAndPlayState.save('imposter', { gridId: props.gridId, players: props.players })
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not flip that tile.'
   } finally {
@@ -141,15 +170,24 @@ function showFlipOverlay(imposter) {
   })
 }
 
-async function finishGame() {
-  let revealList = []
+async function finishBoard() {
   try {
-    revealList = await api.getImposterReveal(props.gridId)
+    const revealList = await api.getImposterReveal(props.gridIds[currentGridIndex.value])
+    accumulatedReveal.value = [...accumulatedReveal.value, ...revealList]
   } catch (e) {
-    // reveal failing shouldn't block showing final scores
+    // reveal failing for one board shouldn't block the rest of the session
   }
+
   setTimeout(() => {
-    emit('game-over', { scores: Object.entries(scores), revealList })
+    if (currentGridIndex.value + 1 < props.gridIds.length) {
+      currentGridIndex.value += 1
+      // rotate who starts the next board, like Grid Battle and Tension do
+      currentPlayerIdx.value = currentGridIndex.value % props.players.length
+      loadPlayState()
+    } else {
+      passAndPlayState.clear('imposter')
+      emit('game-over', { scores: Object.entries(scores), revealList: accumulatedReveal.value })
+    }
   }, 1300) // let the last flip's overlay finish playing first
 }
 </script>

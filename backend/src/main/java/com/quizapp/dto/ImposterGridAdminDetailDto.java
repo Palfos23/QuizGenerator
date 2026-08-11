@@ -64,13 +64,20 @@ public class ImposterGridAdminDetailDto {
         private boolean imposter;
         private AthleteDto replacedAthlete;
         private ClubDto club;
+        private Long selectedPhotoId;
 
-        public TileDetail(Long id, AthleteDto athlete, boolean imposter, AthleteDto replacedAthlete, ClubDto club) {
+        public TileDetail(Long id, AthleteDto athlete, boolean imposter, AthleteDto replacedAthlete, ClubDto club,
+                           Long selectedPhotoId) {
             this.id = id;
             this.athlete = athlete;
             this.imposter = imposter;
             this.replacedAthlete = replacedAthlete;
             this.club = club;
+            this.selectedPhotoId = selectedPhotoId;
+        }
+
+        public Long getSelectedPhotoId() {
+            return selectedPhotoId;
         }
 
         public ClubDto getClub() {

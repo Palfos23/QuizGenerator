@@ -1,6 +1,6 @@
 <template>
   <div>
-    <template v-if="stage === 'category'">
+    <template v-if="stage === 'landing'">
       <h1>Imposter</h1>
       <p class="page-subtitle">
         Most of these tiles genuinely fit the theme - a few are deliberate imposters. Flip tiles as a
@@ -15,43 +15,75 @@
           <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">Dismiss</button>
         </div>
       </div>
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
-      <div v-else-if="!grids.length" class="empty-state friendly">No boards yet - ask an admin to add one.</div>
 
-      <div v-else class="saved-quiz-list">
-        <div v-for="g in grids" :key="g.id" class="saved-quiz-row">
-          <div class="saved-quiz-info">
-            <div class="saved-quiz-title">{{ g.title }}</div>
-            <div class="saved-quiz-meta">{{ g.tileCount }} tiles, {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span><span v-if="g.description"> · {{ g.description }}</span></div>
-          </div>
-          <button class="btn btn-primary btn-sm" @click="chooseGrid(g.id)">Play</button>
+      <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:160px;">
+          <label>Players</label>
+          <select v-model.number="numPlayers">
+            <option v-for="n in [2,3,4,5]" :key="n" :value="n">{{ n }}</option>
+          </select>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>Boards</label>
+          <select v-model.number="numBoards">
+            <option v-for="n in [1,2,3,4]" :key="n" :value="n">{{ n }}</option>
+          </select>
         </div>
       </div>
+
+      <button class="btn btn-primary" style="margin-top:10px;" @click="goToSetup">Next →</button>
     </template>
 
     <template v-else-if="stage === 'setup'">
       <h1>Name the players</h1>
-      <p class="page-subtitle">2 to 5 players, passing the device between turns.</p>
+      <p class="page-subtitle">{{ numPlayers }} players, passing the device between turns.</p>
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div v-for="(name, i) in playerNames" :key="i" class="field">
         <label>Player {{ i + 1 }}</label>
-        <div style="display:flex; gap:8px;">
-          <input type="text" v-model="playerNames[i]" :placeholder="`Player ${i + 1}`" style="flex:1;" />
-          <button v-if="playerNames.length > 2" class="chip-remove-btn" @click="playerNames.splice(i, 1)">✕</button>
+        <input type="text" v-model="playerNames[i]" :placeholder="`Player ${i + 1}`" />
+      </div>
+
+      <div style="margin-top:20px; display:flex; gap:12px;">
+        <button class="btn btn-secondary" @click="stage = 'landing'">← Back</button>
+        <button class="btn btn-primary" :disabled="!allNamed" @click="goToBoardChoice">Next →</button>
+      </div>
+    </template>
+
+    <template v-else-if="stage === 'pickBoards'">
+      <h1>Choose {{ numBoards }} board{{ numBoards > 1 ? 's' : '' }}</h1>
+      <p class="page-subtitle">{{ chosenBoards.length }} / {{ numBoards }} selected</p>
+
+      <div v-if="error" class="banner error">{{ error }}</div>
+      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+      <div v-else-if="!allBoards.length" class="empty-state friendly">No boards yet - ask an admin to add one.</div>
+
+      <div v-else class="saved-quiz-list">
+        <div v-for="g in allBoards" :key="g.id" class="saved-quiz-row">
+          <div class="saved-quiz-info">
+            <div class="saved-quiz-title">{{ g.title }}</div>
+            <div class="saved-quiz-meta">{{ g.tileCount }} tiles, {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span><span v-if="g.description"> · {{ g.description }}</span></div>
+          </div>
+          <button
+            class="btn btn-sm"
+            :class="isChosen(g) ? 'btn-primary' : 'btn-secondary'"
+            :disabled="!isChosen(g) && chosenBoards.length >= numBoards"
+            @click="toggleChosen(g)"
+          >{{ isChosen(g) ? 'Selected ✓' : '+ Select' }}</button>
         </div>
       </div>
-      <button v-if="playerNames.length < 5" class="btn btn-secondary btn-sm" @click="playerNames.push('')">+ Add player</button>
 
-      <div style="margin-top:20px;">
-        <button class="btn btn-secondary" @click="stage = 'category'">← Back</button>
-        <button class="btn btn-primary" style="margin-left:10px;" :disabled="!allNamed" @click="startGame">Start game</button>
+      <div style="margin-top:20px; display:flex; gap:12px;">
+        <button class="btn btn-secondary" @click="stage = 'setup'">← Back</button>
+        <button class="btn btn-primary" :disabled="chosenBoards.length !== numBoards" @click="startGame">
+          Start game ({{ chosenBoards.length }}/{{ numBoards }})
+        </button>
       </div>
     </template>
 
     <ImposterGame
       v-else-if="stage === 'game'"
-      :grid-id="chosenGridId"
+      :grid-ids="gameGridIds"
       :players="playerNames"
       @game-over="onGameOver"
     />
@@ -93,19 +125,22 @@ import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
 import ImposterGame from '../components/ImposterGame.vue'
 
-const stage = ref('category')
+const stage = ref('landing')
 const error = ref('')
 const loading = ref(true)
-const grids = ref([])
-const chosenGridId = ref(null)
-const playerNames = ref(['', ''])
+const allBoards = ref([])
+const numPlayers = ref(2)
+const numBoards = ref(1)
+const playerNames = ref([])
+const chosenBoards = ref([])
+const gameGridIds = ref([])
 const finalScores = ref([])
 const reveal = ref([])
 
 const allNamed = computed(() => playerNames.value.every(n => n.trim().length > 0))
 const winner = computed(() => finalScores.value[0]?.[0] ?? null)
 
-onMounted(loadGrids)
+onMounted(loadBoards)
 
 const savedPassAndPlay = ref(null)
 onMounted(() => {
@@ -114,7 +149,7 @@ onMounted(() => {
 
 function resumePassAndPlay() {
   const saved = savedPassAndPlay.value
-  chosenGridId.value = saved.gridId
+  gameGridIds.value = saved.gridIds
   playerNames.value = saved.players
   stage.value = 'game'
 }
@@ -124,11 +159,11 @@ function dismissPassAndPlay() {
   savedPassAndPlay.value = null
 }
 
-async function loadGrids() {
+async function loadBoards() {
   loading.value = true
   error.value = ''
   try {
-    grids.value = await api.listImposterGrids()
+    allBoards.value = await api.listImposterGrids()
   } catch (e) {
     error.value = 'Could not load boards.'
   } finally {
@@ -136,14 +171,34 @@ async function loadGrids() {
   }
 }
 
-function chooseGrid(id) {
-  chosenGridId.value = id
+function goToSetup() {
+  playerNames.value = Array.from({ length: numPlayers.value }, (_, i) => playerNames.value[i] || '')
+  error.value = ''
   stage.value = 'setup'
 }
 
-function startGame() {
+function goToBoardChoice() {
   playerNames.value = playerNames.value.map(n => n.trim())
-  passAndPlayState.save('imposter', { gridId: chosenGridId.value, players: playerNames.value })
+  chosenBoards.value = []
+  error.value = ''
+  stage.value = 'pickBoards'
+}
+
+function isChosen(g) {
+  return chosenBoards.value.some(c => c.id === g.id)
+}
+
+function toggleChosen(g) {
+  if (isChosen(g)) {
+    chosenBoards.value = chosenBoards.value.filter(c => c.id !== g.id)
+  } else if (chosenBoards.value.length < numBoards.value) {
+    chosenBoards.value.push(g)
+  }
+}
+
+function startGame() {
+  gameGridIds.value = chosenBoards.value.map(b => b.id)
+  passAndPlayState.save('imposter', { gridIds: gameGridIds.value, players: playerNames.value })
   savedPassAndPlay.value = passAndPlayState.load('imposter')
   stage.value = 'game'
 }
@@ -157,10 +212,11 @@ function onGameOver({ scores, revealList }) {
 }
 
 function resetToStart() {
-  chosenGridId.value = null
-  playerNames.value = ['', '']
+  gameGridIds.value = []
+  chosenBoards.value = []
+  playerNames.value = []
   finalScores.value = []
   reveal.value = []
-  stage.value = 'category'
+  stage.value = 'landing'
 }
 </script>

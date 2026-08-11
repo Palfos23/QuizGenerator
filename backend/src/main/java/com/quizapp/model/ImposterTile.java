@@ -47,6 +47,21 @@ public class ImposterTile {
         this.club = club;
     }
 
+    // Which of this athlete's additional photos this tile should show,
+    // instead of the athlete's primary photoUrl. Null means "use the primary
+    // photo" - same concept as GridEntry.selectedPhoto.
+    @ManyToOne
+    @JoinColumn(name = "selected_photo_id")
+    private AthletePhoto selectedPhoto;
+
+    public AthletePhoto getSelectedPhoto() {
+        return selectedPhoto;
+    }
+
+    public void setSelectedPhoto(AthletePhoto selectedPhoto) {
+        this.selectedPhoto = selectedPhoto;
+    }
+
     @Column(nullable = false)
     private int orderIndex = 0;
 

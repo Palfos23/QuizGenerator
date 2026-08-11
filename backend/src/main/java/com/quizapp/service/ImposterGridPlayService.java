@@ -47,9 +47,15 @@ public class ImposterGridPlayService {
         dto.setTiles(grid.getTiles().stream()
                 .sorted((a, b) -> Integer.compare(a.getOrderIndex(), b.getOrderIndex()))
                 .map(t -> new ImposterPlayStateDto.TileView(t.getId(), t.getAthlete().getName(),
-                        t.getAthlete().getPhotoUrl(), t.getClub() != null ? t.getClub().getLogoUrl() : null))
+                        resolvedPhotoUrl(t), t.getClub() != null ? t.getClub().getLogoUrl() : null))
                 .collect(Collectors.toList()));
         return dto;
+    }
+
+    // Same idea as GridPlayService.resolvedPhotoUrl - a tile-specific photo
+    // choice if one was made, otherwise the athlete's own primary photo.
+    private String resolvedPhotoUrl(ImposterTile t) {
+        return t.getSelectedPhoto() != null ? t.getSelectedPhoto().getPhotoUrl() : t.getAthlete().getPhotoUrl();
     }
 
     @Transactional(readOnly = true)

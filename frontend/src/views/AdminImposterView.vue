@@ -129,6 +129,31 @@
             <option v-for="club in clubOptions" :key="club.id" :value="club.id">{{ club.name }}</option>
           </select>
         </div>
+
+        <div v-if="t.additionalPhotos && t.additionalPhotos.length" class="field" style="margin-top:10px; margin-bottom:0;">
+          <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">Photo for this tile</label>
+          <select v-model="t.selectedPhotoId">
+            <option :value="null">Default photo</option>
+            <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div v-if="tiles.length" style="margin-top:24px;">
+        <h3 style="margin-bottom:10px;">Preview</h3>
+        <div class="grid-tiles">
+          <div v-for="t in tiles" :key="t.athleteId" class="grid-tile" :class="{ correct: !t.imposter, 'revealed-only': t.imposter }">
+            <img
+              v-if="previewImage(t)"
+              :src="previewImage(t)"
+              alt=""
+              class="grid-tile-logo"
+              :class="{ 'is-photo': previewIsPhoto(t) }"
+              @error="$event.target.style.display = 'none'"
+            />
+            <div v-if="form.displayMode !== 'PHOTO_ONLY'" class="grid-tile-name">{{ t.name }}</div>
+          </div>
+        </div>
       </div>
 
       <div style="margin-top:20px; display:flex; align-items:center; gap:16px;">
@@ -221,7 +246,10 @@ async function openEdit(id) {
       replacedAthleteName: t.replacedAthlete?.name ?? '',
       replacedSearchTerm: '',
       replacedSearchResults: [],
-      clubId: t.club?.id ?? null
+      clubId: t.club?.id ?? null,
+      additionalPhotos: t.athlete.additionalPhotos || [],
+      selectedPhotoId: t.selectedPhotoId ?? null,
+      photoUrl: t.athlete.photoUrl || null
     }))
     athleteSearchTerm.value = ''
     athleteSearchResults.value = []
@@ -256,12 +284,30 @@ watch(athleteSearchTerm, (val) => {
   }, 250)
 })
 
+function previewClub(t) {
+  return clubOptions.value.find(c => c.id === t.clubId) || null
+}
+function previewImage(t) {
+  if (form.value.displayMode === 'NAME_AND_LOGO') {
+    return previewClub(t)?.logoUrl || null
+  }
+  if (t.selectedPhotoId && t.additionalPhotos) {
+    const selected = t.additionalPhotos.find(p => p.id === t.selectedPhotoId)
+    if (selected) return selected.photoUrl
+  }
+  return t.photoUrl || null
+}
+function previewIsPhoto(t) {
+  return form.value.displayMode !== 'NAME_AND_LOGO'
+}
+
 function addTile(athlete) {
   if (tiles.value.some(t => t.athleteId === athlete.id)) return
   tiles.value.push({
     athleteId: athlete.id, name: athlete.name, imposter: false,
     replacedAthleteId: null, replacedAthleteName: '', replacedSearchTerm: '', replacedSearchResults: [],
-    clubId: null
+    clubId: null, additionalPhotos: athlete.additionalPhotos || [], selectedPhotoId: null,
+    photoUrl: athlete.photoUrl || null
   })
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
@@ -310,7 +356,8 @@ async function save() {
       athleteId: t.athleteId,
       imposter: t.imposter,
       replacedAthleteId: t.imposter ? t.replacedAthleteId : null,
-      clubId: t.clubId
+      clubId: t.clubId,
+      selectedPhotoId: t.selectedPhotoId
     }))
   }
   try {

@@ -70,6 +70,15 @@ public class ImposterGridRequest {
         private boolean imposter;
         private Long replacedAthleteId; // only meaningful when imposter=true
         private Long clubId; // only meaningful when the grid's displayMode is NAME_AND_LOGO
+        private Long selectedPhotoId; // which of the subject's additional photos to show, if any
+
+        public Long getSelectedPhotoId() {
+            return selectedPhotoId;
+        }
+
+        public void setSelectedPhotoId(Long selectedPhotoId) {
+            this.selectedPhotoId = selectedPhotoId;
+        }
 
         public Long getClubId() {
             return clubId;
