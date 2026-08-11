@@ -93,6 +93,10 @@
         </div>
       </div>
     </template>
+
+    <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
+      <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct' : 'Wrong' }}</div>
+    </div>
   </div>
 </template>
 
@@ -122,6 +126,17 @@ const searchResults = ref([])
 const guessing = ref(false)
 const justSolvedId = ref(null)
 const shakeGuessBox = ref(false)
+
+const resultOverlay = ref(null) // { correct } or null when hidden
+let resultOverlayTimeout = null
+function showResultOverlay(correct) {
+  clearTimeout(resultOverlayTimeout)
+  resultOverlay.value = null
+  requestAnimationFrame(() => {
+    resultOverlay.value = { correct }
+    resultOverlayTimeout = setTimeout(() => { resultOverlay.value = null }, 1200)
+  })
+}
 
 const currentPlayerName = computed(() => props.players[currentPlayerIdx.value]?.name)
 
@@ -180,6 +195,7 @@ async function submitGuess(athlete) {
       justSolvedId.value = result.entry.id
       setTimeout(() => { justSolvedId.value = null }, 600)
       scores.value[player] = (scores.value[player] || 0) + 1
+      showResultOverlay(true)
       if (result.allSolved) {
         gridComplete.value = true
         return
@@ -188,6 +204,7 @@ async function submitGuess(athlete) {
       livesUsed.value[player] = (livesUsed.value[player] || 0) + 1
       shakeGuessBox.value = true
       setTimeout(() => { shakeGuessBox.value = false }, 400)
+      showResultOverlay(false)
       if (livesUsed.value[player] >= gridState.value.maxStrikes) {
         eliminatedPlayers.value.push(player)
       }

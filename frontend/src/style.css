@@ -1941,3 +1941,38 @@ table.scoreboard-table {
     animation: none;
   }
 }
+
+/* ---------- Grid result overlay (Weekly Grid, Grid Battle) ---------- */
+.grid-result-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  pointer-events: none;
+  background: rgba(10, 11, 20, 0.35);
+  animation: fiveoo-overlay-fade 1.2s ease forwards;
+}
+.grid-result-overlay .grid-result-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.8rem, 14vw, 7rem);
+  line-height: 1;
+  text-align: center;
+  animation: fiveoo-overlay-pop 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.grid-result-overlay.correct .grid-result-text {
+  color: var(--teal);
+  text-shadow: 0 0 40px rgba(45, 212, 191, 0.5);
+}
+.grid-result-overlay.wrong .grid-result-text {
+  color: var(--coral);
+  text-shadow: 0 0 40px rgba(248, 113, 113, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-result-overlay, .grid-result-overlay .grid-result-text {
+    animation: none;
+  }
+}

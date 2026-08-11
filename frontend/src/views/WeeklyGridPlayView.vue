@@ -194,6 +194,10 @@
         <button class="btn btn-primary" style="margin-top:8px;" @click="completionPopup = null">Continue</button>
       </div>
     </div>
+
+    <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
+      <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct' : 'Wrong' }}</div>
+    </div>
   </div>
 </template>
 
@@ -234,6 +238,17 @@ function scrollSolvedTileIntoView(entryId) {
 }
 const justStruck = ref(false)
 const shakeGuessBox = ref(false)
+
+const resultOverlay = ref(null) // { correct } or null when hidden
+let resultOverlayTimeout = null
+function showResultOverlay(correct) {
+  clearTimeout(resultOverlayTimeout)
+  resultOverlay.value = null
+  requestAnimationFrame(() => {
+    resultOverlay.value = { correct }
+    resultOverlayTimeout = setTimeout(() => { resultOverlay.value = null }, 1200)
+  })
+}
 
 const guessedCount = computed(() => state.value?.entries.filter(e => e.guessedByUser).length || 0)
 const allSolved = computed(() => !!state.value && guessedCount.value === state.value.entries.length)
@@ -293,6 +308,7 @@ async function submitGuess(athlete) {
   try {
     const result = await api.submitGridGuess(gridId, athlete.id)
     toast.show(result.correct ? `Correct - ${result.entry.athleteName}!` : 'Wrong guess', result.correct ? 'success' : 'error')
+    showResultOverlay(result.correct)
 
     // Update just the bits that changed locally instead of refetching the whole grid -
     // keeps the update instant and lets a CSS transition animate the specific tile

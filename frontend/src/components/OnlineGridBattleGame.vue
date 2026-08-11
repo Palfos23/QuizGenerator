@@ -101,6 +101,10 @@
     </template>
 
     <button class="btn btn-secondary btn-sm no-print" style="margin-top:20px;" @click="leave">← Leave game</button>
+
+    <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
+      <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct' : 'Wrong' }}</div>
+    </div>
   </div>
 </template>
 
@@ -125,6 +129,17 @@ const guessing = ref(false)
 const advancing = ref(false)
 const justSolvedId = ref(null)
 const shakeGuessBox = ref(false)
+
+const resultOverlay = ref(null) // { correct } or null when hidden
+let resultOverlayTimeout = null
+function showResultOverlay(correct) {
+  clearTimeout(resultOverlayTimeout)
+  resultOverlay.value = null
+  requestAnimationFrame(() => {
+    resultOverlay.value = { correct }
+    resultOverlayTimeout = setTimeout(() => { resultOverlay.value = null }, 1200)
+  })
+}
 
 let pollTimer = null
 
@@ -196,9 +211,11 @@ async function submitGuess(athlete) {
       const newlySolved = fresh.entries.find(e => e.solved && !state.value.entries.find(old => old.id === e.id && old.solved))
       justSolvedId.value = newlySolved?.id || null
       setTimeout(() => { justSolvedId.value = null }, 600)
+      showResultOverlay(true)
     } else {
       shakeGuessBox.value = true
       setTimeout(() => { shakeGuessBox.value = false }, 400)
+      showResultOverlay(false)
     }
     applyState(fresh)
   } catch (e) {
