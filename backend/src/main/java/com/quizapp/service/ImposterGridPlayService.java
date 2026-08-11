@@ -44,6 +44,7 @@ public class ImposterGridPlayService {
         dto.setTitle(grid.getTitle());
         dto.setDescription(grid.getDescription());
         dto.setDisplayMode(grid.getDisplayMode().name());
+        dto.setImposterCount((int) grid.getTiles().stream().filter(ImposterTile::isImposter).count());
         dto.setTiles(grid.getTiles().stream()
                 .sorted((a, b) -> Integer.compare(a.getOrderIndex(), b.getOrderIndex()))
                 .map(t -> new ImposterPlayStateDto.TileView(t.getId(), t.getAthlete().getName(),

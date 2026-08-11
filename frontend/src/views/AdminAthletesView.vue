@@ -6,7 +6,7 @@
         <p class="page-subtitle">Whoever or whatever a grid is about - people, movies, countries, anything - used to build weekly grid candidate pools.</p>
       </div>
       <div style="display:flex; gap:8px;">
-        <button class="btn btn-secondary" @click="triggerFilePicker">📄 Import CSV</button>
+        <button class="btn btn-secondary" @click="triggerFilePicker">Import CSV</button>
         <button class="btn btn-primary" @click="openCreate">+ Add subject</button>
       </div>
       <input ref="fileInput" type="file" accept=".csv,text/csv" style="display:none;" @change="onFileSelected" />

@@ -8,7 +8,7 @@
     <!-- List view -->
     <section v-if="!openQuiz">
       <div v-if="templates.length" class="templates-panel">
-        <h2 style="font-size:1.1rem; margin-top:0;">📋 Available templates</h2>
+        <h2 style="font-size:1.1rem; margin-top:0;">Available templates</h2>
         <p class="page-subtitle" style="margin-top:-6px;">Published by an admin - copy one to get your own editable version.</p>
         <div class="saved-quiz-list">
           <div v-for="t in templates" :key="t.id" class="saved-quiz-row">

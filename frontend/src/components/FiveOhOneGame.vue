@@ -67,7 +67,7 @@
     </template>
 
     <div v-else class="banner success" style="text-align:center;">
-      <h2 style="color:var(--gold); margin-top:0;">🏆 {{ winner }} wins!</h2>
+      <h2 style="color:var(--gold); margin-top:0;">{{ winner }} wins!</h2>
       <div v-for="p in players" :key="p" style="margin:4px 0;">{{ p }}: {{ totals[p] }}</div>
       <button class="btn btn-primary" style="margin-top:16px;" @click="$emit('gameOver', players.map(p => [p, totals[p]]))">
         Continue

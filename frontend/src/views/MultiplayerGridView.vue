@@ -29,11 +29,11 @@
 
       <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:20px;">
         <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'landing'">
-          <h3>📱 Same device</h3>
+          <h3>Same device</h3>
           <p>Pass the phone around - everyone takes their turn on one screen.</p>
         </button>
         <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'onlineChoice'">
-          <h3>🌐 Play online</h3>
+          <h3>Play online</h3>
           <p>Everyone plays from their own device with a shared room code.</p>
         </button>
       </div>
@@ -94,8 +94,8 @@
       <div class="field">
         <label>How should the grids be picked?</label>
         <div class="language-row">
-          <button class="language-btn" :class="{ active: gridMode === 'random' }" @click="gridMode = 'random'">🎲 Random</button>
-          <button class="language-btn" :class="{ active: gridMode === 'manual' }" @click="gridMode = 'manual'">✋ Pick my own</button>
+          <button class="language-btn" :class="{ active: gridMode === 'random' }" @click="gridMode = 'random'">Random</button>
+          <button class="language-btn" :class="{ active: gridMode === 'manual' }" @click="gridMode = 'manual'">Pick my own</button>
         </div>
       </div>
 
@@ -133,8 +133,8 @@
       <div class="field">
         <label>How should the grids be picked?</label>
         <div class="language-row">
-          <button class="language-btn" :class="{ active: onlineGridMode === 'random' }" @click="onlineGridMode = 'random'">🎲 Random</button>
-          <button class="language-btn" :class="{ active: onlineGridMode === 'manual' }" @click="selectOnlineManual">✋ Pick my own</button>
+          <button class="language-btn" :class="{ active: onlineGridMode === 'random' }" @click="onlineGridMode = 'random'">Random</button>
+          <button class="language-btn" :class="{ active: onlineGridMode === 'manual' }" @click="selectOnlineManual">Pick my own</button>
         </div>
       </div>
 
@@ -286,7 +286,7 @@
 
     <template v-else-if="stage === 'done'">
       <h1 style="text-align:center;">Game over!</h1>
-      <h2 v-if="winner" style="text-align:center; color:var(--gold);">🏆 {{ winner }}</h2>
+      <h2 v-if="winner" style="text-align:center; color:var(--gold);">{{ winner }}</h2>
 
       <table class="table" style="max-width:480px; margin:20px auto; table-layout:fixed; min-width:0;">
         <thead>

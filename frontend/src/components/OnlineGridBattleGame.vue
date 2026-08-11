@@ -24,7 +24,7 @@
               :key="i"
               class="life-heart"
               :class="{ lost: i > state.maxStrikes - p.livesUsed }"
-            >{{ i > state.maxStrikes - p.livesUsed ? '🖤' : '❤️' }}</span>
+            ></span>
           </div>
           <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ p.totalScore }}</div>
         </div>

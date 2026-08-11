@@ -88,7 +88,10 @@
       <div v-for="(t, i) in tiles" :key="i" class="field" style="border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
           <strong>{{ t.name }}</strong>
-          <button type="button" class="chip-remove-btn" @click="tiles.splice(i, 1)">✕</button>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn btn-secondary btn-sm" @click="openEditAthlete(t)">Edit</button>
+            <button type="button" class="chip-remove-btn" @click="tiles.splice(i, 1)">✕</button>
+          </div>
         </div>
 
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; margin-top:10px;">
@@ -163,6 +166,13 @@
       </div>
     </template>
 
+    <AthleteFormModal
+      v-if="editingAthleteForModal"
+      :athlete="editingAthleteForModal"
+      @close="editingAthleteForModal = null"
+      @saved="onAthleteEdited"
+    />
+
     <ConfirmModal
       v-if="pendingDelete"
       title="Delete this board?"
@@ -179,6 +189,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import gridCategories from '../services/gridCategories'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import AthleteFormModal from '../components/AthleteFormModal.vue'
+import toast from '../services/toast'
 
 const view = ref('list')
 const error = ref('')
@@ -186,6 +198,7 @@ const loading = ref(true)
 const grids = ref([])
 const saving = ref(false)
 const pendingDelete = ref(null)
+const editingAthleteForModal = ref(null)
 const editingId = ref(null)
 
 const form = ref({ title: '', description: '', sport: '', displayMode: 'NAME_AND_PHOTO' })
@@ -241,6 +254,7 @@ async function openEdit(id) {
     tiles.value = detail.tiles.map(t => ({
       athleteId: t.athlete.id,
       name: t.athlete.name,
+      team: t.athlete.team,
       imposter: t.imposter,
       replacedAthleteId: t.replacedAthlete?.id ?? null,
       replacedAthleteName: t.replacedAthlete?.name ?? '',
@@ -301,10 +315,29 @@ function previewIsPhoto(t) {
   return form.value.displayMode !== 'NAME_AND_LOGO'
 }
 
+function openEditAthlete(t) {
+  editingAthleteForModal.value = {
+    id: t.athleteId, name: t.name, sport: form.value.sport, team: t.team,
+    photoUrl: t.photoUrl, additionalPhotos: t.additionalPhotos || []
+  }
+}
+
+function onAthleteEdited(saved) {
+  editingAthleteForModal.value = null
+  const t = tiles.value.find(t => t.athleteId === saved.id)
+  if (t) {
+    t.name = saved.name
+    t.team = saved.team
+    t.photoUrl = saved.photoUrl
+    t.additionalPhotos = saved.additionalPhotos || []
+  }
+  toast.show('Subject updated.')
+}
+
 function addTile(athlete) {
   if (tiles.value.some(t => t.athleteId === athlete.id)) return
   tiles.value.push({
-    athleteId: athlete.id, name: athlete.name, imposter: false,
+    athleteId: athlete.id, name: athlete.name, team: athlete.team, imposter: false,
     replacedAthleteId: null, replacedAthleteName: '', replacedSearchTerm: '', replacedSearchResults: [],
     clubId: null, additionalPhotos: athlete.additionalPhotos || [], selectedPhotoId: null,
     photoUrl: athlete.photoUrl || null

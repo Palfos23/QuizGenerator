@@ -55,6 +55,20 @@
     <div v-if="flipOverlay" class="imposter-flip-overlay" :class="flipOverlay.imposter ? 'imposter-hit' : 'imposter-fit'">
       <div class="imposter-overlay-text">{{ flipOverlay.imposter ? 'IMPOSTER!' : 'Correct' }}</div>
     </div>
+
+    <div v-if="boardRevealModal" class="modal-backdrop">
+      <div class="modal">
+        <h2 style="margin-top:0;">The imposters on this board</h2>
+        <div v-if="!boardRevealModal.reveal.length" style="color:var(--text-dim);">No imposters on this board.</div>
+        <div v-for="(r, i) in boardRevealModal.reveal" :key="i" style="padding:6px 0; border-bottom:1px solid var(--border);">
+          <strong style="color:var(--coral);">{{ r.imposterName }}</strong>
+          <span v-if="r.replacedName"> replaced <strong style="color:var(--text);">{{ r.replacedName }}</strong></span>
+        </div>
+        <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="continueAfterReveal">
+          {{ boardRevealModal.isLastBoard ? 'See final results' : 'Next board →' }}
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -77,6 +91,7 @@ const currentGridIndex = ref(0)
 const currentPlayerIdx = ref(0)
 const scores = reactive({}) // accumulates across every board in this session
 const accumulatedReveal = ref([]) // reveal entries from every completed board so far
+const boardRevealModal = ref(null) // { reveal, isLastBoard } shown between boards, or null when hidden
 const tileOrders = reactive({}) // gridId -> array of tile ids in the shuffled order for this session
 const flipOverlay = ref(null)
 const flipping = ref(false)
@@ -172,7 +187,11 @@ async function flipTile(t) {
     showFlipOverlay(result.imposter)
 
     const allFlipped = playState.value.tiles.every(tile => flippedTiles[tile.id])
-    if (allFlipped) {
+    const fitsFoundSoFar = playState.value.tiles.filter(tile => flippedTiles[tile.id] && !flippedTiles[tile.id].imposter).length
+    const totalFitsOnBoard = playState.value.tiles.length - playState.value.imposterCount
+    const onlyImpostersRemain = fitsFoundSoFar === totalFitsOnBoard
+
+    if (allFlipped || onlyImpostersRemain) {
       await finishBoard()
       return
     }
@@ -195,23 +214,33 @@ function showFlipOverlay(imposter) {
 }
 
 async function finishBoard() {
+  let revealList = []
   try {
-    const revealList = await api.getImposterReveal(props.gridIds[currentGridIndex.value])
-    accumulatedReveal.value = [...accumulatedReveal.value, ...revealList]
+    revealList = await api.getImposterReveal(props.gridIds[currentGridIndex.value])
   } catch (e) {
     // reveal failing for one board shouldn't block the rest of the session
   }
+  accumulatedReveal.value = [...accumulatedReveal.value, ...revealList]
 
   setTimeout(() => {
-    if (currentGridIndex.value + 1 < props.gridIds.length) {
-      currentGridIndex.value += 1
-      // rotate who starts the next board, like Grid Battle and Tension do
-      currentPlayerIdx.value = currentGridIndex.value % props.players.length
-      loadPlayState()
-    } else {
-      passAndPlayState.clear('imposter')
-      emit('game-over', { scores: Object.entries(scores), revealList: accumulatedReveal.value })
+    boardRevealModal.value = {
+      reveal: revealList,
+      isLastBoard: currentGridIndex.value + 1 >= props.gridIds.length
     }
   }, 1300) // let the last flip's overlay finish playing first
+}
+
+function continueAfterReveal() {
+  const wasLastBoard = boardRevealModal.value.isLastBoard
+  boardRevealModal.value = null
+  if (wasLastBoard) {
+    passAndPlayState.clear('imposter')
+    emit('game-over', { scores: Object.entries(scores), revealList: accumulatedReveal.value })
+  } else {
+    currentGridIndex.value += 1
+    // rotate who starts the next board, like Grid Battle and Tension do
+    currentPlayerIdx.value = currentGridIndex.value % props.players.length
+    loadPlayState()
+  }
 }
 </script>

@@ -8,7 +8,7 @@
       <h1 style="margin:0 0 10px;">{{ state.title }}</h1>
       <div style="display:flex; gap:8px; margin-bottom:6px;" class="no-print">
         <router-link to="/weekly-grid" class="btn btn-secondary btn-sm">← All grids</router-link>
-        <button class="btn btn-secondary btn-sm" @click="openScoreboard" title="Scoreboard">🏆 Results</button>
+        <button class="btn btn-secondary btn-sm" @click="openScoreboard" title="Scoreboard">Results</button>
       </div>
       <p class="page-subtitle">{{ state.theme }}</p>
 
@@ -142,7 +142,7 @@
             'just-solved': e.id === justSolvedId
           }"
         >
-          <span v-if="e.solvedInOvertime" class="grid-tile-status overtime" title="Found during Overtime">⏱</span>
+          <span v-if="e.solvedInOvertime" class="grid-tile-status overtime" title="Found during Overtime">OT</span>
           <span v-else-if="e.guessedByUser" class="grid-tile-status correct">✓</span>
           <span v-else-if="e.solved" class="grid-tile-status wrong">✕</span>
           <img
@@ -179,17 +179,14 @@
         </div>
 
         <template v-if="completionPopup === 'full'">
-          <div class="completion-icon">🎉</div>
           <h2>Perfect clear!</h2>
           <p>You found all {{ state.entries.length }} - no Overtime needed.</p>
         </template>
         <template v-else-if="completionPopup === 'overtime'">
-          <div class="completion-icon">⏱</div>
           <h2>Got there in the end!</h2>
           <p>You completed the grid, with a little help from Overtime.</p>
         </template>
         <template v-else-if="completionPopup === 'given-up'">
-          <div class="completion-icon">🏳️</div>
           <h2>No shame in that</h2>
           <p>You found {{ guessedCount }} / {{ state.entries.length }} - take a look at what you missed below.</p>
         </template>

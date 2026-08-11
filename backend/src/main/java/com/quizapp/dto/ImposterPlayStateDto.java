@@ -7,7 +7,16 @@ public class ImposterPlayStateDto {
     private String title;
     private String description;
     private String displayMode;
+    private int imposterCount;
     private List<TileView> tiles;
+
+    public int getImposterCount() {
+        return imposterCount;
+    }
+
+    public void setImposterCount(int imposterCount) {
+        this.imposterCount = imposterCount;
+    }
 
     public Long getId() {
         return id;

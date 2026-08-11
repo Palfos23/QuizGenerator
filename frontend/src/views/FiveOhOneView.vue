@@ -79,7 +79,7 @@
 
     <template v-else-if="stage === 'done'">
       <h1 style="text-align:center;">Game over!</h1>
-      <h2 style="text-align:center; color:var(--gold);">🏆 {{ winner }}</h2>
+      <h2 style="text-align:center; color:var(--gold);">{{ winner }}</h2>
 
       <table class="table" style="max-width:480px; margin:20px auto; table-layout:fixed; min-width:0;">
         <thead>

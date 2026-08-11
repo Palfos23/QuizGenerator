@@ -23,7 +23,7 @@
               :key="i"
               class="life-heart"
               :class="{ lost: i > gridState.maxStrikes - (livesUsed[p.name] || 0) }"
-            >{{ i > gridState.maxStrikes - (livesUsed[p.name] || 0) ? '🖤' : '❤️' }}</span>
+            ></span>
           </div>
           <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ scores[p.name] || 0 }}</div>
         </div>

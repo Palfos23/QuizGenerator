@@ -805,11 +805,15 @@ mark {
 }
 
 .life-heart {
-  font-size: 0.95rem;
-  line-height: 1;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--coral);
+  background: var(--coral);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
 }
 .life-heart.lost {
+  background: transparent;
   opacity: 0.4;
 }
 .life-heart.just-lost {
@@ -942,7 +946,7 @@ mark {
   z-index: 2;
 }
 .grid-tile-status.correct { background: var(--teal); color: #05261a; }
-.grid-tile-status.overtime { background: var(--violet); color: #ffffff; }
+.grid-tile-status.overtime { background: var(--violet); color: #ffffff; font-size: 0.62rem; }
 .grid-tile-status.wrong { background: var(--coral); color: #2b0009; }
 
 .grid-tile-name {

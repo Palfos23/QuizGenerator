@@ -190,6 +190,7 @@
                 Show logo
               </label>
             </div>
+            <button class="btn btn-secondary btn-sm" @click="openEditAthlete(c)">Edit</button>
             <button class="btn btn-danger btn-sm" @click="removeCandidate(c)">✕</button>
           </div>
 
@@ -200,7 +201,7 @@
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" :disabled="!correctCandidates.length" @click="showPreview = true">
-          👁 Preview ({{ correctCandidates.length }} tiles)
+          Preview ({{ correctCandidates.length }} tiles)
         </button>
         <button v-if="editingGridId" class="btn btn-secondary" @click="duplicateAsNewVersion">
           ⧉ Duplicate as new version
@@ -244,6 +245,13 @@
       </div>
     </div>
 
+    <AthleteFormModal
+      v-if="editingAthleteForModal"
+      :athlete="editingAthleteForModal"
+      @close="editingAthleteForModal = null"
+      @saved="onAthleteEdited"
+    />
+
     <ConfirmModal
       v-if="pendingDelete"
       title="Delete this grid?"
@@ -259,6 +267,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import AthleteFormModal from '../components/AthleteFormModal.vue'
 import Pagination from '../components/Pagination.vue'
 import { sportLabel, readableTextColor, formatHint } from '../constants'
 import gridCategories from '../services/gridCategories'
@@ -269,6 +278,7 @@ const loading = ref(true)
 const error = ref('')
 const saving = ref(false)
 const pendingDelete = ref(null)
+const editingAthleteForModal = ref(null)
 
 const editingGridId = ref(null)
 const form = reactive({
@@ -370,6 +380,25 @@ function onLogoSelectChange(c, value) {
     c.clubId = Number(value)
     c.useOwnPhotoAsLogo = false
   }
+}
+
+function openEditAthlete(c) {
+  editingAthleteForModal.value = {
+    id: c.athleteId, name: c.name, sport: form.sport, team: c.team,
+    photoUrl: c.photoUrl, additionalPhotos: c.additionalPhotos || []
+  }
+}
+
+function onAthleteEdited(saved) {
+  editingAthleteForModal.value = null
+  const c = candidates.value.find(c => c.athleteId === saved.id)
+  if (c) {
+    c.name = saved.name
+    c.team = saved.team
+    c.photoUrl = saved.photoUrl
+    c.additionalPhotos = saved.additionalPhotos || []
+  }
+  toast.show('Subject updated.')
 }
 
 function removeCandidate(c) {

@@ -90,7 +90,7 @@
 
     <template v-else-if="stage === 'done'">
       <h1 style="text-align:center;">Game over!</h1>
-      <h2 style="text-align:center; color:var(--gold);">🏆 {{ winner }}</h2>
+      <h2 style="text-align:center; color:var(--gold);">{{ winner }}</h2>
 
       <table class="table" style="max-width:480px; margin:20px auto; table-layout:fixed; min-width:0;">
         <thead>
@@ -103,14 +103,6 @@
           </tr>
         </tbody>
       </table>
-
-      <div v-if="reveal.length" style="max-width:480px; margin:0 auto 20px;">
-        <h3 style="text-align:center; margin-bottom:10px;">The imposters</h3>
-        <div v-for="(r, i) in reveal" :key="i" style="text-align:center; color:var(--text-dim); padding:4px 0;">
-          <strong style="color:var(--coral);">{{ r.imposterName }}</strong>
-          <span v-if="r.replacedName"> replaced <strong style="color:var(--text);">{{ r.replacedName }}</strong></span>
-        </div>
-      </div>
 
       <div style="text-align:center;">
         <button class="btn btn-primary" @click="resetToStart">Play again</button>
@@ -135,7 +127,6 @@ const playerNames = ref([])
 const chosenBoards = ref([])
 const gameGridIds = ref([])
 const finalScores = ref([])
-const reveal = ref([])
 
 const allNamed = computed(() => playerNames.value.every(n => n.trim().length > 0))
 const winner = computed(() => finalScores.value[0]?.[0] ?? null)
@@ -203,11 +194,10 @@ function startGame() {
   stage.value = 'game'
 }
 
-function onGameOver({ scores, revealList }) {
+function onGameOver({ scores }) {
   passAndPlayState.clear('imposter')
   savedPassAndPlay.value = null
   finalScores.value = [...scores].sort((a, b) => a[1] - b[1]) // fewest imposter hits wins
-  reveal.value = revealList
   stage.value = 'done'
 }
 
@@ -216,7 +206,6 @@ function resetToStart() {
   chosenBoards.value = []
   playerNames.value = []
   finalScores.value = []
-  reveal.value = []
   stage.value = 'landing'
 }
 </script>
