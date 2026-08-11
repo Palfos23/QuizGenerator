@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -77,10 +78,16 @@ public class AthletePoolService {
     // with the pool going forward rather than only at the moment of import.
     private void propagateNewMembersToLinkedGrids(Long poolId, Set<Athlete> newlyAdded) {
         List<Grid> linkedGrids = gridRepository.findByLinkedPoolId(poolId);
+        if (linkedGrids.isEmpty()) return;
+
+        List<Long> gridIds = linkedGrids.stream().map(Grid::getId).collect(Collectors.toList());
+        Map<Long, Set<Long>> existingCandidateAthleteIdsByGridId = gridCandidateRepository.findByGrid_IdIn(gridIds).stream()
+                .collect(Collectors.groupingBy(
+                        c -> c.getGrid().getId(),
+                        Collectors.mapping(c -> c.getAthlete().getId(), Collectors.toSet())));
+
         for (Grid grid : linkedGrids) {
-            Set<Long> existingCandidateAthleteIds = grid.getCandidates().stream()
-                    .map(c -> c.getAthlete().getId())
-                    .collect(Collectors.toSet());
+            Set<Long> existingCandidateAthleteIds = existingCandidateAthleteIdsByGridId.getOrDefault(grid.getId(), Set.of());
             for (Athlete athlete : newlyAdded) {
                 if (existingCandidateAthleteIds.contains(athlete.getId())) continue;
                 GridCandidate candidate = new GridCandidate();
