@@ -1976,3 +1976,18 @@ table.scoreboard-table {
     animation: none;
   }
 }
+
+.grid-tile-name-fill {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10%;
+  font-weight: 700;
+  font-size: clamp(0.7rem, 3.2vw, 1.15rem);
+  line-height: 1.15;
+  color: var(--text);
+  word-break: break-word;
+}

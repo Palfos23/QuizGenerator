@@ -33,7 +33,7 @@ public class ImposterGrid {
     // the whole point is a consistent set of tiles to compare against each
     // other.
     public enum DisplayMode {
-        NAME_AND_LOGO, NAME_AND_PHOTO, PHOTO_ONLY
+        NAME_AND_LOGO, NAME_AND_PHOTO, PHOTO_ONLY, NAME_ONLY
     }
 
     @Enumerated(EnumType.STRING)

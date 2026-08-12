@@ -66,6 +66,7 @@
           <button class="language-btn" :class="{ active: form.displayMode === 'NAME_AND_PHOTO' }" @click="form.displayMode = 'NAME_AND_PHOTO'">Name + photo</button>
           <button class="language-btn" :class="{ active: form.displayMode === 'NAME_AND_LOGO' }" @click="form.displayMode = 'NAME_AND_LOGO'">Name + logo</button>
           <button class="language-btn" :class="{ active: form.displayMode === 'PHOTO_ONLY' }" @click="form.displayMode = 'PHOTO_ONLY'">Photo only</button>
+          <button class="language-btn" :class="{ active: form.displayMode === 'NAME_ONLY' }" @click="form.displayMode = 'NAME_ONLY'">Name only</button>
         </div>
       </div>
 
@@ -133,7 +134,7 @@
           </select>
         </div>
 
-        <div v-if="t.additionalPhotos && t.additionalPhotos.length" class="field" style="margin-top:10px; margin-bottom:0;">
+        <div v-if="form.displayMode !== 'NAME_ONLY' && t.additionalPhotos && t.additionalPhotos.length" class="field" style="margin-top:10px; margin-bottom:0;">
           <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">Photo for this tile</label>
           <select v-model="t.selectedPhotoId">
             <option :value="null">Default photo</option>
@@ -141,7 +142,7 @@
           </select>
         </div>
 
-        <div v-if="t.additionalPhotos && t.additionalPhotos.length" class="field" style="margin-top:10px; margin-bottom:0;">
+        <div v-if="form.displayMode !== 'NAME_ONLY' && t.additionalPhotos && t.additionalPhotos.length" class="field" style="margin-top:10px; margin-bottom:0;">
           <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">
             Photo once revealed as {{ t.imposter ? 'the imposter' : 'correct' }} <span class="picker-hint">optional</span>
           </label>
@@ -162,15 +163,18 @@
         <h3 style="margin-bottom:10px;">Preview</h3>
         <div class="grid-tiles">
           <div v-for="t in tiles" :key="t.athleteId" class="grid-tile" :class="{ correct: !t.imposter, 'revealed-only': t.imposter }">
-            <img
-              v-if="previewImage(t)"
-              :src="previewImage(t)"
-              alt=""
-              class="grid-tile-logo"
-              :class="{ 'is-photo': previewIsPhoto(t) }"
-              @error="$event.target.style.display = 'none'"
-            />
-            <div v-if="form.displayMode !== 'PHOTO_ONLY'" class="grid-tile-name">{{ t.name }}</div>
+            <div v-if="form.displayMode === 'NAME_ONLY'" class="grid-tile-name-fill">{{ t.name }}</div>
+            <template v-else>
+              <img
+                v-if="previewImage(t)"
+                :src="previewImage(t)"
+                alt=""
+                class="grid-tile-logo"
+                :class="{ 'is-photo': previewIsPhoto(t) }"
+                @error="$event.target.style.display = 'none'"
+              />
+              <div v-if="form.displayMode !== 'PHOTO_ONLY'" class="grid-tile-name">{{ t.name }}</div>
+            </template>
           </div>
         </div>
       </div>
