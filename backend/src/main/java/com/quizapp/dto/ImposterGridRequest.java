@@ -71,6 +71,24 @@ public class ImposterGridRequest {
         private Long replacedAthleteId; // only meaningful when imposter=true
         private Long clubId; // only meaningful when the grid's displayMode is NAME_AND_LOGO
         private Long selectedPhotoId; // which of the subject's additional photos to show, if any
+        private Long revealCorrectPhotoId; // photo to show once flipped, if this tile turns out correct
+        private Long revealImposterPhotoId; // photo to show once flipped, if this tile turns out to be the imposter
+
+        public Long getRevealCorrectPhotoId() {
+            return revealCorrectPhotoId;
+        }
+
+        public void setRevealCorrectPhotoId(Long revealCorrectPhotoId) {
+            this.revealCorrectPhotoId = revealCorrectPhotoId;
+        }
+
+        public Long getRevealImposterPhotoId() {
+            return revealImposterPhotoId;
+        }
+
+        public void setRevealImposterPhotoId(Long revealImposterPhotoId) {
+            this.revealImposterPhotoId = revealImposterPhotoId;
+        }
 
         public Long getSelectedPhotoId() {
             return selectedPhotoId;

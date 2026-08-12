@@ -140,6 +140,20 @@
             <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
           </select>
         </div>
+
+        <div v-if="t.additionalPhotos && t.additionalPhotos.length" class="field" style="margin-top:10px; margin-bottom:0;">
+          <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">
+            Photo once revealed as {{ t.imposter ? 'the imposter' : 'correct' }} <span class="picker-hint">optional</span>
+          </label>
+          <select v-if="t.imposter" v-model="t.revealImposterPhotoId">
+            <option :value="null">Same as above</option>
+            <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
+          </select>
+          <select v-else v-model="t.revealCorrectPhotoId">
+            <option :value="null">Same as above</option>
+            <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
+          </select>
+        </div>
       </div>
 
       <div v-if="tiles.length" style="margin-top:24px;">
@@ -263,6 +277,8 @@ async function openEdit(id) {
       clubId: t.club?.id ?? null,
       additionalPhotos: t.athlete.additionalPhotos || [],
       selectedPhotoId: t.selectedPhotoId ?? null,
+      revealCorrectPhotoId: t.revealCorrectPhotoId ?? null,
+      revealImposterPhotoId: t.revealImposterPhotoId ?? null,
       photoUrl: t.athlete.photoUrl || null
     }))
     athleteSearchTerm.value = ''
@@ -340,6 +356,7 @@ function addTile(athlete) {
     athleteId: athlete.id, name: athlete.name, team: athlete.team, imposter: false,
     replacedAthleteId: null, replacedAthleteName: '', replacedSearchTerm: '', replacedSearchResults: [],
     clubId: null, additionalPhotos: athlete.additionalPhotos || [], selectedPhotoId: null,
+    revealCorrectPhotoId: null, revealImposterPhotoId: null,
     photoUrl: athlete.photoUrl || null
   })
   athleteSearchTerm.value = ''
@@ -390,7 +407,9 @@ async function save() {
       imposter: t.imposter,
       replacedAthleteId: t.imposter ? t.replacedAthleteId : null,
       clubId: t.clubId,
-      selectedPhotoId: t.selectedPhotoId
+      selectedPhotoId: t.selectedPhotoId,
+      revealCorrectPhotoId: t.revealCorrectPhotoId,
+      revealImposterPhotoId: t.revealImposterPhotoId
     }))
   }
   try {

@@ -152,6 +152,8 @@ async function loadPlayState() {
 }
 
 function tileImage(t) {
+  const flipped = flippedTiles[t.id]
+  if (flipped && flipped.revealPhotoUrl) return flipped.revealPhotoUrl
   if (playState.value.displayMode === 'NAME_AND_LOGO') return t.logoUrl
   return t.photoUrl
 }
@@ -182,7 +184,7 @@ async function flipTile(t) {
   flipping.value = true
   try {
     const result = await api.flipImposterTile(props.gridIds[currentGridIndex.value], t.id)
-    flippedTiles[t.id] = { imposter: result.imposter }
+    flippedTiles[t.id] = { imposter: result.imposter, revealPhotoUrl: result.revealPhotoUrl }
     if (result.imposter) scores[currentPlayer.value]++
     showFlipOverlay(result.imposter)
 

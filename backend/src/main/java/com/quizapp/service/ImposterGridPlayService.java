@@ -66,7 +66,20 @@ public class ImposterGridPlayService {
         if (!tile.getImposterGrid().getId().equals(gridId)) {
             throw new IllegalArgumentException("That tile doesn't belong to this grid.");
         }
-        return new ImposterFlipResultDto(tile.getId(), tile.isImposter());
+        return new ImposterFlipResultDto(tile.getId(), tile.isImposter(), revealPhotoUrl(tile));
+    }
+
+    // Which photo to show once a tile is flipped - a dedicated reveal photo
+    // for that specific outcome (correct or imposter) if the admin set one,
+    // otherwise whatever was already showing before the flip.
+    private String revealPhotoUrl(ImposterTile t) {
+        if (t.isImposter() && t.getRevealImposterPhoto() != null) {
+            return t.getRevealImposterPhoto().getPhotoUrl();
+        }
+        if (!t.isImposter() && t.getRevealCorrectPhoto() != null) {
+            return t.getRevealCorrectPhoto().getPhotoUrl();
+        }
+        return resolvedPhotoUrl(t);
     }
 
     // Called once every tile's been flipped - the full imposter-to-replaced

@@ -116,6 +116,28 @@ public class ImposterGridAdminService {
                 tile.setSelectedPhoto(null);
             }
 
+            if (input.getRevealCorrectPhotoId() != null) {
+                final Athlete tileAthlete = athlete;
+                AthletePhoto photo = athletePhotoRepository.findById(input.getRevealCorrectPhotoId())
+                        .filter(p -> p.getAthlete().getId().equals(tileAthlete.getId()))
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "That photo doesn't belong to '" + tileAthlete.getName() + "'."));
+                tile.setRevealCorrectPhoto(photo);
+            } else {
+                tile.setRevealCorrectPhoto(null);
+            }
+
+            if (input.getRevealImposterPhotoId() != null) {
+                final Athlete tileAthlete = athlete;
+                AthletePhoto photo = athletePhotoRepository.findById(input.getRevealImposterPhotoId())
+                        .filter(p -> p.getAthlete().getId().equals(tileAthlete.getId()))
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "That photo doesn't belong to '" + tileAthlete.getName() + "'."));
+                tile.setRevealImposterPhoto(photo);
+            } else {
+                tile.setRevealImposterPhoto(null);
+            }
+
             tiles.add(tile);
         }
         grid.setTiles(tiles);
@@ -157,7 +179,9 @@ public class ImposterGridAdminService {
                         t.isImposter(),
                         t.getReplacedAthlete() != null ? athleteDtoById.get(t.getReplacedAthlete().getId()) : null,
                         t.getClub() != null ? ClubService.toDto(t.getClub()) : null,
-                        t.getSelectedPhoto() != null ? t.getSelectedPhoto().getId() : null))
+                        t.getSelectedPhoto() != null ? t.getSelectedPhoto().getId() : null,
+                        t.getRevealCorrectPhoto() != null ? t.getRevealCorrectPhoto().getId() : null,
+                        t.getRevealImposterPhoto() != null ? t.getRevealImposterPhoto().getId() : null))
                 .collect(Collectors.toList()));
         return dto;
     }

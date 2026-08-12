@@ -62,6 +62,38 @@ public class ImposterTile {
         this.selectedPhoto = selectedPhoto;
     }
 
+    // Which photo to show once this tile is flipped and turns out NOT to be
+    // an imposter. Null means "keep showing whatever was shown before the
+    // flip" (selectedPhoto, or the athlete's primary photo).
+    @ManyToOne
+    @JoinColumn(name = "reveal_correct_photo_id")
+    private AthletePhoto revealCorrectPhoto;
+
+    public AthletePhoto getRevealCorrectPhoto() {
+        return revealCorrectPhoto;
+    }
+
+    public void setRevealCorrectPhoto(AthletePhoto revealCorrectPhoto) {
+        this.revealCorrectPhoto = revealCorrectPhoto;
+    }
+
+    // Which photo to show once this tile is flipped and turns out to BE an
+    // imposter. Same null-means-unchanged behavior as revealCorrectPhoto.
+    // Only one of these two fields is ever actually relevant for a given
+    // tile, since a tile's imposter status is fixed by the admin - which one
+    // applies depends on isImposter.
+    @ManyToOne
+    @JoinColumn(name = "reveal_imposter_photo_id")
+    private AthletePhoto revealImposterPhoto;
+
+    public AthletePhoto getRevealImposterPhoto() {
+        return revealImposterPhoto;
+    }
+
+    public void setRevealImposterPhoto(AthletePhoto revealImposterPhoto) {
+        this.revealImposterPhoto = revealImposterPhoto;
+    }
+
     @Column(nullable = false)
     private int orderIndex = 0;
 
