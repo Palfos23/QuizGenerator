@@ -146,7 +146,6 @@
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">
                 {{ g.title }}
-                <span v-if="isUpcoming(g)" class="tag" style="background:rgba(139,124,255,0.15); color:var(--violet); margin-left:6px;">Upcoming</span>
               </div>
               <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} to find</div>
             </div>
@@ -256,7 +255,6 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ g.title }}
-              <span v-if="isUpcoming(g)" class="tag" style="background:rgba(139,124,255,0.15); color:var(--violet); margin-left:6px;">Upcoming</span>
             </div>
             <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} to find</div>
           </div>
@@ -421,11 +419,6 @@ async function pickRandomGrids() {
   } catch (e) {
     gameGrids.value = []
   }
-}
-
-function isUpcoming(g) {
-  const today = new Date().toISOString().slice(0, 10)
-  return g.weekStartDate > today
 }
 
 function isChosen(g) {
