@@ -147,10 +147,12 @@
           </label>
           <select v-if="t.imposter" v-model="t.revealImposterPhotoId">
             <option :value="null">Same as above</option>
+            <option :value="'DEFAULT'">Default photo</option>
             <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
           </select>
           <select v-else v-model="t.revealCorrectPhotoId">
             <option :value="null">Same as above</option>
+            <option :value="'DEFAULT'">Default photo</option>
             <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
           </select>
         </div>
@@ -277,8 +279,8 @@ async function openEdit(id) {
       clubId: t.club?.id ?? null,
       additionalPhotos: t.athlete.additionalPhotos || [],
       selectedPhotoId: t.selectedPhotoId ?? null,
-      revealCorrectPhotoId: t.revealCorrectPhotoId ?? null,
-      revealImposterPhotoId: t.revealImposterPhotoId ?? null,
+      revealCorrectPhotoId: t.revealCorrectUseDefaultPhoto ? 'DEFAULT' : (t.revealCorrectPhotoId ?? null),
+      revealImposterPhotoId: t.revealImposterUseDefaultPhoto ? 'DEFAULT' : (t.revealImposterPhotoId ?? null),
       photoUrl: t.athlete.photoUrl || null
     }))
     athleteSearchTerm.value = ''
@@ -408,8 +410,10 @@ async function save() {
       replacedAthleteId: t.imposter ? t.replacedAthleteId : null,
       clubId: t.clubId,
       selectedPhotoId: t.selectedPhotoId,
-      revealCorrectPhotoId: t.revealCorrectPhotoId,
-      revealImposterPhotoId: t.revealImposterPhotoId
+      revealCorrectPhotoId: t.revealCorrectPhotoId === 'DEFAULT' ? null : t.revealCorrectPhotoId,
+      revealImposterPhotoId: t.revealImposterPhotoId === 'DEFAULT' ? null : t.revealImposterPhotoId,
+      revealCorrectUseDefaultPhoto: t.revealCorrectPhotoId === 'DEFAULT',
+      revealImposterUseDefaultPhoto: t.revealImposterPhotoId === 'DEFAULT'
     }))
   }
   try {

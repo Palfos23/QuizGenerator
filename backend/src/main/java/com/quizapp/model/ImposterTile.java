@@ -64,10 +64,16 @@ public class ImposterTile {
 
     // Which photo to show once this tile is flipped and turns out NOT to be
     // an imposter. Null means "keep showing whatever was shown before the
-    // flip" (selectedPhoto, or the athlete's primary photo).
+    // flip" (selectedPhoto, or the athlete's primary photo). Ignored when
+    // revealCorrectUseDefaultPhoto is true, which explicitly means "the
+    // athlete's own primary photo" regardless of what selectedPhoto is set
+    // to for the before-flip state.
     @ManyToOne
     @JoinColumn(name = "reveal_correct_photo_id")
     private AthletePhoto revealCorrectPhoto;
+
+    @Column(nullable = false)
+    private boolean revealCorrectUseDefaultPhoto = false;
 
     public AthletePhoto getRevealCorrectPhoto() {
         return revealCorrectPhoto;
@@ -77,14 +83,26 @@ public class ImposterTile {
         this.revealCorrectPhoto = revealCorrectPhoto;
     }
 
+    public boolean isRevealCorrectUseDefaultPhoto() {
+        return revealCorrectUseDefaultPhoto;
+    }
+
+    public void setRevealCorrectUseDefaultPhoto(boolean revealCorrectUseDefaultPhoto) {
+        this.revealCorrectUseDefaultPhoto = revealCorrectUseDefaultPhoto;
+    }
+
     // Which photo to show once this tile is flipped and turns out to BE an
-    // imposter. Same null-means-unchanged behavior as revealCorrectPhoto.
-    // Only one of these two fields is ever actually relevant for a given
-    // tile, since a tile's imposter status is fixed by the admin - which one
-    // applies depends on isImposter.
+    // imposter. Same three-state behavior as revealCorrectPhoto above (keep
+    // as-is / explicit default / specific photo). Only one of these two
+    // reveal-photo pairs is ever actually relevant for a given tile, since a
+    // tile's imposter status is fixed by the admin - which one applies
+    // depends on isImposter.
     @ManyToOne
     @JoinColumn(name = "reveal_imposter_photo_id")
     private AthletePhoto revealImposterPhoto;
+
+    @Column(nullable = false)
+    private boolean revealImposterUseDefaultPhoto = false;
 
     public AthletePhoto getRevealImposterPhoto() {
         return revealImposterPhoto;
@@ -92,6 +110,14 @@ public class ImposterTile {
 
     public void setRevealImposterPhoto(AthletePhoto revealImposterPhoto) {
         this.revealImposterPhoto = revealImposterPhoto;
+    }
+
+    public boolean isRevealImposterUseDefaultPhoto() {
+        return revealImposterUseDefaultPhoto;
+    }
+
+    public void setRevealImposterUseDefaultPhoto(boolean revealImposterUseDefaultPhoto) {
+        this.revealImposterUseDefaultPhoto = revealImposterUseDefaultPhoto;
     }
 
     @Column(nullable = false)

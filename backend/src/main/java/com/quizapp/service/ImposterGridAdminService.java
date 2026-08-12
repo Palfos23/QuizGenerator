@@ -116,25 +116,35 @@ public class ImposterGridAdminService {
                 tile.setSelectedPhoto(null);
             }
 
-            if (input.getRevealCorrectPhotoId() != null) {
+            if (input.isRevealCorrectUseDefaultPhoto()) {
+                tile.setRevealCorrectUseDefaultPhoto(true);
+                tile.setRevealCorrectPhoto(null);
+            } else if (input.getRevealCorrectPhotoId() != null) {
                 final Athlete tileAthlete = athlete;
                 AthletePhoto photo = athletePhotoRepository.findById(input.getRevealCorrectPhotoId())
                         .filter(p -> p.getAthlete().getId().equals(tileAthlete.getId()))
                         .orElseThrow(() -> new IllegalArgumentException(
                                 "That photo doesn't belong to '" + tileAthlete.getName() + "'."));
+                tile.setRevealCorrectUseDefaultPhoto(false);
                 tile.setRevealCorrectPhoto(photo);
             } else {
+                tile.setRevealCorrectUseDefaultPhoto(false);
                 tile.setRevealCorrectPhoto(null);
             }
 
-            if (input.getRevealImposterPhotoId() != null) {
+            if (input.isRevealImposterUseDefaultPhoto()) {
+                tile.setRevealImposterUseDefaultPhoto(true);
+                tile.setRevealImposterPhoto(null);
+            } else if (input.getRevealImposterPhotoId() != null) {
                 final Athlete tileAthlete = athlete;
                 AthletePhoto photo = athletePhotoRepository.findById(input.getRevealImposterPhotoId())
                         .filter(p -> p.getAthlete().getId().equals(tileAthlete.getId()))
                         .orElseThrow(() -> new IllegalArgumentException(
                                 "That photo doesn't belong to '" + tileAthlete.getName() + "'."));
+                tile.setRevealImposterUseDefaultPhoto(false);
                 tile.setRevealImposterPhoto(photo);
             } else {
+                tile.setRevealImposterUseDefaultPhoto(false);
                 tile.setRevealImposterPhoto(null);
             }
 
@@ -181,7 +191,9 @@ public class ImposterGridAdminService {
                         t.getClub() != null ? ClubService.toDto(t.getClub()) : null,
                         t.getSelectedPhoto() != null ? t.getSelectedPhoto().getId() : null,
                         t.getRevealCorrectPhoto() != null ? t.getRevealCorrectPhoto().getId() : null,
-                        t.getRevealImposterPhoto() != null ? t.getRevealImposterPhoto().getId() : null))
+                        t.getRevealImposterPhoto() != null ? t.getRevealImposterPhoto().getId() : null,
+                        t.isRevealCorrectUseDefaultPhoto(),
+                        t.isRevealImposterUseDefaultPhoto()))
                 .collect(Collectors.toList()));
         return dto;
     }

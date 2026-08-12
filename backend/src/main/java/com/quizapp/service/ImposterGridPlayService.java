@@ -73,11 +73,12 @@ public class ImposterGridPlayService {
     // for that specific outcome (correct or imposter) if the admin set one,
     // otherwise whatever was already showing before the flip.
     private String revealPhotoUrl(ImposterTile t) {
-        if (t.isImposter() && t.getRevealImposterPhoto() != null) {
-            return t.getRevealImposterPhoto().getPhotoUrl();
-        }
-        if (!t.isImposter() && t.getRevealCorrectPhoto() != null) {
-            return t.getRevealCorrectPhoto().getPhotoUrl();
+        if (t.isImposter()) {
+            if (t.isRevealImposterUseDefaultPhoto()) return t.getAthlete().getPhotoUrl();
+            if (t.getRevealImposterPhoto() != null) return t.getRevealImposterPhoto().getPhotoUrl();
+        } else {
+            if (t.isRevealCorrectUseDefaultPhoto()) return t.getAthlete().getPhotoUrl();
+            if (t.getRevealCorrectPhoto() != null) return t.getRevealCorrectPhoto().getPhotoUrl();
         }
         return resolvedPhotoUrl(t);
     }

@@ -67,9 +67,12 @@ public class ImposterGridAdminDetailDto {
         private Long selectedPhotoId;
         private Long revealCorrectPhotoId;
         private Long revealImposterPhotoId;
+        private boolean revealCorrectUseDefaultPhoto;
+        private boolean revealImposterUseDefaultPhoto;
 
         public TileDetail(Long id, AthleteDto athlete, boolean imposter, AthleteDto replacedAthlete, ClubDto club,
-                           Long selectedPhotoId, Long revealCorrectPhotoId, Long revealImposterPhotoId) {
+                           Long selectedPhotoId, Long revealCorrectPhotoId, Long revealImposterPhotoId,
+                           boolean revealCorrectUseDefaultPhoto, boolean revealImposterUseDefaultPhoto) {
             this.id = id;
             this.athlete = athlete;
             this.imposter = imposter;
@@ -78,6 +81,16 @@ public class ImposterGridAdminDetailDto {
             this.selectedPhotoId = selectedPhotoId;
             this.revealCorrectPhotoId = revealCorrectPhotoId;
             this.revealImposterPhotoId = revealImposterPhotoId;
+            this.revealCorrectUseDefaultPhoto = revealCorrectUseDefaultPhoto;
+            this.revealImposterUseDefaultPhoto = revealImposterUseDefaultPhoto;
+        }
+
+        public boolean isRevealCorrectUseDefaultPhoto() {
+            return revealCorrectUseDefaultPhoto;
+        }
+
+        public boolean isRevealImposterUseDefaultPhoto() {
+            return revealImposterUseDefaultPhoto;
         }
 
         public Long getRevealCorrectPhotoId() {

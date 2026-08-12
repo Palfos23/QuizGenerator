@@ -73,6 +73,24 @@ public class ImposterGridRequest {
         private Long selectedPhotoId; // which of the subject's additional photos to show, if any
         private Long revealCorrectPhotoId; // photo to show once flipped, if this tile turns out correct
         private Long revealImposterPhotoId; // photo to show once flipped, if this tile turns out to be the imposter
+        private boolean revealCorrectUseDefaultPhoto; // explicitly use the athlete's own default photo, overriding revealCorrectPhotoId
+        private boolean revealImposterUseDefaultPhoto; // same, for the imposter outcome
+
+        public boolean isRevealCorrectUseDefaultPhoto() {
+            return revealCorrectUseDefaultPhoto;
+        }
+
+        public void setRevealCorrectUseDefaultPhoto(boolean revealCorrectUseDefaultPhoto) {
+            this.revealCorrectUseDefaultPhoto = revealCorrectUseDefaultPhoto;
+        }
+
+        public boolean isRevealImposterUseDefaultPhoto() {
+            return revealImposterUseDefaultPhoto;
+        }
+
+        public void setRevealImposterUseDefaultPhoto(boolean revealImposterUseDefaultPhoto) {
+            this.revealImposterUseDefaultPhoto = revealImposterUseDefaultPhoto;
+        }
 
         public Long getRevealCorrectPhotoId() {
             return revealCorrectPhotoId;
