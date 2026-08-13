@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="grid-status-bar">
-      <div class="grid-progress">Grid {{ (state?.currentGridIndex ?? 0) + 1 }} / {{ state?.totalGrids ?? '?' }}: {{ state?.gridTitle }}</div>
-      <div v-if="state" style="color:var(--text-dim); font-size:0.85rem;">{{ state.gridTheme }}</div>
+      <div class="grid-progress" style="text-align:center; width:100%;">Grid {{ (state?.currentGridIndex ?? 0) + 1 }} / {{ state?.totalGrids ?? '?' }}: {{ state?.gridTitle }}</div>
+      <div v-if="state" style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ state.gridTheme }}</div>
     </div>
 
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>

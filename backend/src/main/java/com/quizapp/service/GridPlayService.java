@@ -210,7 +210,7 @@ public class GridPlayService {
                         : java.util.Comparator.<Athlete>comparingInt(a -> matchRank(a.getName(), term))
                                 .thenComparing(Athlete::getName))
                 .map(AthleteService::toDto)
-                .limit(8)
+                .limit(5)
                 .collect(Collectors.toList());
     }
 
