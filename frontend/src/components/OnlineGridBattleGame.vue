@@ -65,12 +65,14 @@
         Waiting for {{ currentTurnName }}'s turn…
       </div>
 
-      <div v-if="state.gridComplete" class="banner success" style="text-align:center;">
-        <div><strong>Grid complete!</strong></div>
-        <button v-if="isHost" class="btn btn-primary" style="margin-top:12px;" :disabled="advancing" @click="nextGrid">
-          {{ advancing ? 'Loading…' : (state.currentGridIndex + 1 < state.totalGrids ? 'Next grid' : 'Finish game') }}
-        </button>
-        <div v-else style="margin-top:8px; color:var(--text-dim);">Waiting for the host to continue…</div>
+      <div v-if="state.gridComplete" class="modal-backdrop">
+        <div class="completion-popup">
+          <h2 style="margin-top:0;">Grid complete!</h2>
+          <button v-if="isHost" class="btn btn-primary" style="margin-top:12px; width:100%;" :disabled="advancing" @click="nextGrid">
+            {{ advancing ? 'Loading…' : (state.currentGridIndex + 1 < state.totalGrids ? 'Next grid' : 'Finish game') }}
+          </button>
+          <div v-else style="margin-top:8px; color:var(--text-dim);">Waiting for the host to continue…</div>
+        </div>
       </div>
 
       <div class="grid-tiles">

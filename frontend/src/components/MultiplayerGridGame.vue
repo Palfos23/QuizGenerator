@@ -60,11 +60,13 @@
         </div>
       </div>
 
-      <div v-if="gridComplete" class="banner success" style="text-align:center;">
-        <div><strong>Grid complete!</strong></div>
-        <button class="btn btn-primary" style="margin-top:12px;" @click="nextGrid">
-          {{ currentGridIndex + 1 < grids.length ? 'Next grid' : 'Finish game' }}
-        </button>
+      <div v-if="gridComplete" class="modal-backdrop">
+        <div class="completion-popup">
+          <h2 style="margin-top:0;">Grid complete!</h2>
+          <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextGrid">
+            {{ currentGridIndex + 1 < grids.length ? 'Next grid' : 'Finish game' }}
+          </button>
+        </div>
       </div>
 
       <div class="grid-tiles">
