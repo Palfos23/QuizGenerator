@@ -61,7 +61,7 @@
 
     <div v-if="boardRevealModal" class="modal-backdrop">
       <div class="modal">
-        <h2 style="margin-top:0;">The imposters on this board</h2>
+        <h2 style="margin-top:0;">Board complete!</h2>
 
         <div class="score-square-grid">
           <div v-for="([name, points], i) in sortedScoresForModal" :key="name" class="score-square" :class="{ leader: i === 0 }">

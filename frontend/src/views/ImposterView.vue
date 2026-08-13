@@ -90,21 +90,23 @@
 
     <template v-else-if="stage === 'done'">
       <h1 style="text-align:center;">Game over!</h1>
-      <h2 style="text-align:center; color:var(--gold);">{{ winner }}</h2>
 
-      <table class="table" style="max-width:480px; margin:20px auto; table-layout:fixed; min-width:0;">
-        <thead>
-          <tr><th>Player</th><th style="text-align:right;">Imposter hits</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="([name, points], i) in finalScores" :key="name" :class="{ 'tension-winner-row': i === 0 }">
-            <td>{{ name }}</td>
-            <td style="text-align:right;">{{ points }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="podium-row">
+        <div v-for="(entry, i) in finalScores.slice(0, 3)" :key="entry[0]" class="podium-block" :class="`rank-${i + 1}`">
+          <div class="podium-rank-number">{{ i + 1 }}</div>
+          <div class="podium-name">{{ entry[0] }}</div>
+          <div class="podium-score">{{ entry[1] }} imposter hit{{ entry[1] !== 1 ? 's' : '' }}</div>
+        </div>
+      </div>
 
-      <div style="text-align:center;">
+      <div v-if="finalScores.length > 3" style="max-width:420px; margin:0 auto;">
+        <div v-for="(entry, i) in finalScores.slice(3)" :key="entry[0]" class="podium-rest-row">
+          <span>{{ i + 4 }}. {{ entry[0] }}</span>
+          <span style="color:var(--text-dim);">{{ entry[1] }}</span>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:20px;">
         <button class="btn btn-primary" @click="resetToStart">Play again</button>
       </div>
     </template>
@@ -129,7 +131,6 @@ const gameGridIds = ref([])
 const finalScores = ref([])
 
 const allNamed = computed(() => playerNames.value.every(n => n.trim().length > 0))
-const winner = computed(() => finalScores.value[0]?.[0] ?? null)
 
 onMounted(loadBoards)
 

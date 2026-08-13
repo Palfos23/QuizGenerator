@@ -2065,3 +2065,88 @@ table.scoreboard-table {
   border-radius: 999px;
   white-space: nowrap;
 }
+
+/* ---------- Podium (final results) ---------- */
+.podium-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  margin: 28px 0 24px;
+  flex-wrap: wrap;
+}
+
+.podium-block {
+  width: 130px;
+  border-radius: var(--radius-lg) var(--radius-lg) 6px 6px;
+  text-align: center;
+  padding: 16px 10px 14px;
+  animation: podium-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.podium-block.rank-1 {
+  height: 190px;
+  background: linear-gradient(180deg, rgba(242,183,5,0.28), rgba(242,183,5,0.06));
+  border: 2px solid var(--gold);
+  order: 2;
+  animation-delay: 0.15s;
+  box-shadow: 0 0 30px rgba(242,183,5,0.15);
+}
+.podium-block.rank-2 {
+  height: 150px;
+  background: linear-gradient(180deg, rgba(224,224,235,0.16), rgba(224,224,235,0.04));
+  border: 2px solid rgba(224,224,235,0.5);
+  order: 1;
+  animation-delay: 0.05s;
+}
+.podium-block.rank-3 {
+  height: 118px;
+  background: linear-gradient(180deg, rgba(205,127,50,0.24), rgba(205,127,50,0.06));
+  border: 2px solid #cd7f32;
+  order: 3;
+  animation-delay: 0.25s;
+}
+
+.podium-rank-number {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.podium-block.rank-1 .podium-rank-number { color: var(--gold); }
+.podium-block.rank-2 .podium-rank-number { color: #e0e0eb; }
+.podium-block.rank-3 .podium-rank-number { color: #cd7f32; }
+
+.podium-name {
+  font-weight: 700;
+  margin-top: 8px;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.podium-score {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-top: 3px;
+}
+
+.podium-rest-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 420px;
+  margin: 0 auto 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.podium-rest-row + .podium-rest-row { margin-top: 6px; }
+
+@keyframes podium-rise {
+  from { transform: translateY(28px) scale(0.92); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .podium-block { animation: none; }
+}
