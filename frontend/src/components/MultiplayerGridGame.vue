@@ -63,20 +63,13 @@
       <div v-if="gridComplete" class="modal-backdrop">
         <div class="completion-popup">
           <h2 style="margin-top:0;">Grid complete!</h2>
-          <table class="table" style="margin:12px 0 0; table-layout:fixed; min-width:0;">
-            <thead>
-              <tr><th>Player</th><th style="text-align:right;">Score</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="(p, i) in leaderboardForGrid" :key="p.name" :class="{ 'tension-winner-row': i === 0 }">
-                <td>{{ p.name }}</td>
-                <td style="text-align:right;">
-                  {{ p.total }}
-                  <span v-if="p.roundDelta > 0" style="color:var(--teal); font-size:0.82rem;"> +{{ p.roundDelta }}</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="score-square-grid">
+            <div v-for="(p, i) in leaderboardForGrid" :key="p.name" class="score-square" :class="{ leader: i === 0 }">
+              <div class="score-square-name">{{ p.name }}</div>
+              <div class="score-square-number">{{ p.total }}</div>
+              <div v-if="p.roundDelta > 0" class="score-square-delta">+{{ p.roundDelta }}</div>
+            </div>
+          </div>
           <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextGrid">
             {{ currentGridIndex + 1 < grids.length ? 'Next grid' : 'Finish game' }}
           </button>

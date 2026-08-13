@@ -1991,3 +1991,77 @@ table.scoreboard-table {
   color: var(--text);
   word-break: break-word;
 }
+
+/* ---------- Score squares (Grid Battle / Imposter completion modals) ---------- */
+.score-square-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.score-square {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 10px 12px;
+  text-align: center;
+  background: rgba(255,255,255,0.02);
+}
+.score-square.leader {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+
+.score-square-name {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.score-square-number {
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: var(--teal);
+  line-height: 1;
+}
+.score-square-delta {
+  font-size: 0.78rem;
+  color: var(--teal);
+  margin-top: 3px;
+  font-weight: 600;
+}
+
+/* ---------- Imposter reveal entries ---------- */
+.imposter-reveal-entry {
+  background: rgba(255, 77, 109, 0.06);
+  border: 1px solid rgba(255, 77, 109, 0.2);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.imposter-reveal-entry-name {
+  color: var(--coral);
+  font-weight: 700;
+}
+.imposter-reveal-entry-replaced {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 400;
+  display: block;
+  margin-top: 2px;
+}
+.imposter-reveal-entry-foundby {
+  background: rgba(255,255,255,0.06);
+  color: var(--text-dim);
+  font-size: 0.76rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}

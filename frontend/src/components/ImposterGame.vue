@@ -63,23 +63,20 @@
       <div class="modal">
         <h2 style="margin-top:0;">The imposters on this board</h2>
 
-        <div style="margin-bottom:16px;">
-          <div
-            v-for="([name, points], i) in sortedScoresForModal"
-            :key="name"
-            style="display:flex; justify-content:space-between; padding:3px 8px; border-radius:6px;"
-            :class="{ 'tension-winner-row': i === 0 }"
-          >
-            <span>{{ name }}</span>
-            <span>{{ points }}</span>
+        <div class="score-square-grid">
+          <div v-for="([name, points], i) in sortedScoresForModal" :key="name" class="score-square" :class="{ leader: i === 0 }">
+            <div class="score-square-name">{{ name }}</div>
+            <div class="score-square-number">{{ points }}</div>
           </div>
         </div>
 
         <div v-if="!boardRevealModal.reveal.length" style="color:var(--text-dim);">No imposters on this board.</div>
-        <div v-for="(r, i) in boardRevealModal.reveal" :key="i" style="padding:6px 0; border-bottom:1px solid var(--border);">
-          <strong style="color:var(--coral);">{{ r.imposterName }}</strong>
-          <span v-if="r.replacedName"> replaced <strong style="color:var(--text);">{{ r.replacedName }}</strong></span>
-          <span v-if="r.flippedByPlayer" style="display:block; color:var(--text-dim); font-size:0.82rem;">Found by {{ r.flippedByPlayer }}</span>
+        <div v-for="(r, i) in boardRevealModal.reveal" :key="i" class="imposter-reveal-entry">
+          <div>
+            <span class="imposter-reveal-entry-name">{{ r.imposterName }}</span>
+            <span v-if="r.replacedName" class="imposter-reveal-entry-replaced">replaced {{ r.replacedName }}</span>
+          </div>
+          <span v-if="r.flippedByPlayer" class="imposter-reveal-entry-foundby">Found by {{ r.flippedByPlayer }}</span>
         </div>
         <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="continueAfterReveal">
           {{ boardRevealModal.isLastBoard ? 'See final results' : 'Next board →' }}
