@@ -125,6 +125,8 @@ public class GridPlayService {
         List<Grid> grids = gridRepository.findAll().stream()
                 .filter(g -> !isActive(g, today) && g.getWeekStartDate().isBefore(today))
                 .sorted((a, b) -> b.getWeekStartDate().compareTo(a.getWeekStartDate()))
+                .limit(9) // together with the 1 currently-active grid, matches the 10-grid
+                          // window GridAttemptCleanupService also uses - keep these in sync
                 .collect(Collectors.toList());
         return toSummariesWithStatus(grids, userEmail);
     }

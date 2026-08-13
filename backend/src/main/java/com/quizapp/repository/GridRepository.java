@@ -14,6 +14,12 @@ public interface GridRepository extends JpaRepository<Grid, Long> {
     List<Grid> findByWeekStartDate(LocalDate weekStartDate);
     boolean existsBySport(String sport);
 
+    // Every grid that's live or already past, newest first. Used both by the
+    // player-facing weekly grid list and by the attempt-cleanup job, so the two
+    // always agree on exactly which grids are "visible" without risk of drifting
+    // apart from each other over time.
+    List<Grid> findByWeekStartDateLessThanEqualOrderByWeekStartDateDesc(LocalDate date);
+
     @Modifying
     @Transactional
     @Query("UPDATE Grid g SET g.sport = :newName WHERE g.sport = :oldName")
