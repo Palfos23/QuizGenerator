@@ -68,6 +68,20 @@
       <div v-if="state.gridComplete" class="modal-backdrop">
         <div class="completion-popup">
           <h2 style="margin-top:0;">Grid complete!</h2>
+          <table class="table" style="margin:12px 0 0; table-layout:fixed; min-width:0;">
+            <thead>
+              <tr><th>Player</th><th style="text-align:right;">Score</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="(p, i) in leaderboardForGrid" :key="p.name" :class="{ 'tension-winner-row': i === 0 }">
+                <td>{{ p.name }}</td>
+                <td style="text-align:right;">
+                  {{ p.total }}
+                  <span v-if="p.roundDelta > 0" style="color:var(--teal); font-size:0.82rem;"> +{{ p.roundDelta }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
           <button v-if="isHost" class="btn btn-primary" style="margin-top:12px; width:100%;" :disabled="advancing" @click="nextGrid">
             {{ advancing ? 'Loading…' : (state.currentGridIndex + 1 < state.totalGrids ? 'Next grid' : 'Finish game') }}
           </button>
@@ -123,6 +137,19 @@ const props = defineProps({
 const emit = defineEmits(['gameOver', 'leave'])
 
 const state = ref(null)
+const scoresAtGridStart = ref({})
+
+const leaderboardForGrid = computed(() => {
+  if (!state.value) return []
+  return [...state.value.players]
+    .map(p => ({
+      name: p.name,
+      total: p.totalScore,
+      roundDelta: p.totalScore - (scoresAtGridStart.value[p.name] || 0)
+    }))
+    .sort((a, b) => b.total - a.total)
+})
+let lastGridIndexSeen = null
 const loading = ref(true)
 const error = ref('')
 const searchTerm = ref('')
@@ -167,6 +194,10 @@ async function poll() {
 
 function applyState(fresh) {
   error.value = ''
+  if (fresh.currentGridIndex !== lastGridIndexSeen) {
+    scoresAtGridStart.value = Object.fromEntries(fresh.players.map(p => [p.name, p.totalScore]))
+    lastGridIndexSeen = fresh.currentGridIndex
+  }
   state.value = fresh
   if (fresh.finished) {
     clearInterval(pollTimer)

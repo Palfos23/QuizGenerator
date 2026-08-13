@@ -63,6 +63,20 @@
       <div v-if="gridComplete" class="modal-backdrop">
         <div class="completion-popup">
           <h2 style="margin-top:0;">Grid complete!</h2>
+          <table class="table" style="margin:12px 0 0; table-layout:fixed; min-width:0;">
+            <thead>
+              <tr><th>Player</th><th style="text-align:right;">Score</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="(p, i) in leaderboardForGrid" :key="p.name" :class="{ 'tension-winner-row': i === 0 }">
+                <td>{{ p.name }}</td>
+                <td style="text-align:right;">
+                  {{ p.total }}
+                  <span v-if="p.roundDelta > 0" style="color:var(--teal); font-size:0.82rem;"> +{{ p.roundDelta }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
           <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextGrid">
             {{ currentGridIndex + 1 < grids.length ? 'Next grid' : 'Finish game' }}
           </button>
@@ -122,6 +136,17 @@ const livesUsed = ref({})
 const eliminatedPlayers = ref([])
 const currentPlayerIdx = ref(0)
 const scores = ref(Object.fromEntries(props.players.map(p => [p.name, 0])))
+const scoresAtGridStart = ref(Object.fromEntries(props.players.map(p => [p.name, 0])))
+
+const leaderboardForGrid = computed(() => {
+  return [...props.players]
+    .map(p => ({
+      name: p.name,
+      total: scores.value[p.name] || 0,
+      roundDelta: (scores.value[p.name] || 0) - (scoresAtGridStart.value[p.name] || 0)
+    }))
+    .sort((a, b) => b.total - a.total)
+})
 const gridComplete = ref(false)
 const searchTerm = ref('')
 const searchResults = ref([])
@@ -152,6 +177,7 @@ async function loadGrid() {
   revealedEntryIds.value = []
   eliminatedPlayers.value = []
   gridComplete.value = false
+  scoresAtGridStart.value = { ...scores.value }
   currentPlayerIdx.value = currentGridIndex.value % props.players.length // rotate who starts, like Tension
   try {
     gridState.value = await api.getMultiplayerGridStart(props.grids[currentGridIndex.value].id)

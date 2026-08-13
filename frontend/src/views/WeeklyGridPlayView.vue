@@ -191,6 +191,11 @@
           <p>You found {{ guessedCount }} / {{ state.entries.length }} - take a look at what you missed below.</p>
         </template>
 
+        <div class="stats-panel" style="margin-top:4px;">
+          <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Score</div>
+          <div style="font-size:1.6rem; font-weight:700;">{{ guessedCount }} / {{ state.entries.length }}</div>
+        </div>
+
         <button class="btn btn-primary" style="margin-top:8px;" @click="completionPopup = null">Continue</button>
       </div>
     </div>

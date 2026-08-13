@@ -62,10 +62,24 @@
     <div v-if="boardRevealModal" class="modal-backdrop">
       <div class="modal">
         <h2 style="margin-top:0;">The imposters on this board</h2>
+
+        <div style="margin-bottom:16px;">
+          <div
+            v-for="([name, points], i) in sortedScoresForModal"
+            :key="name"
+            style="display:flex; justify-content:space-between; padding:3px 8px; border-radius:6px;"
+            :class="{ 'tension-winner-row': i === 0 }"
+          >
+            <span>{{ name }}</span>
+            <span>{{ points }}</span>
+          </div>
+        </div>
+
         <div v-if="!boardRevealModal.reveal.length" style="color:var(--text-dim);">No imposters on this board.</div>
         <div v-for="(r, i) in boardRevealModal.reveal" :key="i" style="padding:6px 0; border-bottom:1px solid var(--border);">
           <strong style="color:var(--coral);">{{ r.imposterName }}</strong>
           <span v-if="r.replacedName"> replaced <strong style="color:var(--text);">{{ r.replacedName }}</strong></span>
+          <span v-if="r.flippedByPlayer" style="display:block; color:var(--text-dim); font-size:0.82rem;">Found by {{ r.flippedByPlayer }}</span>
         </div>
         <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="continueAfterReveal">
           {{ boardRevealModal.isLastBoard ? 'See final results' : 'Next board →' }}
@@ -112,6 +126,10 @@ function shuffledIds(ids) {
 }
 
 const currentPlayer = computed(() => props.players[currentPlayerIdx.value])
+
+const sortedScoresForModal = computed(() => {
+  return Object.entries(scores).sort((a, b) => a[1] - b[1]) // fewest imposter hits wins
+})
 
 onMounted(async () => {
   const saved = passAndPlayState.load('imposter')
@@ -187,7 +205,7 @@ async function flipTile(t) {
   flipping.value = true
   try {
     const result = await api.flipImposterTile(props.gridIds[currentGridIndex.value], t.id)
-    flippedTiles[t.id] = { imposter: result.imposter, revealPhotoUrl: result.revealPhotoUrl }
+    flippedTiles[t.id] = { imposter: result.imposter, revealPhotoUrl: result.revealPhotoUrl, player: currentPlayer.value }
     if (result.imposter) scores[currentPlayer.value]++
     showFlipOverlay(result.imposter)
 
@@ -222,6 +240,7 @@ async function finishBoard() {
   let revealList = []
   try {
     revealList = await api.getImposterReveal(props.gridIds[currentGridIndex.value])
+    revealList = revealList.map(r => ({ ...r, flippedByPlayer: flippedTiles[r.tileId]?.player || null }))
   } catch (e) {
     // reveal failing for one board shouldn't block the rest of the session
   }

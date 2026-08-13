@@ -93,6 +93,7 @@ public class ImposterGridPlayService {
                 .filter(ImposterTile::isImposter)
                 .sorted((a, b) -> Integer.compare(a.getOrderIndex(), b.getOrderIndex()))
                 .map(t -> new ImposterRevealDto(
+                        t.getId(),
                         t.getAthlete().getName(),
                         t.getReplacedAthlete() != null ? t.getReplacedAthlete().getName() : null))
                 .collect(Collectors.toList());

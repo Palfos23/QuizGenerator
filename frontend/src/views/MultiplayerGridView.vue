@@ -283,24 +283,26 @@
     />
 
     <template v-else-if="stage === 'done'">
-      <h1 style="text-align:center;">Game over!</h1>
-      <h2 v-if="winner" style="text-align:center; color:var(--gold);">{{ winner }}</h2>
+      <div class="modal-backdrop">
+        <div class="completion-popup">
+          <h2 style="margin-top:0;">Game over!</h2>
+          <h3 v-if="winner" style="color:var(--gold); margin-top:0;">{{ winner }}</h3>
 
-      <table class="table" style="max-width:480px; margin:20px auto; table-layout:fixed; min-width:0;">
-        <thead>
-          <tr><th>#</th><th>Player</th><th style="text-align:right;">Score</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="([name, score], i) in sortedScores" :key="name" :class="{ 'tension-winner-row': i === 0 }">
-            <td>{{ i + 1 }}</td>
-            <td>{{ name }}</td>
-            <td style="text-align:right;">{{ score }}</td>
-          </tr>
-        </tbody>
-      </table>
+          <table class="table" style="margin:12px 0 0; table-layout:fixed; min-width:0;">
+            <thead>
+              <tr><th>#</th><th>Player</th><th style="text-align:right;">Score</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="([name, score], i) in sortedScores" :key="name" :class="{ 'tension-winner-row': i === 0 }">
+                <td>{{ i + 1 }}</td>
+                <td>{{ name }}</td>
+                <td style="text-align:right;">{{ score }}</td>
+              </tr>
+            </tbody>
+          </table>
 
-      <div style="text-align:center;">
-        <button class="btn btn-primary" @click="resetGame">Play again</button>
+          <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="resetGame">Play again</button>
+        </div>
       </div>
     </template>
   </div>
