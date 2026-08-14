@@ -286,22 +286,23 @@
       <div class="modal-backdrop">
         <div class="completion-popup">
           <h2 style="margin-top:0;">Game over!</h2>
-          <h3 v-if="winner" style="color:var(--gold); margin-top:0;">{{ winner }}</h3>
 
-          <table class="table" style="margin:12px 0 0; table-layout:fixed; min-width:0;">
-            <thead>
-              <tr><th>#</th><th>Player</th><th style="text-align:right;">Score</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="([name, score], i) in sortedScores" :key="name" :class="{ 'tension-winner-row': i === 0 }">
-                <td>{{ i + 1 }}</td>
-                <td>{{ name }}</td>
-                <td style="text-align:right;">{{ score }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="podium-row">
+            <div v-for="(entry, i) in sortedScores.slice(0, 3)" :key="entry[0]" class="podium-block" :class="`rank-${i + 1}`">
+              <div class="podium-rank-number">{{ i + 1 }}</div>
+              <div class="podium-name">{{ entry[0] }}</div>
+              <div class="podium-score">{{ entry[1] }}</div>
+            </div>
+          </div>
 
-          <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="resetGame">Play again</button>
+          <div v-if="sortedScores.length > 3" style="max-width:420px; margin:0 auto;">
+            <div v-for="(entry, i) in sortedScores.slice(3)" :key="entry[0]" class="podium-rest-row">
+              <span>{{ i + 4 }}. {{ entry[0] }}</span>
+              <span style="color:var(--text-dim);">{{ entry[1] }}</span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="resetGame">Play again</button>
         </div>
       </div>
     </template>
@@ -442,7 +443,6 @@ function startGame() {
 }
 
 const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] - a[1]))
-const winner = computed(() => sortedScores.value[0]?.[0] ?? null)
 
 function onGameOver(scores) {
   passAndPlayState.clear('grid-battle')

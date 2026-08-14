@@ -46,7 +46,7 @@
               :class="{ 'is-photo': !!t.photoUrl && playState.displayMode !== 'NAME_AND_LOGO' }"
               @error="$event.target.style.display = 'none'"
             />
-            <div v-if="playState.displayMode !== 'PHOTO_ONLY'" class="grid-tile-name">{{ t.athleteName }}</div>
+            <div v-if="playState.displayMode !== 'PHOTO_ONLY' || flippedTiles[t.id]" class="grid-tile-name">{{ t.athleteName }}</div>
           </template>
           <span v-if="flippedTiles[t.id]" class="grid-tile-status" :class="flippedTiles[t.id].imposter ? 'wrong' : 'correct'">
             {{ flippedTiles[t.id].imposter ? '✕' : '✓' }}

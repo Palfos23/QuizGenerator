@@ -271,22 +271,23 @@
 
     <template v-else-if="stage === 'done'">
       <h1 style="text-align:center;">Game over!</h1>
-      <h2 v-if="winner" style="text-align:center; color:var(--gold);">{{ winner }}</h2>
 
-      <table class="table" style="max-width:480px; margin:20px auto; table-layout:fixed; min-width:0;">
-        <thead>
-          <tr><th>#</th><th>Player</th><th style="text-align:right;">Score</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="([name, score], i) in sortedScores" :key="name" :class="{ 'tension-winner-row': i === 0 }">
-            <td>{{ i + 1 }}</td>
-            <td>{{ name }}</td>
-            <td style="text-align:right;" :style="{ color: score > 0 ? 'var(--teal)' : score < 0 ? 'var(--coral)' : 'var(--text)' }">{{ score }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="podium-row">
+        <div v-for="(entry, i) in sortedScores.slice(0, 3)" :key="entry[0]" class="podium-block" :class="`rank-${i + 1}`">
+          <div class="podium-rank-number">{{ i + 1 }}</div>
+          <div class="podium-name">{{ entry[0] }}</div>
+          <div class="podium-score" :style="{ color: entry[1] > 0 ? 'var(--teal)' : entry[1] < 0 ? 'var(--coral)' : 'var(--text-dim)' }">{{ entry[1] }}</div>
+        </div>
+      </div>
 
-      <div style="text-align:center;">
+      <div v-if="sortedScores.length > 3" style="max-width:420px; margin:0 auto;">
+        <div v-for="(entry, i) in sortedScores.slice(3)" :key="entry[0]" class="podium-rest-row">
+          <span>{{ i + 4 }}. {{ entry[0] }}</span>
+          <span :style="{ color: entry[1] > 0 ? 'var(--teal)' : entry[1] < 0 ? 'var(--coral)' : 'var(--text-dim)' }">{{ entry[1] }}</span>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:20px;">
         <button class="btn btn-primary" @click="resetGame">Play again</button>
       </div>
     </template>
@@ -389,7 +390,6 @@ async function startGame() {
 }
 
 const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] - a[1]))
-const winner = computed(() => sortedScores.value[0]?.[0] ?? null)
 
 function onGameOver(scores) {
   passAndPlayState.clear('tension')

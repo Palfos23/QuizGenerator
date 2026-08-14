@@ -2150,3 +2150,68 @@ table.scoreboard-table {
 @media (prefers-reduced-motion: reduce) {
   .podium-block { animation: none; }
 }
+
+/* ---------- 501 win screen (dart-themed) ---------- */
+.darts-win-card {
+  position: relative;
+  text-align: center;
+  padding: 32px 24px 28px;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--gold);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(242,183,5,0.16), transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(242,183,5,0.08), transparent 55%),
+    rgba(255,255,255,0.02);
+  overflow: hidden;
+  animation: darts-win-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.darts-win-card::before {
+  content: '';
+  position: absolute;
+  top: -70px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle,
+    rgba(242,183,5,0.10) 0px,
+    rgba(242,183,5,0.10) 8px,
+    transparent 8px,
+    transparent 18px
+  );
+  pointer-events: none;
+}
+
+.darts-win-label {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  position: relative;
+}
+.darts-win-name {
+  font-family: var(--font-display);
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: var(--gold);
+  margin: 4px 0 22px;
+  position: relative;
+  text-shadow: 0 0 26px rgba(242,183,5,0.35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.darts-win-card .score-square-grid { position: relative; margin: 0 0 20px; }
+.darts-win-card .score-square.leader { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+
+@keyframes darts-win-pop {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .darts-win-card { animation: none; }
+}
