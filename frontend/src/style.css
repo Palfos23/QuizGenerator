@@ -2215,3 +2215,38 @@ table.scoreboard-table {
 @media (prefers-reduced-motion: reduce) {
   .darts-win-card { animation: none; }
 }
+
+/* ---------- 501 persistent dartboard background ---------- */
+.fiveoo-dartboard-bg {
+  position: relative;
+}
+.fiveoo-dartboard-bg::before {
+  content: '';
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 640px;
+  height: 640px;
+  max-width: 130vw;
+  max-height: 130vw;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle,
+    rgba(242,183,5,0.05) 0px,
+    rgba(242,183,5,0.05) 10px,
+    transparent 10px,
+    transparent 24px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+.fiveoo-content {
+  position: relative;
+  z-index: 1;
+}
+
+.fiveoo-results-prompt {
+  text-align: center;
+  padding: 32px 0 12px;
+}

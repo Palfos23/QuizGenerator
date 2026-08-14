@@ -1,12 +1,13 @@
 <template>
-  <div>
+  <div class="fiveoo-dartboard-bg">
+    <div class="fiveoo-content">
     <div class="fiveoo-header">
       <h2>{{ category.title }}</h2>
       <p v-if="category.description" class="fiveoo-description">{{ category.description }}</p>
       <p class="fiveoo-rules-reminder">First to checkout between 0 and -10 wins</p>
     </div>
 
-    <div class="mp-player-row">
+    <div v-if="!winner" class="mp-player-row">
       <div
         v-for="p in players"
         :key="p"
@@ -66,18 +67,24 @@
       </div>
     </template>
 
-    <div v-else class="darts-win-card">
-      <div class="darts-win-label">Winner</div>
-      <div class="darts-win-name">{{ winner }}</div>
-      <div class="score-square-grid">
-        <div v-for="p in players" :key="p" class="score-square" :class="{ leader: p === winner }">
-          <div class="score-square-name">{{ p }}</div>
-          <div class="score-square-number">{{ totals[p] }}</div>
+    <div v-else class="fiveoo-results-prompt">
+      <button class="btn btn-primary" @click="showResults = true">Results</button>
+    </div>
+
+    <div v-if="showResults" class="modal-backdrop">
+      <div class="darts-win-card">
+        <div class="darts-win-label">Winner</div>
+        <div class="darts-win-name">{{ winner }}</div>
+        <div class="score-square-grid">
+          <div v-for="p in players" :key="p" class="score-square" :class="{ leader: p === winner }">
+            <div class="score-square-name">{{ p }}</div>
+            <div class="score-square-number">{{ totals[p] }}</div>
+          </div>
         </div>
+        <button class="btn btn-primary" @click="$emit('gameOver', players.map(p => [p, totals[p]]))">
+          Continue
+        </button>
       </div>
-      <button class="btn btn-primary" @click="$emit('gameOver', players.map(p => [p, totals[p]]))">
-        Continue
-      </button>
     </div>
 
     <details class="advanced-disclosure" style="margin-top:20px;">
@@ -93,6 +100,7 @@
 
     <div v-if="throwOverlay" class="fiveoo-throw-overlay" :class="throwOverlay.kind">
       <div class="fiveoo-overlay-text">{{ throwOverlay.text }}</div>
+    </div>
     </div>
   </div>
 </template>
@@ -116,6 +124,7 @@ const currentPlayer = computed(() => props.players[currentPlayerIdx.value])
 
 const windowReacher = ref(null) // player name once someone first lands in the 0..-10 window
 const winner = ref(null)
+const showResults = ref(false)
 const history = ref([])
 const lastThrow = ref(null)
 const shakeGuessBox = ref(false)
