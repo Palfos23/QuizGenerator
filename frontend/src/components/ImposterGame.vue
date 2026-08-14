@@ -34,7 +34,7 @@
           class="grid-tile"
           :class="tileClass(t)"
           @click="flipTile(t)"
-          style="cursor:pointer;"
+          :style="{ cursor: boardFinished ? 'default' : 'pointer' }"
         >
           <div v-if="playState.displayMode === 'NAME_ONLY'" class="grid-tile-name-fill">{{ t.athleteName }}</div>
           <template v-else>
@@ -109,6 +109,7 @@ const boardRevealModal = ref(null) // { reveal, isLastBoard } shown between boar
 const tileOrders = reactive({}) // gridId -> array of tile ids in the shuffled order for this session
 const flipOverlay = ref(null)
 const flipping = ref(false)
+const boardFinished = ref(false) // true the instant the board's outcome is decided, even before the reveal modal visually appears
 let overlayTimeout = null
 let restoring = false // true while applying saved progress, so that initial restore doesn't itself get saved as a redundant write
 
@@ -149,6 +150,7 @@ onMounted(async () => {
 async function loadPlayState() {
   loading.value = true
   error.value = ''
+  boardFinished.value = false
   try {
     const gridId = props.gridIds[currentGridIndex.value]
     const state = await api.getImposterPlayState(gridId)
@@ -198,7 +200,7 @@ function saveProgress() {
 watch([currentGridIndex, currentPlayerIdx, flippedTiles, scores, accumulatedReveal, tileOrders], saveProgress, { deep: true })
 
 async function flipTile(t) {
-  if (flipping.value || flippedTiles[t.id]) return
+  if (flipping.value || flippedTiles[t.id] || boardFinished.value) return
   flipping.value = true
   try {
     const result = await api.flipImposterTile(props.gridIds[currentGridIndex.value], t.id)
@@ -212,6 +214,7 @@ async function flipTile(t) {
     const onlyImpostersRemain = fitsFoundSoFar === totalFitsOnBoard
 
     if (allFlipped || onlyImpostersRemain) {
+      boardFinished.value = true // block further flips immediately, well before the reveal modal visually appears
       await finishBoard()
       return
     }
