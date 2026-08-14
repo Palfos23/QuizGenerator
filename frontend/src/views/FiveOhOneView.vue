@@ -77,26 +77,6 @@
       @game-over="onGameOver"
     />
 
-    <template v-else-if="stage === 'done'">
-      <h1 style="text-align:center;">Game over!</h1>
-      <h2 style="text-align:center; color:var(--gold);">{{ winner }}</h2>
-
-      <table class="table" style="max-width:480px; margin:20px auto; table-layout:fixed; min-width:0;">
-        <thead>
-          <tr><th>Player</th><th style="text-align:right;">Final total</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="([name, total], i) in finalTotals" :key="name" :class="{ 'tension-winner-row': i === 0 }">
-            <td>{{ name }}</td>
-            <td style="text-align:right;">{{ total }}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div style="text-align:center;">
-        <button class="btn btn-primary" @click="resetToStart">Play again</button>
-      </div>
-    </template>
   </div>
 </template>
 
@@ -112,10 +92,8 @@ const loading = ref(true)
 const categories = ref([])
 const chosenCategory = ref(null)
 const playerNames = ref(['', ''])
-const finalTotals = ref([])
 
 const bothNamed = computed(() => playerNames.value[0].trim().length > 0 && playerNames.value[1].trim().length > 0)
-const winner = computed(() => finalTotals.value[0]?.[0] ?? null)
 
 onMounted(loadCategories)
 
@@ -166,19 +144,16 @@ function startGame() {
   stage.value = 'game'
 }
 
-function onGameOver(totals) {
+function onGameOver() {
   passAndPlayState.clear('501')
   passAndPlayState.clear('501-progress')
   savedPassAndPlay.value = null
-  // sort by distance from zero (the actual winner is whoever's closer, matching the game's own win logic)
-  finalTotals.value = [...totals].sort((a, b) => Math.abs(a[1]) - Math.abs(b[1]))
-  stage.value = 'done'
+  resetToStart()
 }
 
 function resetToStart() {
   chosenCategory.value = null
   playerNames.value = ['', '']
-  finalTotals.value = []
   stage.value = 'category'
 }
 </script>
