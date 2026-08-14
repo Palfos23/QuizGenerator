@@ -260,6 +260,14 @@ function submitThrow(entry) {
 
   if (landedInWindow && !windowReacher.value) {
     windowReacher.value = player
+    if (player === props.players[1]) {
+      // the second-starting player reached the window first - the first-starting
+      // player doesn't get a response turn, the game ends right here
+      winner.value = player
+      return
+    }
+    // the first-starting player reached it - the second-starting player still
+    // gets their natural next turn to respond, handled by the branch above
   }
 
   currentPlayerIdx.value = (currentPlayerIdx.value + 1) % props.players.length

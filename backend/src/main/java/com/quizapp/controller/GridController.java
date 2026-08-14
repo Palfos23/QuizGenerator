@@ -82,6 +82,12 @@ public class GridController {
         return gridPlayService.getMultiplayerStartState(id);
     }
 
+    /** Every entry's answer, for showing what wasn't found once a grid battle round has ended. */
+    @GetMapping("/{id}/multiplayer-reveal")
+    public java.util.Map<Long, String> multiplayerReveal(@PathVariable Long id) {
+        return gridPlayService.getMultiplayerReveal(id);
+    }
+
     /** Stateless guess check for multiplayer mode - the client tracks revealed entries itself. */
     @PostMapping("/{id}/multiplayer-guess")
     public GuessResultDto multiplayerGuess(@PathVariable Long id, @jakarta.validation.Valid @RequestBody com.quizapp.dto.MultiplayerGuessRequest request) {

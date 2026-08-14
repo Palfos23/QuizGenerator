@@ -145,6 +145,9 @@ export default {
   getMultiplayerGridStart(id) {
     return client.get(`/grids/${id}/multiplayer-start`).then(r => r.data)
   },
+  getMultiplayerGridReveal(id) {
+    return client.get(`/grids/${id}/multiplayer-reveal`).then(r => r.data)
+  },
   submitMultiplayerGridGuess(id, athleteId, revealedEntryIds) {
     return client.post(`/grids/${id}/multiplayer-guess`, { athleteId, revealedEntryIds }).then(r => r.data)
   },

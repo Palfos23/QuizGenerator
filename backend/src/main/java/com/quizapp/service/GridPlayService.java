@@ -254,6 +254,14 @@ public class GridPlayService {
         return dto;
     }
 
+    @Transactional(readOnly = true)
+    public java.util.Map<Long, String> getMultiplayerReveal(Long gridId) {
+        Grid grid = gridRepository.findById(gridId)
+                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+        return grid.getEntries().stream()
+                .collect(Collectors.toMap(GridEntry::getId, e -> e.getAthlete().getName()));
+    }
+
     /**
      * Stateless guess check for multiplayer mode - same core matching logic as the
      * single-player guess(), but takes "already revealed" from the request instead

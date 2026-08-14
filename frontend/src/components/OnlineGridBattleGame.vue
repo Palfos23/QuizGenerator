@@ -75,6 +75,14 @@
               <div v-if="p.roundDelta > 0" class="score-square-delta">+{{ p.roundDelta }}</div>
             </div>
           </div>
+
+          <div v-if="unsolvedEntries.length" style="text-align:left; margin-top:4px;">
+            <div style="color:var(--text-dim); font-size:0.82rem; margin-bottom:8px;">Not found:</div>
+            <div v-for="e in unsolvedEntries" :key="e.id" class="imposter-reveal-entry" style="background:rgba(255,255,255,0.03); border-color:var(--border);">
+              <span style="font-weight:700;">{{ e.name }}</span>
+            </div>
+          </div>
+
           <button v-if="isHost" class="btn btn-primary" style="margin-top:12px; width:100%;" :disabled="advancing" @click="nextGrid">
             {{ advancing ? 'Loading…' : (state.currentGridIndex + 1 < state.totalGrids ? 'Next grid' : 'Finish game') }}
           </button>
@@ -131,6 +139,7 @@ const emit = defineEmits(['gameOver', 'leave'])
 
 const state = ref(null)
 const scoresAtGridStart = ref({})
+const revealMap = ref({}) // entryId -> athleteName, fetched once the grid completes
 
 const leaderboardForGrid = computed(() => {
   if (!state.value) return []
@@ -141,6 +150,13 @@ const leaderboardForGrid = computed(() => {
       roundDelta: p.totalScore - (scoresAtGridStart.value[p.name] || 0)
     }))
     .sort((a, b) => b.total - a.total)
+})
+const unsolvedEntries = computed(() => {
+  if (!state.value) return []
+  return state.value.entries
+    .filter(e => !e.solved && !e.athleteName)
+    .map(e => ({ id: e.id, name: revealMap.value[e.id] }))
+    .filter(e => e.name)
 })
 let lastGridIndexSeen = null
 const loading = ref(true)
@@ -190,8 +206,12 @@ function applyState(fresh) {
   if (fresh.currentGridIndex !== lastGridIndexSeen) {
     scoresAtGridStart.value = Object.fromEntries(fresh.players.map(p => [p.name, p.totalScore]))
     lastGridIndexSeen = fresh.currentGridIndex
+    revealMap.value = {}
   }
   state.value = fresh
+  if (fresh.gridComplete && Object.keys(revealMap.value).length === 0) {
+    api.getMultiplayerGridReveal(fresh.currentGridId).then(map => { revealMap.value = map }).catch(() => {})
+  }
   if (fresh.finished) {
     clearInterval(pollTimer)
     const scores = fresh.players.map(p => [p.name, p.totalScore])

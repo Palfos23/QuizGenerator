@@ -70,6 +70,14 @@
               <div v-if="p.roundDelta > 0" class="score-square-delta">+{{ p.roundDelta }}</div>
             </div>
           </div>
+
+          <div v-if="unsolvedEntries.length" style="text-align:left; margin-top:4px;">
+            <div style="color:var(--text-dim); font-size:0.82rem; margin-bottom:8px;">Not found:</div>
+            <div v-for="e in unsolvedEntries" :key="e.id" class="imposter-reveal-entry" style="background:rgba(255,255,255,0.03); border-color:var(--border);">
+              <span style="font-weight:700;">{{ e.name }}</span>
+            </div>
+          </div>
+
           <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextGrid">
             {{ currentGridIndex + 1 < grids.length ? 'Next grid' : 'Finish game' }}
           </button>
@@ -140,7 +148,15 @@ const leaderboardForGrid = computed(() => {
     }))
     .sort((a, b) => b.total - a.total)
 })
+const unsolvedEntries = computed(() => {
+  if (!gridState.value) return []
+  return gridState.value.entries
+    .filter(e => !revealedEntryIds.value.includes(e.id))
+    .map(e => ({ id: e.id, name: revealMap.value[e.id] }))
+    .filter(e => e.name)
+})
 const gridComplete = ref(false)
+const revealMap = ref({}) // entryId -> athleteName, fetched once the grid completes
 const searchTerm = ref('')
 const searchResults = ref([])
 const guessing = ref(false)
@@ -168,6 +184,7 @@ function tileImage(entry) {
 async function loadGrid() {
   loading.value = true
   revealedEntryIds.value = []
+  revealMap.value = {}
   eliminatedPlayers.value = []
   gridComplete.value = false
   scoresAtGridStart.value = { ...scores.value }
@@ -348,6 +365,15 @@ async function initGame() {
 }
 
 watch([revealedEntryIds, livesUsed, eliminatedPlayers, currentPlayerIdx, scores, gridComplete, currentGridIndex], saveProgress, { deep: true })
+watch(gridComplete, async (val) => {
+  if (val) {
+    try {
+      revealMap.value = await api.getMultiplayerGridReveal(props.grids[currentGridIndex.value].id)
+    } catch (e) {
+      // reveal failing shouldn't block the rest of the completion modal
+    }
+  }
+})
 
 onMounted(initGame)
 </script>
