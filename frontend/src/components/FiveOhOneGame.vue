@@ -67,24 +67,20 @@
       </div>
     </template>
 
-    <div v-else class="fiveoo-results-prompt">
-      <button class="btn btn-primary" @click="showResults = true">Results</button>
-    </div>
+    <div v-else class="fiveoo-gameover">
+      <div class="darts-win-label">Winner</div>
+      <div class="darts-win-name">{{ winner }}</div>
 
-    <div v-if="showResults" class="modal-backdrop">
-      <div class="darts-win-card">
-        <div class="darts-win-label">Winner</div>
-        <div class="darts-win-name">{{ winner }}</div>
-        <div class="score-square-grid">
-          <div v-for="p in players" :key="p" class="score-square" :class="{ leader: p === winner }">
-            <div class="score-square-name">{{ p }}</div>
-            <div class="score-square-number">{{ totals[p] }}</div>
-          </div>
+      <div class="score-square-grid">
+        <div v-for="p in players" :key="p" class="score-square" :class="{ leader: p === winner }">
+          <div class="score-square-name">{{ p }}</div>
+          <div class="score-square-number">{{ totals[p] }}</div>
         </div>
-        <button class="btn btn-primary" @click="$emit('gameOver', players.map(p => [p, totals[p]]))">
-          Continue
-        </button>
       </div>
+
+      <button class="btn btn-primary" style="margin-top:8px; min-width:220px;" @click="$emit('gameOver', players.map(p => [p, totals[p]]))">
+        Play again
+      </button>
     </div>
 
     <details class="advanced-disclosure" style="margin-top:20px;">
@@ -124,7 +120,6 @@ const currentPlayer = computed(() => props.players[currentPlayerIdx.value])
 
 const windowReacher = ref(null) // player name once someone first lands in the 0..-10 window
 const winner = ref(null)
-const showResults = ref(false)
 const history = ref([])
 const lastThrow = ref(null)
 const shakeGuessBox = ref(false)
