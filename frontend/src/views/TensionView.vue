@@ -422,9 +422,15 @@ let lobbyPollTimer = null
 
 const isHost = computed(() => !!onlineRoom.value?.host)
 
-function randomOnlineColor() {
+// Colors are auto-assigned (no picker) - picks one not already in use by
+// another participant in the room, so two players never end up looking the
+// same in the player row. Falls back to a fully random pick only if every
+// palette color is somehow already taken.
+function pickUnusedColor(existingColors = []) {
   const palette = ['#4f46e5', '#F22C05', '#F2BB05', '#032E8A', '#05D6F2', '#f43f5e', '#5D038A', '#22c55e']
-  return palette[Math.floor(Math.random() * palette.length)]
+  const available = palette.filter(c => !existingColors.includes(c))
+  const pool = available.length ? available : palette
+  return pool[Math.floor(Math.random() * pool.length)]
 }
 
 async function createOnlineRoom() {
@@ -434,7 +440,7 @@ async function createOnlineRoom() {
     onlineRoom.value = await api.createRoom({
       gameType: 'TENSION',
       displayName: onlineDisplayName.value.trim(),
-      color: randomOnlineColor(),
+      color: pickUnusedColor(),
       tensionNumQuestions: onlineNumQuestions.value,
       tensionCategory: onlineCategory.value || null,
       tensionExcludeCategories: onlineExcludeCategories.value
@@ -454,9 +460,16 @@ async function joinOnlineRoom(codeOverride) {
   joiningRoom.value = true
   try {
     const code = (codeOverride || joinCode.value).trim().toUpperCase()
+    let existingColors = []
+    try {
+      const existing = await api.getRoom(code)
+      existingColors = (existing.participants || []).map(p => p.color)
+    } catch (e) {
+      // if this pre-check fails, joining below will surface the real error (bad code, etc.)
+    }
     onlineRoom.value = await api.joinRoom(code, {
       displayName: onlineDisplayName.value.trim(),
-      color: randomOnlineColor()
+      color: pickUnusedColor(existingColors)
     })
     activeRoom.save(onlineRoom.value.roomCode, 'TENSION')
     if (onlineRoom.value.status === 'IN_PROGRESS') {

@@ -80,7 +80,7 @@
         <div style="flex:1; min-width:160px;">
           <label>Players</label>
           <select v-model.number="numPlayers">
-            <option v-for="n in [2,3,4]" :key="n" :value="n">{{ n }}</option>
+            <option v-for="n in [2,3,4,5]" :key="n" :value="n">{{ n }}</option>
           </select>
         </div>
         <div style="flex:1; min-width:160px;">
@@ -491,10 +491,15 @@ function toggleOnlineGrid(id) {
   }
 }
 
-// Colors are auto-assigned (no picker) - just pick one not already visible in this browser tab's memory.
-function randomOnlineColor() {
+// Colors are auto-assigned (no picker) - picks one not already in use by
+// another participant in the room, so two players never end up looking the
+// same in the player row. Falls back to a fully random pick only if every
+// palette color is somehow already taken.
+function pickUnusedColor(existingColors = []) {
   const palette = ['#4f46e5', '#F22C05', '#F2BB05', '#032E8A', '#05D6F2', '#f43f5e', '#5D038A', '#22c55e']
-  return palette[Math.floor(Math.random() * palette.length)]
+  const available = palette.filter(c => !existingColors.includes(c))
+  const pool = available.length ? available : palette
+  return pool[Math.floor(Math.random() * pool.length)]
 }
 
 async function createOnlineRoom() {
@@ -504,7 +509,7 @@ async function createOnlineRoom() {
     const payload = {
       gameType: 'GRID_BATTLE',
       displayName: onlineDisplayName.value.trim(),
-      color: randomOnlineColor()
+      color: pickUnusedColor()
     }
     if (onlineGridMode.value === 'manual') {
       payload.gridIds = onlineChosenGrids.value
@@ -527,9 +532,16 @@ async function joinOnlineRoom(codeOverride) {
   joiningRoom.value = true
   try {
     const code = (codeOverride || joinCode.value).trim().toUpperCase()
+    let existingColors = []
+    try {
+      const existing = await api.getRoom(code)
+      existingColors = (existing.participants || []).map(p => p.color)
+    } catch (e) {
+      // if this pre-check fails, joining below will surface the real error (bad code, etc.)
+    }
     onlineRoom.value = await api.joinRoom(code, {
       displayName: onlineDisplayName.value.trim(),
-      color: randomOnlineColor()
+      color: pickUnusedColor(existingColors)
     })
     activeRoom.save(onlineRoom.value.roomCode, 'GRID_BATTLE')
     if (onlineRoom.value.status === 'IN_PROGRESS') {

@@ -48,8 +48,9 @@ public class RoomService {
             if (room.getStatus() != RoomStatus.WAITING) {
                 throw new IllegalStateException("This game has already started - you can't join mid-game.");
             }
-            if (room.getParticipants().size() >= 4) {
-                throw new IllegalStateException("This room already has the maximum of 4 players.");
+            int maxPlayers = (room.getGameType() == RoomGameType.GRID_BATTLE || room.getGameType() == RoomGameType.IMPOSTER) ? 5 : 4;
+            if (room.getParticipants().size() >= maxPlayers) {
+                throw new IllegalStateException("This room already has the maximum of " + maxPlayers + " players.");
             }
             String chosenName = (displayName != null && !displayName.isBlank()) ? displayName.trim() : userEmail;
             boolean nameTaken = room.getParticipants().stream()
