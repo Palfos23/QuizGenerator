@@ -420,6 +420,14 @@ export default {
     return client.post(`/rooms/${code}/imposter/next-board`).then(r => r.data)
   },
 
+  // --- Online 501 ---
+  getFiveOhOneOnlineState(code) {
+    return client.get(`/rooms/${code}/501/state`).then(r => r.data)
+  },
+  throwFiveOhOneOnline(code, entryId) {
+    return client.post(`/rooms/${code}/501/throw`, { entryId }).then(r => r.data)
+  },
+
   // --- Online Tension ---
   getTensionOnlineState(code) {
     return client.get(`/rooms/${code}/tension/state`).then(r => r.data)
