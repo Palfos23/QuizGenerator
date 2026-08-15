@@ -22,6 +22,12 @@ public class CreateRoomRequest {
     private String tensionCategory;
     private List<String> tensionExcludeCategories;
 
+    // 501 only.
+    private Long fiveOhOneCategoryId;
+
+    public Long getFiveOhOneCategoryId() { return fiveOhOneCategoryId; }
+    public void setFiveOhOneCategoryId(Long fiveOhOneCategoryId) { this.fiveOhOneCategoryId = fiveOhOneCategoryId; }
+
     public Integer getTensionNumQuestions() { return tensionNumQuestions; }
     public void setTensionNumQuestions(Integer tensionNumQuestions) { this.tensionNumQuestions = tensionNumQuestions; }
     public String getTensionCategory() { return tensionCategory; }

@@ -6,6 +6,7 @@ import com.quizapp.dto.RoomDto;
 import com.quizapp.model.GameRoom;
 import com.quizapp.model.RoomGameType;
 import com.quizapp.service.GridBattleOnlineService;
+import com.quizapp.service.FiveOhOneOnlineService;
 import com.quizapp.service.ImposterOnlineService;
 import com.quizapp.service.RoomService;
 import com.quizapp.service.TensionOnlineService;
@@ -23,13 +24,16 @@ public class RoomController {
     private final GridBattleOnlineService gridBattleOnlineService;
     private final TensionOnlineService tensionOnlineService;
     private final ImposterOnlineService imposterOnlineService;
+    private final FiveOhOneOnlineService fiveOhOneOnlineService;
 
     public RoomController(RoomService roomService, GridBattleOnlineService gridBattleOnlineService,
-                           TensionOnlineService tensionOnlineService, ImposterOnlineService imposterOnlineService) {
+                           TensionOnlineService tensionOnlineService, ImposterOnlineService imposterOnlineService,
+                           FiveOhOneOnlineService fiveOhOneOnlineService) {
         this.roomService = roomService;
         this.gridBattleOnlineService = gridBattleOnlineService;
         this.tensionOnlineService = tensionOnlineService;
         this.imposterOnlineService = imposterOnlineService;
+        this.fiveOhOneOnlineService = fiveOhOneOnlineService;
     }
 
     @PostMapping
@@ -44,6 +48,8 @@ public class RoomController {
                     request.getTensionCategory(), request.getTensionExcludeCategories());
         } else if (request.getGameType() == RoomGameType.IMPOSTER) {
             imposterOnlineService.initializeImposterSequence(room, request.getGridIds(), request.getRandomGridCount());
+        } else if (request.getGameType() == RoomGameType.FIVE_O_ONE) {
+            fiveOhOneOnlineService.initializeCategory(room, request.getFiveOhOneCategoryId());
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(roomService.toDto(room, email));
@@ -70,6 +76,8 @@ public class RoomController {
             gridBattleOnlineService.startGame(room, email);
         } else if (room.getGameType() == RoomGameType.IMPOSTER) {
             imposterOnlineService.startGame(room, email);
+        } else if (room.getGameType() == RoomGameType.FIVE_O_ONE) {
+            fiveOhOneOnlineService.startGame(room, email);
         } else {
             tensionOnlineService.startGame(room, email);
         }
