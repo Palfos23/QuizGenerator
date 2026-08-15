@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap');
 
 :root {
+  --nav-height: 64px; /* used by sticky elements positioned just below the top nav - keep in sync with .top-nav's actual rendered height per breakpoint */
   --ink: #101119;
   --ink-raised: #1a1c28;
   --gold: #f2b705;
@@ -969,7 +970,7 @@ mark {
 
 .guess-box-wrap {
   position: sticky;
-  top: 64px;
+  top: var(--nav-height);
   z-index: 25;
   background: var(--ink);
   padding: 10px 0;
@@ -1682,7 +1683,7 @@ table.scoreboard-table {
   .top-nav { padding: 12px 16px; }
   .top-nav .nav-link, .top-nav-user, .top-nav .btn { display: none; }
 
-  .guess-box-wrap { top: 52px; }
+  .guess-box-wrap { position: static; padding: 10px 0; }
 
   .main-content {
     padding: 20px 16px 90px; /* extra bottom padding so content clears the bottom nav */

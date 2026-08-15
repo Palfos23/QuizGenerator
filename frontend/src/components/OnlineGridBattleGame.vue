@@ -117,7 +117,10 @@
       </div>
     </template>
 
-    <button class="btn btn-secondary btn-sm no-print" style="margin-top:20px;" @click="leave">← Leave game</button>
+    <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
+      <button class="btn btn-secondary btn-sm no-print" @click="leave">← Leave game</button>
+      <span class="tag no-print" style="background:rgba(255,255,255,0.06); color:var(--text-dim);">Room: {{ roomCode }}</span>
+    </div>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
       <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct' : 'Wrong' }}</div>
