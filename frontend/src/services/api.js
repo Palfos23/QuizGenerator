@@ -406,6 +406,20 @@ export default {
     return client.post(`/rooms/${code}/grid-battle/next-grid`).then(r => r.data)
   },
 
+  // --- Online Imposter ---
+  getImposterOnlineState(code) {
+    return client.get(`/rooms/${code}/imposter/state`).then(r => r.data)
+  },
+  flipImposterOnlineTile(code, tileId) {
+    return client.post(`/rooms/${code}/imposter/flip`, { tileId }).then(r => r.data)
+  },
+  getImposterOnlineReveal(code) {
+    return client.get(`/rooms/${code}/imposter/reveal`).then(r => r.data)
+  },
+  advanceImposterOnlineBoard(code) {
+    return client.post(`/rooms/${code}/imposter/next-board`).then(r => r.data)
+  },
+
   // --- Online Tension ---
   getTensionOnlineState(code) {
     return client.get(`/rooms/${code}/tension/state`).then(r => r.data)

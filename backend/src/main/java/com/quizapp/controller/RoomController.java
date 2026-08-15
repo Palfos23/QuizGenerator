@@ -6,6 +6,7 @@ import com.quizapp.dto.RoomDto;
 import com.quizapp.model.GameRoom;
 import com.quizapp.model.RoomGameType;
 import com.quizapp.service.GridBattleOnlineService;
+import com.quizapp.service.ImposterOnlineService;
 import com.quizapp.service.RoomService;
 import com.quizapp.service.TensionOnlineService;
 import jakarta.validation.Valid;
@@ -21,12 +22,14 @@ public class RoomController {
     private final RoomService roomService;
     private final GridBattleOnlineService gridBattleOnlineService;
     private final TensionOnlineService tensionOnlineService;
+    private final ImposterOnlineService imposterOnlineService;
 
     public RoomController(RoomService roomService, GridBattleOnlineService gridBattleOnlineService,
-                           TensionOnlineService tensionOnlineService) {
+                           TensionOnlineService tensionOnlineService, ImposterOnlineService imposterOnlineService) {
         this.roomService = roomService;
         this.gridBattleOnlineService = gridBattleOnlineService;
         this.tensionOnlineService = tensionOnlineService;
+        this.imposterOnlineService = imposterOnlineService;
     }
 
     @PostMapping
@@ -39,6 +42,8 @@ public class RoomController {
         } else if (request.getGameType() == RoomGameType.TENSION) {
             tensionOnlineService.initializeQuestionSequence(room, request.getTensionNumQuestions(),
                     request.getTensionCategory(), request.getTensionExcludeCategories());
+        } else if (request.getGameType() == RoomGameType.IMPOSTER) {
+            imposterOnlineService.initializeImposterSequence(room, request.getGridIds(), request.getRandomGridCount());
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(roomService.toDto(room, email));
@@ -63,6 +68,8 @@ public class RoomController {
         GameRoom room = roomService.findByCode(code);
         if (room.getGameType() == RoomGameType.GRID_BATTLE) {
             gridBattleOnlineService.startGame(room, email);
+        } else if (room.getGameType() == RoomGameType.IMPOSTER) {
+            imposterOnlineService.startGame(room, email);
         } else {
             tensionOnlineService.startGame(room, email);
         }
