@@ -244,8 +244,11 @@
         <div v-else class="grid-tiles">
           <div v-for="c in sortedCorrectCandidates" :key="c.athleteId" class="grid-tile correct">
             <span class="grid-tile-status correct">✓</span>
+            <div v-if="form.revealMode === 'DESCRIPTION'" class="grid-tile-description">
+              {{ previewDescription(c) || '(no quote set for this subject)' }}
+            </div>
             <img
-              v-if="previewImage(c)"
+              v-else-if="previewImage(c)"
               :src="previewImage(c)"
               alt=""
               class="grid-tile-logo"
@@ -379,6 +382,16 @@ function previewImage(c) {
 function previewIsPhoto(c) {
   if (c.selectedPhotoId && c.additionalPhotos?.some(p => p.id === c.selectedPhotoId)) return true
   return !!c.photoUrl
+}
+// Mirrors the backend's resolvedDescription(): the entry's specifically
+// picked description if one was chosen, else the subject's first
+// description, else nothing to show.
+function previewDescription(c) {
+  if (c.selectedDescriptionId && c.additionalDescriptions) {
+    const selected = c.additionalDescriptions.find(d => d.id === c.selectedDescriptionId)
+    if (selected) return selected.text
+  }
+  return c.additionalDescriptions?.[0]?.text || null
 }
 
 function logoSelectValue(c) {
