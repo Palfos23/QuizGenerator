@@ -93,8 +93,11 @@
         >
           <span v-if="e.guessedByUser" class="grid-tile-status correct">✓</span>
           <span v-else-if="e.solved" class="grid-tile-status wrong">✕</span>
+          <div v-if="gridState.revealMode === 'DESCRIPTION'" class="grid-tile-description">
+            {{ e.solved ? e.revealedDescription : '?' }}
+          </div>
           <img
-            v-if="tileImage(e)"
+            v-else-if="tileImage(e)"
             :src="tileImage(e)"
             alt=""
             class="grid-tile-logo"

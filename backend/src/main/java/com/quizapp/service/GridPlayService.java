@@ -250,6 +250,7 @@ public class GridPlayService {
         dto.setCompleted(false);
         dto.setOvertime(false);
         dto.setRevealed(false);
+        dto.setRevealMode(grid.getRevealMode().name());
         dto.setEntries(grid.getEntries().stream()
                 .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), false, false, false,
@@ -396,6 +397,7 @@ public class GridPlayService {
         dto.setCompleted(attempt.isCompleted());
         dto.setOvertime(attempt.isOvertime());
         dto.setRevealed(attempt.isRevealed());
+        dto.setRevealMode(grid.getRevealMode().name());
 
         boolean revealAll = attempt.isRevealed();
         List<GridEntryViewDto> entries = grid.getEntries().stream()

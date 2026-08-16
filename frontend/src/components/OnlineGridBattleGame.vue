@@ -99,8 +99,11 @@
         >
           <span v-if="e.solved" class="grid-tile-status correct">✓</span>
           <span v-else-if="e.athleteName" class="grid-tile-status wrong">✕</span>
+          <div v-if="state.revealMode === 'DESCRIPTION'" class="grid-tile-description">
+            {{ e.revealedDescription || '?' }}
+          </div>
           <img
-            v-if="tileImage(e)"
+            v-else-if="tileImage(e)"
             :src="tileImage(e)"
             alt=""
             class="grid-tile-logo"

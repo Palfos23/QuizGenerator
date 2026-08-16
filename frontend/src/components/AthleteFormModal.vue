@@ -53,6 +53,20 @@
         </button>
       </div>
 
+      <div class="field">
+        <label>
+          Descriptions <span class="picker-hint">optional - a quote a grid can reveal instead of a photo once solved</span>
+        </label>
+        <div v-for="(description, idx) in local.additionalDescriptions" :key="idx" class="additional-photo-row">
+          <textarea v-model="description.text" placeholder="e.g. a quote from the book" style="flex:1; min-height:60px;"></textarea>
+          <input type="text" v-model="description.label" placeholder="Label (optional), e.g. Opening line" style="flex:1;" />
+          <button type="button" class="chip-remove-btn" @click="local.additionalDescriptions.splice(idx, 1)">✕</button>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addDescription">
+          + Add another description
+        </button>
+      </div>
+
       <div style="display:flex; gap:10px; justify-content:flex-end;">
         <button class="btn btn-secondary" @click="$emit('close')">Cancel</button>
         <button class="btn btn-primary" :disabled="saving" @click="save">
@@ -83,11 +97,16 @@ const saving = ref(false)
 const localError = ref('')
 
 const local = reactive(props.athlete
-  ? { ...props.athlete, additionalPhotos: (props.athlete.additionalPhotos || []).map(p => ({ ...p })) }
-  : { name: '', sport: '', team: '', photoUrl: '', additionalPhotos: [] })
+  ? { ...props.athlete, additionalPhotos: (props.athlete.additionalPhotos || []).map(p => ({ ...p })),
+      additionalDescriptions: (props.athlete.additionalDescriptions || []).map(d => ({ ...d })) }
+  : { name: '', sport: '', team: '', photoUrl: '', additionalPhotos: [], additionalDescriptions: [] })
 
 function addPhoto() {
   local.additionalPhotos.push({ photoUrl: '', label: '' })
+}
+
+function addDescription() {
+  local.additionalDescriptions.push({ text: '', label: '' })
 }
 
 async function save() {
@@ -98,7 +117,11 @@ async function save() {
   }
   saving.value = true
   try {
-    const payload = { ...local, additionalPhotos: local.additionalPhotos.filter(p => p.photoUrl && p.photoUrl.trim()) }
+    const payload = {
+      ...local,
+      additionalPhotos: local.additionalPhotos.filter(p => p.photoUrl && p.photoUrl.trim()),
+      additionalDescriptions: local.additionalDescriptions.filter(d => d.text && d.text.trim())
+    }
     const saved = isEdit
       ? await api.adminUpdateAthlete(local.id, payload)
       : await api.adminCreateAthlete(payload)

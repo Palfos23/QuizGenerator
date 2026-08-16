@@ -112,6 +112,18 @@
       </div>
 
       <div class="field">
+        <label>Once solved, show <span class="picker-hint">what a player sees after guessing an entry right</span></label>
+        <div class="language-row">
+          <button type="button" class="language-btn" :class="{ active: form.revealMode === 'PHOTO' }" @click="form.revealMode = 'PHOTO'">
+            Photo <span style="color:var(--text-dim); font-weight:400;">(the usual)</span>
+          </button>
+          <button type="button" class="language-btn" :class="{ active: form.revealMode === 'DESCRIPTION' }" @click="form.revealMode = 'DESCRIPTION'">
+            Description <span style="color:var(--text-dim); font-weight:400;">(a quote instead - for books, etc.)</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
         <label>Candidate pool <span class="picker-hint">everyone guessable in this grid - correct and decoy</span></label>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
@@ -184,6 +196,10 @@
               <select v-if="c.additionalPhotos && c.additionalPhotos.length" v-model="c.selectedPhotoId" style="width:190px;">
                 <option :value="null">Default photo</option>
                 <option v-for="p in c.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
+              </select>
+              <select v-if="form.revealMode === 'DESCRIPTION' && c.additionalDescriptions && c.additionalDescriptions.length" v-model="c.selectedDescriptionId" style="width:190px;">
+                <option :value="null">First description</option>
+                <option v-for="d in c.additionalDescriptions" :key="d.id" :value="d.id">{{ d.label || (d.text.length > 30 ? d.text.slice(0, 30) + '…' : d.text) }}</option>
               </select>
               <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400; font-size:0.82rem; color:var(--text-dim); margin:0;">
                 <input type="checkbox" v-model="c.showLogo" style="width:auto;" :disabled="!c.clubId && !c.useOwnPhotoAsLogo" />
@@ -289,7 +305,8 @@ const form = reactive({
   maxStrikes: 5,
   sortAscending: false,
   ranked: true,
-  excludedFromGridBattle: false
+  excludedFromGridBattle: false,
+  revealMode: 'PHOTO'
 })
 const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue, clubId, showLogo, useOwnPhotoAsLogo }]
 
@@ -480,8 +497,9 @@ function addCandidate(athlete) {
   candidates.value.push({
     athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
     additionalPhotos: athlete.additionalPhotos || [],
+    additionalDescriptions: athlete.additionalDescriptions || [],
     correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true, useOwnPhotoAsLogo: false,
-    selectedPhotoId: null
+    selectedPhotoId: null, selectedDescriptionId: null
   })
   rebuildCandidateDisplayOrder()
 }
@@ -498,8 +516,9 @@ function addCandidatesBulk(athleteList) {
     candidates.value.push({
       athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
       additionalPhotos: athlete.additionalPhotos || [],
+      additionalDescriptions: athlete.additionalDescriptions || [],
       correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true, useOwnPhotoAsLogo: false,
-      selectedPhotoId: null
+      selectedPhotoId: null, selectedDescriptionId: null
     })
     added++
   }
@@ -546,6 +565,7 @@ function resetForm() {
   form.sortAscending = false
   form.ranked = true
   form.excludedFromGridBattle = false
+  form.revealMode = 'PHOTO'
   candidates.value = []
   candidatePage.value = 1
   candidateFilterTerm.value = ''
@@ -577,6 +597,7 @@ async function openEdit(id) {
     form.sortAscending = detail.sortAscending
     form.ranked = detail.ranked
     form.excludedFromGridBattle = detail.excludedFromGridBattle
+    form.revealMode = detail.revealMode || 'PHOTO'
 
     const entryByAthleteId = new Map(detail.entries.map(e => [e.athlete.id, e]))
     candidates.value = detail.candidates.map(a => {
@@ -584,13 +605,15 @@ async function openEdit(id) {
       return {
         athleteId: a.id, name: a.name, team: a.team, photoUrl: a.photoUrl,
         additionalPhotos: a.additionalPhotos || [],
+        additionalDescriptions: a.additionalDescriptions || [],
         correct: !!entry,
         hintLabel: entry?.hintLabel || '',
         hintValue: entry?.hintValue ?? null,
         clubId: entry?.club?.id ?? null,
         showLogo: entry?.showLogo ?? true,
         useOwnPhotoAsLogo: entry?.useOwnPhotoAsLogo ?? false,
-        selectedPhotoId: entry?.selectedPhotoId ?? null
+        selectedPhotoId: entry?.selectedPhotoId ?? null,
+        selectedDescriptionId: entry?.selectedDescriptionId ?? null
       }
     })
     candidatePage.value = 1
@@ -643,12 +666,13 @@ async function saveGrid() {
     sortAscending: form.sortAscending,
     ranked: form.ranked,
     excludedFromGridBattle: form.excludedFromGridBattle,
+    revealMode: form.revealMode,
     candidateAthleteIds: candidates.value.map(c => c.athleteId),
     linkedPoolIds: linkedPoolIds.value,
     entries: entries.map(c => ({
       athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: form.ranked ? c.hintValue : null,
       clubId: c.clubId, showLogo: c.showLogo, useOwnPhotoAsLogo: c.useOwnPhotoAsLogo,
-      selectedPhotoId: c.selectedPhotoId
+      selectedPhotoId: c.selectedPhotoId, selectedDescriptionId: c.selectedDescriptionId
     }))
   }
 

@@ -14,6 +14,7 @@ public class GridPlayStateDto {
     private boolean completed;
     private boolean overtime;
     private boolean revealed;
+    private String revealMode; // "PHOTO" or "DESCRIPTION" - tells the client which one to render once an entry is solved
     private List<GridEntryViewDto> entries;
 
     public Long getId() {
@@ -86,6 +87,14 @@ public class GridPlayStateDto {
 
     public void setRevealed(boolean revealed) {
         this.revealed = revealed;
+    }
+
+    public String getRevealMode() {
+        return revealMode;
+    }
+
+    public void setRevealMode(String revealMode) {
+        this.revealMode = revealMode;
     }
 
     public List<GridEntryViewDto> getEntries() {
