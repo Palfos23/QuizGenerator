@@ -55,7 +55,7 @@
 
       <div class="field">
         <label>
-          Descriptions <span class="picker-hint">optional - a quote a grid can reveal instead of a photo once solved</span>
+          Descriptions <span class="picker-hint">optional - a quote a grid can show as the hint instead of a photo</span>
         </label>
         <div v-for="(description, idx) in local.additionalDescriptions" :key="idx" class="additional-photo-row">
           <textarea v-model="description.text" placeholder="e.g. a quote from the book" style="flex:1; min-height:60px;"></textarea>

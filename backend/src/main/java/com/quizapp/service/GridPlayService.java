@@ -254,7 +254,7 @@ public class GridPlayService {
         dto.setEntries(grid.getEntries().stream()
                 .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), false, false, false,
-                        null, grid.isRanked() ? null : resolvedPhotoUrl(e), logoUrl(e), hintColor(e), null))
+                        null, grid.isRanked() ? null : resolvedPhotoUrl(e), logoUrl(e), hintColor(e), resolvedDescription(e)))
                 .collect(Collectors.toList()));
         return dto;
     }
@@ -411,7 +411,7 @@ public class GridPlayService {
                             solvedInOvertime,
                             solved ? e.getAthlete().getName() : null,
                             photoVisible ? resolvedPhotoUrl(e) : null,
-                            logoUrl(e), hintColor(e), solved ? resolvedDescription(e) : null);
+                            logoUrl(e), hintColor(e), resolvedDescription(e));
                 })
                 .collect(Collectors.toList());
         dto.setEntries(entries);

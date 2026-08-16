@@ -112,13 +112,13 @@
       </div>
 
       <div class="field">
-        <label>Once solved, show <span class="picker-hint">what a player sees after guessing an entry right</span></label>
+        <label>Tile hint <span class="picker-hint">what a player sees before guessing this entry</span></label>
         <div class="language-row">
           <button type="button" class="language-btn" :class="{ active: form.revealMode === 'PHOTO' }" @click="form.revealMode = 'PHOTO'">
-            Photo <span style="color:var(--text-dim); font-weight:400;">(the usual)</span>
+            Photo <span style="color:var(--text-dim); font-weight:400;">(the usual, for unranked grids)</span>
           </button>
           <button type="button" class="language-btn" :class="{ active: form.revealMode === 'DESCRIPTION' }" @click="form.revealMode = 'DESCRIPTION'">
-            Description <span style="color:var(--text-dim); font-weight:400;">(a quote instead - for books, etc.)</span>
+            Description <span style="color:var(--text-dim); font-weight:400;">(a quote shown as the hint - for books, etc.)</span>
           </button>
         </div>
       </div>
