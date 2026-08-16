@@ -66,6 +66,25 @@ public class Grid {
         return excludedFromGridBattle;
     }
 
+    // What a solved entry shows: its subject's photo (the long-standing
+    // default) or a text quote/description instead - e.g. a line from a book,
+    // for grids about books rather than people with photos.
+    public enum RevealMode {
+        PHOTO, DESCRIPTION
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reveal_mode", nullable = false)
+    private RevealMode revealMode = RevealMode.PHOTO;
+
+    public RevealMode getRevealMode() {
+        return revealMode;
+    }
+
+    public void setRevealMode(RevealMode revealMode) {
+        this.revealMode = revealMode;
+    }
+
     public void setExcludedFromGridBattle(boolean excludedFromGridBattle) {
         this.excludedFromGridBattle = excludedFromGridBattle;
     }

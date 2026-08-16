@@ -48,7 +48,7 @@
               :disabled="guessing"
               @click="submitGuess(a)"
             >
-              {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
+              {{ a.name }}
             </button>
           </div>
           <button

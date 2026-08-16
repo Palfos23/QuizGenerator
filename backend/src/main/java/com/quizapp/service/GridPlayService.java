@@ -14,6 +14,7 @@ import com.quizapp.model.GridAttempt;
 import com.quizapp.model.GridCandidate;
 import com.quizapp.model.GridEntry;
 import com.quizapp.repository.AppUserRepository;
+import com.quizapp.repository.AthleteDescriptionRepository;
 import com.quizapp.repository.GridAttemptRepository;
 import com.quizapp.repository.GridRepository;
 import org.springframework.stereotype.Service;
@@ -31,12 +32,15 @@ public class GridPlayService {
     private final GridRepository gridRepository;
     private final GridAttemptRepository gridAttemptRepository;
     private final AppUserRepository appUserRepository;
+    private final AthleteDescriptionRepository athleteDescriptionRepository;
 
     public GridPlayService(GridRepository gridRepository, GridAttemptRepository gridAttemptRepository,
-                            AppUserRepository appUserRepository) {
+                            AppUserRepository appUserRepository,
+                            AthleteDescriptionRepository athleteDescriptionRepository) {
         this.gridRepository = gridRepository;
         this.gridAttemptRepository = gridAttemptRepository;
         this.appUserRepository = appUserRepository;
+        this.athleteDescriptionRepository = athleteDescriptionRepository;
     }
 
     /**
@@ -53,7 +57,7 @@ public class GridPlayService {
         return grid.getEntries().stream()
                 .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), true, false, false,
-                        e.getAthlete().getName(), resolvedPhotoUrl(e), logoUrl(e), hintColor(e)))
+                        e.getAthlete().getName(), resolvedPhotoUrl(e), logoUrl(e), hintColor(e), resolvedDescription(e)))
                 .collect(Collectors.toList());
     }
 
@@ -249,7 +253,7 @@ public class GridPlayService {
         dto.setEntries(grid.getEntries().stream()
                 .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), false, false, false,
-                        null, grid.isRanked() ? null : resolvedPhotoUrl(e), logoUrl(e), hintColor(e)))
+                        null, grid.isRanked() ? null : resolvedPhotoUrl(e), logoUrl(e), hintColor(e), null))
                 .collect(Collectors.toList()));
         return dto;
     }
@@ -286,7 +290,7 @@ public class GridPlayService {
             result.setCorrect(true);
             result.setEntry(new GridEntryViewDto(matched.getId(), matched.getHintLabel(), matched.getHintValue(),
                     true, true, false, matched.getAthlete().getName(), resolvedPhotoUrl(matched),
-                    logoUrl(matched), hintColor(matched)));
+                    logoUrl(matched), hintColor(matched), resolvedDescription(matched)));
             result.setAllSolved(revealed.size() + 1 >= grid.getEntries().size());
         } else {
             result.setCorrect(false);
@@ -321,7 +325,7 @@ public class GridPlayService {
             result.setCorrect(true);
             result.setEntry(new GridEntryViewDto(matched.getId(), matched.getHintLabel(), matched.getHintValue(),
                     true, true, attempt.isOvertime(), matched.getAthlete().getName(), resolvedPhotoUrl(matched),
-                    logoUrl(matched), hintColor(matched)));
+                    logoUrl(matched), hintColor(matched), resolvedDescription(matched)));
 
             boolean allSolved = attempt.getSolvedEntryIds().size() >= grid.getEntries().size();
             result.setAllSolved(allSolved);
@@ -405,7 +409,7 @@ public class GridPlayService {
                             solvedInOvertime,
                             solved ? e.getAthlete().getName() : null,
                             photoVisible ? resolvedPhotoUrl(e) : null,
-                            logoUrl(e), hintColor(e));
+                            logoUrl(e), hintColor(e), solved ? resolvedDescription(e) : null);
                 })
                 .collect(Collectors.toList());
         dto.setEntries(entries);
@@ -448,5 +452,18 @@ public class GridPlayService {
     // before this existed.
     private String resolvedPhotoUrl(GridEntry entry) {
         return entry.getSelectedPhoto() != null ? entry.getSelectedPhoto().getPhotoUrl() : entry.getAthlete().getPhotoUrl();
+    }
+
+    // Only meaningful when the grid's revealMode is DESCRIPTION - null
+    // otherwise. Falls back to the athlete's first description if none was
+    // specifically picked for this entry, and to null if the subject simply
+    // has no descriptions at all (nothing honest to show).
+    private String resolvedDescription(GridEntry entry) {
+        if (entry.getGrid().getRevealMode() != Grid.RevealMode.DESCRIPTION) return null;
+        if (entry.getSelectedDescription() != null) return entry.getSelectedDescription().getText();
+        return athleteDescriptionRepository.findByAthlete_Id(entry.getAthlete().getId()).stream()
+                .findFirst()
+                .map(com.quizapp.model.AthleteDescription::getText)
+                .orElse(null);
     }
 }

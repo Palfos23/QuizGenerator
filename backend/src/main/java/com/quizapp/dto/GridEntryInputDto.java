@@ -40,6 +40,19 @@ public class GridEntryInputDto {
         this.selectedPhotoId = selectedPhotoId;
     }
 
+    // Which of this athlete's descriptions this entry should reveal once
+    // solved, if the grid's revealMode is DESCRIPTION. Null = use the
+    // athlete's first description.
+    private Long selectedDescriptionId;
+
+    public Long getSelectedDescriptionId() {
+        return selectedDescriptionId;
+    }
+
+    public void setSelectedDescriptionId(Long selectedDescriptionId) {
+        this.selectedDescriptionId = selectedDescriptionId;
+    }
+
     public boolean isUseOwnPhotoAsLogo() {
         return useOwnPhotoAsLogo;
     }

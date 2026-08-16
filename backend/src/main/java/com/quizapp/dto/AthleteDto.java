@@ -29,6 +29,18 @@ public class AthleteDto {
         this.additionalPhotos = additionalPhotos;
     }
 
+    // Quotes/descriptions for this subject - a grid can pick one to show
+    // instead of a photo once an entry is solved.
+    private java.util.List<AthleteDescriptionDto> additionalDescriptions = new java.util.ArrayList<>();
+
+    public java.util.List<AthleteDescriptionDto> getAdditionalDescriptions() {
+        return additionalDescriptions;
+    }
+
+    public void setAdditionalDescriptions(java.util.List<AthleteDescriptionDto> additionalDescriptions) {
+        this.additionalDescriptions = additionalDescriptions;
+    }
+
     public String getPhotoUrl() {
         return photoUrl;
     }

@@ -27,6 +27,7 @@ public class GridRequest {
     private boolean sortAscending = false;
     private boolean ranked = true;
     private boolean excludedFromGridBattle = false;
+    private String revealMode = "PHOTO"; // "PHOTO" or "DESCRIPTION"
 
     // The full searchable pool for this grid (includes both correct answers and decoys).
     @NotEmpty
@@ -113,6 +114,14 @@ public class GridRequest {
 
     public void setExcludedFromGridBattle(boolean excludedFromGridBattle) {
         this.excludedFromGridBattle = excludedFromGridBattle;
+    }
+
+    public String getRevealMode() {
+        return revealMode;
+    }
+
+    public void setRevealMode(String revealMode) {
+        this.revealMode = revealMode;
     }
 
     public List<Long> getCandidateAthleteIds() {

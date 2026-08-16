@@ -15,6 +15,7 @@ public class GridAdminDetailDto {
     private boolean sortAscending;
     private boolean ranked;
     private boolean excludedFromGridBattle;
+    private String revealMode;
     private List<AthleteDto> candidates;
     private List<EntryDetail> entries;
 
@@ -27,9 +28,10 @@ public class GridAdminDetailDto {
         private boolean showLogo;
         private boolean useOwnPhotoAsLogo;
         private Long selectedPhotoId;
+        private Long selectedDescriptionId;
 
         public EntryDetail(Long id, AthleteDto athlete, String hintLabel, Integer hintValue, ClubDto club,
-                            boolean showLogo, boolean useOwnPhotoAsLogo, Long selectedPhotoId) {
+                            boolean showLogo, boolean useOwnPhotoAsLogo, Long selectedPhotoId, Long selectedDescriptionId) {
             this.id = id;
             this.athlete = athlete;
             this.hintLabel = hintLabel;
@@ -38,10 +40,15 @@ public class GridAdminDetailDto {
             this.showLogo = showLogo;
             this.useOwnPhotoAsLogo = useOwnPhotoAsLogo;
             this.selectedPhotoId = selectedPhotoId;
+            this.selectedDescriptionId = selectedDescriptionId;
         }
 
         public Long getSelectedPhotoId() {
             return selectedPhotoId;
+        }
+
+        public Long getSelectedDescriptionId() {
+            return selectedDescriptionId;
         }
 
         public Long getId() {
@@ -143,6 +150,14 @@ public class GridAdminDetailDto {
 
     public void setExcludedFromGridBattle(boolean excludedFromGridBattle) {
         this.excludedFromGridBattle = excludedFromGridBattle;
+    }
+
+    public String getRevealMode() {
+        return revealMode;
+    }
+
+    public void setRevealMode(String revealMode) {
+        this.revealMode = revealMode;
     }
 
     public List<AthleteDto> getCandidates() {

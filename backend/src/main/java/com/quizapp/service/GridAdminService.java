@@ -3,12 +3,14 @@ package com.quizapp.service;
 import com.quizapp.dto.*;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
+import com.quizapp.model.AthleteDescription;
 import com.quizapp.model.AthletePhoto;
 import com.quizapp.model.AthletePool;
 import com.quizapp.model.Club;
 import com.quizapp.model.Grid;
 import com.quizapp.model.GridCandidate;
 import com.quizapp.model.GridEntry;
+import com.quizapp.repository.AthleteDescriptionRepository;
 import com.quizapp.repository.AthletePhotoRepository;
 import com.quizapp.repository.AthletePoolRepository;
 import com.quizapp.repository.AthleteRepository;
@@ -31,16 +33,19 @@ public class GridAdminService {
     private final ClubRepository clubRepository;
     private final AthletePoolRepository athletePoolRepository;
     private final AthletePhotoRepository athletePhotoRepository;
+    private final AthleteDescriptionRepository athleteDescriptionRepository;
     private final AthleteService athleteService;
 
     public GridAdminService(GridRepository gridRepository, AthleteRepository athleteRepository,
                              ClubRepository clubRepository, AthletePoolRepository athletePoolRepository,
-                             AthletePhotoRepository athletePhotoRepository, AthleteService athleteService) {
+                             AthletePhotoRepository athletePhotoRepository,
+                             AthleteDescriptionRepository athleteDescriptionRepository, AthleteService athleteService) {
         this.gridRepository = gridRepository;
         this.athleteRepository = athleteRepository;
         this.clubRepository = clubRepository;
         this.athletePoolRepository = athletePoolRepository;
         this.athletePhotoRepository = athletePhotoRepository;
+        this.athleteDescriptionRepository = athleteDescriptionRepository;
         this.athleteService = athleteService;
     }
 
@@ -109,6 +114,9 @@ public class GridAdminService {
         grid.setSortAscending(request.isSortAscending());
         grid.setRanked(request.isRanked());
         grid.setExcludedFromGridBattle(request.isExcludedFromGridBattle());
+        grid.setRevealMode(request.getRevealMode() != null
+                ? Grid.RevealMode.valueOf(request.getRevealMode())
+                : Grid.RevealMode.PHOTO);
 
         if (request.getLinkedPoolIds() != null && !request.getLinkedPoolIds().isEmpty()) {
             List<AthletePool> pools = athletePoolRepository.findAllById(request.getLinkedPoolIds());
@@ -209,6 +217,17 @@ public class GridAdminService {
                 entry.setSelectedPhoto(null);
             }
 
+            if (input.getSelectedDescriptionId() != null) {
+                final Athlete entryAthlete = athlete;
+                AthleteDescription description = athleteDescriptionRepository.findById(input.getSelectedDescriptionId())
+                        .filter(d -> d.getAthlete().getId().equals(entryAthlete.getId()))
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "That description doesn't belong to '" + entryAthlete.getName() + "'."));
+                entry.setSelectedDescription(description);
+            } else {
+                entry.setSelectedDescription(null);
+            }
+
             entries.add(entry);
         }
         grid.setEntries(entries);
@@ -225,6 +244,7 @@ public class GridAdminService {
         dto.setSortAscending(grid.isSortAscending());
         dto.setRanked(grid.isRanked());
         dto.setExcludedFromGridBattle(grid.isExcludedFromGridBattle());
+        dto.setRevealMode(grid.getRevealMode().name());
 
         // Batch-convert every distinct athlete across both candidates and
         // entries in one call (one query for all their photos combined),
@@ -244,7 +264,8 @@ public class GridAdminService {
                 .map(e -> new GridAdminDetailDto.EntryDetail(
                         e.getId(), athleteDtoById.get(e.getAthlete().getId()), e.getHintLabel(), e.getHintValue(),
                         e.getClub() != null ? ClubService.toDto(e.getClub()) : null, e.isShowLogo(),
-                        e.isUseOwnPhotoAsLogo(), e.getSelectedPhoto() != null ? e.getSelectedPhoto().getId() : null))
+                        e.isUseOwnPhotoAsLogo(), e.getSelectedPhoto() != null ? e.getSelectedPhoto().getId() : null,
+                        e.getSelectedDescription() != null ? e.getSelectedDescription().getId() : null))
                 .collect(Collectors.toList()));
         return dto;
     }

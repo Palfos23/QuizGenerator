@@ -12,10 +12,11 @@ public class GridEntryViewDto {
     private String athletePhotoUrl; // null unless solved (or the grid is unranked - see below), showing it earlier would let players recognize the athlete before guessing
     private String logoUrl; // null if no club set, or the admin hid it for this entry
     private String hintColor; // the entry's club's color, if any set - null falls back to the app default gold
+    private String revealedDescription; // null unless solved AND the grid's revealMode is DESCRIPTION
 
     public GridEntryViewDto(Long id, String hintLabel, Integer hintValue, boolean solved, boolean guessedByUser,
                              boolean solvedInOvertime, String athleteName, String athletePhotoUrl, String logoUrl,
-                             String hintColor) {
+                             String hintColor, String revealedDescription) {
         this.id = id;
         this.hintLabel = hintLabel;
         this.hintValue = hintValue;
@@ -26,6 +27,11 @@ public class GridEntryViewDto {
         this.athletePhotoUrl = athletePhotoUrl;
         this.logoUrl = logoUrl;
         this.hintColor = hintColor;
+        this.revealedDescription = revealedDescription;
+    }
+
+    public String getRevealedDescription() {
+        return revealedDescription;
     }
 
     public boolean isGuessedByUser() {

@@ -65,6 +65,21 @@ public class GridEntry {
     @JoinColumn(name = "selected_photo_id")
     private AthletePhoto selectedPhoto;
 
+    // Which of the subject's descriptions/quotes to show for this entry
+    // specifically, once solved - only meaningful when the grid's revealMode
+    // is DESCRIPTION. Null means "use the athlete's first description if any".
+    @ManyToOne
+    @JoinColumn(name = "selected_description_id")
+    private AthleteDescription selectedDescription;
+
+    public AthleteDescription getSelectedDescription() {
+        return selectedDescription;
+    }
+
+    public void setSelectedDescription(AthleteDescription selectedDescription) {
+        this.selectedDescription = selectedDescription;
+    }
+
     public AthletePhoto getSelectedPhoto() {
         return selectedPhoto;
     }

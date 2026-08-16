@@ -1,11 +1,14 @@
 package com.quizapp.service;
 
 import com.quizapp.dto.AthleteDto;
+import com.quizapp.dto.AthleteDescriptionDto;
 import com.quizapp.dto.AthletePhotoDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
+import com.quizapp.model.AthleteDescription;
 import com.quizapp.model.AthletePhoto;
 import com.quizapp.model.Grid;
+import com.quizapp.repository.AthleteDescriptionRepository;
 import com.quizapp.repository.AthletePhotoRepository;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.GridCandidateRepository;
@@ -29,15 +32,18 @@ public class AthleteService {
     private final GridEntryRepository gridEntryRepository;
     private final GridRepository gridRepository;
     private final AthletePhotoRepository athletePhotoRepository;
+    private final AthleteDescriptionRepository athleteDescriptionRepository;
 
     public AthleteService(AthleteRepository athleteRepository, GridCandidateRepository gridCandidateRepository,
                            GridEntryRepository gridEntryRepository, GridRepository gridRepository,
-                           AthletePhotoRepository athletePhotoRepository) {
+                           AthletePhotoRepository athletePhotoRepository,
+                           AthleteDescriptionRepository athleteDescriptionRepository) {
         this.athleteRepository = athleteRepository;
         this.gridCandidateRepository = gridCandidateRepository;
         this.gridEntryRepository = gridEntryRepository;
         this.gridRepository = gridRepository;
         this.athletePhotoRepository = athletePhotoRepository;
+        this.athleteDescriptionRepository = athleteDescriptionRepository;
     }
 
     // Wraps the plain static toDto with the athlete's additional photos -
@@ -51,6 +57,9 @@ public class AthleteService {
         AthleteDto dto = toDto(a);
         dto.setAdditionalPhotos(athletePhotoRepository.findByAthlete_Id(a.getId()).stream()
                 .map(AthleteService::toPhotoDto)
+                .collect(Collectors.toList()));
+        dto.setAdditionalDescriptions(athleteDescriptionRepository.findByAthlete_Id(a.getId()).stream()
+                .map(AthleteService::toDescriptionDto)
                 .collect(Collectors.toList()));
         return dto;
     }
@@ -66,9 +75,14 @@ public class AthleteService {
                 .collect(Collectors.groupingBy(
                         p -> p.getAthlete().getId(),
                         Collectors.mapping(AthleteService::toPhotoDto, Collectors.toList())));
+        Map<Long, List<AthleteDescriptionDto>> descriptionsByAthleteId = athleteDescriptionRepository.findByAthlete_IdIn(ids).stream()
+                .collect(Collectors.groupingBy(
+                        d -> d.getAthlete().getId(),
+                        Collectors.mapping(AthleteService::toDescriptionDto, Collectors.toList())));
         return athletes.stream().map(a -> {
             AthleteDto dto = toDto(a);
             dto.setAdditionalPhotos(photosByAthleteId.getOrDefault(a.getId(), List.of()));
+            dto.setAdditionalDescriptions(descriptionsByAthleteId.getOrDefault(a.getId(), List.of()));
             return dto;
         }).collect(Collectors.toList());
     }
@@ -78,6 +92,14 @@ public class AthleteService {
         dto.setId(p.getId());
         dto.setPhotoUrl(p.getPhotoUrl());
         dto.setLabel(p.getLabel());
+        return dto;
+    }
+
+    private static AthleteDescriptionDto toDescriptionDto(AthleteDescription d) {
+        AthleteDescriptionDto dto = new AthleteDescriptionDto();
+        dto.setId(d.getId());
+        dto.setText(d.getText());
+        dto.setLabel(d.getLabel());
         return dto;
     }
 
@@ -112,6 +134,34 @@ public class AthleteService {
         }
     }
 
+    // Same full-replacement approach as applyAdditionalPhotos above.
+    private void applyAdditionalDescriptions(Athlete athlete, List<AthleteDescriptionDto> incoming) {
+        List<AthleteDescription> existing = athleteDescriptionRepository.findByAthlete_Id(athlete.getId());
+        Set<Long> incomingIds = incoming == null ? new HashSet<>() : incoming.stream()
+                .map(AthleteDescriptionDto::getId).filter(java.util.Objects::nonNull).collect(Collectors.toSet());
+        for (AthleteDescription existingDescription : existing) {
+            if (!incomingIds.contains(existingDescription.getId())) {
+                athleteDescriptionRepository.delete(existingDescription);
+            }
+        }
+        if (incoming == null) return;
+        for (AthleteDescriptionDto descriptionDto : incoming) {
+            if (descriptionDto.getId() == null) {
+                AthleteDescription description = new AthleteDescription();
+                description.setAthlete(athlete);
+                description.setText(descriptionDto.getText());
+                description.setLabel(descriptionDto.getLabel());
+                athleteDescriptionRepository.save(description);
+            } else {
+                existing.stream().filter(d -> d.getId().equals(descriptionDto.getId())).findFirst().ifPresent(d -> {
+                    d.setText(descriptionDto.getText());
+                    d.setLabel(descriptionDto.getLabel());
+                    athleteDescriptionRepository.save(d);
+                });
+            }
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<AthleteDto> findAll() {
         return toDtosWithPhotos(athleteRepository.findAll());
@@ -137,6 +187,7 @@ public class AthleteService {
         athlete.setPhotoUrl(dto.getPhotoUrl());
         athlete = athleteRepository.save(athlete);
         applyAdditionalPhotos(athlete, dto.getAdditionalPhotos());
+        applyAdditionalDescriptions(athlete, dto.getAdditionalDescriptions());
         return toDtoWithPhotos(athlete);
     }
 
@@ -150,6 +201,7 @@ public class AthleteService {
         athlete.setPhotoUrl(dto.getPhotoUrl());
         athlete = athleteRepository.save(athlete);
         applyAdditionalPhotos(athlete, dto.getAdditionalPhotos());
+        applyAdditionalDescriptions(athlete, dto.getAdditionalDescriptions());
         return toDtoWithPhotos(athlete);
     }
 
