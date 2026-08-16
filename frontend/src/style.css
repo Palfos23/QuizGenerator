@@ -1468,9 +1468,11 @@ table.scoreboard-table {
   padding: 40px 32px;
   max-width: 380px;
   width: 100%;
+  max-height: calc(100vh - 80px);
   text-align: center;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   animation: completion-pop-in 0.35s ease;
 }
 .completion-popup.full { border: 1px solid rgba(242,183,5,0.4); }
