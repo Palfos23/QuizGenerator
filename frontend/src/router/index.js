@@ -10,6 +10,10 @@ import WeeklyGridListView from '../views/WeeklyGridListView.vue'
 import WeeklyGridPlayView from '../views/WeeklyGridPlayView.vue'
 import AdminAthletesView from '../views/AdminAthletesView.vue'
 import AdminGridsView from '../views/AdminGridsView.vue'
+import AdminLineupsView from '../views/AdminLineupsView.vue'
+import StartingXiListView from '../views/StartingXiListView.vue'
+import StartingXiPlayView from '../views/StartingXiPlayView.vue'
+import StartingXiBattleView from '../views/StartingXiBattleView.vue'
 import AdminAthletePoolsView from '../views/AdminAthletePoolsView.vue'
 import AdminGridCategoriesView from '../views/AdminGridCategoriesView.vue'
 import AdminQuestionLabelsView from '../views/AdminQuestionLabelsView.vue'
@@ -47,6 +51,10 @@ const routes = [
   { path: '/admin/questions', name: 'admin', component: AdminView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/athletes', name: 'admin-athletes', component: AdminAthletesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/grids', name: 'admin-grids', component: AdminGridsView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/lineups', name: 'admin-lineups', component: AdminLineupsView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/starting-xi', name: 'starting-xi', component: StartingXiListView, meta: { requiresAuth: true } },
+  { path: '/starting-xi/:id', name: 'starting-xi-play', component: StartingXiPlayView, meta: { requiresAuth: true } },
+  { path: '/starting-xi-battle', name: 'starting-xi-battle', component: StartingXiBattleView, meta: { requiresAuth: true } },
   { path: '/admin/athlete-pools', name: 'admin-athlete-pools', component: AdminAthletePoolsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/grid-categories', name: 'admin-grid-categories', component: AdminGridCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/question-labels', name: 'admin-question-labels', component: AdminQuestionLabelsView, meta: { requiresAuth: true, requiresAdmin: true } },

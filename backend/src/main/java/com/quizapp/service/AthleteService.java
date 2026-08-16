@@ -14,6 +14,8 @@ import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.GridCandidateRepository;
 import com.quizapp.repository.GridEntryRepository;
 import com.quizapp.repository.GridRepository;
+import com.quizapp.repository.LineupCandidateRepository;
+import com.quizapp.repository.LineupEntryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,17 +35,23 @@ public class AthleteService {
     private final GridRepository gridRepository;
     private final AthletePhotoRepository athletePhotoRepository;
     private final AthleteDescriptionRepository athleteDescriptionRepository;
+    private final LineupCandidateRepository lineupCandidateRepository;
+    private final LineupEntryRepository lineupEntryRepository;
 
     public AthleteService(AthleteRepository athleteRepository, GridCandidateRepository gridCandidateRepository,
                            GridEntryRepository gridEntryRepository, GridRepository gridRepository,
                            AthletePhotoRepository athletePhotoRepository,
-                           AthleteDescriptionRepository athleteDescriptionRepository) {
+                           AthleteDescriptionRepository athleteDescriptionRepository,
+                           LineupCandidateRepository lineupCandidateRepository,
+                           LineupEntryRepository lineupEntryRepository) {
         this.athleteRepository = athleteRepository;
         this.gridCandidateRepository = gridCandidateRepository;
         this.gridEntryRepository = gridEntryRepository;
         this.gridRepository = gridRepository;
         this.athletePhotoRepository = athletePhotoRepository;
         this.athleteDescriptionRepository = athleteDescriptionRepository;
+        this.lineupCandidateRepository = lineupCandidateRepository;
+        this.lineupEntryRepository = lineupEntryRepository;
     }
 
     // Wraps the plain static toDto with the athlete's additional photos -
@@ -226,10 +234,11 @@ public class AthleteService {
         if (!athleteRepository.existsById(id)) {
             throw new ResourceNotFoundException("No athlete found with id " + id);
         }
-        if (gridCandidateRepository.existsByAthlete_Id(id)) {
+        boolean usedInLineups = lineupCandidateRepository.existsByAthlete_Id(id);
+        if (gridCandidateRepository.existsByAthlete_Id(id) || usedInLineups) {
             if (!removeFromGrids) {
                 throw new IllegalArgumentException(
-                        "This athlete is used in one or more grids - remove them from those grids first.");
+                        "This athlete is used in one or more grids or Starting XI boards - remove them from those first.");
             }
             // Direct delete statements, not collection-based removal (load the
             // collection, remove an element, let Hibernate's orphanRemoval figure
@@ -238,6 +247,8 @@ public class AthleteService {
             // no ambiguity for Hibernate to get wrong.
             gridEntryRepository.deleteByAthlete_Id(id);
             gridCandidateRepository.deleteByAthlete_Id(id);
+            lineupEntryRepository.deleteByAthlete_Id(id);
+            lineupCandidateRepository.deleteByAthlete_Id(id);
         }
         athletePhotoRepository.deleteByAthlete_Id(id);
         athleteRepository.deleteById(id);

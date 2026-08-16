@@ -8,6 +8,7 @@ import com.quizapp.model.RoomGameType;
 import com.quizapp.service.GridBattleOnlineService;
 import com.quizapp.service.FiveOhOneOnlineService;
 import com.quizapp.service.ImposterOnlineService;
+import com.quizapp.service.LineupBattleOnlineService;
 import com.quizapp.service.RoomService;
 import com.quizapp.service.TensionOnlineService;
 import jakarta.validation.Valid;
@@ -25,15 +26,18 @@ public class RoomController {
     private final TensionOnlineService tensionOnlineService;
     private final ImposterOnlineService imposterOnlineService;
     private final FiveOhOneOnlineService fiveOhOneOnlineService;
+    private final LineupBattleOnlineService lineupBattleOnlineService;
 
     public RoomController(RoomService roomService, GridBattleOnlineService gridBattleOnlineService,
                            TensionOnlineService tensionOnlineService, ImposterOnlineService imposterOnlineService,
-                           FiveOhOneOnlineService fiveOhOneOnlineService) {
+                           FiveOhOneOnlineService fiveOhOneOnlineService,
+                           LineupBattleOnlineService lineupBattleOnlineService) {
         this.roomService = roomService;
         this.gridBattleOnlineService = gridBattleOnlineService;
         this.tensionOnlineService = tensionOnlineService;
         this.imposterOnlineService = imposterOnlineService;
         this.fiveOhOneOnlineService = fiveOhOneOnlineService;
+        this.lineupBattleOnlineService = lineupBattleOnlineService;
     }
 
     @PostMapping
@@ -50,6 +54,8 @@ public class RoomController {
             imposterOnlineService.initializeImposterSequence(room, request.getGridIds(), request.getRandomGridCount());
         } else if (request.getGameType() == RoomGameType.FIVE_O_ONE) {
             fiveOhOneOnlineService.initializeCategory(room, request.getFiveOhOneCategoryId());
+        } else if (request.getGameType() == RoomGameType.STARTING_XI_BATTLE) {
+            lineupBattleOnlineService.initializeLineupSequence(room, request.getLineupIds(), request.getRandomLineupCount());
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(roomService.toDto(room, email));
@@ -78,6 +84,8 @@ public class RoomController {
             imposterOnlineService.startGame(room, email);
         } else if (room.getGameType() == RoomGameType.FIVE_O_ONE) {
             fiveOhOneOnlineService.startGame(room, email);
+        } else if (room.getGameType() == RoomGameType.STARTING_XI_BATTLE) {
+            lineupBattleOnlineService.startGame(room, email);
         } else {
             tensionOnlineService.startGame(room, email);
         }

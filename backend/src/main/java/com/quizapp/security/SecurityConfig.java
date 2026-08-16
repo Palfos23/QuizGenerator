@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/quiz/**").authenticated()
                         // browsing/playing weekly grids: any logged-in user (USER or ADMIN)
                         .requestMatchers("/api/grids/**").authenticated()
+                        // browsing/playing Starting XI boards: any logged-in user (USER or ADMIN)
+                        .requestMatchers("/api/lineups/**").authenticated()
                         // fetching tension questions/autocomplete: any logged-in user (USER or ADMIN)
                         .requestMatchers("/api/tension/**").authenticated()
                         // browsing/copying admin-published quiz templates: any logged-in user

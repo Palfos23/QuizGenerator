@@ -11,12 +11,15 @@
         <router-link v-if="!auth.isAdmin.value" to="/501" class="nav-link" @click="onNavClick('/501', 'fiveOhOne')">501</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/imposter" class="nav-link" @click="onNavClick('/imposter', 'imposter')">Imposter</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/starting-xi" class="nav-link">Starting XI</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/starting-xi-battle" class="nav-link" @click="onNavClick('/starting-xi-battle', 'startingXiBattle')">Starting XI Battle</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/questions" class="nav-link">Question bank</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/question-labels" class="nav-link">Labels</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/athletes" class="nav-link">Subjects</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/athlete-pools" class="nav-link">Pools</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/grid-categories" class="nav-link">Categories</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/grids" class="nav-link">Weekly grids</router-link>
+        <router-link v-if="auth.isAdmin.value" to="/admin/lineups" class="nav-link">Starting XI</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/tension-questions" class="nav-link">Tension</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/501" class="nav-link">501</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/imposter" class="nav-link">Imposter</router-link>
@@ -40,6 +43,7 @@
       <router-link v-if="!auth.isAdmin.value" to="/generate" @click="onNavClick('/generate', 'generate')">Create</router-link>
       <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
       <router-link v-if="!auth.isAdmin.value" to="/weekly-grid">Weekly grid</router-link>
+      <router-link v-if="!auth.isAdmin.value" to="/starting-xi">Starting XI</router-link>
       <div v-if="!auth.isAdmin.value" style="position:relative; flex:1; display:flex;">
         <div v-if="showGamesMenu" class="bottom-nav-backdrop" @click="showGamesMenu = false"></div>
         <button @click="showGamesMenu = !showGamesMenu" :class="{ active: isGameRoute }">Games ▾</button>
@@ -48,6 +52,7 @@
           <router-link to="/501" @click="closeGamesMenu('/501', 'fiveOhOne')">501</router-link>
           <router-link to="/imposter" @click="closeGamesMenu('/imposter', 'imposter')">Imposter</router-link>
           <router-link to="/grid-battle" @click="closeGamesMenu('/grid-battle', 'gridBattle')">Grid Battle</router-link>
+          <router-link to="/starting-xi-battle" @click="closeGamesMenu('/starting-xi-battle', 'startingXiBattle')">Starting XI Battle</router-link>
         </div>
       </div>
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
@@ -56,6 +61,7 @@
       <router-link v-if="auth.isAdmin.value" to="/admin/athlete-pools">Pools</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/grid-categories">Categories</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/grids">Grids</router-link>
+      <router-link v-if="auth.isAdmin.value" to="/admin/lineups">Starting XI</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/tension-questions">Tension</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/501">501</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/imposter">Imposter</router-link>
@@ -76,7 +82,7 @@ import ToastHost from './components/ToastHost.vue'
 
 const router = useRouter()
 
-const GAME_PATHS = ['/tension', '/501', '/imposter', '/grid-battle']
+const GAME_PATHS = ['/tension', '/501', '/imposter', '/grid-battle', '/starting-xi-battle']
 const showGamesMenu = ref(false)
 const isGameRoute = computed(() => GAME_PATHS.includes(router.currentRoute.value.path))
 

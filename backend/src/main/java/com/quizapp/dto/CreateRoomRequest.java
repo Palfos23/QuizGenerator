@@ -25,6 +25,16 @@ public class CreateRoomRequest {
     // 501 only.
     private Long fiveOhOneCategoryId;
 
+    // Starting XI Battle only - same "explicit ids, or leave null and let the
+    // server pick randomLineupCount of them" shape as gridIds/randomGridCount.
+    private List<Long> lineupIds;
+    private Integer randomLineupCount;
+
+    public List<Long> getLineupIds() { return lineupIds; }
+    public void setLineupIds(List<Long> lineupIds) { this.lineupIds = lineupIds; }
+    public Integer getRandomLineupCount() { return randomLineupCount; }
+    public void setRandomLineupCount(Integer randomLineupCount) { this.randomLineupCount = randomLineupCount; }
+
     public Long getFiveOhOneCategoryId() { return fiveOhOneCategoryId; }
     public void setFiveOhOneCategoryId(Long fiveOhOneCategoryId) { this.fiveOhOneCategoryId = fiveOhOneCategoryId; }
 

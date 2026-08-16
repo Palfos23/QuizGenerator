@@ -181,6 +181,54 @@ export default {
     return client.post('/admin/grids', payload).then(r => r.data)
   },
 
+  // --- Starting XI: user-facing ---
+  listLineups() {
+    return client.get('/lineups').then(r => r.data)
+  },
+  getLineupPlayState(id) {
+    return client.get(`/lineups/${id}/play`).then(r => r.data)
+  },
+  searchLineupCandidates(id, search) {
+    return client.get(`/lineups/${id}/candidates?search=${encodeURIComponent(search || '')}`).then(r => r.data)
+  },
+  submitLineupGuess(id, athleteId, revealedEntryIds) {
+    return client.post(`/lineups/${id}/guess`, { athleteId, revealedEntryIds }).then(r => r.data)
+  },
+  revealLineup(id) {
+    return client.get(`/lineups/${id}/reveal`).then(r => r.data)
+  },
+
+  // --- Starting XI: admin ---
+  adminListLineups() {
+    return client.get('/admin/lineups').then(r => r.data)
+  },
+  adminGetLineup(id) {
+    return client.get(`/admin/lineups/${id}`).then(r => r.data)
+  },
+  adminCreateLineup(payload) {
+    return client.post('/admin/lineups', payload).then(r => r.data)
+  },
+  adminUpdateLineup(id, payload) {
+    return client.put(`/admin/lineups/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteLineup(id) {
+    return client.delete(`/admin/lineups/${id}`)
+  },
+
+  // --- Online Starting XI Battle ---
+  getLineupBattleState(code) {
+    return client.get(`/rooms/${code}/lineup-battle/state`).then(r => r.data)
+  },
+  submitLineupBattleGuess(code, athleteId) {
+    return client.post(`/rooms/${code}/lineup-battle/guess`, { athleteId }).then(r => r.data)
+  },
+  skipLineupBattleTurn(code) {
+    return client.post(`/rooms/${code}/lineup-battle/skip`).then(r => r.data)
+  },
+  advanceLineupBattleLineup(code) {
+    return client.post(`/rooms/${code}/lineup-battle/next-lineup`).then(r => r.data)
+  },
+
   // --- Athlete pools: admin ---
   adminListAthletePools() {
     return client.get('/admin/athlete-pools').then(r => r.data)

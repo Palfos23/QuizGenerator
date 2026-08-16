@@ -1,0 +1,257 @@
+<template>
+  <div>
+    <div class="grid-status-bar">
+      <div class="grid-progress" style="text-align:center; width:100%;">
+        Board {{ (state?.currentLineupIndex ?? 0) + 1 }} / {{ state?.totalLineups ?? '?' }}: {{ state?.lineupTitle }}
+      </div>
+      <div v-if="state" style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">
+        {{ state.teamName }} vs {{ state.opponentName }}
+        <template v-if="state.scoreFor != null && state.scoreAgainst != null"> ({{ state.scoreFor }}-{{ state.scoreAgainst }})</template>
+      </div>
+    </div>
+
+    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <div v-if="error" class="banner error">{{ error }}</div>
+
+    <template v-if="state && !state.finished">
+      <div class="mp-player-row">
+        <div
+          v-for="p in state.players"
+          :key="p.participantId"
+          class="mp-player-card"
+          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.lineupComplete, eliminated: p.eliminatedThisLineup }"
+          :style="{ borderColor: p.color }"
+        >
+          <strong>{{ p.name }}</strong>
+          <div class="lives-hearts" style="margin-top:4px;">
+            <span v-for="i in state.maxStrikes" :key="i" class="life-heart" :class="{ lost: i > state.maxStrikes - p.livesUsed }"></span>
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ p.totalScore }}</div>
+        </div>
+      </div>
+
+      <div v-if="!state.lineupComplete && isYourTurn" class="guess-box-wrap no-print">
+        <div class="guess-box" :class="{ shake: shakeGuessBox }">
+          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">Your turn</p>
+          <input
+            type="text"
+            v-model="searchTerm"
+            placeholder="Search for a player…"
+            aria-label="Search for a player"
+            autocomplete="off"
+            @keydown.esc="searchTerm = ''"
+          />
+          <div v-if="searchResults.length" class="guess-results">
+            <button v-for="a in searchResults" :key="a.id" class="guess-result-row" :disabled="guessing" @click="submitGuess(a)">
+              {{ a.name }}
+            </button>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:8px; width:100%;" :disabled="guessing" @click="skipTurn">
+            Pass turn (costs a life)
+          </button>
+        </div>
+      </div>
+
+      <div v-if="!state.lineupComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
+        Waiting for {{ currentTurnName }}'s turn…
+      </div>
+
+      <div v-if="state.lineupComplete" class="modal-backdrop">
+        <div class="completion-popup">
+          <h2 style="margin-top:0;">Board complete!</h2>
+          <div class="score-square-grid">
+            <div v-for="(p, i) in leaderboardForLineup" :key="p.name" class="score-square" :class="{ leader: i === 0 }">
+              <div class="score-square-name">{{ p.name }}</div>
+              <div class="score-square-number">{{ p.total }}</div>
+              <div v-if="p.roundDelta > 0" class="score-square-delta">+{{ p.roundDelta }}</div>
+            </div>
+          </div>
+
+          <button v-if="isHost" class="btn btn-primary" style="margin-top:12px; width:100%;" :disabled="advancing" @click="nextLineup">
+            {{ advancing ? 'Loading…' : (state.currentLineupIndex + 1 < state.totalLineups ? 'Next board' : 'Finish game') }}
+          </button>
+          <div v-else style="margin-top:8px; color:var(--text-dim);">Waiting for the host to continue…</div>
+        </div>
+      </div>
+
+      <div class="pitch">
+        <div v-for="(row, ri) in rows" :key="ri" class="pitch-row">
+          <div v-for="slot in row" :key="slot.id ?? slot.slotIndex" class="pitch-slot">
+            <div class="pitch-shirt" :class="{ solved: slot.solved }">
+              <img v-if="slot.solved && slot.athletePhotoUrl" :src="slot.athletePhotoUrl" alt="" class="pitch-slot-photo" />
+              <template v-else>{{ slot.shirtNumber }}</template>
+              <span v-if="slot.captain" class="pitch-shirt-captain">C</span>
+            </div>
+            <div class="pitch-slot-name">
+              {{ slot.solved ? slot.athleteName : '?' }}
+              <template v-if="slot.solved && slot.solvedByName"> <span style="color:var(--text-dim);">({{ slot.solvedByName }})</span></template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
+      <button class="btn btn-secondary btn-sm no-print" @click="leave">← Leave game</button>
+      <span class="tag no-print" style="background:rgba(255,255,255,0.06); color:var(--text-dim);">Room: {{ roomCode }}</span>
+    </div>
+
+    <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
+      <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct' : 'Wrong' }}</div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import api from '../services/api'
+import { rowsFor } from '../services/formations'
+
+const props = defineProps({
+  roomCode: { type: String, required: true },
+  yourParticipantId: { type: [Number, String], required: true },
+  isHost: { type: Boolean, default: false }
+})
+const emit = defineEmits(['gameOver', 'leave'])
+
+const state = ref(null)
+const scoresAtLineupStart = ref({})
+let lastLineupIndexSeen = null
+const loading = ref(true)
+const error = ref('')
+const searchTerm = ref('')
+const searchResults = ref([])
+const guessing = ref(false)
+const advancing = ref(false)
+const shakeGuessBox = ref(false)
+
+const resultOverlay = ref(null)
+let resultOverlayTimeout = null
+function showResultOverlay(correct) {
+  clearTimeout(resultOverlayTimeout)
+  resultOverlay.value = null
+  requestAnimationFrame(() => {
+    resultOverlay.value = { correct }
+    resultOverlayTimeout = setTimeout(() => { resultOverlay.value = null }, 1200)
+  })
+}
+
+let pollTimer = null
+
+const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
+const currentTurnName = computed(() =>
+  state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
+)
+const rows = computed(() => state.value ? rowsFor(state.value.formation, state.value.slots) : [])
+const leaderboardForLineup = computed(() => {
+  if (!state.value) return []
+  return [...state.value.players]
+    .map(p => ({ name: p.name, total: p.totalScore, roundDelta: p.totalScore - (scoresAtLineupStart.value[p.name] || 0) }))
+    .sort((a, b) => b.total - a.total)
+})
+
+async function poll() {
+  try {
+    const fresh = await api.getLineupBattleState(props.roomCode)
+    applyState(fresh)
+  } catch (e) {
+    error.value = 'Lost connection to the room - retrying…'
+  } finally {
+    loading.value = false
+  }
+}
+
+function applyState(fresh) {
+  error.value = ''
+  if (fresh.currentLineupIndex !== lastLineupIndexSeen) {
+    scoresAtLineupStart.value = Object.fromEntries((fresh.players || []).map(p => [p.name, p.totalScore]))
+    lastLineupIndexSeen = fresh.currentLineupIndex
+  }
+  state.value = fresh
+  if (fresh.finished) {
+    clearInterval(pollTimer)
+    const scores = fresh.players.map(p => [p.name, p.totalScore])
+    emit('gameOver', scores)
+  }
+}
+
+onMounted(() => {
+  poll()
+  pollTimer = setInterval(poll, 1200)
+})
+onUnmounted(() => clearInterval(pollTimer))
+
+let searchDebounce = null
+watch(searchTerm, (val) => {
+  clearTimeout(searchDebounce)
+  const trimmed = (val || '').trim()
+  if (!trimmed) {
+    searchResults.value = []
+    return
+  }
+  searchDebounce = setTimeout(async () => {
+    try {
+      const results = await api.searchLineupCandidates(state.value.currentLineupId, val)
+      searchResults.value = trimmed.length < 3
+        ? results.filter(a => a.name.toLowerCase() === trimmed.toLowerCase())
+        : results
+    } catch (e) {
+      // autocomplete failing isn't worth surfacing
+    }
+  }, 250)
+})
+
+async function submitGuess(athlete) {
+  guessing.value = true
+  searchTerm.value = ''
+  searchResults.value = []
+  try {
+    const before = state.value.slots.filter(s => s.solved).length
+    const fresh = await api.submitLineupBattleGuess(props.roomCode, athlete.id)
+    const after = fresh.slots.filter(s => s.solved).length
+    if (after > before) {
+      showResultOverlay(true)
+    } else {
+      shakeGuessBox.value = true
+      setTimeout(() => { shakeGuessBox.value = false }, 400)
+      showResultOverlay(false)
+    }
+    applyState(fresh)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not submit that guess.'
+  } finally {
+    guessing.value = false
+  }
+}
+
+async function skipTurn() {
+  guessing.value = true
+  searchTerm.value = ''
+  searchResults.value = []
+  try {
+    const fresh = await api.skipLineupBattleTurn(props.roomCode)
+    applyState(fresh)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not skip your turn.'
+  } finally {
+    guessing.value = false
+  }
+}
+
+async function nextLineup() {
+  advancing.value = true
+  try {
+    const fresh = await api.advanceLineupBattleLineup(props.roomCode)
+    applyState(fresh)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not advance to the next board.'
+  } finally {
+    advancing.value = false
+  }
+}
+
+function leave() {
+  clearInterval(pollTimer)
+  emit('leave')
+}
+</script>

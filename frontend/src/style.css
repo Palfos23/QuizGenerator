@@ -2239,3 +2239,113 @@ table.scoreboard-table {
   max-width: 460px;
   margin: 0 auto;
 }
+
+/* --- Starting XI: pitch layout, used by admin slot assignment and both play views --- */
+.pitch {
+  display: flex;
+  flex-direction: column-reverse; /* rows are authored GK-first; this flips GK to the bottom visually */
+  gap: 18px;
+  padding: 24px 12px;
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 1px, transparent 1px) 0 0/28px 28px,
+    linear-gradient(180deg, #0f3d1f 0%, #123f22 50%, #0f3d1f 100%);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.pitch-row {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pitch-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 76px;
+}
+.pitch-shirt {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: rgba(15, 23, 20, 0.55);
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.pitch-shirt:hover {
+  transform: scale(1.05);
+}
+.pitch-shirt.solved {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #05261a;
+  cursor: default;
+}
+.pitch-shirt.solved:hover {
+  transform: none;
+}
+.pitch-shirt.wrong-flash {
+  animation: pitch-shirt-shake 0.4s ease;
+}
+@keyframes pitch-shirt-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.pitch-shirt-captain {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #241c00;
+  font-size: 0.6rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pitch-slot-name {
+  font-size: 0.68rem;
+  text-align: center;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.2;
+  word-break: break-word;
+  min-height: 1.6em;
+}
+.pitch-slot-photo {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid var(--teal);
+}
+.pitch-scoreline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.pitch-scoreline img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.pitch-scoreline .score {
+  font-size: 1.3rem;
+  letter-spacing: 0.05em;
+}
