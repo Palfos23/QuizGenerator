@@ -402,7 +402,8 @@ function onLogoSelectChange(c, value) {
 function openEditAthlete(c) {
   editingAthleteForModal.value = {
     id: c.athleteId, name: c.name, sport: form.sport, team: c.team,
-    photoUrl: c.photoUrl, additionalPhotos: c.additionalPhotos || []
+    photoUrl: c.photoUrl, additionalPhotos: c.additionalPhotos || [],
+    additionalDescriptions: c.additionalDescriptions || []
   }
 }
 
@@ -414,6 +415,7 @@ function onAthleteEdited(saved) {
     c.team = saved.team
     c.photoUrl = saved.photoUrl
     c.additionalPhotos = saved.additionalPhotos || []
+    c.additionalDescriptions = saved.additionalDescriptions || []
   }
   toast.show('Subject updated.')
 }
