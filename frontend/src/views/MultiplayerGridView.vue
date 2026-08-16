@@ -284,7 +284,7 @@
 
     <template v-else-if="stage === 'done'">
       <div class="modal-backdrop">
-        <div class="completion-popup">
+        <div class="completion-popup podium-host">
           <h2 style="margin-top:0;">Game over!</h2>
 
           <div class="podium-row">

@@ -1478,6 +1478,7 @@ table.scoreboard-table {
 .completion-popup.full { border: 1px solid rgba(242,183,5,0.4); }
 .completion-popup.overtime { border: 1px solid rgba(139,124,255,0.4); }
 .completion-popup.given-up { border: 1px solid var(--border); }
+.completion-popup.podium-host { max-width: 500px; } /* wide enough for 3 podium blocks side by side, unlike the default 380px */
 
 .completion-icon {
   font-size: 3.2rem;
