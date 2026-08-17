@@ -2361,28 +2361,133 @@ table.scoreboard-table {
     linear-gradient(180deg, #0f3d1f 0%, #164a28 50%, #0f3d1f 100%);
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
-/* Halfway line + center circle - purely decorative, so it doesn't need to
-   line up with any particular row of a formation that can be 4 or 5 rows tall. */
-.pitch::before {
-  content: '';
+/* Full-pitch markings (rendered by the PitchMarkings.vue component) - purely
+   decorative, so none of it needs to line up with any particular row of a
+   formation that can be 4 or 5 rows tall. Percentage sizing plus
+   aspect-ratio on every round shape keeps circles circular regardless of
+   how tall or wide a given ".pitch" ends up (solo play vs. the narrower
+   admin preview modal vs. the online battle layout all render this). Sits
+   behind ".pitch-row" (z-index: 1) and ignores clicks so it never gets in
+   the way of guessing. */
+.pitch-markings {
   position: absolute;
-  left: 5%;
-  right: 5%;
-  top: 50%;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.14);
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
 }
-.pitch::after {
-  content: '';
+.pitch-boundary {
+  position: absolute;
+  inset: 4%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+.pitch-halfway-line {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 50%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+.pitch-center-circle {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 90px;
-  height: 90px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  width: 22%;
+  aspect-ratio: 1 / 1;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
+.pitch-center-spot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transform: translate(-50%, -50%);
+}
+/* Penalty area + six-yard box + spot + arc, mirrored at both ends - one end
+   is always "behind" the goalkeeper's shirt, the other sits beyond the
+   forwards, same as a real full-pitch graphic showing both boxes. */
+.pitch-penalty-box {
+  position: absolute;
+  left: 50%;
+  width: 64%;
+  height: 15%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transform: translateX(-50%);
+}
+.pitch-penalty-box.bottom { bottom: 4%; border-bottom: none; }
+.pitch-penalty-box.top { top: 4%; border-top: none; }
+.pitch-six-yard-box {
+  position: absolute;
+  left: 50%;
+  width: 32%;
+  height: 6%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transform: translateX(-50%);
+}
+.pitch-six-yard-box.bottom { bottom: 4%; border-bottom: none; }
+.pitch-six-yard-box.top { top: 4%; border-top: none; }
+.pitch-penalty-spot {
+  position: absolute;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateX(-50%);
+}
+.pitch-penalty-spot.bottom { bottom: calc(4% + 11%); }
+.pitch-penalty-spot.top { top: calc(4% + 11%); }
+/* The "D" - drawn as a half-circle (border-radius rounds only the two
+   corners facing away from its box, aspect-ratio keeps it a true
+   semicircle) sitting flush against the box's open edge. */
+.pitch-penalty-arc {
+  position: absolute;
+  left: 50%;
+  width: 26%;
+  aspect-ratio: 2.2 / 1;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transform: translateX(-50%);
+}
+.pitch-penalty-arc.bottom {
+  bottom: calc(4% + 15%);
+  border-bottom: none;
+  border-radius: 50% 50% 0 0;
+}
+.pitch-penalty-arc.top {
+  top: calc(4% + 15%);
+  border-top: none;
+  border-radius: 0 0 50% 50%;
+}
+/* Corner arcs - each is a small fixed-size circle offset so only the quarter
+   facing into the pitch shows through its clipping wrapper. */
+.pitch-corner-arc {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+}
+.pitch-corner-arc.top-left { top: 4%; left: 4%; }
+.pitch-corner-arc.top-right { top: 4%; right: 4%; }
+.pitch-corner-arc.bottom-left { bottom: 4%; left: 4%; }
+.pitch-corner-arc.bottom-right { bottom: 4%; right: 4%; }
+.pitch-corner-arc-circle {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+.pitch-corner-arc-circle.top-left { top: -16px; left: -16px; }
+.pitch-corner-arc-circle.top-right { top: -16px; right: -16px; }
+.pitch-corner-arc-circle.bottom-left { bottom: -16px; left: -16px; }
+.pitch-corner-arc-circle.bottom-right { bottom: -16px; right: -16px; }
 .pitch-row {
   position: relative;
   z-index: 1;

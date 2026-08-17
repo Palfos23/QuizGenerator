@@ -68,6 +68,7 @@
       </div>
 
       <div class="pitch" style="margin-top:16px;">
+        <PitchMarkings />
         <div v-for="(row, ri) in rows" :key="ri" class="pitch-row">
           <div v-for="slot in row" :key="slot.id ?? slot.slotIndex" class="pitch-slot">
             <div class="pitch-shirt" :class="{ solved: slot.solved, goalkeeper: slot.slotIndex === 0 }" :style="shirtStyle(slot)">
@@ -94,6 +95,7 @@ import { useRoute } from 'vue-router'
 import api from '../services/api'
 import { rowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
+import PitchMarkings from '../components/PitchMarkings.vue'
 
 const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'

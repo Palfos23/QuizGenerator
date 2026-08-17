@@ -256,6 +256,7 @@
         </div>
 
         <div class="pitch">
+          <PitchMarkings />
           <div v-for="(row, ri) in previewRows" :key="ri" class="pitch-row">
             <div v-for="slot in row" :key="slot.slotIndex" class="pitch-slot">
               <div class="pitch-shirt" :class="{ goalkeeper: slot.slotIndex === 0 }" :style="shirtStyle(slot.slotIndex)">
@@ -296,6 +297,7 @@ import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import AthleteFormModal from '../components/AthleteFormModal.vue'
 import Pagination from '../components/Pagination.vue'
+import PitchMarkings from '../components/PitchMarkings.vue'
 import { readableTextColor } from '../constants'
 import { FORMATION_NAMES, slotLabels, slotCount, rowsFor } from '../services/formations'
 
