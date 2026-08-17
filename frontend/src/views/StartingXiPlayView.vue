@@ -11,15 +11,18 @@
       <p class="page-subtitle" style="text-align:center;">{{ state.competition }}</p>
 
       <div class="pitch-scoreline">
-        <span style="display:flex; align-items:center; gap:8px;">
-          <img v-if="state.teamCrestUrl" :src="state.teamCrestUrl" alt="" />
-          {{ state.teamName }}<template v-if="state.scoreFor != null"> {{ state.scoreFor }}</template>
-        </span>
-        <span class="score">-</span>
-        <span style="display:flex; align-items:center; gap:8px;">
-          <template v-if="state.scoreAgainst != null">{{ state.scoreAgainst }} </template>{{ state.opponentName }}
-          <img v-if="state.opponentCrestUrl" :src="state.opponentCrestUrl" alt="" />
-        </span>
+        <div class="pitch-scoreline-team">
+          <img v-if="state.teamCrestUrl" :src="state.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
+          <span>{{ state.teamName }}</span>
+        </div>
+        <div v-if="state.scoreFor != null && state.scoreAgainst != null" class="pitch-scoreline-score">
+          <span>{{ state.scoreFor }}</span><span class="dash">-</span><span>{{ state.scoreAgainst }}</span>
+        </div>
+        <div v-else class="pitch-scoreline-vs">vs</div>
+        <div class="pitch-scoreline-team away">
+          <img v-if="state.opponentCrestUrl" :src="state.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
+          <span>{{ state.opponentName }}</span>
+        </div>
       </div>
 
       <div class="grid-status-bar">

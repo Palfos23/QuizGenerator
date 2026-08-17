@@ -4,9 +4,20 @@
       <div class="grid-progress" style="text-align:center; width:100%;">
         Board {{ (state?.currentLineupIndex ?? 0) + 1 }} / {{ state?.totalLineups ?? '?' }}: {{ state?.lineupTitle }}
       </div>
-      <div v-if="state" style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">
-        {{ state.teamName }} vs {{ state.opponentName }}
-        <template v-if="state.scoreFor != null && state.scoreAgainst != null"> ({{ state.scoreFor }}-{{ state.scoreAgainst }})</template>
+    </div>
+
+    <div v-if="state && (state.teamName || state.opponentName)" class="pitch-scoreline">
+      <div class="pitch-scoreline-team">
+        <img v-if="state.teamCrestUrl" :src="state.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
+        <span>{{ state.teamName }}</span>
+      </div>
+      <div v-if="state.scoreFor != null && state.scoreAgainst != null" class="pitch-scoreline-score">
+        <span>{{ state.scoreFor }}</span><span class="dash">-</span><span>{{ state.scoreAgainst }}</span>
+      </div>
+      <div v-else class="pitch-scoreline-vs">vs</div>
+      <div class="pitch-scoreline-team away">
+        <img v-if="state.opponentCrestUrl" :src="state.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
+        <span>{{ state.opponentName }}</span>
       </div>
     </div>
 

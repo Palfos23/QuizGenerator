@@ -15,7 +15,9 @@ public class LineupBattleStateDto {
     private String lineupTitle;
     private String lineupCompetition;
     private String teamName;
+    private String teamCrestUrl;
     private String opponentName;
+    private String opponentCrestUrl;
     private Integer scoreFor;
     private Integer scoreAgainst;
     private String formation;
@@ -47,8 +49,12 @@ public class LineupBattleStateDto {
     public void setLineupCompetition(String lineupCompetition) { this.lineupCompetition = lineupCompetition; }
     public String getTeamName() { return teamName; }
     public void setTeamName(String teamName) { this.teamName = teamName; }
+    public String getTeamCrestUrl() { return teamCrestUrl; }
+    public void setTeamCrestUrl(String teamCrestUrl) { this.teamCrestUrl = teamCrestUrl; }
     public String getOpponentName() { return opponentName; }
     public void setOpponentName(String opponentName) { this.opponentName = opponentName; }
+    public String getOpponentCrestUrl() { return opponentCrestUrl; }
+    public void setOpponentCrestUrl(String opponentCrestUrl) { this.opponentCrestUrl = opponentCrestUrl; }
     public Integer getScoreFor() { return scoreFor; }
     public void setScoreFor(Integer scoreFor) { this.scoreFor = scoreFor; }
     public Integer getScoreAgainst() { return scoreAgainst; }

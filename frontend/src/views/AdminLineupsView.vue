@@ -240,9 +240,18 @@
         <p class="page-subtitle" style="margin-top:0;">Everything shown revealed, for a quick check that shirts and slots look right.</p>
 
         <div class="pitch-scoreline" v-if="form.teamName || form.opponentName">
-          <span>{{ form.teamName }}<template v-if="form.scoreFor != null"> {{ form.scoreFor }}</template></span>
-          <span class="score">-</span>
-          <span><template v-if="form.scoreAgainst != null">{{ form.scoreAgainst }} </template>{{ form.opponentName }}</span>
+          <div class="pitch-scoreline-team">
+            <img v-if="form.teamCrestUrl" :src="form.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
+            <span>{{ form.teamName || 'Team' }}</span>
+          </div>
+          <div v-if="form.scoreFor != null && form.scoreAgainst != null" class="pitch-scoreline-score">
+            <span>{{ form.scoreFor }}</span><span class="dash">-</span><span>{{ form.scoreAgainst }}</span>
+          </div>
+          <div v-else class="pitch-scoreline-vs">vs</div>
+          <div class="pitch-scoreline-team away">
+            <img v-if="form.opponentCrestUrl" :src="form.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
+            <span>{{ form.opponentName || 'Opponent' }}</span>
+          </div>
         </div>
 
         <div class="pitch">
