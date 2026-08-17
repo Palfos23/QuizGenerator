@@ -333,14 +333,30 @@ const candidatePage = ref(1)
 const candidateFilterTerm = ref('')
 const filteredCandidates = computed(() => {
   const term = candidateFilterTerm.value.trim().toLowerCase()
-  if (!term) return candidates.value
-  return candidates.value.filter(c => c.name.toLowerCase().includes(term))
+  if (!term) return candidateDisplayOrder.value
+  return candidateDisplayOrder.value.filter(c => c.name.toLowerCase().includes(term))
 })
 watch(candidateFilterTerm, () => { candidatePage.value = 1 })
 const pagedCandidates = computed(() => {
   const start = (candidatePage.value - 1) * CANDIDATE_PAGE_SIZE
   return filteredCandidates.value.slice(start, start + CANDIDATE_PAGE_SIZE)
 })
+
+// For the editable candidate list specifically: correct answers (the actual
+// starting XI) first, then everyone else - makes it easy to find and adjust
+// the answers that matter most instead of hunting for them among decoys.
+//
+// This is a frozen snapshot, not a live computed - rebuilt explicitly when
+// candidates are loaded/added/removed, deliberately NOT reactive to checking
+// a candidate's own "correct" box. Otherwise a row would jump to a different
+// spot in the list the moment you checked the very box you just clicked.
+const candidateDisplayOrder = ref([])
+
+function rebuildCandidateDisplayOrder() {
+  const correct = candidates.value.filter(c => c.correct)
+  const notCorrect = candidates.value.filter(c => !c.correct)
+  candidateDisplayOrder.value = [...correct, ...notCorrect]
+}
 
 // Slot 0 is always the goalkeeper (see formations.js) - this is what lets the
 // pitch render the keeper in a different kit without needing a dedicated
@@ -411,6 +427,7 @@ function addCandidate(athlete) {
   })
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
+  rebuildCandidateDisplayOrder()
 }
 
 // For adding many at once (pool import, whole-category import) - same
@@ -429,6 +446,7 @@ function addCandidatesBulk(athleteList) {
     })
     added++
   }
+  rebuildCandidateDisplayOrder()
   return added
 }
 
@@ -486,6 +504,7 @@ function removeCandidate(c) {
   candidates.value = candidates.value.filter(x => x !== c)
   const maxPage = Math.max(1, Math.ceil(candidates.value.length / CANDIDATE_PAGE_SIZE))
   if (candidatePage.value > maxPage) candidatePage.value = maxPage
+  rebuildCandidateDisplayOrder()
 }
 
 // Unchecking "correct" drops this candidate back to decoy-only - clear the
@@ -537,6 +556,7 @@ function resetForm() {
   selectedPoolId.value = null
   linkedPoolIds.value = []
   loadAthletePools()
+  rebuildCandidateDisplayOrder()
 }
 
 function openCreate() {
@@ -585,6 +605,7 @@ async function openEdit(id) {
     editingLineupId.value = id
     view.value = 'builder'
     loadAthletePools()
+    rebuildCandidateDisplayOrder()
   } catch (e) {
     error.value = 'Could not load that board.'
   }
