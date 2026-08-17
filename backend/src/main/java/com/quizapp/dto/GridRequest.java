@@ -29,8 +29,15 @@ public class GridRequest {
     private boolean excludedFromGridBattle = false;
     private String revealMode = "PHOTO"; // "PHOTO" or "DESCRIPTION"
 
+    // When true, ignore candidateAthleteIds entirely - GridAdminService stores
+    // no explicit candidates at all and the search box draws live from every
+    // Athlete in "sport" instead. Only required (@NotEmpty enforced manually
+    // in GridAdminService, not here) when this is false.
+    private boolean entireCategoryPool = false;
+
     // The full searchable pool for this grid (includes both correct answers and decoys).
-    @NotEmpty
+    // Not @NotEmpty here - required unless entireCategoryPool is true, which
+    // GridAdminService validates since that depends on another field.
     private List<Long> candidateAthleteIds;
 
     // The correct answers - each athleteId here must also appear in candidateAthleteIds.
@@ -130,6 +137,14 @@ public class GridRequest {
 
     public void setCandidateAthleteIds(List<Long> candidateAthleteIds) {
         this.candidateAthleteIds = candidateAthleteIds;
+    }
+
+    public boolean isEntireCategoryPool() {
+        return entireCategoryPool;
+    }
+
+    public void setEntireCategoryPool(boolean entireCategoryPool) {
+        this.entireCategoryPool = entireCategoryPool;
     }
 
     public List<GridEntryInputDto> getEntries() {

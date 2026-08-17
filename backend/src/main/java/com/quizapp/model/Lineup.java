@@ -18,6 +18,12 @@ import java.util.Set;
 @Table(name = "lineups")
 public class Lineup {
 
+    // Every Lineup is football-only by construction (unlike Grid, there's no
+    // per-board "sport" picker) - this is what LineupPlayService.searchCandidates
+    // filters by when entireCategoryPool is on, since there's no per-entity
+    // sport field to read from.
+    public static final String CATEGORY = "Football";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -88,6 +94,21 @@ public class Lineup {
 
     @Column(name = "goalkeeper_kit_color", nullable = false)
     private String goalkeeperKitColor = "#f2c230";
+
+    // Same purpose and reasoning as Grid.entireCategoryPool - when true, every
+    // Athlete in the "Football" category is live-queried as the guessable
+    // pool instead of being copied into explicit LineupCandidate rows. The 11
+    // correct starters still live in "entries" as always.
+    @Column(name = "entire_category_pool", nullable = false, columnDefinition = "boolean default false")
+    private boolean entireCategoryPool = false;
+
+    public boolean isEntireCategoryPool() {
+        return entireCategoryPool;
+    }
+
+    public void setEntireCategoryPool(boolean entireCategoryPool) {
+        this.entireCategoryPool = entireCategoryPool;
+    }
 
     // The full searchable pool for the guess box - the 11 correct starters plus
     // any decoys (e.g. players who were only on the bench that day). Set, not

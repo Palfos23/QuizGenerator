@@ -46,4 +46,10 @@ public class LineupSummaryDto {
     public void setMaxStrikes(Integer maxStrikes) { this.maxStrikes = maxStrikes; }
     public boolean isExcludedFromBattle() { return excludedFromBattle; }
     public void setExcludedFromBattle(boolean excludedFromBattle) { this.excludedFromBattle = excludedFromBattle; }
+
+    // Only set on the admin management list - same purpose as
+    // GridSummaryDto.entireCategoryPool.
+    private boolean entireCategoryPool;
+    public boolean isEntireCategoryPool() { return entireCategoryPool; }
+    public void setEntireCategoryPool(boolean entireCategoryPool) { this.entireCategoryPool = entireCategoryPool; }
 }

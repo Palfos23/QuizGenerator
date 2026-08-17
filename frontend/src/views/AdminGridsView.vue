@@ -27,6 +27,7 @@
             <div class="saved-quiz-title">
               {{ g.title }}
               <span v-if="g.excludedFromGridBattle" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Grid Battle</span>
+              <span v-if="g.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
             </div>
             <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} entries · {{ g.maxStrikes }} {{ g.maxStrikes === 1 ? 'life' : 'lives' }} · week of {{ g.weekStartDate }}</div>
           </div>
@@ -124,46 +125,69 @@
       </div>
 
       <div class="field">
-        <label>Candidate pool <span class="picker-hint">everyone guessable in this grid - correct and decoy</span></label>
+        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
+          <input type="checkbox" v-model="form.entireCategoryPool" style="width:auto;" @change="onEntireCategoryToggle" />
+          Use every subject in "{{ form.sport || '…' }}" as the pool
+        </label>
+        <p class="page-subtitle" style="margin-top:4px;">
+          Every subject in this category becomes guessable automatically, including ones added to it
+          later - nothing to re-import. You still pick which ones are the correct answers below.
+        </p>
+      </div>
+
+      <div class="field">
+        <label>
+          {{ form.entireCategoryPool ? 'Correct answers' : 'Candidate pool' }}
+          <span class="picker-hint">
+            {{ form.entireCategoryPool ? 'search to mark a subject as a correct answer' : 'everyone guessable in this grid - correct and decoy' }}
+          </span>
+        </label>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-          <input type="text" v-model="athleteSearchTerm" placeholder="Search subjects by name…" style="flex:1; min-width:180px;" />
+          <input
+            type="text"
+            v-model="athleteSearchTerm"
+            :placeholder="form.entireCategoryPool ? 'Search subjects to mark as a correct answer…' : 'Search subjects by name…'"
+            style="flex:1; min-width:180px;"
+          />
         </div>
 
-        <div v-if="poolsForSport.length" style="margin-bottom:10px;">
-          <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
-            ...or import from a saved pool
-          </label>
-          <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
-            <select v-model="selectedPoolId" style="flex:1; min-width:200px;">
-              <option :value="null">Choose a pool…</option>
-              <option v-for="p in poolsForSport" :key="p.id" :value="p.id">{{ p.name }} ({{ p.memberCount }})</option>
-            </select>
-            <button class="btn btn-secondary btn-sm" :disabled="!selectedPoolId" @click="importFromPool">
-              + Import pool
+        <template v-if="!form.entireCategoryPool">
+          <div v-if="poolsForSport.length" style="margin-bottom:10px;">
+            <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
+              ...or import from a saved pool
+            </label>
+            <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+              <select v-model="selectedPoolId" style="flex:1; min-width:200px;">
+                <option :value="null">Choose a pool…</option>
+                <option v-for="p in poolsForSport" :key="p.id" :value="p.id">{{ p.name }} ({{ p.memberCount }})</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" :disabled="!selectedPoolId" @click="importFromPool">
+                + Import pool
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <button class="btn btn-secondary btn-sm" :disabled="!form.sport || importingAllInCategory" @click="importAllInCategory">
+              {{ importingAllInCategory ? 'Importing…' : `+ Import every subject in "${form.sport || '…'}"` }}
             </button>
           </div>
-        </div>
-
-        <div style="margin-bottom:10px;">
-          <button class="btn btn-secondary btn-sm" :disabled="!form.sport || importingAllInCategory" @click="importAllInCategory">
-            {{ importingAllInCategory ? 'Importing…' : `+ Import every subject in "${form.sport || '…'}"` }}
-          </button>
-        </div>
+        </template>
 
         <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
           <button
             v-for="a in athleteSearchResults"
             :key="a.id"
             class="guess-result-row"
-            @click="addCandidate(a)"
+            @click="addCandidate(a, form.entireCategoryPool)"
           >
             {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
           </button>
         </div>
 
         <div v-if="!candidates.length" class="empty-state" style="padding:20px;">
-          No subjects added yet - search above, or import a saved pool.
+          {{ form.entireCategoryPool ? 'No correct answers marked yet - search above.' : 'No subjects added yet - search above, or import a saved pool.' }}
         </div>
 
         <div v-else class="candidate-list">
@@ -181,10 +205,13 @@
 
           <template v-else>
           <div v-for="c in pagedCandidates" :key="c.athleteId" class="candidate-row">
-            <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600; margin:0;">
+            <label v-if="!form.entireCategoryPool" style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600; margin:0;">
               <input type="checkbox" v-model="c.correct" style="width:auto;" />
               {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
             </label>
+            <div v-else style="font-weight:600;">
+              {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
+            </div>
             <div v-if="c.correct" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input type="text" v-model="c.hintLabel" placeholder="Label (optional, e.g. FW)" style="width:110px;" />
               <input v-if="form.ranked" type="number" v-model.number="c.hintValue" placeholder="Value" style="width:80px;" />
@@ -309,7 +336,8 @@ const form = reactive({
   sortAscending: false,
   ranked: true,
   excludedFromGridBattle: false,
-  revealMode: 'PHOTO'
+  revealMode: 'PHOTO',
+  entireCategoryPool: false
 })
 const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue, clubId, showLogo, useOwnPhotoAsLogo }]
 
@@ -507,16 +535,29 @@ function changeSport(code) {
   loadClubOptions()
 }
 
-function addCandidate(athlete) {
+// correct defaults to false (a plain decoy) - the "entire category" search
+// box passes true instead, since there's no reason to ever add a decoy by
+// hand in that mode (everyone else in the category already is one).
+function addCandidate(athlete, correct = false) {
   if (candidates.value.some(c => c.athleteId === athlete.id)) return
   candidates.value.push({
     athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
     additionalPhotos: athlete.additionalPhotos || [],
     additionalDescriptions: athlete.additionalDescriptions || [],
-    correct: false, hintLabel: '', hintValue: null, clubId: null, showLogo: true, useOwnPhotoAsLogo: false,
+    correct, hintLabel: '', hintValue: null, clubId: null, showLogo: true, useOwnPhotoAsLogo: false,
     selectedPhotoId: null, selectedDescriptionId: null
   })
   rebuildCandidateDisplayOrder()
+}
+
+// Decoys are meaningless once every subject in the category is automatically
+// guessable - drop any that were added before switching modes so the list
+// only shows what actually matters here (the correct answers).
+function onEntireCategoryToggle() {
+  if (form.entireCategoryPool) {
+    candidates.value = candidates.value.filter(c => c.correct)
+    rebuildCandidateDisplayOrder()
+  }
 }
 
 // For adding many at once (pool import, whole-category import) - rebuilds the
@@ -581,6 +622,7 @@ function resetForm() {
   form.ranked = true
   form.excludedFromGridBattle = false
   form.revealMode = 'PHOTO'
+  form.entireCategoryPool = false
   candidates.value = []
   candidatePage.value = 1
   candidateFilterTerm.value = ''
@@ -613,9 +655,14 @@ async function openEdit(id) {
     form.ranked = detail.ranked
     form.excludedFromGridBattle = detail.excludedFromGridBattle
     form.revealMode = detail.revealMode || 'PHOTO'
+    form.entireCategoryPool = detail.entireCategoryPool || false
 
+    // In "entire category" mode there's no stored candidate list at all (see
+    // GridAdminService) - the editable list is built from the correct answers
+    // (entries) instead, since that's the only place their athlete data lives.
     const entryByAthleteId = new Map(detail.entries.map(e => [e.athlete.id, e]))
-    candidates.value = detail.candidates.map(a => {
+    const sourceList = form.entireCategoryPool ? detail.entries.map(e => e.athlete) : detail.candidates
+    candidates.value = sourceList.map(a => {
       const entry = entryByAthleteId.get(a.id)
       return {
         athleteId: a.id, name: a.name, team: a.team, photoUrl: a.photoUrl,
@@ -682,7 +729,8 @@ async function saveGrid() {
     ranked: form.ranked,
     excludedFromGridBattle: form.excludedFromGridBattle,
     revealMode: form.revealMode,
-    candidateAthleteIds: candidates.value.map(c => c.athleteId),
+    entireCategoryPool: form.entireCategoryPool,
+    candidateAthleteIds: form.entireCategoryPool ? [] : candidates.value.map(c => c.athleteId),
     linkedPoolIds: linkedPoolIds.value,
     entries: entries.map(c => ({
       athleteId: c.athleteId, hintLabel: c.hintLabel, hintValue: form.ranked ? c.hintValue : null,

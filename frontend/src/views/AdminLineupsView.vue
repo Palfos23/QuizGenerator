@@ -24,6 +24,7 @@
             <div class="saved-quiz-title">
               {{ l.title }}
               <span v-if="l.excludedFromBattle" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Starting XI Battle</span>
+              <span v-if="l.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
             </div>
             <div class="saved-quiz-meta">
               {{ l.teamName }} vs {{ l.opponentName }}
@@ -146,10 +147,22 @@
       </div>
 
       <div class="field">
-        <label>Candidate pool <span class="picker-hint">everyone guessable on this board - correct and decoy</span></label>
+        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
+          <input type="checkbox" v-model="form.entireCategoryPool" style="width:auto;" @change="onEntireCategoryToggle" />
+          Use every subject in "Football" as the pool
+        </label>
+        <p class="page-subtitle" style="margin-top:4px;">
+          Every subject in this category becomes guessable automatically, including ones added to it
+          later - nothing to re-import. You still pick which ones are the correct starters below.
+        </p>
+      </div>
+
+      <div class="field">
+        <label>Candidate pool <span class="picker-hint">{{ form.entireCategoryPool ? 'pick the correct starters - every football subject is guessable' : 'everyone guessable on this board - correct and decoy' }}</span></label>
 
         <input type="text" v-model="athleteSearchTerm" placeholder="Search football subjects by name…" style="width:100%; margin-bottom:10px;" />
 
+        <template v-if="!form.entireCategoryPool">
         <div v-if="poolsForFootball.length" style="margin-bottom:10px;">
           <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
             ...or import from a saved pool
@@ -170,15 +183,16 @@
             {{ importingAll ? 'Importing…' : '+ Import every subject in "Football"' }}
           </button>
         </div>
+        </template>
 
         <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
-          <button v-for="a in athleteSearchResults" :key="a.id" class="guess-result-row" @click="addCandidate(a)">
+          <button v-for="a in athleteSearchResults" :key="a.id" class="guess-result-row" @click="addCandidate(a, form.entireCategoryPool)">
             {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
           </button>
         </div>
 
         <div v-if="!candidates.length" class="empty-state" style="padding:20px;">
-          No subjects added yet - search above, or import a saved pool.
+          {{ form.entireCategoryPool ? 'No starters picked yet - search above to mark who\'s correct.' : 'No subjects added yet - search above, or import a saved pool.' }}
         </div>
 
         <div v-else>
@@ -196,10 +210,13 @@
 
           <template v-else>
           <div v-for="c in pagedCandidates" :key="c.athleteId" class="candidate-row">
-            <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600; margin:0;">
+            <label v-if="!form.entireCategoryPool" style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600; margin:0;">
               <input type="checkbox" v-model="c.correct" style="width:auto;" @change="onCorrectToggle(c)" />
               {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
             </label>
+            <div v-else style="display:flex; align-items:center; gap:8px; font-weight:600;">
+              {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
+            </div>
             <div v-if="c.correct" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input type="number" v-model.number="c.shirtNumber" placeholder="No." style="width:70px;" min="1" max="99" />
               <select v-model.number="c.slotIndex" style="width:130px;">
@@ -319,7 +336,7 @@ const form = reactive({
   title: '', competition: '', matchDate: '', weekStartDate: '', formation: '4-3-3',
   teamName: '', teamCrestUrl: '', opponentName: '', opponentCrestUrl: '',
   scoreFor: null, scoreAgainst: null, maxStrikes: 5, excludedFromBattle: false,
-  kitColor: DEFAULT_KIT_COLOR, goalkeeperKitColor: DEFAULT_GK_KIT_COLOR
+  kitColor: DEFAULT_KIT_COLOR, goalkeeperKitColor: DEFAULT_GK_KIT_COLOR, entireCategoryPool: false
 })
 const candidates = ref([])
 const athleteSearchTerm = ref('')
@@ -419,17 +436,27 @@ watch(athleteSearchTerm, (val) => {
   }, 250)
 })
 
-function addCandidate(athlete) {
+function addCandidate(athlete, correct = false) {
   if (candidates.value.some(c => c.athleteId === athlete.id)) return
   candidates.value.push({
     athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
     additionalPhotos: athlete.additionalPhotos || [],
     additionalDescriptions: athlete.additionalDescriptions || [],
-    correct: false, shirtNumber: null, slotIndex: null, captain: false
+    correct, shirtNumber: null, slotIndex: null, captain: false
   })
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
   rebuildCandidateDisplayOrder()
+}
+
+// When switching into "entire category" mode, decoy-only rows carry no
+// data of their own (no assigned slot/shirt) and would otherwise sit in
+// local state pointlessly, matching AdminGridsView's same toggle handler.
+function onEntireCategoryToggle() {
+  if (form.entireCategoryPool) {
+    candidates.value = candidates.value.filter(c => c.correct)
+    rebuildCandidateDisplayOrder()
+  }
 }
 
 // For adding many at once (pool import, whole-category import) - same
@@ -550,6 +577,7 @@ function resetForm() {
   form.excludedFromBattle = false
   form.kitColor = DEFAULT_KIT_COLOR
   form.goalkeeperKitColor = DEFAULT_GK_KIT_COLOR
+  form.entireCategoryPool = false
   candidates.value = []
   candidatePage.value = 1
   candidateFilterTerm.value = ''
@@ -587,9 +615,11 @@ async function openEdit(id) {
     form.excludedFromBattle = detail.excludedFromBattle
     form.kitColor = detail.kitColor || DEFAULT_KIT_COLOR
     form.goalkeeperKitColor = detail.goalkeeperKitColor || DEFAULT_GK_KIT_COLOR
+    form.entireCategoryPool = detail.entireCategoryPool || false
 
     const entryByAthleteId = new Map(detail.entries.map(e => [e.athlete.id, e]))
-    candidates.value = detail.candidates.map(a => {
+    const sourceList = form.entireCategoryPool ? detail.entries.map(e => e.athlete) : detail.candidates
+    candidates.value = sourceList.map(a => {
       const entry = entryByAthleteId.get(a.id)
       return {
         athleteId: a.id, name: a.name, team: a.team, photoUrl: a.photoUrl,
@@ -649,7 +679,8 @@ async function saveLineup() {
     excludedFromBattle: form.excludedFromBattle,
     kitColor: form.kitColor,
     goalkeeperKitColor: form.goalkeeperKitColor,
-    candidateAthleteIds: candidates.value.map(c => c.athleteId),
+    entireCategoryPool: form.entireCategoryPool,
+    candidateAthleteIds: form.entireCategoryPool ? [] : candidates.value.map(c => c.athleteId),
     entries: entries.map(c => ({
       athleteId: c.athleteId, shirtNumber: c.shirtNumber, slotIndex: c.slotIndex, captain: c.captain
     })),

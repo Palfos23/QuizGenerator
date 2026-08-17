@@ -44,8 +44,15 @@ public class LineupRequest {
     private String kitColor;
     private String goalkeeperKitColor;
 
-    // Full searchable pool (correct starters + decoys).
-    @NotEmpty
+    // When true, ignore candidateAthleteIds entirely - LineupAdminService
+    // stores no explicit candidates at all and the search box draws live from
+    // every Athlete in Lineup.CATEGORY ("Football") instead. Same reasoning
+    // as GridRequest.entireCategoryPool.
+    private boolean entireCategoryPool = false;
+
+    // Full searchable pool (correct starters + decoys). Not @NotEmpty here -
+    // required unless entireCategoryPool is true, validated in
+    // LineupAdminService since that depends on another field.
     private List<Long> candidateAthleteIds;
 
     // Exactly 11 entries, one per formation slot.
@@ -90,6 +97,8 @@ public class LineupRequest {
     public void setGoalkeeperKitColor(String goalkeeperKitColor) { this.goalkeeperKitColor = goalkeeperKitColor; }
     public List<Long> getCandidateAthleteIds() { return candidateAthleteIds; }
     public void setCandidateAthleteIds(List<Long> candidateAthleteIds) { this.candidateAthleteIds = candidateAthleteIds; }
+    public boolean isEntireCategoryPool() { return entireCategoryPool; }
+    public void setEntireCategoryPool(boolean entireCategoryPool) { this.entireCategoryPool = entireCategoryPool; }
     public List<LineupEntryInputDto> getEntries() { return entries; }
     public void setEntries(List<LineupEntryInputDto> entries) { this.entries = entries; }
     public List<Long> getLinkedPoolIds() { return linkedPoolIds; }

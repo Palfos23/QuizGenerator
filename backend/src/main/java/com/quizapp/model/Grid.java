@@ -66,6 +66,28 @@ public class Grid {
         return excludedFromGridBattle;
     }
 
+    // When true, this grid's guessable pool is never stored as explicit
+    // GridCandidate rows at all - GridPlayService.searchCandidates() instead
+    // queries every Athlete in this grid's own "sport" category live. That
+    // keeps the pool always current (a subject added to the category tomorrow
+    // is immediately guessable here, no re-import needed) and avoids writing
+    // one redundant candidate row per athlete per grid for what's otherwise
+    // pure decoy padding with zero grid-specific data attached to it. Correct
+    // answers still live in "entries" exactly as before either way -
+    // columnDefinition carries an explicit DB-level default so this can be
+    // added to an already-populated "grids" table via ddl-auto=update without
+    // the silent failure that hits a plain nullable=false boolean column.
+    @Column(name = "entire_category_pool", nullable = false, columnDefinition = "boolean default false")
+    private boolean entireCategoryPool = false;
+
+    public boolean isEntireCategoryPool() {
+        return entireCategoryPool;
+    }
+
+    public void setEntireCategoryPool(boolean entireCategoryPool) {
+        this.entireCategoryPool = entireCategoryPool;
+    }
+
     // What a solved entry shows: its subject's photo (the long-standing
     // default) or a text quote/description instead - e.g. a line from a book,
     // for grids about books rather than people with photos.

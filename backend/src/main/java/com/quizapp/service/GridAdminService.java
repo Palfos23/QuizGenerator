@@ -58,6 +58,7 @@ public class GridAdminService {
                             g.getEntries().size(), null, null);
                     dto.setMaxStrikes(g.getMaxStrikes());
                     dto.setExcludedFromGridBattle(g.isExcludedFromGridBattle());
+                    dto.setEntireCategoryPool(g.isEntireCategoryPool());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -117,6 +118,7 @@ public class GridAdminService {
         grid.setRevealMode(request.getRevealMode() != null
                 ? Grid.RevealMode.valueOf(request.getRevealMode())
                 : Grid.RevealMode.PHOTO);
+        grid.setEntireCategoryPool(request.isEntireCategoryPool());
 
         if (request.getLinkedPoolIds() != null && !request.getLinkedPoolIds().isEmpty()) {
             List<AthletePool> pools = athletePoolRepository.findAllById(request.getLinkedPoolIds());
@@ -129,10 +131,16 @@ public class GridAdminService {
         // up individually is exactly the kind of thing that gets slower the bigger
         // the candidate pool is, which matches what a large grid was experiencing.
         // Deduplicated defensively - a repeated id here would otherwise make the
-        // same reused GridCandidate get processed twice below.
-        List<Long> candidateAthleteIds = request.getCandidateAthleteIds().stream()
-                .distinct()
-                .collect(Collectors.toList());
+        // same reused GridCandidate get processed twice below. Empty (not null)
+        // when entireCategoryPool is on - the frontend sends nothing for it in
+        // that mode, since there's no explicit pool to build.
+        List<Long> candidateAthleteIds = request.getCandidateAthleteIds() == null
+                ? List.of()
+                : request.getCandidateAthleteIds().stream().distinct().collect(Collectors.toList());
+        if (!request.isEntireCategoryPool() && candidateAthleteIds.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Add at least one candidate, or switch on \"every subject in this category\".");
+        }
         List<Athlete> foundAthletes = athleteRepository.findAllById(candidateAthleteIds);
         Map<Long, Athlete> athleteById = foundAthletes.stream()
                 .collect(Collectors.toMap(Athlete::getId, a -> a));
@@ -143,23 +151,31 @@ public class GridAdminService {
             throw new IllegalArgumentException("No athlete found with id(s) " + missing);
         }
 
-        // Reuse existing candidate rows for athletes that are still in the pool -
-        // deleting and recreating every single one on every save (even when nothing
-        // changed) is what made saving slow with a large candidate pool.
-        Map<Long, GridCandidate> existingCandidateByAthleteId = grid.getCandidates().stream()
-                .collect(Collectors.toMap(c -> c.getAthlete().getId(), c -> c, (a, b) -> a));
+        if (request.isEntireCategoryPool()) {
+            // No explicit candidate rows at all - GridPlayService.searchCandidates()
+            // queries every Athlete in this grid's sport live instead. Clearing here
+            // also reclaims storage for a grid that's switching INTO this mode from
+            // an explicit candidate list it had before.
+            grid.setCandidates(Set.of());
+        } else {
+            // Reuse existing candidate rows for athletes that are still in the pool -
+            // deleting and recreating every single one on every save (even when nothing
+            // changed) is what made saving slow with a large candidate pool.
+            Map<Long, GridCandidate> existingCandidateByAthleteId = grid.getCandidates().stream()
+                    .collect(Collectors.toMap(c -> c.getAthlete().getId(), c -> c, (a, b) -> a));
 
-        Set<GridCandidate> candidates = candidateAthleteIds.stream()
-                .map(athleteId -> {
-                    GridCandidate c = existingCandidateByAthleteId.getOrDefault(athleteId, new GridCandidate());
-                    c.setAthlete(athleteById.get(athleteId));
-                    return c;
-                })
-                .collect(Collectors.toSet());
-        if (candidates.stream().anyMatch(c -> c.getAthlete() == null)) {
-            throw new IllegalStateException("Internal error building the candidate list - please try saving again.");
+            Set<GridCandidate> candidates = candidateAthleteIds.stream()
+                    .map(athleteId -> {
+                        GridCandidate c = existingCandidateByAthleteId.getOrDefault(athleteId, new GridCandidate());
+                        c.setAthlete(athleteById.get(athleteId));
+                        return c;
+                    })
+                    .collect(Collectors.toSet());
+            if (candidates.stream().anyMatch(c -> c.getAthlete() == null)) {
+                throw new IllegalStateException("Internal error building the candidate list - please try saving again.");
+            }
+            grid.setCandidates(candidates);
         }
-        grid.setCandidates(candidates);
 
         // Match against existing entries by athlete so a routine hint/value edit
         // preserves each entry's id - solvedEntryIds on every player's saved
@@ -245,6 +261,7 @@ public class GridAdminService {
         dto.setRanked(grid.isRanked());
         dto.setExcludedFromGridBattle(grid.isExcludedFromGridBattle());
         dto.setRevealMode(grid.getRevealMode().name());
+        dto.setEntireCategoryPool(grid.isEntireCategoryPool());
 
         // Batch-convert every distinct athlete across both candidates and
         // entries in one call (one query for all their photos combined),

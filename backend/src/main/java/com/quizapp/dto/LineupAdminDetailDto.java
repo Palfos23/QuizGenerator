@@ -21,6 +21,7 @@ public class LineupAdminDetailDto {
     private boolean excludedFromBattle;
     private String kitColor;
     private String goalkeeperKitColor;
+    private boolean entireCategoryPool;
     private List<AthleteDto> candidates;
     private List<EntryDetail> entries;
 
@@ -56,6 +57,8 @@ public class LineupAdminDetailDto {
     public void setKitColor(String kitColor) { this.kitColor = kitColor; }
     public String getGoalkeeperKitColor() { return goalkeeperKitColor; }
     public void setGoalkeeperKitColor(String goalkeeperKitColor) { this.goalkeeperKitColor = goalkeeperKitColor; }
+    public boolean isEntireCategoryPool() { return entireCategoryPool; }
+    public void setEntireCategoryPool(boolean entireCategoryPool) { this.entireCategoryPool = entireCategoryPool; }
     public List<AthleteDto> getCandidates() { return candidates; }
     public void setCandidates(List<AthleteDto> candidates) { this.candidates = candidates; }
     public List<EntryDetail> getEntries() { return entries; }

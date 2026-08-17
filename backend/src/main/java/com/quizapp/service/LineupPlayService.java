@@ -11,6 +11,7 @@ import com.quizapp.model.Athlete;
 import com.quizapp.model.Lineup;
 import com.quizapp.model.LineupCandidate;
 import com.quizapp.model.LineupEntry;
+import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.LineupRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,9 +35,11 @@ public class LineupPlayService {
     private static final String DEFAULT_GK_KIT_COLOR = "#f2c230";
 
     private final LineupRepository lineupRepository;
+    private final AthleteRepository athleteRepository;
 
-    public LineupPlayService(LineupRepository lineupRepository) {
+    public LineupPlayService(LineupRepository lineupRepository, AthleteRepository athleteRepository) {
         this.lineupRepository = lineupRepository;
+        this.athleteRepository = athleteRepository;
     }
 
     @Transactional(readOnly = true)
@@ -75,12 +78,21 @@ public class LineupPlayService {
         return dto;
     }
 
+    /**
+     * Same "entire category" live-search behavior as GridPlayService.searchCandidates
+     * - when the board has no stored pool, every Athlete tagged Lineup.CATEGORY
+     * ("Football") is queried live instead.
+     */
     @Transactional(readOnly = true)
     public List<AthleteDto> searchCandidates(Long lineupId, String nameContains) {
         Lineup lineup = findLineup(lineupId);
         String term = nameContains == null ? "" : nameContains.trim().toLowerCase();
-        return lineup.getCandidates().stream()
-                .map(LineupCandidate::getAthlete)
+        List<Athlete> pool = lineup.isEntireCategoryPool()
+                ? (term.isEmpty()
+                        ? athleteRepository.findBySport(Lineup.CATEGORY)
+                        : athleteRepository.findBySportAndNameContainingIgnoreCase(Lineup.CATEGORY, term))
+                : lineup.getCandidates().stream().map(LineupCandidate::getAthlete).collect(Collectors.toList());
+        return pool.stream()
                 .filter(a -> term.isEmpty() || a.getName().toLowerCase().contains(term))
                 .sorted(term.isEmpty() ? Comparator.comparing(Athlete::getName)
                         : Comparator.<Athlete>comparingInt(a -> matchRank(a.getName(), term))

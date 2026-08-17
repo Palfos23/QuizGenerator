@@ -15,6 +15,7 @@ import com.quizapp.model.GridCandidate;
 import com.quizapp.model.GridEntry;
 import com.quizapp.repository.AppUserRepository;
 import com.quizapp.repository.AthleteDescriptionRepository;
+import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.GridAttemptRepository;
 import com.quizapp.repository.GridRepository;
 import org.springframework.stereotype.Service;
@@ -33,14 +34,17 @@ public class GridPlayService {
     private final GridAttemptRepository gridAttemptRepository;
     private final AppUserRepository appUserRepository;
     private final AthleteDescriptionRepository athleteDescriptionRepository;
+    private final AthleteRepository athleteRepository;
 
     public GridPlayService(GridRepository gridRepository, GridAttemptRepository gridAttemptRepository,
                             AppUserRepository appUserRepository,
-                            AthleteDescriptionRepository athleteDescriptionRepository) {
+                            AthleteDescriptionRepository athleteDescriptionRepository,
+                            AthleteRepository athleteRepository) {
         this.gridRepository = gridRepository;
         this.gridAttemptRepository = gridAttemptRepository;
         this.appUserRepository = appUserRepository;
         this.athleteDescriptionRepository = athleteDescriptionRepository;
+        this.athleteRepository = athleteRepository;
     }
 
     /**
@@ -201,14 +205,25 @@ public class GridPlayService {
         return toPlayStateDto(grid, attempt);
     }
 
-    /** Search within just this grid's candidate pool - the point of the pool is to keep guessing scoped and relevant. */
+    /**
+     * Search within just this grid's candidate pool - the point of the pool is to
+     * keep guessing scoped and relevant. When the grid is in "entire category"
+     * mode there's no stored pool to search at all - every Athlete tagged with
+     * this grid's sport is queried live instead, so a subject added to the
+     * category after this grid was built is guessable immediately, with nothing
+     * to re-import.
+     */
     @Transactional(readOnly = true)
     public List<AthleteDto> searchCandidates(Long gridId, String nameContains) {
         Grid grid = gridRepository.findById(gridId)
                 .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
         String term = nameContains == null ? "" : nameContains.trim().toLowerCase();
-        return grid.getCandidates().stream()
-                .map(GridCandidate::getAthlete)
+        List<Athlete> pool = grid.isEntireCategoryPool()
+                ? (term.isEmpty()
+                        ? athleteRepository.findBySport(grid.getSport())
+                        : athleteRepository.findBySportAndNameContainingIgnoreCase(grid.getSport(), term))
+                : grid.getCandidates().stream().map(GridCandidate::getAthlete).collect(Collectors.toList());
+        return pool.stream()
                 .filter(a -> term.isEmpty() || a.getName().toLowerCase().contains(term))
                 .sorted(term.isEmpty() ? java.util.Comparator.comparing(Athlete::getName)
                         : java.util.Comparator.<Athlete>comparingInt(a -> matchRank(a.getName(), term))

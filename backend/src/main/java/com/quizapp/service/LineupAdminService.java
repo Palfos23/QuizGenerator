@@ -51,6 +51,7 @@ public class LineupAdminService {
                             l.getMatchDate(), l.getWeekStartDate(), l.getFormation());
                     dto.setMaxStrikes(l.getMaxStrikes());
                     dto.setExcludedFromBattle(l.isExcludedFromBattle());
+                    dto.setEntireCategoryPool(l.isEntireCategoryPool());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -123,6 +124,7 @@ public class LineupAdminService {
                 ? request.getKitColor() : DEFAULT_KIT_COLOR);
         lineup.setGoalkeeperKitColor(request.getGoalkeeperKitColor() != null && !request.getGoalkeeperKitColor().isBlank()
                 ? request.getGoalkeeperKitColor() : DEFAULT_GK_KIT_COLOR);
+        lineup.setEntireCategoryPool(request.isEntireCategoryPool());
 
         if (request.getLinkedPoolIds() != null && !request.getLinkedPoolIds().isEmpty()) {
             List<AthletePool> pools = athletePoolRepository.findAllById(request.getLinkedPoolIds());
@@ -131,9 +133,15 @@ public class LineupAdminService {
             lineup.setLinkedPools(merged);
         }
 
-        List<Long> candidateAthleteIds = request.getCandidateAthleteIds().stream()
-                .distinct()
-                .collect(Collectors.toList());
+        // Empty (not null) when entireCategoryPool is on - same convention as
+        // GridAdminService.applyRequest.
+        List<Long> candidateAthleteIds = request.getCandidateAthleteIds() == null
+                ? List.of()
+                : request.getCandidateAthleteIds().stream().distinct().collect(Collectors.toList());
+        if (!request.isEntireCategoryPool() && candidateAthleteIds.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Add at least one candidate, or switch on \"every subject in this category\".");
+        }
         List<Athlete> foundAthletes = athleteRepository.findAllById(candidateAthleteIds);
         Map<Long, Athlete> athleteById = foundAthletes.stream()
                 .collect(Collectors.toMap(Athlete::getId, a -> a));
@@ -144,20 +152,28 @@ public class LineupAdminService {
             throw new IllegalArgumentException("No athlete found with id(s) " + missing);
         }
 
-        // Reuse existing candidate/entry rows for the same athlete rather than
-        // deleting and recreating every save - same reasoning as GridAdminService,
-        // and matters here too since a LineupBattleSolvedEntry references a
-        // LineupEntry id that must survive a routine edit.
-        Map<Long, LineupCandidate> existingCandidateByAthleteId = lineup.getCandidates().stream()
-                .collect(Collectors.toMap(c -> c.getAthlete().getId(), c -> c, (a, b) -> a));
-        Set<LineupCandidate> candidates = candidateAthleteIds.stream()
-                .map(athleteId -> {
-                    LineupCandidate c = existingCandidateByAthleteId.getOrDefault(athleteId, new LineupCandidate());
-                    c.setAthlete(athleteById.get(athleteId));
-                    return c;
-                })
-                .collect(Collectors.toSet());
-        lineup.setCandidates(candidates);
+        if (request.isEntireCategoryPool()) {
+            // No explicit candidate rows at all - LineupPlayService.searchCandidates()
+            // queries every Athlete in Lineup.CATEGORY live instead. Clearing here also
+            // reclaims storage for a board switching INTO this mode from an explicit
+            // candidate list it had before.
+            lineup.setCandidates(Set.of());
+        } else {
+            // Reuse existing candidate/entry rows for the same athlete rather than
+            // deleting and recreating every save - same reasoning as GridAdminService,
+            // and matters here too since a LineupBattleSolvedEntry references a
+            // LineupEntry id that must survive a routine edit.
+            Map<Long, LineupCandidate> existingCandidateByAthleteId = lineup.getCandidates().stream()
+                    .collect(Collectors.toMap(c -> c.getAthlete().getId(), c -> c, (a, b) -> a));
+            Set<LineupCandidate> candidates = candidateAthleteIds.stream()
+                    .map(athleteId -> {
+                        LineupCandidate c = existingCandidateByAthleteId.getOrDefault(athleteId, new LineupCandidate());
+                        c.setAthlete(athleteById.get(athleteId));
+                        return c;
+                    })
+                    .collect(Collectors.toSet());
+            lineup.setCandidates(candidates);
+        }
 
         Map<Long, LineupEntry> existingByAthleteId = lineup.getEntries().stream()
                 .collect(Collectors.toMap(e -> e.getAthlete().getId(), e -> e, (a, b) -> a));
@@ -197,6 +213,7 @@ public class LineupAdminService {
         dto.setExcludedFromBattle(lineup.isExcludedFromBattle());
         dto.setKitColor(lineup.getKitColor() != null ? lineup.getKitColor() : DEFAULT_KIT_COLOR);
         dto.setGoalkeeperKitColor(lineup.getGoalkeeperKitColor() != null ? lineup.getGoalkeeperKitColor() : DEFAULT_GK_KIT_COLOR);
+        dto.setEntireCategoryPool(lineup.isEntireCategoryPool());
 
         java.util.Set<Athlete> distinctAthletes = new java.util.LinkedHashSet<>();
         lineup.getCandidates().forEach(c -> distinctAthletes.add(c.getAthlete()));
