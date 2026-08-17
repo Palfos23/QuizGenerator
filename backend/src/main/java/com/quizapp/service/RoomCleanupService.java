@@ -26,6 +26,11 @@ public class RoomCleanupService {
     private final TensionRoomStateRepository tensionRoomStateRepository;
     private final TensionParticipantStateRepository tensionParticipantStateRepository;
     private final TensionRoundAnswerRepository tensionRoundAnswerRepository;
+    private final LineupBattleRoomStateRepository lineupBattleRoomStateRepository;
+    private final LineupBattleParticipantStateRepository lineupBattleParticipantStateRepository;
+    private final LineupBattleSolvedEntryRepository lineupBattleSolvedEntryRepository;
+    private final ImposterRoomStateRepository imposterRoomStateRepository;
+    private final FiveOhOneRoomStateRepository fiveOhOneRoomStateRepository;
 
     public RoomCleanupService(GameRoomRepository gameRoomRepository,
                                GridBattleRoomStateRepository gridBattleRoomStateRepository,
@@ -33,7 +38,12 @@ public class RoomCleanupService {
                                GridBattleSolvedEntryRepository gridBattleSolvedEntryRepository,
                                TensionRoomStateRepository tensionRoomStateRepository,
                                TensionParticipantStateRepository tensionParticipantStateRepository,
-                               TensionRoundAnswerRepository tensionRoundAnswerRepository) {
+                               TensionRoundAnswerRepository tensionRoundAnswerRepository,
+                               LineupBattleRoomStateRepository lineupBattleRoomStateRepository,
+                               LineupBattleParticipantStateRepository lineupBattleParticipantStateRepository,
+                               LineupBattleSolvedEntryRepository lineupBattleSolvedEntryRepository,
+                               ImposterRoomStateRepository imposterRoomStateRepository,
+                               FiveOhOneRoomStateRepository fiveOhOneRoomStateRepository) {
         this.gameRoomRepository = gameRoomRepository;
         this.gridBattleRoomStateRepository = gridBattleRoomStateRepository;
         this.gridBattleParticipantStateRepository = gridBattleParticipantStateRepository;
@@ -41,6 +51,11 @@ public class RoomCleanupService {
         this.tensionRoomStateRepository = tensionRoomStateRepository;
         this.tensionParticipantStateRepository = tensionParticipantStateRepository;
         this.tensionRoundAnswerRepository = tensionRoundAnswerRepository;
+        this.lineupBattleRoomStateRepository = lineupBattleRoomStateRepository;
+        this.lineupBattleParticipantStateRepository = lineupBattleParticipantStateRepository;
+        this.lineupBattleSolvedEntryRepository = lineupBattleSolvedEntryRepository;
+        this.imposterRoomStateRepository = imposterRoomStateRepository;
+        this.fiveOhOneRoomStateRepository = fiveOhOneRoomStateRepository;
     }
 
     // Runs once an hour. Thresholds: finished games kept 24h (nothing currently lets
@@ -81,6 +96,21 @@ public class RoomCleanupService {
                 tensionParticipantStateRepository.deleteByRoomState_Id(state.getId());
                 tensionRoomStateRepository.delete(state);
             });
+        } else if (room.getGameType() == RoomGameType.STARTING_XI_BATTLE) {
+            lineupBattleRoomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+                lineupBattleSolvedEntryRepository.deleteByRoomState_Id(state.getId());
+                lineupBattleParticipantStateRepository.deleteByRoomState_Id(state.getId());
+                lineupBattleRoomStateRepository.delete(state);
+            });
+        } else if (room.getGameType() == RoomGameType.IMPOSTER) {
+            // No separate participant/solved-entry child tables here - just the
+            // room state itself (its grid-sequence list is a Hibernate
+            // @ElementCollection, deleted automatically with the parent row).
+            imposterRoomStateRepository.findByRoom_Id(room.getId())
+                    .ifPresent(imposterRoomStateRepository::delete);
+        } else if (room.getGameType() == RoomGameType.FIVE_O_ONE) {
+            fiveOhOneRoomStateRepository.findByRoom_Id(room.getId())
+                    .ifPresent(fiveOhOneRoomStateRepository::delete);
         }
         // GameRoomParticipant rows cascade automatically (cascade=ALL, orphanRemoval=true on GameRoom.participants).
         gameRoomRepository.delete(room);
