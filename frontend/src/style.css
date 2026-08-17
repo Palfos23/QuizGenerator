@@ -2497,6 +2497,23 @@ table.scoreboard-table {
   gap: 10px;
   flex-wrap: wrap;
 }
+/* A genuine flat four (back four / mid four) uses the base ".pitch-row"
+   rule above as-is - full width, edge to edge. The other two shapes
+   displayRowsFor() (services/formations.js) produces: */
+.pitch-row--central {
+  /* Goalkeeper, a front two/three, a central-mid three, or the central
+     three left behind once a back/mid five splits out its wide pair -
+     stays narrow and centered instead of stretching across the pitch. */
+  justify-content: center;
+  gap: 26px;
+}
+.pitch-row--wide {
+  /* The two wide players (full-backs / wing-backs) split out of a row of
+     5 - pinned toward the touchlines with open space between them, rather
+     than sharing one evenly spaced band with the three central players. */
+  justify-content: space-between;
+  padding: 0 6%;
+}
 .pitch-slot {
   display: flex;
   flex-direction: column;

@@ -69,8 +69,8 @@
 
       <div class="pitch" style="margin-top:16px;">
         <PitchMarkings />
-        <div v-for="(row, ri) in rows" :key="ri" class="pitch-row">
-          <div v-for="slot in row" :key="slot.id ?? slot.slotIndex" class="pitch-slot">
+        <div v-for="(row, ri) in rows" :key="ri" class="pitch-row" :class="`pitch-row--${row.kind}`">
+          <div v-for="slot in row.items" :key="slot.id ?? slot.slotIndex" class="pitch-slot">
             <div class="pitch-shirt" :class="{ solved: slot.solved, goalkeeper: slot.slotIndex === 0 }" :style="shirtStyle(slot)">
               <template v-if="!slot.solved">
                 <span class="pitch-shirt-sleeve left"></span>
@@ -93,7 +93,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
-import { rowsFor } from '../services/formations'
+import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
 import PitchMarkings from '../components/PitchMarkings.vue'
 
@@ -130,7 +130,7 @@ const rows = computed(() => {
     if (revealedNames.value[s.id]) return { ...s, solved: true, athleteName: revealedNames.value[s.id] }
     return s
   })
-  return rowsFor(state.value.formation, merged)
+  return displayRowsFor(state.value.formation, merged)
 })
 
 function shirtStyle(slot) {

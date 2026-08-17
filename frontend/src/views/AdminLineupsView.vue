@@ -274,8 +274,8 @@
 
         <div class="pitch">
           <PitchMarkings />
-          <div v-for="(row, ri) in previewRows" :key="ri" class="pitch-row">
-            <div v-for="slot in row" :key="slot.slotIndex" class="pitch-slot">
+          <div v-for="(row, ri) in previewRows" :key="ri" class="pitch-row" :class="`pitch-row--${row.kind}`">
+            <div v-for="slot in row.items" :key="slot.slotIndex" class="pitch-slot">
               <div class="pitch-shirt" :class="{ goalkeeper: slot.slotIndex === 0 }" :style="shirtStyle(slot.slotIndex)">
                 <span class="pitch-shirt-sleeve left"></span>
                 <span class="pitch-shirt-sleeve right"></span>
@@ -316,7 +316,7 @@ import AthleteFormModal from '../components/AthleteFormModal.vue'
 import Pagination from '../components/Pagination.vue'
 import PitchMarkings from '../components/PitchMarkings.vue'
 import { readableTextColor } from '../constants'
-import { FORMATION_NAMES, slotLabels, slotCount, rowsFor } from '../services/formations'
+import { FORMATION_NAMES, slotLabels, slotCount, displayRowsFor } from '../services/formations'
 
 const FOOTBALL_CATEGORY = 'Football'
 const DEFAULT_KIT_COLOR = '#d92332'
@@ -392,7 +392,7 @@ const previewRows = computed(() => {
   const filled = candidates.value
     .filter(c => c.correct && c.slotIndex != null)
     .map(c => ({ slotIndex: c.slotIndex, shirtNumber: c.shirtNumber, captain: c.captain, name: c.name }))
-  return rowsFor(form.formation, filled)
+  return displayRowsFor(form.formation, filled)
 })
 
 onMounted(() => {

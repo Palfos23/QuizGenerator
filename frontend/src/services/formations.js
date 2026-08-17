@@ -42,6 +42,53 @@ export function rowsFor(formation, slots) {
   return rows
 }
 
+// Regroups rowsFor()'s output for rendering, so the pitch reads like a real
+// "guess the lineup" graphic instead of evenly-spaced strips:
+//  - a row of 4 (a genuine flat back/mid four) spans the full pitch width
+//    edge to edge - kind "full"
+//  - a row of 1-3 (goalkeeper, a back/central-mid three, a front two or
+//    three) stays narrow and centered rather than stretching across the
+//    whole pitch - kind "central"
+//  - a row of 5 (a back five as in 5-3-2, or a 5-wide midfield as in 3-5-2
+//    / 4-5-1) is split into the two wide players (full-backs / wing-backs)
+//    pinned out toward the touchlines - kind "wide" - and the three
+//    central players who keep the tight "central" treatment.
+//
+// Where the wide pair sits relative to the central three depends on which
+// row is being split, because a "wing-back" always physically belongs just
+// ahead of the defensive line regardless of which formation row the data
+// files them under:
+//  - if the row-of-5 IS the defense row (index 1, e.g. 5-3-2) the wide
+//    pair renders one tier further forward (attack-ward) than the three
+//    center-backs, who stay deepest next to the keeper.
+//  - if the row-of-5 comes later (e.g. 3-5-2's or 4-5-1's midfield row,
+//    which already has its own defense row of 3/4 in front of it) the wide
+//    pair renders one tier further back (defense-ward) than the three
+//    central midfielders, landing right next to that defense row instead.
+// Either way the wing-backs end up in the same physical spot on the pitch;
+// this is purely a display-time regrouping - the underlying slot data and
+// slotIndex-based admin assignment are untouched.
+export function displayRowsFor(formation, slots) {
+  const rows = rowsFor(formation, slots)
+  const display = []
+  rows.forEach((row, rowIdx) => {
+    if (row.length === 5) {
+      const central = { kind: 'central', items: [row[1], row[2], row[3]] }
+      const wide = { kind: 'wide', items: [row[0], row[4]] }
+      if (rowIdx === 1) {
+        display.push(central, wide)
+      } else {
+        display.push(wide, central)
+      }
+    } else if (row.length === 4) {
+      display.push({ kind: 'full', items: row })
+    } else {
+      display.push({ kind: 'central', items: row })
+    }
+  })
+  return display
+}
+
 // One friendly label per slot index (e.g. "GK", "DF 1", "DF 2", ..., "FW"),
 // in the same goalkeeper-first order as slot indexes - used by the admin
 // slot-assignment dropdown.
