@@ -4,10 +4,10 @@
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
     <div v-else-if="state" class="grid-page">
-      <h1 style="margin:0 0 6px; text-align:center;">{{ state.title }}</h1>
-      <div style="display:flex; gap:8px; margin-bottom:6px; justify-content:center;" class="no-print">
+      <div style="display:flex; gap:8px; margin-bottom:6px;" class="no-print">
         <router-link to="/starting-xi" class="btn btn-secondary btn-sm">← All boards</router-link>
       </div>
+      <h1 style="margin:0 0 6px; text-align:center;">{{ state.title }}</h1>
       <p class="page-subtitle" style="text-align:center;">{{ state.competition }}</p>
 
       <div class="pitch-scoreline">
@@ -25,7 +25,7 @@
         </div>
       </div>
 
-      <div class="grid-status-bar">
+      <div class="grid-status-bar" style="justify-content:center; gap:20px;">
         <div class="grid-progress">{{ guessedCount }} / {{ state.slots.length }} found</div>
         <div class="strike-dots">
           <span

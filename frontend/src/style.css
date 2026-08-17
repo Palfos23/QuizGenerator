@@ -1012,7 +1012,10 @@ mark {
   padding: 10px 0;
   margin-bottom: 20px;
   display: flex;
-  justify-content: center;
+  flex-direction: column; /* stacks a trailing sibling button (e.g. "give up")
+                              centered underneath the search box, instead of
+                              wedged beside it */
+  align-items: center;
 }
 .guess-box {
   max-width: 480px;
