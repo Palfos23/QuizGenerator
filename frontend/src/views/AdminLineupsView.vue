@@ -213,6 +213,7 @@
                 Captain
               </label>
             </div>
+            <button class="btn btn-secondary btn-sm" @click="openEditAthlete(c)">Edit</button>
             <button class="btn btn-danger btn-sm" @click="removeCandidate(c)">✕</button>
           </div>
 
@@ -271,6 +272,13 @@
       </div>
     </div>
 
+    <AthleteFormModal
+      v-if="editingAthleteForModal"
+      :athlete="editingAthleteForModal"
+      @close="editingAthleteForModal = null"
+      @saved="onAthleteEdited"
+    />
+
     <ConfirmModal
       v-if="pendingDelete"
       title="Delete this Starting XI board?"
@@ -286,6 +294,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import AthleteFormModal from '../components/AthleteFormModal.vue'
 import Pagination from '../components/Pagination.vue'
 import { readableTextColor } from '../constants'
 import { FORMATION_NAMES, slotLabels, slotCount, rowsFor } from '../services/formations'
@@ -300,6 +309,7 @@ const loading = ref(true)
 const error = ref('')
 const saving = ref(false)
 const pendingDelete = ref(null)
+const editingAthleteForModal = ref(null)
 const editingLineupId = ref(null)
 const showPreview = ref(false)
 
@@ -394,7 +404,9 @@ watch(athleteSearchTerm, (val) => {
 function addCandidate(athlete) {
   if (candidates.value.some(c => c.athleteId === athlete.id)) return
   candidates.value.push({
-    athleteId: athlete.id, name: athlete.name, team: athlete.team,
+    athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
+    additionalPhotos: athlete.additionalPhotos || [],
+    additionalDescriptions: athlete.additionalDescriptions || [],
     correct: false, shirtNumber: null, slotIndex: null, captain: false
   })
   athleteSearchTerm.value = ''
@@ -410,12 +422,35 @@ function addCandidatesBulk(athleteList) {
     if (existingIds.has(athlete.id)) continue
     existingIds.add(athlete.id)
     candidates.value.push({
-      athleteId: athlete.id, name: athlete.name, team: athlete.team,
+      athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
+      additionalPhotos: athlete.additionalPhotos || [],
+      additionalDescriptions: athlete.additionalDescriptions || [],
       correct: false, shirtNumber: null, slotIndex: null, captain: false
     })
     added++
   }
   return added
+}
+
+function openEditAthlete(c) {
+  editingAthleteForModal.value = {
+    id: c.athleteId, name: c.name, sport: FOOTBALL_CATEGORY, team: c.team,
+    photoUrl: c.photoUrl, additionalPhotos: c.additionalPhotos || [],
+    additionalDescriptions: c.additionalDescriptions || []
+  }
+}
+
+function onAthleteEdited(saved) {
+  editingAthleteForModal.value = null
+  const c = candidates.value.find(c => c.athleteId === saved.id)
+  if (c) {
+    c.name = saved.name
+    c.team = saved.team
+    c.photoUrl = saved.photoUrl
+    c.additionalPhotos = saved.additionalPhotos || []
+    c.additionalDescriptions = saved.additionalDescriptions || []
+  }
+  toast.show('Subject updated.')
 }
 
 async function importFromPool() {
@@ -535,7 +570,9 @@ async function openEdit(id) {
     candidates.value = detail.candidates.map(a => {
       const entry = entryByAthleteId.get(a.id)
       return {
-        athleteId: a.id, name: a.name, team: a.team,
+        athleteId: a.id, name: a.name, team: a.team, photoUrl: a.photoUrl,
+        additionalPhotos: a.additionalPhotos || [],
+        additionalDescriptions: a.additionalDescriptions || [],
         correct: !!entry,
         shirtNumber: entry?.shirtNumber ?? null,
         slotIndex: entry?.slotIndex ?? null,
