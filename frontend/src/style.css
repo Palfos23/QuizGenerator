@@ -2637,3 +2637,69 @@ table.scoreboard-table {
   object-fit: cover;
   border: 2px solid var(--teal);
 }
+
+/* Pitch, shrunk to fit narrow phones. This has to come AFTER the base
+   ".pitch-row"/".pitch-slot"/".pitch-shirt" rules above - same selectors,
+   same specificity, so source order decides the winner regardless of the
+   media query, and a copy of this living earlier in the stylesheet (e.g.
+   inside the general "@media (max-width: 760px)" mobile block further up)
+   would silently lose to these later unconditional rules. A flat back/mid
+   four (the default ".pitch-row" - see displayRowsFor() in
+   services/formations.js, which never produces a raw row wider than 4
+   anymore) is the widest thing the pitch ever has to fit on one line. At
+   the full desktop size that row needs ~366px (4 x 84px slots + 3 x 10px
+   gaps) plus the pitch's own side padding - wider than a phone screen, so
+   without this the 4th shirt wraps onto its own line and the formation
+   shape falls apart. These smaller sizes fit a full row of 4 inside
+   ~290px, comfortably under any phone width the app supports. */
+@media (max-width: 760px) {
+  .pitch {
+    padding: 20px 8px;
+    gap: 14px;
+  }
+  .pitch-row {
+    gap: 6px;
+  }
+  .pitch-row--central {
+    gap: 14px;
+  }
+  .pitch-row--wide {
+    padding: 0 3%;
+  }
+  .pitch-slot {
+    width: 64px;
+    gap: 3px;
+  }
+  .pitch-shirt {
+    width: 38px;
+    height: 42px;
+    margin-top: 4px;
+    font-size: 0.85rem;
+  }
+  .pitch-shirt-sleeve {
+    width: 10px;
+    height: 13px;
+    top: 3px;
+  }
+  .pitch-shirt-sleeve.left { left: -7px; }
+  .pitch-shirt-sleeve.right { right: -7px; }
+  .pitch-shirt-collar {
+    width: 11px;
+    height: 5px;
+  }
+  .pitch-shirt-captain {
+    width: 13px;
+    height: 13px;
+    font-size: 0.5rem;
+    top: -5px;
+    right: -5px;
+  }
+  .pitch-slot-name {
+    font-size: 0.62rem;
+  }
+  .pitch-slot-photo {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+  }
+}
