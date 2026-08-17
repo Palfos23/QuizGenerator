@@ -19,6 +19,8 @@ public class LineupAdminDetailDto {
     private Integer scoreAgainst;
     private int maxStrikes;
     private boolean excludedFromBattle;
+    private String kitColor;
+    private String goalkeeperKitColor;
     private List<AthleteDto> candidates;
     private List<EntryDetail> entries;
 
@@ -50,6 +52,10 @@ public class LineupAdminDetailDto {
     public void setMaxStrikes(int maxStrikes) { this.maxStrikes = maxStrikes; }
     public boolean isExcludedFromBattle() { return excludedFromBattle; }
     public void setExcludedFromBattle(boolean excludedFromBattle) { this.excludedFromBattle = excludedFromBattle; }
+    public String getKitColor() { return kitColor; }
+    public void setKitColor(String kitColor) { this.kitColor = kitColor; }
+    public String getGoalkeeperKitColor() { return goalkeeperKitColor; }
+    public void setGoalkeeperKitColor(String goalkeeperKitColor) { this.goalkeeperKitColor = goalkeeperKitColor; }
     public List<AthleteDto> getCandidates() { return candidates; }
     public void setCandidates(List<AthleteDto> candidates) { this.candidates = candidates; }
     public List<EntryDetail> getEntries() { return entries; }

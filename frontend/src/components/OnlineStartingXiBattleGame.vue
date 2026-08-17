@@ -77,7 +77,12 @@
       <div class="pitch">
         <div v-for="(row, ri) in rows" :key="ri" class="pitch-row">
           <div v-for="slot in row" :key="slot.id ?? slot.slotIndex" class="pitch-slot">
-            <div class="pitch-shirt" :class="{ solved: slot.solved }">
+            <div class="pitch-shirt" :class="{ solved: slot.solved, goalkeeper: slot.slotIndex === 0 }" :style="shirtStyle(slot)">
+              <template v-if="!slot.solved">
+                <span class="pitch-shirt-sleeve left"></span>
+                <span class="pitch-shirt-sleeve right"></span>
+                <span class="pitch-shirt-collar"></span>
+              </template>
               <img v-if="slot.solved && slot.athletePhotoUrl" :src="slot.athletePhotoUrl" alt="" class="pitch-slot-photo" />
               <template v-else>{{ slot.shirtNumber }}</template>
               <span v-if="slot.captain" class="pitch-shirt-captain">C</span>
@@ -106,6 +111,10 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import api from '../services/api'
 import { rowsFor } from '../services/formations'
+import { readableTextColor } from '../constants'
+
+const DEFAULT_KIT_COLOR = '#d92332'
+const DEFAULT_GK_KIT_COLOR = '#f2c230'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -143,6 +152,12 @@ const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )
 const rows = computed(() => state.value ? rowsFor(state.value.formation, state.value.slots) : [])
+function shirtStyle(slot) {
+  const color = slot.slotIndex === 0
+    ? (state.value?.goalkeeperKitColor || DEFAULT_GK_KIT_COLOR)
+    : (state.value?.kitColor || DEFAULT_KIT_COLOR)
+  return { '--kit-color': color, '--kit-text': readableTextColor(color) }
+}
 const leaderboardForLineup = computed(() => {
   if (!state.value) return []
   return [...state.value.players]

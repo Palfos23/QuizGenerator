@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 @Service
 public class LineupBattleOnlineService {
 
+    private static final String DEFAULT_KIT_COLOR = "#d92332";
+    private static final String DEFAULT_GK_KIT_COLOR = "#f2c230";
+
     private final GameRoomRepository gameRoomRepository;
     private final LineupBattleRoomStateRepository roomStateRepository;
     private final LineupBattleParticipantStateRepository participantStateRepository;
@@ -124,6 +127,8 @@ public class LineupBattleOnlineService {
         dto.setScoreAgainst(lineup.getScoreAgainst());
         dto.setFormation(lineup.getFormation());
         dto.setMaxStrikes(lineup.getMaxStrikes());
+        dto.setKitColor(lineup.getKitColor() != null ? lineup.getKitColor() : DEFAULT_KIT_COLOR);
+        dto.setGoalkeeperKitColor(lineup.getGoalkeeperKitColor() != null ? lineup.getGoalkeeperKitColor() : DEFAULT_GK_KIT_COLOR);
 
         List<LineupBattleSolvedEntry> solved = solvedEntryRepository.findByRoomState_Id(state.getId());
         Map<Long, LineupBattleSolvedEntry> solvedByEntryId = solved.stream()

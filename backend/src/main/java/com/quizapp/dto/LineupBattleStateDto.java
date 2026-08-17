@@ -20,6 +20,8 @@ public class LineupBattleStateDto {
     private Integer scoreAgainst;
     private String formation;
     private int maxStrikes;
+    private String kitColor;
+    private String goalkeeperKitColor;
     private List<LineupBattleSlotDto> slots;
     private Long currentTurnParticipantId;
     private boolean lineupComplete;
@@ -55,6 +57,10 @@ public class LineupBattleStateDto {
     public void setFormation(String formation) { this.formation = formation; }
     public int getMaxStrikes() { return maxStrikes; }
     public void setMaxStrikes(int maxStrikes) { this.maxStrikes = maxStrikes; }
+    public String getKitColor() { return kitColor; }
+    public void setKitColor(String kitColor) { this.kitColor = kitColor; }
+    public String getGoalkeeperKitColor() { return goalkeeperKitColor; }
+    public void setGoalkeeperKitColor(String goalkeeperKitColor) { this.goalkeeperKitColor = goalkeeperKitColor; }
     public List<LineupBattleSlotDto> getSlots() { return slots; }
     public void setSlots(List<LineupBattleSlotDto> slots) { this.slots = slots; }
     public Long getCurrentTurnParticipantId() { return currentTurnParticipantId; }

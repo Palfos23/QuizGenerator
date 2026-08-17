@@ -20,4 +20,9 @@ public interface LineupRepository extends JpaRepository<Lineup, Long> {
 
     @Query("SELECT DISTINCT l FROM Lineup l JOIN l.entries e WHERE e.athlete.id = :athleteId")
     List<Lineup> findByEntryAthleteId(Long athleteId);
+
+    // For propagating a newly-added pool member out to every board that
+    // previously imported from that pool - mirrors GridRepository.findByLinkedPoolId.
+    @Query("SELECT DISTINCT l FROM Lineup l JOIN l.linkedPools p WHERE p.id = :poolId")
+    List<Lineup> findByLinkedPoolId(Long poolId);
 }

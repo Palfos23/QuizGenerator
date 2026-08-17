@@ -9,6 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 public interface LineupCandidateRepository extends JpaRepository<LineupCandidate, Long> {
     boolean existsByAthlete_Id(Long athleteId);
 
+    // For batch-loading candidates across many boards in one query when
+    // propagating a new pool member out to every linked board - mirrors
+    // GridCandidateRepository.findByGrid_IdIn.
+    java.util.List<LineupCandidate> findByLineup_IdIn(java.util.List<Long> lineupIds);
+
     @Transactional
     long deleteByAthlete_Id(Long athleteId);
 }

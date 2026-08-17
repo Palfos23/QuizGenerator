@@ -67,7 +67,12 @@
       <div class="pitch" style="margin-top:16px;">
         <div v-for="(row, ri) in rows" :key="ri" class="pitch-row">
           <div v-for="slot in row" :key="slot.id ?? slot.slotIndex" class="pitch-slot">
-            <div class="pitch-shirt" :class="{ solved: slot.solved }">
+            <div class="pitch-shirt" :class="{ solved: slot.solved, goalkeeper: slot.slotIndex === 0 }" :style="shirtStyle(slot)">
+              <template v-if="!slot.solved">
+                <span class="pitch-shirt-sleeve left"></span>
+                <span class="pitch-shirt-sleeve right"></span>
+                <span class="pitch-shirt-collar"></span>
+              </template>
               <img v-if="slot.solved && slot.athletePhotoUrl" :src="slot.athletePhotoUrl" alt="" class="pitch-slot-photo" />
               <template v-else>{{ slot.shirtNumber }}</template>
               <span v-if="slot.captain" class="pitch-shirt-captain">C</span>
@@ -85,6 +90,10 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
 import { rowsFor } from '../services/formations'
+import { readableTextColor } from '../constants'
+
+const DEFAULT_KIT_COLOR = '#d92332'
+const DEFAULT_GK_KIT_COLOR = '#f2c230'
 
 const route = useRoute()
 const lineupId = computed(() => Number(route.params.id))
@@ -118,6 +127,13 @@ const rows = computed(() => {
   })
   return rowsFor(state.value.formation, merged)
 })
+
+function shirtStyle(slot) {
+  const color = slot.slotIndex === 0
+    ? (state.value?.goalkeeperKitColor || DEFAULT_GK_KIT_COLOR)
+    : (state.value?.kitColor || DEFAULT_KIT_COLOR)
+  return { '--kit-color': color, '--kit-text': readableTextColor(color) }
+}
 
 onMounted(load)
 

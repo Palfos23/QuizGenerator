@@ -132,9 +132,44 @@
       </div>
 
       <div class="field">
+        <label>Kit colors <span class="picker-hint">the goalkeeper always shows a different kit than the outfield players</span></label>
+        <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+          <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; margin:0;">
+            <input type="color" v-model="form.kitColor" style="width:44px; height:32px; padding:2px; cursor:pointer;" />
+            Outfield kit
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; margin:0;">
+            <input type="color" v-model="form.goalkeeperKitColor" style="width:44px; height:32px; padding:2px; cursor:pointer;" />
+            Goalkeeper kit
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
         <label>Candidate pool <span class="picker-hint">everyone guessable on this board - correct and decoy</span></label>
 
         <input type="text" v-model="athleteSearchTerm" placeholder="Search football subjects by name…" style="width:100%; margin-bottom:10px;" />
+
+        <div v-if="poolsForFootball.length" style="margin-bottom:10px;">
+          <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
+            ...or import from a saved pool
+          </label>
+          <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+            <select v-model="selectedPoolId" style="flex:1; min-width:200px;">
+              <option :value="null">Choose a pool…</option>
+              <option v-for="p in poolsForFootball" :key="p.id" :value="p.id">{{ p.name }} ({{ p.memberCount }})</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" :disabled="!selectedPoolId" @click="importFromPool">
+              + Import pool
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <button class="btn btn-secondary btn-sm" :disabled="importingAll" @click="importAllInCategory">
+            {{ importingAll ? 'Importing…' : '+ Import every subject in "Football"' }}
+          </button>
+        </div>
 
         <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
           <button v-for="a in athleteSearchResults" :key="a.id" class="guess-result-row" @click="addCandidate(a)">
@@ -143,11 +178,24 @@
         </div>
 
         <div v-if="!candidates.length" class="empty-state" style="padding:20px;">
-          No subjects added yet - search above. Make sure the subject's category is "Football".
+          No subjects added yet - search above, or import a saved pool.
         </div>
 
         <div v-else>
-          <div v-for="c in candidates" :key="c.athleteId" class="candidate-row">
+          <input
+            type="text"
+            v-model="candidateFilterTerm"
+            placeholder="Find someone already added…"
+            class="search-input"
+            style="margin-bottom:12px;"
+          />
+
+          <div v-if="!filteredCandidates.length" class="empty-state" style="padding:20px;">
+            Nobody added yet matches "{{ candidateFilterTerm }}".
+          </div>
+
+          <template v-else>
+          <div v-for="c in pagedCandidates" :key="c.athleteId" class="candidate-row">
             <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600; margin:0;">
               <input type="checkbox" v-model="c.correct" style="width:auto;" @change="onCorrectToggle(c)" />
               {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
@@ -167,6 +215,9 @@
             </div>
             <button class="btn btn-danger btn-sm" @click="removeCandidate(c)">✕</button>
           </div>
+
+          <Pagination v-model:page="candidatePage" :page-size="CANDIDATE_PAGE_SIZE" :total-items="filteredCandidates.length" />
+          </template>
         </div>
       </div>
 
@@ -197,7 +248,10 @@
         <div class="pitch">
           <div v-for="(row, ri) in previewRows" :key="ri" class="pitch-row">
             <div v-for="slot in row" :key="slot.slotIndex" class="pitch-slot">
-              <div class="pitch-shirt solved">
+              <div class="pitch-shirt" :class="{ goalkeeper: slot.slotIndex === 0 }" :style="shirtStyle(slot.slotIndex)">
+                <span class="pitch-shirt-sleeve left"></span>
+                <span class="pitch-shirt-sleeve right"></span>
+                <span class="pitch-shirt-collar"></span>
                 {{ slot.shirtNumber ?? '?' }}
                 <span v-if="slot.captain" class="pitch-shirt-captain">C</span>
               </div>
@@ -223,9 +277,13 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import Pagination from '../components/Pagination.vue'
+import { readableTextColor } from '../constants'
 import { FORMATION_NAMES, slotLabels, slotCount, rowsFor } from '../services/formations'
 
 const FOOTBALL_CATEGORY = 'Football'
+const DEFAULT_KIT_COLOR = '#d92332'
+const DEFAULT_GK_KIT_COLOR = '#f2c230'
 
 const view = ref('list')
 const lineups = ref([])
@@ -239,11 +297,39 @@ const showPreview = ref(false)
 const form = reactive({
   title: '', competition: '', matchDate: '', weekStartDate: '', formation: '4-3-3',
   teamName: '', teamCrestUrl: '', opponentName: '', opponentCrestUrl: '',
-  scoreFor: null, scoreAgainst: null, maxStrikes: 5, excludedFromBattle: false
+  scoreFor: null, scoreAgainst: null, maxStrikes: 5, excludedFromBattle: false,
+  kitColor: DEFAULT_KIT_COLOR, goalkeeperKitColor: DEFAULT_GK_KIT_COLOR
 })
 const candidates = ref([])
 const athleteSearchTerm = ref('')
 const athleteSearchResults = ref([])
+
+const athletePools = ref([])
+const selectedPoolId = ref(null)
+const linkedPoolIds = ref([]) // pools imported from during this session - sent on save
+const poolsForFootball = computed(() => athletePools.value.filter(p => p.sport === FOOTBALL_CATEGORY))
+
+const CANDIDATE_PAGE_SIZE = 25
+const candidatePage = ref(1)
+const candidateFilterTerm = ref('')
+const filteredCandidates = computed(() => {
+  const term = candidateFilterTerm.value.trim().toLowerCase()
+  if (!term) return candidates.value
+  return candidates.value.filter(c => c.name.toLowerCase().includes(term))
+})
+watch(candidateFilterTerm, () => { candidatePage.value = 1 })
+const pagedCandidates = computed(() => {
+  const start = (candidatePage.value - 1) * CANDIDATE_PAGE_SIZE
+  return filteredCandidates.value.slice(start, start + CANDIDATE_PAGE_SIZE)
+})
+
+// Slot 0 is always the goalkeeper (see formations.js) - this is what lets the
+// pitch render the keeper in a different kit without needing a dedicated
+// "isGoalkeeper" field anywhere in the data model.
+function shirtStyle(slotIndex) {
+  const color = slotIndex === 0 ? (form.goalkeeperKitColor || DEFAULT_GK_KIT_COLOR) : (form.kitColor || DEFAULT_KIT_COLOR)
+  return { '--kit-color': color, '--kit-text': readableTextColor(color) }
+}
 
 const requiredSlotCount = computed(() => slotCount(form.formation))
 const filledSlotCount = computed(() => candidates.value.filter(c => c.correct && c.slotIndex != null).length)
@@ -255,7 +341,10 @@ const previewRows = computed(() => {
   return rowsFor(form.formation, filled)
 })
 
-onMounted(loadLineups)
+onMounted(() => {
+  loadLineups()
+  loadAthletePools()
+})
 
 async function loadLineups() {
   loading.value = true
@@ -266,6 +355,14 @@ async function loadLineups() {
     error.value = 'Could not load Starting XI boards.'
   } finally {
     loading.value = false
+  }
+}
+
+async function loadAthletePools() {
+  try {
+    athletePools.value = await api.adminListAthletePools()
+  } catch (e) {
+    // non-critical - the pool dropdown just stays empty
   }
 }
 
@@ -295,8 +392,56 @@ function addCandidate(athlete) {
   athleteSearchResults.value = []
 }
 
+// For adding many at once (pool import, whole-category import) - same
+// reasoning as AdminGridsView's addCandidatesBulk.
+function addCandidatesBulk(athleteList) {
+  const existingIds = new Set(candidates.value.map(c => c.athleteId))
+  let added = 0
+  for (const athlete of athleteList) {
+    if (existingIds.has(athlete.id)) continue
+    existingIds.add(athlete.id)
+    candidates.value.push({
+      athleteId: athlete.id, name: athlete.name, team: athlete.team,
+      correct: false, shirtNumber: null, slotIndex: null, captain: false
+    })
+    added++
+  }
+  return added
+}
+
+async function importFromPool() {
+  if (!selectedPoolId.value) return
+  error.value = ''
+  try {
+    const pool = await api.adminGetAthletePool(selectedPoolId.value)
+    const added = addCandidatesBulk(pool.members)
+    if (!linkedPoolIds.value.includes(pool.id)) linkedPoolIds.value.push(pool.id)
+    toast.show(`Imported ${added} subject(s) from "${pool.name}". This board will now automatically get any new members added to that pool later.`)
+    selectedPoolId.value = null
+  } catch (e) {
+    error.value = 'Could not import that pool.'
+  }
+}
+
+const importingAll = ref(false)
+async function importAllInCategory() {
+  error.value = ''
+  importingAll.value = true
+  try {
+    const all = await api.adminSearchAthletes({ sport: FOOTBALL_CATEGORY })
+    const added = addCandidatesBulk(all)
+    toast.show(`Imported ${added} subject(s) from "Football" (${all.length - added} were already added).`)
+  } catch (e) {
+    error.value = 'Could not import subjects for that category.'
+  } finally {
+    importingAll.value = false
+  }
+}
+
 function removeCandidate(c) {
   candidates.value = candidates.value.filter(x => x !== c)
+  const maxPage = Math.max(1, Math.ceil(candidates.value.length / CANDIDATE_PAGE_SIZE))
+  if (candidatePage.value > maxPage) candidatePage.value = maxPage
 }
 
 // Unchecking "correct" drops this candidate back to decoy-only - clear the
@@ -338,9 +483,16 @@ function resetForm() {
   form.scoreAgainst = null
   form.maxStrikes = 5
   form.excludedFromBattle = false
+  form.kitColor = DEFAULT_KIT_COLOR
+  form.goalkeeperKitColor = DEFAULT_GK_KIT_COLOR
   candidates.value = []
+  candidatePage.value = 1
+  candidateFilterTerm.value = ''
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
+  selectedPoolId.value = null
+  linkedPoolIds.value = []
+  loadAthletePools()
 }
 
 function openCreate() {
@@ -351,6 +503,7 @@ function openCreate() {
 
 async function openEdit(id) {
   error.value = ''
+  linkedPoolIds.value = []
   try {
     const detail = await api.adminGetLineup(id)
     form.title = detail.title
@@ -366,6 +519,8 @@ async function openEdit(id) {
     form.scoreAgainst = detail.scoreAgainst
     form.maxStrikes = detail.maxStrikes
     form.excludedFromBattle = detail.excludedFromBattle
+    form.kitColor = detail.kitColor || DEFAULT_KIT_COLOR
+    form.goalkeeperKitColor = detail.goalkeeperKitColor || DEFAULT_GK_KIT_COLOR
 
     const entryByAthleteId = new Map(detail.entries.map(e => [e.athlete.id, e]))
     candidates.value = detail.candidates.map(a => {
@@ -378,9 +533,12 @@ async function openEdit(id) {
         captain: entry?.captain ?? false
       }
     })
+    candidatePage.value = 1
+    candidateFilterTerm.value = ''
 
     editingLineupId.value = id
     view.value = 'builder'
+    loadAthletePools()
   } catch (e) {
     error.value = 'Could not load that board.'
   }
@@ -420,10 +578,13 @@ async function saveLineup() {
     scoreAgainst: form.scoreAgainst,
     maxStrikes: form.maxStrikes,
     excludedFromBattle: form.excludedFromBattle,
+    kitColor: form.kitColor,
+    goalkeeperKitColor: form.goalkeeperKitColor,
     candidateAthleteIds: candidates.value.map(c => c.athleteId),
     entries: entries.map(c => ({
       athleteId: c.athleteId, shirtNumber: c.shirtNumber, slotIndex: c.slotIndex, captain: c.captain
-    }))
+    })),
+    linkedPoolIds: linkedPoolIds.value
   }
 
   saving.value = true

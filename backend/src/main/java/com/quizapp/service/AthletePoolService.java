@@ -6,10 +6,14 @@ import com.quizapp.model.Athlete;
 import com.quizapp.model.AthletePool;
 import com.quizapp.model.Grid;
 import com.quizapp.model.GridCandidate;
+import com.quizapp.model.Lineup;
+import com.quizapp.model.LineupCandidate;
 import com.quizapp.repository.AthletePoolRepository;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.GridCandidateRepository;
 import com.quizapp.repository.GridRepository;
+import com.quizapp.repository.LineupCandidateRepository;
+import com.quizapp.repository.LineupRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,13 +30,18 @@ public class AthletePoolService {
     private final AthleteRepository athleteRepository;
     private final GridRepository gridRepository;
     private final GridCandidateRepository gridCandidateRepository;
+    private final LineupRepository lineupRepository;
+    private final LineupCandidateRepository lineupCandidateRepository;
 
     public AthletePoolService(AthletePoolRepository poolRepository, AthleteRepository athleteRepository,
-                               GridRepository gridRepository, GridCandidateRepository gridCandidateRepository) {
+                               GridRepository gridRepository, GridCandidateRepository gridCandidateRepository,
+                               LineupRepository lineupRepository, LineupCandidateRepository lineupCandidateRepository) {
         this.poolRepository = poolRepository;
         this.athleteRepository = athleteRepository;
         this.gridRepository = gridRepository;
         this.gridCandidateRepository = gridCandidateRepository;
+        this.lineupRepository = lineupRepository;
+        this.lineupCandidateRepository = lineupCandidateRepository;
     }
 
     @Transactional(readOnly = true)
@@ -68,6 +77,7 @@ public class AthletePoolService {
                 .collect(Collectors.toSet());
         if (!newlyAdded.isEmpty()) {
             propagateNewMembersToLinkedGrids(pool.getId(), newlyAdded);
+            propagateNewMembersToLinkedLineups(pool.getId(), newlyAdded);
         }
 
         return dto;
@@ -94,6 +104,32 @@ public class AthletePoolService {
                 candidate.setGrid(grid);
                 candidate.setAthlete(athlete);
                 gridCandidateRepository.save(candidate);
+            }
+        }
+    }
+
+    // Same propagation as above, for Starting XI boards that imported from this
+    // pool - a newly added pool member becomes a guessable (decoy) candidate on
+    // every linked board automatically, without touching that board's 11
+    // correct starters.
+    private void propagateNewMembersToLinkedLineups(Long poolId, Set<Athlete> newlyAdded) {
+        List<Lineup> linkedLineups = lineupRepository.findByLinkedPoolId(poolId);
+        if (linkedLineups.isEmpty()) return;
+
+        List<Long> lineupIds = linkedLineups.stream().map(Lineup::getId).collect(Collectors.toList());
+        Map<Long, Set<Long>> existingCandidateAthleteIdsByLineupId = lineupCandidateRepository.findByLineup_IdIn(lineupIds).stream()
+                .collect(Collectors.groupingBy(
+                        c -> c.getLineup().getId(),
+                        Collectors.mapping(c -> c.getAthlete().getId(), Collectors.toSet())));
+
+        for (Lineup lineup : linkedLineups) {
+            Set<Long> existingCandidateAthleteIds = existingCandidateAthleteIdsByLineupId.getOrDefault(lineup.getId(), Set.of());
+            for (Athlete athlete : newlyAdded) {
+                if (existingCandidateAthleteIds.contains(athlete.getId())) continue;
+                LineupCandidate candidate = new LineupCandidate();
+                candidate.setLineup(lineup);
+                candidate.setAthlete(athlete);
+                lineupCandidateRepository.save(candidate);
             }
         }
     }

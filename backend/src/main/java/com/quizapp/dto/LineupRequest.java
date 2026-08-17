@@ -41,6 +41,9 @@ public class LineupRequest {
 
     private boolean excludedFromBattle = false;
 
+    private String kitColor;
+    private String goalkeeperKitColor;
+
     // Full searchable pool (correct starters + decoys).
     @NotEmpty
     private List<Long> candidateAthleteIds;
@@ -49,6 +52,11 @@ public class LineupRequest {
     @NotEmpty
     @Valid
     private List<LineupEntryInputDto> entries;
+
+    // Pools imported from during this edit - merged into the board's
+    // linkedPools so future additions to the pool propagate automatically.
+    // Same convention as GridRequest.linkedPoolIds.
+    private List<Long> linkedPoolIds;
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -76,8 +84,14 @@ public class LineupRequest {
     public void setMaxStrikes(Integer maxStrikes) { this.maxStrikes = maxStrikes; }
     public boolean isExcludedFromBattle() { return excludedFromBattle; }
     public void setExcludedFromBattle(boolean excludedFromBattle) { this.excludedFromBattle = excludedFromBattle; }
+    public String getKitColor() { return kitColor; }
+    public void setKitColor(String kitColor) { this.kitColor = kitColor; }
+    public String getGoalkeeperKitColor() { return goalkeeperKitColor; }
+    public void setGoalkeeperKitColor(String goalkeeperKitColor) { this.goalkeeperKitColor = goalkeeperKitColor; }
     public List<Long> getCandidateAthleteIds() { return candidateAthleteIds; }
     public void setCandidateAthleteIds(List<Long> candidateAthleteIds) { this.candidateAthleteIds = candidateAthleteIds; }
     public List<LineupEntryInputDto> getEntries() { return entries; }
     public void setEntries(List<LineupEntryInputDto> entries) { this.entries = entries; }
+    public List<Long> getLinkedPoolIds() { return linkedPoolIds; }
+    public void setLinkedPoolIds(List<Long> linkedPoolIds) { this.linkedPoolIds = linkedPoolIds; }
 }

@@ -30,6 +30,9 @@ import java.util.stream.Collectors;
 @Service
 public class LineupPlayService {
 
+    private static final String DEFAULT_KIT_COLOR = "#d92332";
+    private static final String DEFAULT_GK_KIT_COLOR = "#f2c230";
+
     private final LineupRepository lineupRepository;
 
     public LineupPlayService(LineupRepository lineupRepository) {
@@ -62,6 +65,8 @@ public class LineupPlayService {
         dto.setMatchDate(lineup.getMatchDate());
         dto.setFormation(lineup.getFormation());
         dto.setMaxStrikes(lineup.getMaxStrikes());
+        dto.setKitColor(lineup.getKitColor() != null ? lineup.getKitColor() : DEFAULT_KIT_COLOR);
+        dto.setGoalkeeperKitColor(lineup.getGoalkeeperKitColor() != null ? lineup.getGoalkeeperKitColor() : DEFAULT_GK_KIT_COLOR);
         dto.setSlots(lineup.getEntries().stream()
                 .sorted(slotOrder())
                 .map(e -> new LineupSlotDto(e.getId(), e.getSlotIndex(), e.getShirtNumber(), e.isCaptain(),

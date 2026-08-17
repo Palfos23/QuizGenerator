@@ -21,6 +21,8 @@ public class LineupPlayStateDto {
     private LocalDate matchDate;
     private String formation;
     private int maxStrikes;
+    private String kitColor;
+    private String goalkeeperKitColor;
     private List<LineupSlotDto> slots;
 
     public Long getId() { return id; }
@@ -47,6 +49,10 @@ public class LineupPlayStateDto {
     public void setFormation(String formation) { this.formation = formation; }
     public int getMaxStrikes() { return maxStrikes; }
     public void setMaxStrikes(int maxStrikes) { this.maxStrikes = maxStrikes; }
+    public String getKitColor() { return kitColor; }
+    public void setKitColor(String kitColor) { this.kitColor = kitColor; }
+    public String getGoalkeeperKitColor() { return goalkeeperKitColor; }
+    public void setGoalkeeperKitColor(String goalkeeperKitColor) { this.goalkeeperKitColor = goalkeeperKitColor; }
     public List<LineupSlotDto> getSlots() { return slots; }
     public void setSlots(List<LineupSlotDto> slots) { this.slots = slots; }
 }

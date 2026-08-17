@@ -6,9 +6,11 @@ import com.quizapp.dto.LineupRequest;
 import com.quizapp.dto.LineupSummaryDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
+import com.quizapp.model.AthletePool;
 import com.quizapp.model.Lineup;
 import com.quizapp.model.LineupCandidate;
 import com.quizapp.model.LineupEntry;
+import com.quizapp.repository.AthletePoolRepository;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.LineupRepository;
 import org.springframework.stereotype.Service;
@@ -23,14 +25,19 @@ import java.util.stream.Collectors;
 @Service
 public class LineupAdminService {
 
+    private static final String DEFAULT_KIT_COLOR = "#d92332";
+    private static final String DEFAULT_GK_KIT_COLOR = "#f2c230";
+
     private final LineupRepository lineupRepository;
     private final AthleteRepository athleteRepository;
+    private final AthletePoolRepository athletePoolRepository;
     private final AthleteService athleteService;
 
     public LineupAdminService(LineupRepository lineupRepository, AthleteRepository athleteRepository,
-                               AthleteService athleteService) {
+                               AthletePoolRepository athletePoolRepository, AthleteService athleteService) {
         this.lineupRepository = lineupRepository;
         this.athleteRepository = athleteRepository;
+        this.athletePoolRepository = athletePoolRepository;
         this.athleteService = athleteService;
     }
 
@@ -112,6 +119,17 @@ public class LineupAdminService {
         lineup.setScoreAgainst(request.getScoreAgainst());
         lineup.setMaxStrikes(request.getMaxStrikes());
         lineup.setExcludedFromBattle(request.isExcludedFromBattle());
+        lineup.setKitColor(request.getKitColor() != null && !request.getKitColor().isBlank()
+                ? request.getKitColor() : DEFAULT_KIT_COLOR);
+        lineup.setGoalkeeperKitColor(request.getGoalkeeperKitColor() != null && !request.getGoalkeeperKitColor().isBlank()
+                ? request.getGoalkeeperKitColor() : DEFAULT_GK_KIT_COLOR);
+
+        if (request.getLinkedPoolIds() != null && !request.getLinkedPoolIds().isEmpty()) {
+            List<AthletePool> pools = athletePoolRepository.findAllById(request.getLinkedPoolIds());
+            Set<AthletePool> merged = new HashSet<>(lineup.getLinkedPools());
+            merged.addAll(pools);
+            lineup.setLinkedPools(merged);
+        }
 
         List<Long> candidateAthleteIds = request.getCandidateAthleteIds().stream()
                 .distinct()
@@ -177,6 +195,8 @@ public class LineupAdminService {
         dto.setScoreAgainst(lineup.getScoreAgainst());
         dto.setMaxStrikes(lineup.getMaxStrikes());
         dto.setExcludedFromBattle(lineup.isExcludedFromBattle());
+        dto.setKitColor(lineup.getKitColor() != null ? lineup.getKitColor() : DEFAULT_KIT_COLOR);
+        dto.setGoalkeeperKitColor(lineup.getGoalkeeperKitColor() != null ? lineup.getGoalkeeperKitColor() : DEFAULT_GK_KIT_COLOR);
 
         java.util.Set<Athlete> distinctAthletes = new java.util.LinkedHashSet<>();
         lineup.getCandidates().forEach(c -> distinctAthletes.add(c.getAthlete()));
