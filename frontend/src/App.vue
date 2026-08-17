@@ -6,12 +6,20 @@
       <template v-if="auth.isAuthenticated.value">
         <router-link v-if="!auth.isAdmin.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Create a quiz</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/weekly-grid" class="nav-link">Weekly grid</router-link>
+        <div v-if="!auth.isAdmin.value" class="top-nav-dropdown">
+          <div v-if="showWeeklyMenu" class="top-nav-dropdown-backdrop" @click="showWeeklyMenu = false"></div>
+          <button type="button" class="nav-link top-nav-dropdown-toggle" :class="{ 'router-link-exact-active': isWeeklyQuizRoute }" @click="showWeeklyMenu = !showWeeklyMenu">
+            Weekly quiz ▾
+          </button>
+          <div v-if="showWeeklyMenu" class="top-nav-dropdown-popup">
+            <router-link to="/weekly-grid" class="nav-link" @click="showWeeklyMenu = false">Grid</router-link>
+            <router-link to="/starting-xi" class="nav-link" @click="showWeeklyMenu = false">Starting XI</router-link>
+          </div>
+        </div>
         <router-link v-if="!auth.isAdmin.value" to="/tension" class="nav-link" @click="onNavClick('/tension', 'tension')">Tension</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/501" class="nav-link" @click="onNavClick('/501', 'fiveOhOne')">501</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/imposter" class="nav-link" @click="onNavClick('/imposter', 'imposter')">Imposter</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/starting-xi" class="nav-link">Starting XI</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/starting-xi-battle" class="nav-link" @click="onNavClick('/starting-xi-battle', 'startingXiBattle')">Starting XI Battle</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/questions" class="nav-link">Question bank</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/question-labels" class="nav-link">Labels</router-link>
@@ -42,8 +50,14 @@
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
       <router-link v-if="!auth.isAdmin.value" to="/generate" @click="onNavClick('/generate', 'generate')">Create</router-link>
       <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
-      <router-link v-if="!auth.isAdmin.value" to="/weekly-grid">Weekly grid</router-link>
-      <router-link v-if="!auth.isAdmin.value" to="/starting-xi">Starting XI</router-link>
+      <div v-if="!auth.isAdmin.value" style="position:relative; flex:1; display:flex;">
+        <div v-if="showWeeklyMenu" class="bottom-nav-backdrop" @click="showWeeklyMenu = false"></div>
+        <button @click="showWeeklyMenu = !showWeeklyMenu" :class="{ active: isWeeklyQuizRoute }">Weekly quiz ▾</button>
+        <div v-if="showWeeklyMenu" class="games-popup">
+          <router-link to="/weekly-grid" @click="showWeeklyMenu = false">Grid</router-link>
+          <router-link to="/starting-xi" @click="showWeeklyMenu = false">Starting XI</router-link>
+        </div>
+      </div>
       <div v-if="!auth.isAdmin.value" style="position:relative; flex:1; display:flex;">
         <div v-if="showGamesMenu" class="bottom-nav-backdrop" @click="showGamesMenu = false"></div>
         <button @click="showGamesMenu = !showGamesMenu" :class="{ active: isGameRoute }">Games ▾</button>
@@ -74,7 +88,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import auth from './services/auth'
 import { useRouter } from 'vue-router'
 import navTrigger from './services/navTrigger'
@@ -90,6 +104,27 @@ function closeGamesMenu(path, key) {
   showGamesMenu.value = false
   if (key) onNavClick(path, key)
 }
+
+// "Weekly quiz" groups the two solo/pass-and-play weekly boards - Grid and
+// Starting XI - into one dropdown, on both desktop (top-nav) and mobile
+// (bottom-nav popup, mirroring the existing Games dropdown). Their own
+// multiplayer Battle variants stay as separate top-level links since those
+// aren't part of "this week's board".
+const WEEKLY_QUIZ_PATH_PREFIXES = ['/weekly-grid', '/starting-xi']
+const showWeeklyMenu = ref(false)
+const isWeeklyQuizRoute = computed(() => {
+  const path = router.currentRoute.value.path
+  return WEEKLY_QUIZ_PATH_PREFIXES.some(prefix => path === prefix || path.startsWith(prefix + '/'))
+})
+
+// Belt-and-suspenders close for both popups on any navigation - covers the
+// case where a click lands on a different nav item entirely (not one of
+// this popup's own links, which already close it themselves) while a
+// dropdown happens to be open.
+watch(() => router.currentRoute.value.path, () => {
+  showGamesMenu.value = false
+  showWeeklyMenu.value = false
+})
 
 function onNavClick(path, key) {
   if (router.currentRoute.value.path === path) {

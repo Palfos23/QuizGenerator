@@ -19,8 +19,16 @@ public class GameRoom {
     @Column(nullable = false, unique = true, length = 8)
     private String roomCode;
 
+    // columnDefinition is set explicitly so Hibernate creates a plain varchar
+    // column instead of its default (a CHECK constraint baked from whatever
+    // RoomGameType constants exist at the moment this table is first
+    // created). ddl-auto=update never widens an existing CHECK constraint
+    // when a new game type is added later - that bit it once already (see
+    // the migration note for the 2026-08 fix required on the existing
+    // production table). A plain varchar column sidesteps the problem for
+    // every environment created from here on.
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "varchar(40)")
     private RoomGameType gameType;
 
     @Enumerated(EnumType.STRING)

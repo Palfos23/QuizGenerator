@@ -120,6 +120,42 @@ textarea:focus-visible {
   white-space: nowrap;
 }
 
+/* Desktop "Weekly quiz" dropdown - groups Grid + Starting XI under one
+   top-nav item, same idea as the mobile bottom-nav's Games popup. */
+.top-nav-dropdown {
+  position: relative;
+  display: flex;
+}
+.top-nav-dropdown-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.top-nav-dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 29;
+}
+.top-nav-dropdown-popup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  background: var(--ink-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  z-index: 31;
+}
+.top-nav-dropdown-popup .nav-link {
+  color: var(--text);
+}
+
 .main-content {
   flex: 1;
   width: 100%;
@@ -1684,7 +1720,7 @@ table.scoreboard-table {
   .app-shell { flex-direction: column; }
 
   .top-nav { padding: 12px 16px; }
-  .top-nav .nav-link, .top-nav-user, .top-nav .btn { display: none; }
+  .top-nav .nav-link, .top-nav-user, .top-nav .btn, .top-nav-dropdown { display: none; }
 
   .guess-box-wrap { position: static; padding: 10px 0; }
 
