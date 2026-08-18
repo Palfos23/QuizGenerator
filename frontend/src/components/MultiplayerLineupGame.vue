@@ -194,7 +194,7 @@ async function loadLineup() {
   scoresAtLineupStart.value = { ...scores.value }
   currentPlayerIdx.value = currentLineupIndex.value % props.players.length // rotate who starts, like Grid Battle
   try {
-    lineupState.value = await api.getLineupPlayState(props.lineups[currentLineupIndex.value].id)
+    lineupState.value = await api.getMultiplayerLineupStart(props.lineups[currentLineupIndex.value].id)
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
   } finally {
     loading.value = false
@@ -227,7 +227,7 @@ async function submitGuess(athlete) {
   searchResults.value = []
   const player = currentPlayerName.value
   try {
-    const result = await api.submitLineupGuess(
+    const result = await api.submitMultiplayerLineupGuess(
       props.lineups[currentLineupIndex.value].id, athlete.id, guessedSlotIds.value
     )
     if (result.correct) {
@@ -292,7 +292,7 @@ function advanceTurn() {
 
 async function revealRemaining() {
   try {
-    revealedNames.value = await api.revealLineup(props.lineups[currentLineupIndex.value].id)
+    revealedNames.value = await api.getMultiplayerLineupReveal(props.lineups[currentLineupIndex.value].id)
   } catch (e) {
     // if this fails, shirts just stay hidden - not worth blocking the game-over flow over
   }

@@ -4,8 +4,12 @@
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
     <div v-else-if="state" class="grid-page">
-      <div style="display:flex; gap:8px; margin-bottom:6px;" class="no-print">
-        <router-link to="/starting-xi" class="btn btn-secondary btn-sm">← All boards</router-link>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;" class="no-print">
+        <div style="display:flex; gap:8px;">
+          <router-link to="/starting-xi" class="btn btn-secondary btn-sm">← All boards</router-link>
+          <button class="btn btn-secondary btn-sm" @click="openScoreboard" title="Scoreboard">Results</button>
+        </div>
+        <div class="grid-progress">{{ guessedCount }} / {{ state.slots.length }} found</div>
       </div>
       <h1 style="margin:0 0 6px; text-align:center;">{{ state.title }}</h1>
       <p class="page-subtitle" style="text-align:center;">{{ state.competition }}</p>
@@ -25,14 +29,69 @@
         </div>
       </div>
 
+      <div v-if="showScoreboard" class="modal-backdrop no-print" @click.self="showScoreboard = false">
+        <div class="modal">
+          <h2 style="margin-top:0;">Scoreboard</h2>
+
+          <div v-if="scoreboardData && scoreboardEntries.length" class="stats-panel" style="text-align:center;">
+            <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Average score</div>
+            <div style="font-size:1.5rem; font-weight:700; margin-top:2px;">{{ averageScore.toFixed(1) }} / {{ scoreboardData.entryCount }}</div>
+            <div
+              v-if="averageDelta"
+              style="margin-top:6px; font-weight:600; font-size:0.9rem;"
+              :style="{ color: averageDelta > 0 ? 'var(--teal)' : 'var(--coral)' }"
+            >{{ averageDelta > 0 ? '▲' : '▼' }} You're {{ Math.abs(averageDelta) }} {{ averageDelta > 0 ? 'above' : 'below' }} average</div>
+            <div v-else-if="yourRank" style="margin-top:6px; color:var(--text-dim); font-size:0.9rem;">Right at the average</div>
+          </div>
+
+          <div v-if="scoreboardLoading" style="color:var(--text-dim); font-size:0.9rem;">Loading…</div>
+          <div v-else-if="!scoreboardEntries.length" style="color:var(--text-dim); font-size:0.9rem;">
+            Nobody has completed this board yet.
+          </div>
+          <table v-else class="table scoreboard-table">
+            <thead>
+              <tr><th style="width:14%;">#</th><th style="width:56%;">Player</th><th style="width:30%; text-align:right;">Score</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="(s, i) in topFive" :key="s.userName + i" :class="{ 'you-row': s.isYou }">
+                <td>{{ i + 1 }}</td>
+                <td>{{ firstName(s.userName) }}</td>
+                <td style="text-align:right;">
+                  {{ s.guessedCount }} / {{ s.entryCount }}
+                </td>
+              </tr>
+              <tr v-if="yourRank && yourRank.rank > 5">
+                <td colspan="3" style="text-align:center; color:var(--text-dim); padding:4px 0;">···</td>
+              </tr>
+              <tr v-if="yourRank && yourRank.rank > 5" class="you-row">
+                <td>{{ yourRank.rank }}</td>
+                <td>{{ firstName(yourRank.entry.userName) }}</td>
+                <td style="text-align:right;">
+                  {{ yourRank.entry.guessedCount }} / {{ yourRank.entry.entryCount }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <label
+            v-if="scoreboardData && scoreboardData.yourLeaderboardPreference !== null"
+            style="display:flex; align-items:center; gap:8px; margin-top:16px; text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.9rem; cursor:pointer;"
+          >
+            <input type="checkbox" v-model="leaderboardOptIn" @change="updateLeaderboardPreference" style="width:auto;" />
+            Show my name on this leaderboard
+          </label>
+
+          <button class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="showScoreboard = false">Close</button>
+        </div>
+      </div>
+
       <div class="grid-status-bar" style="justify-content:center; gap:20px;">
-        <div class="grid-progress">{{ guessedCount }} / {{ state.slots.length }} found</div>
         <div class="strike-dots">
           <span
             v-for="i in state.maxStrikes"
             :key="i"
             class="strike-dot"
-            :class="{ used: i <= strikesUsed, 'just-used': i === strikesUsed && justStruck }"
+            :class="{ used: i <= state.strikesUsed, 'just-used': i === state.strikesUsed && justStruck }"
           ></span>
         </div>
       </div>
@@ -40,7 +99,7 @@
       <div v-if="allSolved" class="banner success">
         <strong>Perfect - you found the whole XI!</strong>
       </div>
-      <div v-else-if="revealed" class="banner error">
+      <div v-else-if="state.revealed" class="banner error">
         <strong>Board over.</strong> You found {{ guessedCount }} / {{ state.slots.length }} before revealing the rest.
       </div>
       <div v-else-if="gameOver" class="banner error">
@@ -93,6 +152,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
+import toast from '../services/toast'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
 import PitchMarkings from '../components/PitchMarkings.vue'
@@ -107,31 +167,18 @@ const state = ref(null)
 const loading = ref(true)
 const error = ref('')
 
-const strikesUsed = ref(0)
-const guessedSlotIds = ref(new Set())
-const solvedById = ref({}) // slot id -> solved LineupSlotDto from the server
-const revealedNames = ref({}) // slot id -> name, once given up
-const revealed = ref(false)
 const justStruck = ref(false)
 const shakeGuessBox = ref(false)
 const searchTerm = ref('')
 const searchResults = ref([])
 const guessing = ref(false)
 
-const guessedCount = computed(() => guessedSlotIds.value.size)
-const allSolved = computed(() => !!state.value && guessedCount.value >= state.value.slots.length)
-const gameOver = computed(() => !!state.value && strikesUsed.value >= state.value.maxStrikes && !allSolved.value)
-const canStillGuess = computed(() => !!state.value && !allSolved.value && !gameOver.value && !revealed.value)
+const guessedCount = computed(() => state.value?.slots.filter(s => s.guessedByUser).length || 0)
+const allSolved = computed(() => !!state.value && guessedCount.value === state.value.slots.length)
+const gameOver = computed(() => !!state.value && state.value.completed && !allSolved.value && !state.value.revealed)
+const canStillGuess = computed(() => !!state.value && !state.value.completed)
 
-const rows = computed(() => {
-  if (!state.value) return []
-  const merged = state.value.slots.map(s => {
-    if (solvedById.value[s.id]) return solvedById.value[s.id]
-    if (revealedNames.value[s.id]) return { ...s, solved: true, athleteName: revealedNames.value[s.id] }
-    return s
-  })
-  return displayRowsFor(state.value.formation, merged)
-})
+const rows = computed(() => state.value ? displayRowsFor(state.value.formation, state.value.slots) : [])
 
 function shirtStyle(slot) {
   const color = slot.slotIndex === 0
@@ -145,11 +192,6 @@ onMounted(load)
 async function load() {
   loading.value = true
   error.value = ''
-  strikesUsed.value = 0
-  guessedSlotIds.value = new Set()
-  solvedById.value = {}
-  revealedNames.value = {}
-  revealed.value = false
   try {
     state.value = await api.getLineupPlayState(lineupId.value)
   } catch (e) {
@@ -184,15 +226,20 @@ async function submitGuess(athlete) {
   searchTerm.value = ''
   searchResults.value = []
   try {
-    const result = await api.submitLineupGuess(lineupId.value, athlete.id, [...guessedSlotIds.value])
+    const result = await api.submitLineupGuess(lineupId.value, athlete.id)
+    state.value.strikesUsed = result.strikesUsed
+
     if (result.correct) {
-      guessedSlotIds.value.add(result.slot.id)
-      solvedById.value[result.slot.id] = result.slot
+      const idx = state.value.slots.findIndex(s => s.id === result.slot.id)
+      if (idx !== -1) state.value.slots.splice(idx, 1, result.slot)
     } else {
-      strikesUsed.value++
       justStruck.value = true
       shakeGuessBox.value = true
       setTimeout(() => { justStruck.value = false; shakeGuessBox.value = false }, 400)
+    }
+
+    if (result.gameOver || result.allSolved) {
+      state.value.completed = true
     }
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
@@ -203,10 +250,56 @@ async function submitGuess(athlete) {
 
 async function giveUp() {
   try {
-    revealedNames.value = await api.revealLineup(lineupId.value)
-    revealed.value = true
+    state.value = await api.revealLineup(lineupId.value)
   } catch (e) {
     error.value = 'Could not reveal the remaining answers.'
+  }
+}
+
+const showScoreboard = ref(false)
+const scoreboardData = ref(null)
+const scoreboardLoading = ref(false)
+
+const scoreboardEntries = computed(() => scoreboardData.value?.entries || [])
+const topFive = computed(() => scoreboardEntries.value.slice(0, 5))
+const yourRank = computed(() => {
+  const idx = scoreboardEntries.value.findIndex(s => s.isYou)
+  if (idx === -1) return null
+  return { rank: idx + 1, entry: scoreboardEntries.value[idx] }
+})
+const averageScore = computed(() => scoreboardData.value?.averageScore ?? 0)
+const averageDelta = computed(() => {
+  if (!yourRank.value) return null
+  return Math.round((yourRank.value.entry.guessedCount - averageScore.value) * 10) / 10
+})
+
+function firstName(fullName) {
+  return fullName ? fullName.trim().split(/\s+/)[0] : fullName
+}
+
+async function openScoreboard() {
+  showScoreboard.value = true
+  if (!scoreboardData.value) {
+    scoreboardLoading.value = true
+    try {
+      scoreboardData.value = await api.getLineupScoreboard(lineupId.value)
+      leaderboardOptIn.value = scoreboardData.value.yourLeaderboardPreference ?? true
+    } catch (e) {
+      // scoreboard is a nice-to-have - fail quietly, empty state already covers it
+    } finally {
+      scoreboardLoading.value = false
+    }
+  }
+}
+
+const leaderboardOptIn = ref(true)
+async function updateLeaderboardPreference() {
+  try {
+    await api.setLineupLeaderboardPreference(lineupId.value, leaderboardOptIn.value)
+    scoreboardData.value = await api.getLineupScoreboard(lineupId.value)
+  } catch (e) {
+    toast.show('Could not update your leaderboard preference.')
+    leaderboardOptIn.value = !leaderboardOptIn.value
   }
 }
 

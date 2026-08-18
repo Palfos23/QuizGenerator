@@ -181,7 +181,7 @@ export default {
     return client.post('/admin/grids', payload).then(r => r.data)
   },
 
-  // --- Starting XI: user-facing ---
+  // --- Starting XI: user-facing (solo/weekly - persisted server-side) ---
   listLineups() {
     return client.get('/lineups').then(r => r.data)
   },
@@ -191,11 +191,28 @@ export default {
   searchLineupCandidates(id, search) {
     return client.get(`/lineups/${id}/candidates?search=${encodeURIComponent(search || '')}`).then(r => r.data)
   },
-  submitLineupGuess(id, athleteId, revealedEntryIds) {
-    return client.post(`/lineups/${id}/guess`, { athleteId, revealedEntryIds }).then(r => r.data)
+  submitLineupGuess(id, athleteId) {
+    return client.post(`/lineups/${id}/guess`, { athleteId }).then(r => r.data)
   },
   revealLineup(id) {
-    return client.get(`/lineups/${id}/reveal`).then(r => r.data)
+    return client.post(`/lineups/${id}/reveal`).then(r => r.data)
+  },
+  getLineupScoreboard(id) {
+    return client.get(`/lineups/${id}/scoreboard`).then(r => r.data)
+  },
+  setLineupLeaderboardPreference(id, include) {
+    return client.put(`/lineups/${id}/leaderboard-preference?include=${include}`)
+  },
+
+  // --- Starting XI: local pass-and-play (stateless - no persisted attempt) ---
+  getMultiplayerLineupStart(id) {
+    return client.get(`/lineups/${id}/multiplayer-start`).then(r => r.data)
+  },
+  getMultiplayerLineupReveal(id) {
+    return client.get(`/lineups/${id}/multiplayer-reveal`).then(r => r.data)
+  },
+  submitMultiplayerLineupGuess(id, athleteId, revealedEntryIds) {
+    return client.post(`/lineups/${id}/multiplayer-guess`, { athleteId, revealedEntryIds }).then(r => r.data)
   },
 
   // --- Starting XI: admin ---

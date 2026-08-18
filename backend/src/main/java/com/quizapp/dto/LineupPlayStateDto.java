@@ -3,10 +3,12 @@ package com.quizapp.dto;
 import java.time.LocalDate;
 import java.util.List;
 
-// Starting state for solo (or local pass-and-play) Starting XI - stateless,
-// same reasoning as GridPlayStateDto's multiplayer-start counterpart: no
-// persisted attempt, the client tracks its own guessed/strikes state and
-// calls /guess and /reveal as needed.
+// Play state for a Starting XI board - shared shape for both the persisted
+// solo/weekly path (strikesUsed/completed/revealed reflect a server-side
+// LineupAttempt) and the stateless local pass-and-play multiplayer-start
+// path (those three always start at their defaults, since there's no
+// attempt to attach to - see LineupPlayService for the split, mirroring
+// GridPlayStateDto's play vs. multiplayer-start distinction).
 public class LineupPlayStateDto {
 
     private Long id;
@@ -21,6 +23,9 @@ public class LineupPlayStateDto {
     private LocalDate matchDate;
     private String formation;
     private int maxStrikes;
+    private int strikesUsed;
+    private boolean completed;
+    private boolean revealed;
     private String kitColor;
     private String goalkeeperKitColor;
     private List<LineupSlotDto> slots;
@@ -49,6 +54,12 @@ public class LineupPlayStateDto {
     public void setFormation(String formation) { this.formation = formation; }
     public int getMaxStrikes() { return maxStrikes; }
     public void setMaxStrikes(int maxStrikes) { this.maxStrikes = maxStrikes; }
+    public int getStrikesUsed() { return strikesUsed; }
+    public void setStrikesUsed(int strikesUsed) { this.strikesUsed = strikesUsed; }
+    public boolean isCompleted() { return completed; }
+    public void setCompleted(boolean completed) { this.completed = completed; }
+    public boolean isRevealed() { return revealed; }
+    public void setRevealed(boolean revealed) { this.revealed = revealed; }
     public String getKitColor() { return kitColor; }
     public void setKitColor(String kitColor) { this.kitColor = kitColor; }
     public String getGoalkeeperKitColor() { return goalkeeperKitColor; }

@@ -52,4 +52,20 @@ public class LineupSummaryDto {
     private boolean entireCategoryPool;
     public boolean isEntireCategoryPool() { return entireCategoryPool; }
     public void setEntireCategoryPool(boolean entireCategoryPool) { this.entireCategoryPool = entireCategoryPool; }
+
+    // Only meaningful on the user-facing list - null on the admin management
+    // list, where "your own progress" isn't a relevant concept. Same purpose
+    // as GridSummaryDto's status/guessedCount pair.
+    private String status; // "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"
+    private Integer guessedCount;
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public Integer getGuessedCount() { return guessedCount; }
+    public void setGuessedCount(Integer guessedCount) { this.guessedCount = guessedCount; }
+
+    // Always 11 for a valid published board, but carried explicitly (like
+    // GridSummaryDto.entryCount) rather than hardcoded on the frontend.
+    private int entryCount;
+    public int getEntryCount() { return entryCount; }
+    public void setEntryCount(int entryCount) { this.entryCount = entryCount; }
 }
