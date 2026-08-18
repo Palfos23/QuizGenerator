@@ -2346,8 +2346,11 @@ table.scoreboard-table {
   position: relative;
   display: flex;
   flex-direction: column-reverse; /* rows are authored GK-first; this flips GK to the bottom visually */
-  gap: 22px;
-  padding: 28px 12px;
+  gap: 72px;
+  width: 100%;
+  max-width: 560px; /* keeps the pitch portrait-shaped instead of stretching full-width and flat */
+  margin: 0 auto;
+  padding: 74px 12px;
   border-radius: var(--radius-md);
   overflow: hidden;
   background:
@@ -2654,8 +2657,8 @@ table.scoreboard-table {
    ~290px, comfortably under any phone width the app supports. */
 @media (max-width: 760px) {
   .pitch {
-    padding: 20px 8px;
-    gap: 14px;
+    padding: 54px 8px;
+    gap: 48px;
   }
   .pitch-row {
     gap: 6px;
