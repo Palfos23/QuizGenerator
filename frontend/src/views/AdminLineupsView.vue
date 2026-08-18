@@ -23,7 +23,7 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ l.title }}
-              <span v-if="l.excludedFromBattle" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Starting XI Battle</span>
+              <span v-if="l.excludedFromBattle" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in XI Battle</span>
               <span v-if="l.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
             </div>
             <div class="saved-quiz-meta">
@@ -124,11 +124,11 @@
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.excludedFromBattle" style="width:auto;" />
-          Exclude from Starting XI Battle
+          Exclude from XI Battle
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
           Use this once a board's roster needs correcting - it stays fully playable solo, but stops
-          being offered to Starting XI Battle's random or manual pick.
+          being offered to XI Battle's random or manual pick.
         </p>
       </div>
 

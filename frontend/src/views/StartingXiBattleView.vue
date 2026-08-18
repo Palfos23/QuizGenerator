@@ -1,7 +1,7 @@
 <template>
   <div>
     <template v-if="stage === 'modeChoice'">
-      <h1>Starting XI Battle</h1>
+      <h1>XI Battle</h1>
       <p class="page-subtitle">
         Take turns guessing - get it right and the shirt reveals (and you score a point),
         get it wrong and you lose a life. Play continues until a board is fully solved or everyone's out of lives.
@@ -58,7 +58,7 @@
     </template>
 
     <template v-else-if="stage === 'landing'">
-      <h1>Starting XI Battle</h1>
+      <h1>XI Battle</h1>
       <p class="page-subtitle">
         A pass-the-device multiplayer version of Starting XI. Take turns guessing -
         get it right and the shirt reveals (and you score a point), get it wrong and you lose a life.

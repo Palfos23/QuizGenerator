@@ -20,7 +20,7 @@
         <router-link v-if="!auth.isAdmin.value" to="/501" class="nav-link" @click="onNavClick('/501', 'fiveOhOne')">501</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/imposter" class="nav-link" @click="onNavClick('/imposter', 'imposter')">Imposter</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/starting-xi-battle" class="nav-link" @click="onNavClick('/starting-xi-battle', 'startingXiBattle')">Starting XI Battle</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/starting-xi-battle" class="nav-link" @click="onNavClick('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/questions" class="nav-link">Question bank</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/question-labels" class="nav-link">Labels</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/athletes" class="nav-link">Subjects</router-link>
@@ -66,7 +66,7 @@
           <router-link to="/501" @click="closeGamesMenu('/501', 'fiveOhOne')">501</router-link>
           <router-link to="/imposter" @click="closeGamesMenu('/imposter', 'imposter')">Imposter</router-link>
           <router-link to="/grid-battle" @click="closeGamesMenu('/grid-battle', 'gridBattle')">Grid Battle</router-link>
-          <router-link to="/starting-xi-battle" @click="closeGamesMenu('/starting-xi-battle', 'startingXiBattle')">Starting XI Battle</router-link>
+          <router-link to="/starting-xi-battle" @click="closeGamesMenu('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
         </div>
       </div>
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
