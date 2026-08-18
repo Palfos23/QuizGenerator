@@ -2571,6 +2571,20 @@ table.scoreboard-table {
 .pitch-shirt.solved:hover {
   transform: none;
 }
+/* Filled in by "give up" (or, in pass-and-play, the whole board running out of
+   lives) rather than an actual correct guess - same distinction and coral as
+   .grid-tile.revealed-only, so a missed slot never looks indistinguishable
+   from one the player actually got right. */
+.pitch-shirt.revealed-only {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: #3a0410;
+  cursor: default;
+  box-shadow: none;
+}
+.pitch-shirt.revealed-only:hover {
+  transform: none;
+}
 .pitch-shirt.wrong-flash {
   animation: pitch-shirt-shake 0.4s ease;
 }

@@ -130,7 +130,11 @@
         <PitchMarkings />
         <div v-for="(row, ri) in rows" :key="ri" class="pitch-row" :class="`pitch-row--${row.kind}`">
           <div v-for="slot in row.items" :key="slot.id ?? slot.slotIndex" class="pitch-slot">
-            <div class="pitch-shirt" :class="{ solved: slot.solved, goalkeeper: slot.slotIndex === 0 }" :style="shirtStyle(slot)">
+            <div
+              class="pitch-shirt"
+              :class="{ solved: slot.guessedByUser, 'revealed-only': slot.solved && !slot.guessedByUser, goalkeeper: slot.slotIndex === 0 }"
+              :style="shirtStyle(slot)"
+            >
               <template v-if="!slot.solved">
                 <span class="pitch-shirt-sleeve left"></span>
                 <span class="pitch-shirt-sleeve right"></span>
