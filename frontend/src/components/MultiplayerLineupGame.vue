@@ -78,6 +78,13 @@
             </div>
           </div>
 
+          <div v-if="unsolvedSlots.length" style="text-align:left; margin-top:4px;">
+            <div style="color:var(--text-dim); font-size:0.82rem; margin-bottom:8px;">Not found:</div>
+            <div v-for="s in unsolvedSlots" :key="s.id" class="imposter-reveal-entry" style="background:rgba(255,255,255,0.03); border-color:var(--border);">
+              <span style="font-weight:700;">{{ s.name }}</span>
+            </div>
+          </div>
+
           <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextLineup">
             {{ currentLineupIndex + 1 < lineups.length ? 'Next board' : 'Finish game' }}
           </button>
@@ -169,6 +176,16 @@ const leaderboardForLineup = computed(() => {
       roundDelta: (scores.value[p.name] || 0) - (scoresAtLineupStart.value[p.name] || 0)
     }))
     .sort((a, b) => b.total - a.total)
+})
+// Only non-empty when the board ended by everyone running out of lives -
+// a full solve (allSolved) never leaves anything for revealRemaining() to
+// have populated revealedNames with in the first place.
+const unsolvedSlots = computed(() => {
+  if (!lineupState.value) return []
+  return lineupState.value.slots
+    .filter(s => !guessedSlotIds.value.includes(s.id))
+    .map(s => ({ id: s.id, name: revealedNames.value[s.id] }))
+    .filter(s => s.name)
 })
 
 const rows = computed(() => {

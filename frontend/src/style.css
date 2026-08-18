@@ -2564,6 +2564,7 @@ table.scoreboard-table {
 .pitch-shirt.solved {
   background: var(--teal);
   border-color: var(--teal);
+  border-width: 3px;
   color: #05261a;
   cursor: default;
   box-shadow: none;
@@ -2574,10 +2575,15 @@ table.scoreboard-table {
 /* Filled in by "give up" (or, in pass-and-play, the whole board running out of
    lives) rather than an actual correct guess - same distinction and coral as
    .grid-tile.revealed-only, so a missed slot never looks indistinguishable
-   from one the player actually got right. */
+   from one the player actually got right. Thicker border than the default
+   shirt, same reasoning as .grid-tile's - .pitch-slot-photo now sizes itself
+   to 100% of the shirt's content box instead of a fixed px size specifically
+   so this reads as one clean, fully-coral frame instead of the photo's own
+   border fighting the shirt's underneath it. */
 .pitch-shirt.revealed-only {
   background: var(--coral);
   border-color: var(--coral);
+  border-width: 3px;
   color: #3a0410;
   cursor: default;
   box-shadow: none;
@@ -2657,11 +2663,16 @@ table.scoreboard-table {
   min-height: 1.6em;
 }
 .pitch-slot-photo {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
+  /* Fills the shirt's content box exactly, rather than a fixed px size wider
+     than it - a fixed size here used to overflow past the shirt's own
+     border and mask it with this element's own (always-teal, regardless of
+     solved vs. revealed-only) border, so a "revealed but never guessed"
+     shirt still looked teal-framed instead of coral. No border of its own:
+     the shirt's border underneath is the single source of truth for color. */
+  width: 100%;
+  height: 100%;
+  border-radius: 7px 7px 4px 4px;
   object-fit: cover;
-  border: 2px solid var(--teal);
 }
 
 /* Pitch, shrunk to fit narrow phones. This has to come AFTER the base
@@ -2724,8 +2735,6 @@ table.scoreboard-table {
     font-size: 0.62rem;
   }
   .pitch-slot-photo {
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
+    border-radius: 6px 6px 3px 3px;
   }
 }

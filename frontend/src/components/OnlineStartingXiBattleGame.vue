@@ -78,6 +78,13 @@
             </div>
           </div>
 
+          <div v-if="unsolvedEntries.length" style="text-align:left; margin-top:4px;">
+            <div style="color:var(--text-dim); font-size:0.82rem; margin-bottom:8px;">Not found:</div>
+            <div v-for="e in unsolvedEntries" :key="e.id" class="imposter-reveal-entry" style="background:rgba(255,255,255,0.03); border-color:var(--border);">
+              <span style="font-weight:700;">{{ e.name }}</span>
+            </div>
+          </div>
+
           <button v-if="isHost" class="btn btn-primary" style="margin-top:12px; width:100%;" :disabled="advancing" @click="nextLineup">
             {{ advancing ? 'Loading…' : (state.currentLineupIndex + 1 < state.totalLineups ? 'Next board' : 'Finish game') }}
           </button>
@@ -177,6 +184,16 @@ const leaderboardForLineup = computed(() => {
     .map(p => ({ name: p.name, total: p.totalScore, roundDelta: p.totalScore - (scoresAtLineupStart.value[p.name] || 0) }))
     .sort((a, b) => b.total - a.total)
 })
+const revealMap = ref({}) // slot id -> athleteName, fetched once the board completes
+// Only non-empty when the board ended by everyone running out of lives -
+// a full solve never leaves anything unsolved to report here.
+const unsolvedEntries = computed(() => {
+  if (!state.value) return []
+  return state.value.slots
+    .filter(s => !s.solved)
+    .map(s => ({ id: s.id, name: revealMap.value[s.id] }))
+    .filter(s => s.name)
+})
 
 async function poll() {
   try {
@@ -194,8 +211,12 @@ function applyState(fresh) {
   if (fresh.currentLineupIndex !== lastLineupIndexSeen) {
     scoresAtLineupStart.value = Object.fromEntries((fresh.players || []).map(p => [p.name, p.totalScore]))
     lastLineupIndexSeen = fresh.currentLineupIndex
+    revealMap.value = {}
   }
   state.value = fresh
+  if (fresh.lineupComplete && Object.keys(revealMap.value).length === 0) {
+    api.getMultiplayerLineupReveal(fresh.currentLineupId).then(map => { revealMap.value = map }).catch(() => {})
+  }
   if (fresh.finished) {
     clearInterval(pollTimer)
     const scores = fresh.players.map(p => [p.name, p.totalScore])
