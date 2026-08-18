@@ -1006,7 +1006,12 @@ mark {
 
 .guess-box-wrap {
   position: sticky;
-  top: var(--nav-height);
+  /* --nav-height is a hand-tuned approximation of the real nav bar height,
+     which can drift a few px depending on font metrics/breakpoint - rather
+     than risk a gap where the pitch flashes through while scrolling, tuck
+     this a little further under the (opaque, higher z-index) nav so any
+     mismatch is a harmless hidden overlap instead of a visible seam. */
+  top: calc(var(--nav-height) - 10px);
   z-index: 25;
   background: var(--ink);
   border: 1px solid var(--border);
