@@ -261,7 +261,9 @@
 
     <MultiplayerLineupGame
       v-else-if="stage === 'game'"
+      :mode="gameMode"
       :lineups="gameLineups"
+      :num-lineups="gameNumLineups"
       :players="setupPlayers"
       @game-over="onGameOver"
     />
@@ -317,7 +319,13 @@ onMounted(() => {
 
 function resumePassAndPlay() {
   const saved = savedPassAndPlay.value
-  gameLineups.value = saved.gameLineups
+  gameMode.value = saved.mode || 'manual'
+  if (gameMode.value === 'random') {
+    gameNumLineups.value = saved.numLineups
+    gameLineups.value = []
+  } else {
+    gameLineups.value = saved.gameLineups
+  }
   setupPlayers.length = 0
   saved.players.forEach(p => setupPlayers.push(p))
   lastGameWasOnline.value = false
@@ -334,6 +342,8 @@ const availableLineups = ref([])
 const loadingLineups = ref(false)
 const chosenLineups = ref([])
 const gameLineups = ref([])
+const gameMode = ref('manual')
+const gameNumLineups = ref(2)
 const finalScores = ref([])
 
 function rebuildSetupPlayers() {
@@ -374,30 +384,31 @@ async function loadAvailableLineups() {
 async function goToLineupChoice() {
   error.value = ''
   if (lineupMode.value === 'random') {
-    await pickRandomLineups()
-    if (gameLineups.value.length < numLineups.value) {
-      error.value = `Only found ${gameLineups.value.length} board(s) - need at least ${numLineups.value}. Try picking your own, or ask an admin to add more boards.`
+    // Boards are picked one round at a time as the game is played (see
+    // MultiplayerLineupGame's round-choice screen), not resolved up front -
+    // this just checks there's actually enough of a pool to draw from at all.
+    let poolSize = 0
+    try {
+      const all = await api.listLineups()
+      poolSize = all.filter(l => !l.excludedFromBattle).length
+    } catch (e) {
+      poolSize = 0
+    }
+    if (poolSize < numLineups.value) {
+      error.value = `Only found ${poolSize} board(s) - need at least ${numLineups.value}. Try picking your own, or ask an admin to add more boards.`
       stage.value = 'landing'
       return
     }
-    passAndPlayState.save('starting-xi-battle', { gameLineups: gameLineups.value, players: [...setupPlayers] })
+    gameMode.value = 'random'
+    gameNumLineups.value = numLineups.value
+    gameLineups.value = []
+    passAndPlayState.save('starting-xi-battle', { mode: 'random', numLineups: numLineups.value, players: [...setupPlayers] })
     savedPassAndPlay.value = passAndPlayState.load('starting-xi-battle')
     stage.value = 'game'
   } else {
     chosenLineups.value = []
     stage.value = 'pickLineups'
     await loadAvailableLineups()
-  }
-}
-
-async function pickRandomLineups() {
-  try {
-    const all = await api.listLineups()
-    const pool = all.filter(l => !l.excludedFromBattle)
-    const shuffled = [...pool].sort(() => Math.random() - 0.5)
-    gameLineups.value = shuffled.slice(0, numLineups.value)
-  } catch (e) {
-    gameLineups.value = []
   }
 }
 
@@ -413,8 +424,9 @@ function toggleChosen(l) {
 }
 
 function startGame() {
+  gameMode.value = 'manual'
   gameLineups.value = chosenLineups.value
-  passAndPlayState.save('starting-xi-battle', { gameLineups: gameLineups.value, players: [...setupPlayers] })
+  passAndPlayState.save('starting-xi-battle', { mode: 'manual', gameLineups: gameLineups.value, players: [...setupPlayers] })
   savedPassAndPlay.value = passAndPlayState.load('starting-xi-battle')
   stage.value = 'game'
 }

@@ -29,6 +29,13 @@ public class LineupBattleStateDto {
     private boolean lineupComplete;
     private boolean finished;
 
+    // Only meaningful for "Random" games - true while this round's starting
+    // player still needs to pick one of lineupChoices before anything else
+    // about the round exists yet.
+    private boolean awaitingLineupChoice;
+    private List<LineupSummaryDto> lineupChoices;
+    private Long pickerParticipantId;
+
     public String getRoomCode() { return roomCode; }
     public void setRoomCode(String roomCode) { this.roomCode = roomCode; }
     public RoomStatus getStatus() { return status; }
@@ -75,4 +82,10 @@ public class LineupBattleStateDto {
     public void setLineupComplete(boolean lineupComplete) { this.lineupComplete = lineupComplete; }
     public boolean isFinished() { return finished; }
     public void setFinished(boolean finished) { this.finished = finished; }
+    public boolean isAwaitingLineupChoice() { return awaitingLineupChoice; }
+    public void setAwaitingLineupChoice(boolean awaitingLineupChoice) { this.awaitingLineupChoice = awaitingLineupChoice; }
+    public List<LineupSummaryDto> getLineupChoices() { return lineupChoices; }
+    public void setLineupChoices(List<LineupSummaryDto> lineupChoices) { this.lineupChoices = lineupChoices; }
+    public Long getPickerParticipantId() { return pickerParticipantId; }
+    public void setPickerParticipantId(Long pickerParticipantId) { this.pickerParticipantId = pickerParticipantId; }
 }

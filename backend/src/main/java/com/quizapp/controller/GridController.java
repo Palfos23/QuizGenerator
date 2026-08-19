@@ -66,6 +66,14 @@ public class GridController {
         return gridPlayService.findEligibleForGridBattle(authentication.getName());
     }
 
+    /** Random Grid Battle's round-start "choose one of 3" picker - see GridPlayService.getBattleRoundChoices. */
+    @GetMapping("/battle-round-choices")
+    public List<GridSummaryDto> battleRoundChoices(
+            @RequestParam(defaultValue = "3") int count,
+            @RequestParam(required = false) List<Long> excludeIds) {
+        return gridPlayService.getBattleRoundChoices(count, excludeIds);
+    }
+
     @GetMapping("/{id}/play")
     public GridPlayStateDto play(@PathVariable Long id, Authentication authentication) {
         return gridPlayService.getPlayState(id, authentication.getName());

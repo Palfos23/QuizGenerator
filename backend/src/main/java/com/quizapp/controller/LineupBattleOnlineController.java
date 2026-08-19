@@ -1,5 +1,6 @@
 package com.quizapp.controller;
 
+import com.quizapp.dto.LineupBattleChooseRequest;
 import com.quizapp.dto.LineupBattleGuessRequest;
 import com.quizapp.dto.LineupBattleStateDto;
 import com.quizapp.model.GameRoom;
@@ -33,6 +34,13 @@ public class LineupBattleOnlineController {
                                        Authentication authentication) {
         GameRoom room = roomService.findByCode(code);
         return lineupBattleOnlineService.guess(room, authentication.getName(), request.getAthleteId());
+    }
+
+    @PostMapping("/choose-lineup")
+    public LineupBattleStateDto chooseLineup(@PathVariable String code, @Valid @RequestBody LineupBattleChooseRequest request,
+                                              Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        return lineupBattleOnlineService.chooseLineup(room, authentication.getName(), request.getLineupId());
     }
 
     @PostMapping("/skip")

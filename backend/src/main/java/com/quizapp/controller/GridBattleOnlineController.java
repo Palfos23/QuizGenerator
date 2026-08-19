@@ -1,5 +1,6 @@
 package com.quizapp.controller;
 
+import com.quizapp.dto.GridBattleChooseRequest;
 import com.quizapp.dto.GridBattleGuessRequest;
 import com.quizapp.dto.GridBattleStateDto;
 import com.quizapp.model.GameRoom;
@@ -33,6 +34,13 @@ public class GridBattleOnlineController {
                                      Authentication authentication) {
         GameRoom room = roomService.findByCode(code);
         return gridBattleOnlineService.guess(room, authentication.getName(), request.getAthleteId());
+    }
+
+    @PostMapping("/choose-grid")
+    public GridBattleStateDto chooseGrid(@PathVariable String code, @Valid @RequestBody GridBattleChooseRequest request,
+                                          Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        return gridBattleOnlineService.chooseGrid(room, authentication.getName(), request.getGridId());
     }
 
     @PostMapping("/skip")

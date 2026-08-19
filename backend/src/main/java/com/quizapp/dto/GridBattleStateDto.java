@@ -20,6 +20,13 @@ public class GridBattleStateDto {
     private boolean gridComplete;
     private boolean finished;
 
+    // Only meaningful for "Random" games - true while this round's starting
+    // player still needs to pick one of gridChoices before anything else about
+    // the round (entries, strikes, etc.) exists yet.
+    private boolean awaitingGridChoice;
+    private List<GridSummaryDto> gridChoices;
+    private Long pickerParticipantId;
+
     public String getRoomCode() { return roomCode; }
     public void setRoomCode(String roomCode) { this.roomCode = roomCode; }
     public RoomStatus getStatus() { return status; }
@@ -48,4 +55,10 @@ public class GridBattleStateDto {
     public void setGridComplete(boolean gridComplete) { this.gridComplete = gridComplete; }
     public boolean isFinished() { return finished; }
     public void setFinished(boolean finished) { this.finished = finished; }
+    public boolean isAwaitingGridChoice() { return awaitingGridChoice; }
+    public void setAwaitingGridChoice(boolean awaitingGridChoice) { this.awaitingGridChoice = awaitingGridChoice; }
+    public List<GridSummaryDto> getGridChoices() { return gridChoices; }
+    public void setGridChoices(List<GridSummaryDto> gridChoices) { this.gridChoices = gridChoices; }
+    public Long getPickerParticipantId() { return pickerParticipantId; }
+    public void setPickerParticipantId(Long pickerParticipantId) { this.pickerParticipantId = pickerParticipantId; }
 }

@@ -9,6 +9,31 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
+      <div v-if="state.awaitingGridChoice" class="tension-choice-overlay">
+        <template v-if="isPicker">
+          <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
+            Grid {{ state.currentGridIndex + 1 }} / {{ state.totalGrids }}
+          </div>
+          <h2 style="margin:0 0 24px;">Choose a grid</h2>
+          <div class="tension-choice-grid">
+            <button
+              v-for="g in state.gridChoices"
+              :key="g.id"
+              class="tension-choice-card"
+              :disabled="choosing"
+              @click="chooseGrid(g)"
+            >
+              <strong>{{ g.title }}</strong>
+              <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ sportLabel(g.sport) }} · {{ g.entryCount }} to find</div>
+            </button>
+          </div>
+        </template>
+        <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
+          Waiting for {{ pickerName }} to choose a grid…
+        </div>
+      </div>
+
+      <template v-else>
       <div class="mp-player-row">
         <div
           v-for="p in state.players"
@@ -118,6 +143,7 @@
           <div class="grid-tile-name">{{ e.athleteName || '?' }}</div>
         </div>
       </div>
+      </template>
     </template>
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
@@ -134,7 +160,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import api from '../services/api'
-import { readableTextColor, formatHint } from '../constants'
+import { readableTextColor, formatHint, sportLabel } from '../constants'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -191,6 +217,11 @@ const isYourTurn = computed(() => !!state.value && state.value.currentTurnPartic
 const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )
+const isPicker = computed(() => !!state.value && state.value.pickerParticipantId === props.yourParticipantId)
+const pickerName = computed(() =>
+  state.value?.players.find(p => p.participantId === state.value.pickerParticipantId)?.name || '…'
+)
+const choosing = ref(false)
 
 function tileImage(e) {
   return e.athletePhotoUrl || e.logoUrl
@@ -274,6 +305,18 @@ async function submitGuess(athlete) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
   } finally {
     guessing.value = false
+  }
+}
+
+async function chooseGrid(g) {
+  choosing.value = true
+  try {
+    const fresh = await api.chooseGridBattleGrid(props.roomCode, g.id)
+    applyState(fresh)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not choose that grid.'
+  } finally {
+    choosing.value = false
   }
 }
 

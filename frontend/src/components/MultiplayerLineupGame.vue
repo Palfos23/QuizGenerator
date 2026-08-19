@@ -1,8 +1,26 @@
 <template>
   <div>
+    <div v-if="loadingChoices" style="text-align:center; padding:60px 0; color:var(--text-dim);">
+      Loading board choices…
+    </div>
+
+    <div v-else-if="roundChoices.length" class="tension-choice-overlay">
+      <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
+        Board {{ currentLineupIndex + 1 }} / {{ totalLineups }}
+      </div>
+      <h2 style="margin:0 0 24px;">{{ pickerName }}, choose a board</h2>
+      <div class="tension-choice-grid">
+        <button v-for="l in roundChoices" :key="l.id" class="tension-choice-card" @click="chooseLineup(l)">
+          <strong>{{ l.title }}</strong>
+          <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ l.teamName }} vs {{ l.opponentName }} · {{ l.formation }}</div>
+        </button>
+      </div>
+    </div>
+
+    <template v-else>
     <div class="grid-status-bar">
       <div class="grid-progress" style="text-align:center; width:100%;">
-        Board {{ currentLineupIndex + 1 }} / {{ lineups.length }}: {{ lineupState?.title }}
+        Board {{ currentLineupIndex + 1 }} / {{ totalLineups }}: {{ lineupState?.title }}
       </div>
     </div>
 
@@ -86,7 +104,7 @@
           </div>
 
           <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextLineup">
-            {{ currentLineupIndex + 1 < lineups.length ? 'Next board' : 'Finish game' }}
+            {{ currentLineupIndex + 1 < totalLineups ? 'Next board' : 'Finish game' }}
           </button>
         </div>
       </div>
@@ -114,6 +132,7 @@
         </div>
       </div>
     </template>
+    </template>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
       <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct' : 'Wrong' }}</div>
@@ -133,12 +152,26 @@ const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'
 
 const props = defineProps({
-  lineups: { type: Array, required: true }, // [{ id, title, ... }]
+  mode: { type: String, default: 'manual' }, // 'manual' | 'random'
+  lineups: { type: Array, default: () => [] }, // [{ id, title, ... }] - fixed list, mode === 'manual' only
+  numLineups: { type: Number, default: 0 }, // total rounds - mode === 'random' only
   players: { type: Array, required: true } // [{ name, color }]
 })
 const emit = defineEmits(['gameOver'])
 
+const totalLineups = computed(() => props.mode === 'random' ? props.numLineups : props.lineups.length)
+// This round's starting player rotates by seat, same convention as Tension's
+// rotatedPlayers[0] - and since they're also the one who picks in "random"
+// mode, this doubles as the picker's name before a board is even chosen.
+const pickerName = computed(() => props.players[currentLineupIndex.value % props.players.length]?.name)
+const currentLineupId = computed(() => props.mode === 'manual'
+  ? props.lineups[currentLineupIndex.value]?.id
+  : chosenLineups.value[currentLineupIndex.value]?.id)
+
 const currentLineupIndex = ref(0)
+const chosenLineups = ref([]) // boards actually picked so far ('random' mode only), index-aligned with currentLineupIndex
+const roundChoices = ref([]) // this round's 3 candidate boards, before a pick is made ('random' mode only)
+const loadingChoices = ref(false)
 const lineupState = ref(null)
 const loading = ref(true)
 const guessedSlotIds = ref([])
@@ -205,7 +238,7 @@ function shirtStyle(slot) {
   return { '--kit-color': color, '--kit-text': readableTextColor(color) }
 }
 
-async function loadLineup() {
+async function loadLineup(lineupId) {
   loading.value = true
   guessedSlotIds.value = []
   solvedById.value = {}
@@ -215,10 +248,39 @@ async function loadLineup() {
   scoresAtLineupStart.value = { ...scores.value }
   currentPlayerIdx.value = currentLineupIndex.value % props.players.length // rotate who starts, like Grid Battle
   try {
-    lineupState.value = await api.getMultiplayerLineupStart(props.lineups[currentLineupIndex.value].id)
+    lineupState.value = await api.getMultiplayerLineupStart(lineupId)
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
   } finally {
     loading.value = false
+  }
+}
+
+async function loadRoundChoices() {
+  loadingChoices.value = true
+  try {
+    roundChoices.value = await api.fetchLineupBattleRoundChoices(3, chosenLineups.value.map(l => l.id))
+  } finally {
+    loadingChoices.value = false
+  }
+}
+
+function chooseLineup(l) {
+  chosenLineups.value = [...chosenLineups.value, l]
+  roundChoices.value = []
+  loadLineup(l.id)
+}
+
+// Manual mode already knows every board up front. Random mode picks one round
+// at a time - resume straight into an already-chosen round rather than
+// re-offering a choice, since a choice already made is a commitment; otherwise
+// offer this round's 3 choices.
+function proceedToCurrentRound() {
+  if (props.mode === 'manual') {
+    return loadLineup(props.lineups[currentLineupIndex.value].id)
+  } else if (chosenLineups.value.length > currentLineupIndex.value) {
+    return loadLineup(chosenLineups.value[currentLineupIndex.value].id)
+  } else {
+    return loadRoundChoices()
   }
 }
 
@@ -232,7 +294,7 @@ watch(searchTerm, (val) => {
   }
   searchDebounce = setTimeout(async () => {
     try {
-      const results = await api.searchLineupCandidates(props.lineups[currentLineupIndex.value].id, val)
+      const results = await api.searchLineupCandidates(currentLineupId.value, val)
       searchResults.value = trimmed.length < 3
         ? results.filter(a => a.name.toLowerCase() === trimmed.toLowerCase())
         : results
@@ -249,7 +311,7 @@ async function submitGuess(athlete) {
   const player = currentPlayerName.value
   try {
     const result = await api.submitMultiplayerLineupGuess(
-      props.lineups[currentLineupIndex.value].id, athlete.id, guessedSlotIds.value
+      currentLineupId.value, athlete.id, guessedSlotIds.value
     )
     if (result.correct) {
       guessedSlotIds.value.push(result.slot.id)
@@ -313,16 +375,15 @@ function advanceTurn() {
 
 async function revealRemaining() {
   try {
-    revealedNames.value = await api.getMultiplayerLineupReveal(props.lineups[currentLineupIndex.value].id)
+    revealedNames.value = await api.getMultiplayerLineupReveal(currentLineupId.value)
   } catch (e) {
     // if this fails, shirts just stay hidden - not worth blocking the game-over flow over
   }
 }
 
 function nextLineup() {
-  if (currentLineupIndex.value + 1 < props.lineups.length) {
+  if (currentLineupIndex.value + 1 < totalLineups.value) {
     currentLineupIndex.value += 1
-    loadLineup()
   } else {
     emit('gameOver', props.players.map(p => [p.name, scores.value[p.name] || 0]))
   }
@@ -330,14 +391,18 @@ function nextLineup() {
 
 function progressIdentity() {
   return {
-    lineupIds: props.lineups.map(l => l.id),
+    mode: props.mode,
+    lineupIds: props.mode === 'manual' ? props.lineups.map(l => l.id) : null,
+    numLineups: props.mode === 'random' ? props.numLineups : null,
     playerNames: props.players.map(p => p.name)
   }
 }
 
 function identityMatches(saved) {
   const current = progressIdentity()
-  return JSON.stringify(saved.lineupIds) === JSON.stringify(current.lineupIds)
+  return saved.mode === current.mode
+      && JSON.stringify(saved.lineupIds) === JSON.stringify(current.lineupIds)
+      && saved.numLineups === current.numLineups
       && JSON.stringify(saved.playerNames) === JSON.stringify(current.playerNames)
 }
 
@@ -352,7 +417,10 @@ function saveProgress() {
     eliminatedPlayers: eliminatedPlayers.value,
     currentPlayerIdx: currentPlayerIdx.value,
     scores: scores.value,
-    lineupComplete: lineupComplete.value
+    lineupComplete: lineupComplete.value,
+    // 'random' mode only - the boards actually picked so far, so a resume
+    // doesn't have to re-offer (and potentially re-roll) a choice already made.
+    chosenLineups: chosenLineups.value
   })
 }
 
@@ -360,7 +428,8 @@ async function initGame() {
   const saved = passAndPlayState.load('starting-xi-battle-progress')
   if (saved && identityMatches(saved)) {
     currentLineupIndex.value = saved.currentLineupIndex
-    await loadLineup()
+    chosenLineups.value = saved.chosenLineups || []
+    await proceedToCurrentRound()
     guessedSlotIds.value = saved.guessedSlotIds
     solvedById.value = saved.solvedById || {}
     revealedNames.value = saved.revealedNames || {}
@@ -370,15 +439,16 @@ async function initGame() {
     scores.value = saved.scores
     lineupComplete.value = saved.lineupComplete
   } else {
-    await loadLineup()
+    await proceedToCurrentRound()
   }
 }
 
 watch(
-  [guessedSlotIds, solvedById, revealedNames, livesUsed, eliminatedPlayers, currentPlayerIdx, scores, lineupComplete, currentLineupIndex],
+  [guessedSlotIds, solvedById, revealedNames, livesUsed, eliminatedPlayers, currentPlayerIdx, scores, lineupComplete, currentLineupIndex, chosenLineups],
   saveProgress,
   { deep: true }
 )
 
 onMounted(initGame)
+watch(currentLineupIndex, proceedToCurrentRound)
 </script>

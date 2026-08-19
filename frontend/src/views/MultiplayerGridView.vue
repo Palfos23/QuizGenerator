@@ -277,7 +277,9 @@
 
     <MultiplayerGridGame
       v-else-if="stage === 'game'"
+      :mode="gameMode"
       :grids="gameGrids"
+      :num-grids="gameNumGrids"
       :players="setupPlayers"
       @game-over="onGameOver"
     />
@@ -346,7 +348,13 @@ onMounted(() => {
 
 function resumePassAndPlay() {
   const saved = savedPassAndPlay.value
-  gameGrids.value = saved.gameGrids
+  gameMode.value = saved.mode || 'manual'
+  if (gameMode.value === 'random') {
+    gameNumGrids.value = saved.numGrids
+    gameGrids.value = []
+  } else {
+    gameGrids.value = saved.gameGrids
+  }
   setupPlayers.length = 0
   saved.players.forEach(p => setupPlayers.push(p))
   lastGameWasOnline.value = false
@@ -363,6 +371,8 @@ const availableGrids = ref([])
 const loadingGrids = ref(false)
 const chosenGrids = ref([])
 const gameGrids = ref([])
+const gameMode = ref('manual')
+const gameNumGrids = ref(2)
 const finalScores = ref([])
 
 function rebuildSetupPlayers() {
@@ -398,29 +408,30 @@ async function loadAvailableGrids() {
 async function goToGridChoice() {
   error.value = ''
   if (gridMode.value === 'random') {
-    await pickRandomGrids()
-    if (gameGrids.value.length < numGrids.value) {
-      error.value = `Only found ${gameGrids.value.length} grid(s) - need at least ${numGrids.value}. Try picking your own, or ask an admin to add more grids.`
+    // Grids are picked one round at a time as the game is played (see
+    // MultiplayerGridGame's round-choice screen), not resolved up front - this
+    // just checks there's actually enough of a pool to draw from at all.
+    let poolSize = 0
+    try {
+      poolSize = (await api.getBattleEligibleGrids()).length
+    } catch (e) {
+      poolSize = 0
+    }
+    if (poolSize < numGrids.value) {
+      error.value = `Only found ${poolSize} grid(s) - need at least ${numGrids.value}. Try picking your own, or ask an admin to add more grids.`
       stage.value = 'landing'
       return
     }
-    passAndPlayState.save('grid-battle', { gameGrids: gameGrids.value, players: [...setupPlayers] })
+    gameMode.value = 'random'
+    gameNumGrids.value = numGrids.value
+    gameGrids.value = []
+    passAndPlayState.save('grid-battle', { mode: 'random', numGrids: numGrids.value, players: [...setupPlayers] })
     savedPassAndPlay.value = passAndPlayState.load('grid-battle')
     stage.value = 'game'
   } else {
     chosenGrids.value = []
     stage.value = 'pickGrids'
     await loadAvailableGrids()
-  }
-}
-
-async function pickRandomGrids() {
-  try {
-    const pool = await api.getBattleEligibleGrids()
-    const shuffled = [...pool].sort(() => Math.random() - 0.5)
-    gameGrids.value = shuffled.slice(0, numGrids.value)
-  } catch (e) {
-    gameGrids.value = []
   }
 }
 
@@ -436,8 +447,9 @@ function toggleChosen(g) {
 }
 
 function startGame() {
+  gameMode.value = 'manual'
   gameGrids.value = chosenGrids.value
-  passAndPlayState.save('grid-battle', { gameGrids: gameGrids.value, players: [...setupPlayers] })
+  passAndPlayState.save('grid-battle', { mode: 'manual', gameGrids: gameGrids.value, players: [...setupPlayers] })
   savedPassAndPlay.value = passAndPlayState.load('grid-battle')
   stage.value = 'game'
 }

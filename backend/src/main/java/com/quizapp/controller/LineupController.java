@@ -30,6 +30,14 @@ public class LineupController {
         return lineupPlayService.findAll(authentication.getName());
     }
 
+    /** Random Starting XI Battle's round-start "choose one of 3" picker - see LineupPlayService.getBattleRoundChoices. */
+    @GetMapping("/battle-round-choices")
+    public List<LineupSummaryDto> battleRoundChoices(
+            @RequestParam(defaultValue = "3") int count,
+            @RequestParam(required = false) List<Long> excludeIds) {
+        return lineupPlayService.getBattleRoundChoices(count, excludeIds);
+    }
+
     @GetMapping("/{id}/scoreboard")
     public LineupScoreboardDto scoreboard(@PathVariable Long id, Authentication authentication) {
         return lineupPlayService.getScoreboard(id, authentication.getName());

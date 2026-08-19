@@ -70,6 +70,14 @@
         </div>
       </div>
 
+      <div class="field">
+        <label>How should the boards be picked?</label>
+        <div class="language-row">
+          <button class="language-btn" :class="{ active: boardMode === 'random' }" @click="boardMode = 'random'">Random</button>
+          <button class="language-btn" :class="{ active: boardMode === 'manual' }" @click="boardMode = 'manual'">Pick my own</button>
+        </div>
+      </div>
+
       <button class="btn btn-secondary" @click="stage = 'modeChoice'">← Back</button>
       <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">Next →</button>
     </template>
@@ -245,7 +253,9 @@
 
     <ImposterGame
       v-else-if="stage === 'game'"
+      :mode="gameMode"
       :grid-ids="gameGridIds"
+      :num-boards="gameNumBoards"
       :players="playerNames"
       @game-over="onGameOver"
     />
@@ -291,9 +301,12 @@ const loading = ref(true)
 const allBoards = ref([])
 const numPlayers = ref(2)
 const numBoards = ref(1)
+const boardMode = ref('random')
 const playerNames = ref([])
 const chosenBoards = ref([])
 const gameGridIds = ref([])
+const gameMode = ref('manual')
+const gameNumBoards = ref(1)
 const finalScores = ref([])
 
 const allNamed = computed(() => playerNames.value.every(n => n.trim().length > 0))
@@ -307,7 +320,13 @@ onMounted(() => {
 
 function resumePassAndPlay() {
   const saved = savedPassAndPlay.value
-  gameGridIds.value = saved.gridIds
+  gameMode.value = saved.mode || 'manual'
+  if (gameMode.value === 'random') {
+    gameNumBoards.value = saved.numBoards
+    gameGridIds.value = []
+  } else {
+    gameGridIds.value = saved.gridIds
+  }
   playerNames.value = saved.players
   stage.value = 'game'
 }
@@ -337,9 +356,20 @@ function goToSetup() {
 
 function goToBoardChoice() {
   playerNames.value = playerNames.value.map(n => n.trim())
-  chosenBoards.value = []
   error.value = ''
-  stage.value = 'pickBoards'
+  if (boardMode.value === 'random') {
+    // Boards are picked one round at a time as the game is played (see
+    // ImposterGame's round-choice screen), not resolved up front.
+    gameMode.value = 'random'
+    gameNumBoards.value = numBoards.value
+    gameGridIds.value = []
+    passAndPlayState.save('imposter', { mode: 'random', numBoards: numBoards.value, players: playerNames.value })
+    savedPassAndPlay.value = passAndPlayState.load('imposter')
+    stage.value = 'game'
+  } else {
+    chosenBoards.value = []
+    stage.value = 'pickBoards'
+  }
 }
 
 function isChosen(g) {
@@ -355,8 +385,9 @@ function toggleChosen(g) {
 }
 
 function startGame() {
+  gameMode.value = 'manual'
   gameGridIds.value = chosenBoards.value.map(b => b.id)
-  passAndPlayState.save('imposter', { gridIds: gameGridIds.value, players: playerNames.value })
+  passAndPlayState.save('imposter', { mode: 'manual', gridIds: gameGridIds.value, players: playerNames.value })
   savedPassAndPlay.value = passAndPlayState.load('imposter')
   stage.value = 'game'
 }

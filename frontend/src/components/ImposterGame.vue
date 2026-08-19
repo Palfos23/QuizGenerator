@@ -1,11 +1,31 @@
 <template>
   <div>
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+
+    <div v-if="loadingChoices" style="text-align:center; padding:60px 0; color:var(--text-dim);">
+      Loading board choices…
+    </div>
+
+    <div v-else-if="roundChoices.length" class="tension-choice-overlay">
+      <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
+        Board {{ currentGridIndex + 1 }} / {{ totalBoards }}
+      </div>
+      <h2 style="margin:0 0 24px;">{{ pickerName }}, choose a board</h2>
+      <div class="tension-choice-grid">
+        <button v-for="g in roundChoices" :key="g.id" class="tension-choice-card" @click="chooseBoard(g)">
+          <strong>{{ g.title }}</strong>
+          <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">
+            {{ g.tileCount }} tiles, {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span><span v-if="g.description"> · {{ g.description }}</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div v-else-if="loading" style="color:var(--text-dim);">Loading…</div>
 
     <template v-else-if="playState">
       <div class="fiveoo-header">
-        <div class="grid-progress" style="text-align:center;">Board {{ currentGridIndex + 1 }} / {{ gridIds.length }}</div>
+        <div class="grid-progress" style="text-align:center;">Board {{ currentGridIndex + 1 }} / {{ totalBoards }}</div>
         <h2>{{ playState.title }}</h2>
         <p v-if="playState.description" class="fiveoo-description">{{ playState.description }}</p>
         <p class="fiveoo-rules-reminder">Fewest imposter hits wins - flip a tile on your turn</p>
@@ -92,11 +112,25 @@ import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
 
 const props = defineProps({
-  gridIds: { type: Array, required: true },
+  mode: { type: String, default: 'manual' }, // 'manual' | 'random'
+  gridIds: { type: Array, default: () => [] }, // fixed list, mode === 'manual' only
+  numBoards: { type: Number, default: 0 }, // total rounds, mode === 'random' only
   players: { type: Array, required: true }
 })
 const emit = defineEmits(['game-over'])
 
+const totalBoards = computed(() => props.mode === 'random' ? props.numBoards : props.gridIds.length)
+// This round's starting player rotates by seat, same convention as Tension's
+// rotatedPlayers[0] - and since they're also the one who picks in "random"
+// mode, this doubles as the picker's name before a board is even chosen.
+const pickerName = computed(() => props.players[currentGridIndex.value % props.players.length])
+const currentGridId = computed(() => props.mode === 'manual'
+  ? props.gridIds[currentGridIndex.value]
+  : chosenGridIds.value[currentGridIndex.value])
+
+const chosenGridIds = ref([]) // board ids actually picked so far ('random' mode only), index-aligned with currentGridIndex
+const roundChoices = ref([]) // this round's 3 candidate boards, before a pick is made ('random' mode only)
+const loadingChoices = ref(false)
 const loading = ref(true)
 const error = ref('')
 const playState = ref(null)
@@ -129,10 +163,21 @@ const sortedScoresForModal = computed(() => {
   return Object.entries(scores).sort((a, b) => a[1] - b[1]) // fewest imposter hits wins
 })
 
+function identityMatches(saved) {
+  if (!saved) return false
+  if (props.mode === 'manual') {
+    return saved.mode !== 'random'
+      && JSON.stringify(saved.gridIds) === JSON.stringify(props.gridIds)
+      && JSON.stringify(saved.players) === JSON.stringify(props.players)
+  }
+  return saved.mode === 'random'
+    && saved.numBoards === props.numBoards
+    && JSON.stringify(saved.players) === JSON.stringify(props.players)
+}
+
 onMounted(async () => {
   const saved = passAndPlayState.load('imposter')
-  if (saved && saved.gridIds && JSON.stringify(saved.gridIds) === JSON.stringify(props.gridIds)
-      && JSON.stringify(saved.players) === JSON.stringify(props.players)) {
+  if (identityMatches(saved)) {
     restoring = true
     currentGridIndex.value = saved.currentGridIndex ?? 0
     currentPlayerIdx.value = saved.currentPlayerIdx ?? 0
@@ -140,19 +185,48 @@ onMounted(async () => {
     for (const p of props.players) scores[p] = saved.scores?.[p] ?? 0
     accumulatedReveal.value = saved.accumulatedReveal || []
     Object.assign(tileOrders, saved.tileOrders || {})
+    chosenGridIds.value = saved.chosenGridIds || []
   } else {
     for (const p of props.players) scores[p] = 0
   }
-  await loadPlayState()
+  await proceedToCurrentRound()
   restoring = false
 })
 
-async function loadPlayState() {
+async function loadRoundChoices() {
+  loadingChoices.value = true
+  try {
+    roundChoices.value = await api.fetchImposterBattleRoundChoices(3, chosenGridIds.value)
+  } finally {
+    loadingChoices.value = false
+  }
+}
+
+function chooseBoard(g) {
+  chosenGridIds.value = [...chosenGridIds.value, g.id]
+  roundChoices.value = []
+  loadPlayState(g.id)
+}
+
+// Manual mode already knows every board up front. Random mode picks one
+// round at a time - resume straight into an already-chosen round rather than
+// re-offering a choice, since a choice already made is a commitment;
+// otherwise offer this round's 3 choices.
+function proceedToCurrentRound() {
+  if (props.mode === 'manual') {
+    return loadPlayState(props.gridIds[currentGridIndex.value])
+  } else if (chosenGridIds.value.length > currentGridIndex.value) {
+    return loadPlayState(chosenGridIds.value[currentGridIndex.value])
+  } else {
+    return loadRoundChoices()
+  }
+}
+
+async function loadPlayState(gridId) {
   loading.value = true
   error.value = ''
   boardFinished.value = false
   try {
-    const gridId = props.gridIds[currentGridIndex.value]
     const state = await api.getImposterPlayState(gridId)
 
     let order = tileOrders[gridId]
@@ -187,23 +261,26 @@ function tileClass(t) {
 function saveProgress() {
   if (restoring) return
   passAndPlayState.save('imposter', {
-    gridIds: props.gridIds,
+    mode: props.mode,
+    gridIds: props.mode === 'manual' ? props.gridIds : undefined,
+    numBoards: props.mode === 'random' ? props.numBoards : undefined,
     players: props.players,
     currentGridIndex: currentGridIndex.value,
     currentPlayerIdx: currentPlayerIdx.value,
     flippedTiles: { ...flippedTiles },
     scores: { ...scores },
     accumulatedReveal: accumulatedReveal.value,
-    tileOrders: { ...tileOrders }
+    tileOrders: { ...tileOrders },
+    chosenGridIds: chosenGridIds.value
   })
 }
-watch([currentGridIndex, currentPlayerIdx, flippedTiles, scores, accumulatedReveal, tileOrders], saveProgress, { deep: true })
+watch([currentGridIndex, currentPlayerIdx, flippedTiles, scores, accumulatedReveal, tileOrders, chosenGridIds], saveProgress, { deep: true })
 
 async function flipTile(t) {
   if (flipping.value || flippedTiles[t.id] || boardFinished.value) return
   flipping.value = true
   try {
-    const result = await api.flipImposterTile(props.gridIds[currentGridIndex.value], t.id)
+    const result = await api.flipImposterTile(currentGridId.value, t.id)
     flippedTiles[t.id] = { imposter: result.imposter, revealPhotoUrl: result.revealPhotoUrl, player: currentPlayer.value }
     if (result.imposter) scores[currentPlayer.value]++
     showFlipOverlay(result.imposter)
@@ -239,7 +316,7 @@ function showFlipOverlay(imposter) {
 async function finishBoard() {
   let revealList = []
   try {
-    revealList = await api.getImposterReveal(props.gridIds[currentGridIndex.value])
+    revealList = await api.getImposterReveal(currentGridId.value)
     revealList = revealList.map(r => ({ ...r, flippedByPlayer: flippedTiles[r.tileId]?.player || null }))
   } catch (e) {
     // reveal failing for one board shouldn't block the rest of the session
@@ -249,7 +326,7 @@ async function finishBoard() {
   setTimeout(() => {
     boardRevealModal.value = {
       reveal: revealList,
-      isLastBoard: currentGridIndex.value + 1 >= props.gridIds.length
+      isLastBoard: currentGridIndex.value + 1 >= totalBoards.value
     }
   }, 1300) // let the last flip's overlay finish playing first
 }
@@ -264,7 +341,7 @@ function continueAfterReveal() {
     currentGridIndex.value += 1
     // rotate who starts the next board, like Grid Battle and Tension do
     currentPlayerIdx.value = currentGridIndex.value % props.players.length
-    loadPlayState()
+    proceedToCurrentRound()
   }
 }
 </script>

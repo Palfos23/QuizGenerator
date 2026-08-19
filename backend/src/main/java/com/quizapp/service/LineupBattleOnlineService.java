@@ -3,6 +3,7 @@ package com.quizapp.service;
 import com.quizapp.dto.LineupBattlePlayerStateDto;
 import com.quizapp.dto.LineupBattleSlotDto;
 import com.quizapp.dto.LineupBattleStateDto;
+import com.quizapp.dto.LineupSummaryDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.*;
 import com.quizapp.repository.*;
@@ -29,41 +30,45 @@ public class LineupBattleOnlineService {
     private final LineupBattleParticipantStateRepository participantStateRepository;
     private final LineupBattleSolvedEntryRepository solvedEntryRepository;
     private final LineupRepository lineupRepository;
+    private final LineupPlayService lineupPlayService;
     private final RoomService roomService;
 
     public LineupBattleOnlineService(GameRoomRepository gameRoomRepository,
                                       LineupBattleRoomStateRepository roomStateRepository,
                                       LineupBattleParticipantStateRepository participantStateRepository,
                                       LineupBattleSolvedEntryRepository solvedEntryRepository,
-                                      LineupRepository lineupRepository, RoomService roomService) {
+                                      LineupRepository lineupRepository, LineupPlayService lineupPlayService,
+                                      RoomService roomService) {
         this.gameRoomRepository = gameRoomRepository;
         this.roomStateRepository = roomStateRepository;
         this.participantStateRepository = participantStateRepository;
         this.solvedEntryRepository = solvedEntryRepository;
         this.lineupRepository = lineupRepository;
+        this.lineupPlayService = lineupPlayService;
         this.roomService = roomService;
     }
 
-    /** Lineup sequence is decided at room-creation time, before anyone else has joined. */
+    /**
+     * "Pick my own" decides the whole lineup sequence right here. "Random"
+     * decides nothing yet - lineupIds starts empty and grows one entry per
+     * round, as that round's starting player picks from 3 live-generated
+     * choices - see GridBattleOnlineService.initializeGridSequence for the
+     * full reasoning this mirrors.
+     */
     @Transactional
     public void initializeLineupSequence(GameRoom room, List<Long> lineupIds, Integer randomCount) {
-        List<Long> sequence;
-        if (lineupIds != null && !lineupIds.isEmpty()) {
-            sequence = lineupIds;
-        } else {
-            int count = (randomCount != null && randomCount >= 2 && randomCount <= 4) ? randomCount : 2;
-            List<Lineup> all = lineupRepository.findAll().stream()
-                    .filter(l -> !l.isExcludedFromBattle())
-                    .collect(Collectors.toList());
-            Collections.shuffle(all);
-            sequence = all.stream().limit(count).map(Lineup::getId).collect(Collectors.toList());
-        }
-        if (sequence.size() < 2 || sequence.size() > 4) {
-            throw new IllegalArgumentException("Choose 2-4 Starting XI boards to play.");
-        }
         LineupBattleRoomState state = new LineupBattleRoomState();
         state.setRoom(room);
-        state.setLineupIds(sequence);
+        if (lineupIds != null && !lineupIds.isEmpty()) {
+            if (lineupIds.size() < 2 || lineupIds.size() > 4) {
+                throw new IllegalArgumentException("Choose 2-4 Starting XI boards to play.");
+            }
+            state.setLineupIds(lineupIds);
+        } else {
+            int count = (randomCount != null && randomCount >= 2 && randomCount <= 4) ? randomCount : 2;
+            state.setLineupIds(new ArrayList<>());
+            state.setRandomTotalCount(count);
+        }
         roomStateRepository.save(state);
     }
 
@@ -106,12 +111,25 @@ public class LineupBattleOnlineService {
                 .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
         List<LineupBattleParticipantState> participantStates = participantStateRepository.findByRoomState_Id(state.getId());
 
-        dto.setTotalLineups(state.getLineupIds().size());
+        dto.setTotalLineups(state.getRandomTotalCount() != null ? state.getRandomTotalCount() : state.getLineupIds().size());
         dto.setCurrentLineupIndex(state.getCurrentLineupIndex());
         dto.setFinished(state.isFinished());
 
         if (state.isFinished()) {
             dto.setPlayers(toPlayerDtos(participantStates, Collections.emptySet()));
+            return dto;
+        }
+
+        // "Random" mode: this round's board hasn't been picked yet - offer 3
+        // choices to whoever starts this round instead of anything else about
+        // the round, which doesn't exist until they pick.
+        if (state.getRandomTotalCount() != null && state.getLineupIds().size() <= state.getCurrentLineupIndex()) {
+            ensurePendingChoices(state);
+            dto.setPlayers(toPlayerDtos(participantStates, Collections.emptySet()));
+            dto.setAwaitingLineupChoice(true);
+            dto.setLineupChoices(resolveChoiceSummaries(state.getPendingChoiceIds()));
+            List<GameRoomParticipant> ordered = room.getParticipants();
+            dto.setPickerParticipantId(ordered.get(state.getCurrentLineupIndex() % ordered.size()).getId());
             return dto;
         }
 
@@ -275,7 +293,10 @@ public class LineupBattleOnlineService {
             participantStateRepository.save(ps);
         }
 
-        if (state.getCurrentLineupIndex() + 1 >= state.getLineupIds().size()) {
+        // "Random" mode's lineupIds only holds what's been chosen so far, not the
+        // whole planned game - randomTotalCount is the real round count there.
+        int totalLineups = state.getRandomTotalCount() != null ? state.getRandomTotalCount() : state.getLineupIds().size();
+        if (state.getCurrentLineupIndex() + 1 >= totalLineups) {
             state.setFinished(true);
             room.setStatus(RoomStatus.FINISHED);
             gameRoomRepository.save(room);
@@ -285,6 +306,56 @@ public class LineupBattleOnlineService {
         }
         roomStateRepository.save(state);
         return getState(room, requestingEmail);
+    }
+
+    /**
+     * "Random" mode only: the current round's starting player picks one of the
+     * 3 live-generated choices getState() offered - mirrors
+     * GridBattleOnlineService.chooseGrid.
+     */
+    @Transactional
+    public LineupBattleStateDto chooseLineup(GameRoom room, String requestingEmail, Long lineupId) {
+        GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
+        LineupBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+
+        if (state.getRandomTotalCount() == null) {
+            throw new IllegalStateException("This room isn't using random board selection.");
+        }
+        if (state.getLineupIds().size() > state.getCurrentLineupIndex()) {
+            throw new IllegalStateException("A board has already been chosen for this round.");
+        }
+        List<GameRoomParticipant> ordered = room.getParticipants();
+        GameRoomParticipant picker = ordered.get(state.getCurrentLineupIndex() % ordered.size());
+        if (!me.getId().equals(picker.getId())) {
+            throw new IllegalStateException("It's not your turn to choose.");
+        }
+        if (!state.getPendingChoiceIds().contains(lineupId)) {
+            throw new IllegalArgumentException("That wasn't one of the offered choices.");
+        }
+
+        state.getLineupIds().add(lineupId);
+        state.setPendingChoiceIds(new HashSet<>());
+        state.setCurrentTurnParticipantIndex(state.getCurrentLineupIndex() % ordered.size());
+        roomStateRepository.save(state);
+
+        return getState(room, requestingEmail);
+    }
+
+    private void ensurePendingChoices(LineupBattleRoomState state) {
+        if (!state.getPendingChoiceIds().isEmpty()) return;
+        List<LineupSummaryDto> choices = lineupPlayService.getBattleRoundChoices(3, new ArrayList<>(state.getLineupIds()));
+        state.setPendingChoiceIds(choices.stream().map(LineupSummaryDto::getId).collect(Collectors.toSet()));
+        roomStateRepository.save(state);
+    }
+
+    private List<LineupSummaryDto> resolveChoiceSummaries(Set<Long> ids) {
+        if (ids.isEmpty()) return Collections.emptyList();
+        return lineupRepository.findAllById(ids).stream()
+                .map(l -> new LineupSummaryDto(l.getId(), l.getTitle(), l.getCompetition(), l.getTeamName(),
+                        l.getOpponentName(), l.getScoreFor(), l.getScoreAgainst(), l.getMatchDate(),
+                        l.getWeekStartDate(), l.getFormation()))
+                .collect(Collectors.toList());
     }
 
     private List<LineupBattlePlayerStateDto> toPlayerDtos(List<LineupBattleParticipantState> states, Set<Long> eliminatedIds) {

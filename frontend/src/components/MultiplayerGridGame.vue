@@ -1,7 +1,25 @@
 <template>
   <div>
+    <div v-if="loadingChoices" style="text-align:center; padding:60px 0; color:var(--text-dim);">
+      Loading grid choices…
+    </div>
+
+    <div v-else-if="roundChoices.length" class="tension-choice-overlay">
+      <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
+        Grid {{ currentGridIndex + 1 }} / {{ totalGrids }}
+      </div>
+      <h2 style="margin:0 0 24px;">{{ pickerName }}, choose a grid</h2>
+      <div class="tension-choice-grid">
+        <button v-for="g in roundChoices" :key="g.id" class="tension-choice-card" @click="chooseGrid(g)">
+          <strong>{{ g.title }}</strong>
+          <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ sportLabel(g.sport) }} · {{ g.entryCount }} to find</div>
+        </button>
+      </div>
+    </div>
+
+    <template v-else>
     <div class="grid-status-bar">
-      <div class="grid-progress" style="text-align:center; width:100%;">Grid {{ currentGridIndex + 1 }} / {{ grids.length }}: {{ gridState?.title }}</div>
+      <div class="grid-progress" style="text-align:center; width:100%;">Grid {{ currentGridIndex + 1 }} / {{ totalGrids }}: {{ gridState?.title }}</div>
       <div v-if="gridState" style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ gridState.theme }}</div>
     </div>
 
@@ -79,7 +97,7 @@
           </div>
 
           <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextGrid">
-            {{ currentGridIndex + 1 < grids.length ? 'Next grid' : 'Finish game' }}
+            {{ currentGridIndex + 1 < totalGrids ? 'Next grid' : 'Finish game' }}
           </button>
         </div>
       </div>
@@ -113,6 +131,7 @@
         </div>
       </div>
     </template>
+    </template>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
       <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct' : 'Wrong' }}</div>
@@ -124,15 +143,29 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
-import { readableTextColor, formatHint } from '../constants'
+import { readableTextColor, formatHint, sportLabel } from '../constants'
 
 const props = defineProps({
-  grids: { type: Array, required: true }, // [{ id, title, ... }]
+  mode: { type: String, default: 'manual' }, // 'manual' | 'random'
+  grids: { type: Array, default: () => [] }, // [{ id, title, ... }] - fixed list, mode === 'manual' only
+  numGrids: { type: Number, default: 0 }, // total rounds - mode === 'random' only
   players: { type: Array, required: true } // [{ name, color }]
 })
 const emit = defineEmits(['gameOver'])
 
+const totalGrids = computed(() => props.mode === 'random' ? props.numGrids : props.grids.length)
+// This round's starting player rotates by seat, same convention as Tension's
+// rotatedPlayers[0] - and since they're also the one who picks in "random"
+// mode, this doubles as the picker's name before a grid is even chosen.
+const pickerName = computed(() => props.players[currentGridIndex.value % props.players.length]?.name)
+const currentGridId = computed(() => props.mode === 'manual'
+  ? props.grids[currentGridIndex.value]?.id
+  : chosenGrids.value[currentGridIndex.value]?.id)
+
 const currentGridIndex = ref(0)
+const chosenGrids = ref([]) // grids actually picked so far ('random' mode only), index-aligned with currentGridIndex
+const roundChoices = ref([]) // this round's 3 candidate grids, before a pick is made ('random' mode only)
+const loadingChoices = ref(false)
 const gridState = ref(null)
 const loading = ref(true)
 const revealedEntryIds = ref([])
@@ -184,7 +217,7 @@ function tileImage(entry) {
   return entry.logoUrl
 }
 
-async function loadGrid() {
+async function loadGrid(gridId) {
   loading.value = true
   revealedEntryIds.value = []
   revealMap.value = {}
@@ -193,10 +226,39 @@ async function loadGrid() {
   scoresAtGridStart.value = { ...scores.value }
   currentPlayerIdx.value = currentGridIndex.value % props.players.length // rotate who starts, like Tension
   try {
-    gridState.value = await api.getMultiplayerGridStart(props.grids[currentGridIndex.value].id)
+    gridState.value = await api.getMultiplayerGridStart(gridId)
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
   } finally {
     loading.value = false
+  }
+}
+
+async function loadRoundChoices() {
+  loadingChoices.value = true
+  try {
+    roundChoices.value = await api.fetchGridBattleRoundChoices(3, chosenGrids.value.map(g => g.id))
+  } finally {
+    loadingChoices.value = false
+  }
+}
+
+function chooseGrid(g) {
+  chosenGrids.value = [...chosenGrids.value, g]
+  roundChoices.value = []
+  loadGrid(g.id)
+}
+
+// Manual mode already knows every grid up front. Random mode picks one round
+// at a time - resume straight into an already-chosen round (e.g. after a
+// refresh) rather than re-offering a choice, since a choice already made is a
+// commitment, not something to redo; otherwise offer this round's 3 choices.
+function proceedToCurrentRound() {
+  if (props.mode === 'manual') {
+    return loadGrid(props.grids[currentGridIndex.value].id)
+  } else if (chosenGrids.value.length > currentGridIndex.value) {
+    return loadGrid(chosenGrids.value[currentGridIndex.value].id)
+  } else {
+    return loadRoundChoices()
   }
 }
 
@@ -210,7 +272,7 @@ watch(searchTerm, (val) => {
   }
   searchDebounce = setTimeout(async () => {
     try {
-      const results = await api.searchGridCandidates(props.grids[currentGridIndex.value].id, val)
+      const results = await api.searchGridCandidates(currentGridId.value, val)
       searchResults.value = trimmed.length < 3
         ? results.filter(a => a.name.toLowerCase() === trimmed.toLowerCase())
         : results
@@ -227,7 +289,7 @@ async function submitGuess(athlete) {
   const player = currentPlayerName.value
   try {
     const result = await api.submitMultiplayerGridGuess(
-      props.grids[currentGridIndex.value].id, athlete.id, revealedEntryIds.value
+      currentGridId.value, athlete.id, revealedEntryIds.value
     )
     if (result.correct) {
       revealedEntryIds.value.push(result.entry.id)
@@ -294,7 +356,7 @@ function advanceTurn() {
 
 async function revealRemaining() {
   try {
-    const revealed = await api.revealAllGridEntries(props.grids[currentGridIndex.value].id)
+    const revealed = await api.revealAllGridEntries(currentGridId.value)
     gridState.value.entries = gridState.value.entries.map(e => {
       if (e.solved) return e // already correctly guessed - keep as-is
       const match = revealed.find(r => r.id === e.id)
@@ -306,9 +368,8 @@ async function revealRemaining() {
 }
 
 function nextGrid() {
-  if (currentGridIndex.value + 1 < props.grids.length) {
+  if (currentGridIndex.value + 1 < totalGrids.value) {
     currentGridIndex.value += 1
-    loadGrid()
   } else {
     emit('gameOver', props.players.map(p => [p.name, scores.value[p.name] || 0]))
   }
@@ -316,14 +377,18 @@ function nextGrid() {
 
 function progressIdentity() {
   return {
-    gridIds: props.grids.map(g => g.id),
+    mode: props.mode,
+    gridIds: props.mode === 'manual' ? props.grids.map(g => g.id) : null,
+    numGrids: props.mode === 'random' ? props.numGrids : null,
     playerNames: props.players.map(p => p.name)
   }
 }
 
 function identityMatches(saved) {
   const current = progressIdentity()
-  return JSON.stringify(saved.gridIds) === JSON.stringify(current.gridIds)
+  return saved.mode === current.mode
+      && JSON.stringify(saved.gridIds) === JSON.stringify(current.gridIds)
+      && saved.numGrids === current.numGrids
       && JSON.stringify(saved.playerNames) === JSON.stringify(current.playerNames)
 }
 
@@ -342,7 +407,10 @@ function saveProgress() {
     // exactly what this browser legitimately saw. Saving it directly means
     // restoring a solved tile never needs to reconstruct its revealed data
     // from scratch, which isn't otherwise derivable from just its ID.
-    entries: gridState.value?.entries
+    entries: gridState.value?.entries,
+    // 'random' mode only - the grids actually picked so far, so a resume
+    // doesn't have to re-offer (and potentially re-roll) a choice already made.
+    chosenGrids: chosenGrids.value
   })
 }
 
@@ -350,28 +418,30 @@ async function initGame() {
   const saved = passAndPlayState.load('grid-battle-progress')
   if (saved && identityMatches(saved)) {
     currentGridIndex.value = saved.currentGridIndex
-    await loadGrid()
+    chosenGrids.value = saved.chosenGrids || []
+    await proceedToCurrentRound()
     revealedEntryIds.value = saved.revealedEntryIds
     livesUsed.value = saved.livesUsed
     eliminatedPlayers.value = saved.eliminatedPlayers
     currentPlayerIdx.value = saved.currentPlayerIdx
     scores.value = saved.scores
     gridComplete.value = saved.gridComplete
-    // loadGrid() just fetched this same grid fresh (all-unsolved) - replace its
-    // entries with the saved mix of solved/unsolved tiles instead.
+    // proceedToCurrentRound() just fetched this same grid fresh (all-unsolved),
+    // if it was already chosen - replace its entries with the saved mix of
+    // solved/unsolved tiles instead.
     if (gridState.value && saved.entries) {
       gridState.value.entries = saved.entries
     }
   } else {
-    await loadGrid()
+    await proceedToCurrentRound()
   }
 }
 
-watch([revealedEntryIds, livesUsed, eliminatedPlayers, currentPlayerIdx, scores, gridComplete, currentGridIndex], saveProgress, { deep: true })
+watch([revealedEntryIds, livesUsed, eliminatedPlayers, currentPlayerIdx, scores, gridComplete, currentGridIndex, chosenGrids], saveProgress, { deep: true })
 watch(gridComplete, async (val) => {
   if (val) {
     try {
-      revealMap.value = await api.getMultiplayerGridReveal(props.grids[currentGridIndex.value].id)
+      revealMap.value = await api.getMultiplayerGridReveal(currentGridId.value)
     } catch (e) {
       // reveal failing shouldn't block the rest of the completion modal
     }
@@ -379,4 +449,5 @@ watch(gridComplete, async (val) => {
 })
 
 onMounted(initGame)
+watch(currentGridIndex, proceedToCurrentRound)
 </script>

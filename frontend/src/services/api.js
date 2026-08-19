@@ -136,6 +136,11 @@ export default {
   getBattleEligibleGrids() {
     return client.get('/grids/battle-eligible').then(r => r.data)
   },
+  fetchGridBattleRoundChoices(count, excludeIds) {
+    const params = new URLSearchParams({ count: String(count) })
+    ;(excludeIds || []).forEach(id => params.append('excludeIds', String(id)))
+    return client.get(`/grids/battle-round-choices?${params.toString()}`).then(r => r.data)
+  },
   getGridPlayState(id) {
     return client.get(`/grids/${id}/play`).then(r => r.data)
   },
@@ -203,6 +208,11 @@ export default {
   setLineupLeaderboardPreference(id, include) {
     return client.put(`/lineups/${id}/leaderboard-preference?include=${include}`)
   },
+  fetchLineupBattleRoundChoices(count, excludeIds) {
+    const params = new URLSearchParams({ count: String(count) })
+    ;(excludeIds || []).forEach(id => params.append('excludeIds', String(id)))
+    return client.get(`/lineups/battle-round-choices?${params.toString()}`).then(r => r.data)
+  },
 
   // --- Starting XI: local pass-and-play (stateless - no persisted attempt) ---
   getMultiplayerLineupStart(id) {
@@ -235,6 +245,9 @@ export default {
   // --- Online Starting XI Battle ---
   getLineupBattleState(code) {
     return client.get(`/rooms/${code}/lineup-battle/state`).then(r => r.data)
+  },
+  chooseLineupBattleLineup(code, lineupId) {
+    return client.post(`/rooms/${code}/lineup-battle/choose-lineup`, { lineupId }).then(r => r.data)
   },
   submitLineupBattleGuess(code, athleteId) {
     return client.post(`/rooms/${code}/lineup-battle/guess`, { athleteId }).then(r => r.data)
@@ -461,6 +474,9 @@ export default {
   getGridBattleState(code) {
     return client.get(`/rooms/${code}/grid-battle/state`).then(r => r.data)
   },
+  chooseGridBattleGrid(code, gridId) {
+    return client.post(`/rooms/${code}/grid-battle/choose-grid`, { gridId }).then(r => r.data)
+  },
   submitGridBattleGuess(code, athleteId) {
     return client.post(`/rooms/${code}/grid-battle/guess`, { athleteId }).then(r => r.data)
   },
@@ -474,6 +490,9 @@ export default {
   // --- Online Imposter ---
   getImposterOnlineState(code) {
     return client.get(`/rooms/${code}/imposter/state`).then(r => r.data)
+  },
+  chooseImposterOnlineGrid(code, gridId) {
+    return client.post(`/rooms/${code}/imposter/choose-grid`, { gridId }).then(r => r.data)
   },
   flipImposterOnlineTile(code, tileId) {
     return client.post(`/rooms/${code}/imposter/flip`, { tileId }).then(r => r.data)
@@ -533,6 +552,11 @@ export default {
   listImposterGrids(sport) {
     const query = sport ? `?sport=${encodeURIComponent(sport)}` : ''
     return client.get(`/imposter-grids${query}`).then(r => r.data)
+  },
+  fetchImposterBattleRoundChoices(count, excludeIds) {
+    const params = new URLSearchParams({ count: String(count) })
+    ;(excludeIds || []).forEach(id => params.append('excludeIds', String(id)))
+    return client.get(`/imposter-grids/battle-round-choices?${params.toString()}`).then(r => r.data)
   },
   getImposterPlayState(id) {
     return client.get(`/imposter-grids/${id}/play`).then(r => r.data)

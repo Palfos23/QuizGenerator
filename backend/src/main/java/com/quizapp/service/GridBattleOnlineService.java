@@ -3,6 +3,7 @@ package com.quizapp.service;
 import com.quizapp.dto.GridBattleEntryDto;
 import com.quizapp.dto.GridBattlePlayerStateDto;
 import com.quizapp.dto.GridBattleStateDto;
+import com.quizapp.dto.GridSummaryDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.*;
 import com.quizapp.repository.*;
@@ -20,6 +21,7 @@ public class GridBattleOnlineService {
     private final GridBattleParticipantStateRepository participantStateRepository;
     private final GridBattleSolvedEntryRepository solvedEntryRepository;
     private final GridRepository gridRepository;
+    private final GridPlayService gridPlayService;
     private final RoomService roomService;
 
     public GridBattleOnlineService(GameRoomRepository gameRoomRepository,
@@ -27,35 +29,38 @@ public class GridBattleOnlineService {
                                     GridBattleParticipantStateRepository participantStateRepository,
                                     GridBattleSolvedEntryRepository solvedEntryRepository,
                                     GridRepository gridRepository,
+                                    GridPlayService gridPlayService,
                                     RoomService roomService) {
         this.gameRoomRepository = gameRoomRepository;
         this.roomStateRepository = roomStateRepository;
         this.participantStateRepository = participantStateRepository;
         this.solvedEntryRepository = solvedEntryRepository;
         this.gridRepository = gridRepository;
+        this.gridPlayService = gridPlayService;
         this.roomService = roomService;
     }
 
-    /** Grid sequence is decided at room-creation time, before anyone else has joined. */
+    /**
+     * "Pick my own" decides the whole grid sequence right here, before anyone else
+     * has joined. "Random" decides nothing yet - gridIds starts empty and grows one
+     * entry per round, as that round's starting player picks from 3 live-generated
+     * choices (see ensurePendingChoices/chooseGrid) - same "whoever starts, picks"
+     * idea as Tension's round-choice screen, just live instead of pass-and-play.
+     */
     @Transactional
     public void initializeGridSequence(GameRoom room, List<Long> gridIds, Integer randomCount) {
-        List<Long> sequence;
-        if (gridIds != null && !gridIds.isEmpty()) {
-            sequence = gridIds;
-        } else {
-            int count = (randomCount != null && randomCount >= 2 && randomCount <= 4) ? randomCount : 2;
-            List<Grid> all = gridRepository.findAll().stream()
-                    .filter(g -> !g.isExcludedFromGridBattle())
-                    .collect(Collectors.toList());
-            Collections.shuffle(all);
-            sequence = all.stream().limit(count).map(Grid::getId).collect(Collectors.toList());
-        }
-        if (sequence.size() < 2 || sequence.size() > 4) {
-            throw new IllegalArgumentException("Choose 2-4 grids to play.");
-        }
         GridBattleRoomState state = new GridBattleRoomState();
         state.setRoom(room);
-        state.setGridIds(sequence);
+        if (gridIds != null && !gridIds.isEmpty()) {
+            if (gridIds.size() < 2 || gridIds.size() > 4) {
+                throw new IllegalArgumentException("Choose 2-4 grids to play.");
+            }
+            state.setGridIds(gridIds);
+        } else {
+            int count = (randomCount != null && randomCount >= 2 && randomCount <= 4) ? randomCount : 2;
+            state.setGridIds(new ArrayList<>());
+            state.setRandomTotalCount(count);
+        }
         roomStateRepository.save(state);
     }
 
@@ -98,12 +103,26 @@ public class GridBattleOnlineService {
                 .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
         List<GridBattleParticipantState> participantStates = participantStateRepository.findByRoomState_Id(state.getId());
 
-        dto.setTotalGrids(state.getGridIds().size());
+        dto.setTotalGrids(state.getRandomTotalCount() != null ? state.getRandomTotalCount() : state.getGridIds().size());
         dto.setCurrentGridIndex(state.getCurrentGridIndex());
         dto.setFinished(state.isFinished());
 
         if (state.isFinished()) {
             dto.setPlayers(toPlayerDtos(participantStates, Collections.emptySet()));
+            return dto;
+        }
+
+        // "Random" mode: this round's grid hasn't been picked yet - offer 3 choices
+        // to whoever starts this round (same rotation formula used everywhere else
+        // in this class to decide who starts a given round) instead of anything
+        // else about the round, which doesn't exist until they pick.
+        if (state.getRandomTotalCount() != null && state.getGridIds().size() <= state.getCurrentGridIndex()) {
+            ensurePendingChoices(state);
+            dto.setPlayers(toPlayerDtos(participantStates, Collections.emptySet()));
+            dto.setAwaitingGridChoice(true);
+            dto.setGridChoices(resolveChoiceSummaries(state.getPendingChoiceIds()));
+            List<GameRoomParticipant> ordered = room.getParticipants();
+            dto.setPickerParticipantId(ordered.get(state.getCurrentGridIndex() % ordered.size()).getId());
             return dto;
         }
 
@@ -267,7 +286,10 @@ public class GridBattleOnlineService {
             participantStateRepository.save(ps);
         }
 
-        if (state.getCurrentGridIndex() + 1 >= state.getGridIds().size()) {
+        // "Random" mode's gridIds only holds what's been chosen so far, not the
+        // whole planned game - randomTotalCount is the real round count there.
+        int totalGrids = state.getRandomTotalCount() != null ? state.getRandomTotalCount() : state.getGridIds().size();
+        if (state.getCurrentGridIndex() + 1 >= totalGrids) {
             state.setFinished(true);
             room.setStatus(RoomStatus.FINISHED);
             gameRoomRepository.save(room);
@@ -278,6 +300,65 @@ public class GridBattleOnlineService {
         }
         roomStateRepository.save(state);
         return getState(room, requestingEmail);
+    }
+
+    /**
+     * "Random" mode only: the current round's starting player picks one of the 3
+     * live-generated choices getState() offered. Validates it's actually their
+     * turn and that gridId was really one of the offered options, then commits it
+     * as this round's grid - mirroring Tension's chooseQuestion, just server-side
+     * and turn-gated since this is a shared live room rather than one pass-and-play
+     * screen.
+     */
+    @Transactional
+    public GridBattleStateDto chooseGrid(GameRoom room, String requestingEmail, Long gridId) {
+        GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
+        GridBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+
+        if (state.getRandomTotalCount() == null) {
+            throw new IllegalStateException("This room isn't using random grid selection.");
+        }
+        if (state.getGridIds().size() > state.getCurrentGridIndex()) {
+            throw new IllegalStateException("A grid has already been chosen for this round.");
+        }
+        List<GameRoomParticipant> ordered = room.getParticipants();
+        GameRoomParticipant picker = ordered.get(state.getCurrentGridIndex() % ordered.size());
+        if (!me.getId().equals(picker.getId())) {
+            throw new IllegalStateException("It's not your turn to choose.");
+        }
+        if (!state.getPendingChoiceIds().contains(gridId)) {
+            throw new IllegalArgumentException("That wasn't one of the offered choices.");
+        }
+
+        state.getGridIds().add(gridId);
+        state.setPendingChoiceIds(new HashSet<>());
+        // The rotation formula already pointed at this same participant to pick -
+        // this just confirms them as the one who also plays first, now that a
+        // grid actually exists.
+        state.setCurrentTurnParticipantIndex(state.getCurrentGridIndex() % ordered.size());
+        roomStateRepository.save(state);
+
+        return getState(room, requestingEmail);
+    }
+
+    // Generates this round's 3 candidates the first time they're needed, then
+    // leaves them alone on every subsequent poll until chooseGrid() clears them -
+    // otherwise every poll would silently reshuffle the options out from under
+    // whoever's deciding.
+    private void ensurePendingChoices(GridBattleRoomState state) {
+        if (!state.getPendingChoiceIds().isEmpty()) return;
+        List<GridSummaryDto> choices = gridPlayService.getBattleRoundChoices(3, new ArrayList<>(state.getGridIds()));
+        state.setPendingChoiceIds(choices.stream().map(GridSummaryDto::getId).collect(Collectors.toSet()));
+        roomStateRepository.save(state);
+    }
+
+    private List<GridSummaryDto> resolveChoiceSummaries(Set<Long> ids) {
+        if (ids.isEmpty()) return Collections.emptyList();
+        return gridRepository.findAllById(ids).stream()
+                .map(g -> new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(),
+                        g.getEntries().size(), null, null))
+                .collect(Collectors.toList());
     }
 
     private List<GridBattlePlayerStateDto> toPlayerDtos(List<GridBattleParticipantState> states, Set<Long> eliminatedIds) {

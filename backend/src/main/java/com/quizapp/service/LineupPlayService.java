@@ -64,6 +64,30 @@ public class LineupPlayService {
     }
 
     /**
+     * For "Random" Starting XI Battle's round-start picker (mirrors
+     * GridPlayService.getBattleRoundChoices / TensionQuestionService
+     * .getRoundChoices): a small pool of candidate boards for the upcoming
+     * round, drawn from the same battle-eligible pool
+     * (LineupBattleOnlineService.initializeLineupSequence's old pool logic),
+     * minus whatever's already been played this game.
+     */
+    @Transactional(readOnly = true)
+    public List<LineupSummaryDto> getBattleRoundChoices(int count, List<Long> excludeIds) {
+        List<Long> ids = lineupRepository.findAll().stream()
+                .filter(l -> !l.isExcludedFromBattle())
+                .map(Lineup::getId)
+                .filter(id -> excludeIds == null || !excludeIds.contains(id))
+                .collect(Collectors.toList());
+        Collections.shuffle(ids);
+        List<Long> sampled = ids.stream().limit(count).collect(Collectors.toList());
+        return lineupRepository.findAllById(sampled).stream()
+                .map(l -> new LineupSummaryDto(l.getId(), l.getTitle(), l.getCompetition(), l.getTeamName(),
+                        l.getOpponentName(), l.getScoreFor(), l.getScoreAgainst(), l.getMatchDate(),
+                        l.getWeekStartDate(), l.getFormation()))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * One query for all the user's attempts across every board being listed, rather
      * than a separate query per board - same reasoning as GridPlayService's version.
      */

@@ -21,6 +21,13 @@ public class ImposterOnlineStateDto {
     private boolean boardComplete;
     private boolean finished;
 
+    // Only meaningful for "Random" games - true while this round's starting
+    // player still needs to pick one of gridChoices before anything else
+    // about the round exists yet.
+    private boolean awaitingGridChoice;
+    private List<ImposterGridSummaryDto> gridChoices;
+    private Long pickerParticipantId;
+
     public String getRoomCode() { return roomCode; }
     public void setRoomCode(String roomCode) { this.roomCode = roomCode; }
     public RoomStatus getStatus() { return status; }
@@ -51,4 +58,10 @@ public class ImposterOnlineStateDto {
     public void setBoardComplete(boolean boardComplete) { this.boardComplete = boardComplete; }
     public boolean isFinished() { return finished; }
     public void setFinished(boolean finished) { this.finished = finished; }
+    public boolean isAwaitingGridChoice() { return awaitingGridChoice; }
+    public void setAwaitingGridChoice(boolean awaitingGridChoice) { this.awaitingGridChoice = awaitingGridChoice; }
+    public List<ImposterGridSummaryDto> getGridChoices() { return gridChoices; }
+    public void setGridChoices(List<ImposterGridSummaryDto> gridChoices) { this.gridChoices = gridChoices; }
+    public Long getPickerParticipantId() { return pickerParticipantId; }
+    public void setPickerParticipantId(Long pickerParticipantId) { this.pickerParticipantId = pickerParticipantId; }
 }

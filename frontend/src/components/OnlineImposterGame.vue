@@ -11,6 +11,33 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
+      <div v-if="state.awaitingGridChoice" class="tension-choice-overlay">
+        <template v-if="isPicker">
+          <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
+            Board {{ state.currentGridIndex + 1 }} / {{ state.totalGrids }}
+          </div>
+          <h2 style="margin:0 0 24px;">Choose a board</h2>
+          <div class="tension-choice-grid">
+            <button
+              v-for="g in state.gridChoices"
+              :key="g.id"
+              class="tension-choice-card"
+              :disabled="choosing"
+              @click="chooseGrid(g)"
+            >
+              <strong>{{ g.title }}</strong>
+              <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">
+                {{ g.tileCount }} tiles, {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span><span v-if="g.description"> · {{ g.description }}</span>
+              </div>
+            </button>
+          </div>
+        </template>
+        <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
+          Waiting for {{ pickerName }} to choose a board…
+        </div>
+      </div>
+
+      <template v-else>
       <div class="mp-player-row">
         <div
           v-for="p in state.players"
@@ -83,6 +110,7 @@
           <div v-else style="margin-top:8px; color:var(--text-dim);">Waiting for the host to continue…</div>
         </div>
       </div>
+      </template>
     </template>
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
@@ -132,6 +160,11 @@ const isYourTurn = computed(() => !!state.value && state.value.currentTurnPartic
 const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )
+const isPicker = computed(() => !!state.value && state.value.pickerParticipantId === props.yourParticipantId)
+const pickerName = computed(() =>
+  state.value?.players.find(p => p.participantId === state.value.pickerParticipantId)?.name || '…'
+)
+const choosing = ref(false)
 const sortedPlayers = computed(() => {
   if (!state.value) return []
   return [...state.value.players].sort((a, b) => a.totalScore - b.totalScore) // fewest imposter hits wins
@@ -180,6 +213,18 @@ onMounted(() => {
   pollTimer = setInterval(poll, 1200)
 })
 onUnmounted(() => clearInterval(pollTimer))
+
+async function chooseGrid(g) {
+  choosing.value = true
+  try {
+    const fresh = await api.chooseImposterOnlineGrid(props.roomCode, g.id)
+    applyState(fresh)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not choose that board.'
+  } finally {
+    choosing.value = false
+  }
+}
 
 async function flipTile(t) {
   if (flipping.value || t.flipped || !state.value || state.value.boardComplete || !isYourTurn.value) return

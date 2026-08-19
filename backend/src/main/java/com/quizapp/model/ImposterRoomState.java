@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "imposter_room_states")
@@ -34,6 +36,18 @@ public class ImposterRoomState {
 
     @Column(nullable = false)
     private boolean finished = false;
+
+    // Null for "Pick my own". Set for "Random" - gridIds instead grows
+    // lazily, one entry per round, as that round's starting player chooses
+    // from pendingChoiceIds - see GridBattleRoomState's identical fields for
+    // the full reasoning.
+    @Column(name = "random_total_count")
+    private Integer randomTotalCount;
+
+    @ElementCollection
+    @CollectionTable(name = "imposter_battle_pending_choices", joinColumns = @JoinColumn(name = "state_id"))
+    @Column(name = "grid_id")
+    private Set<Long> pendingChoiceIds = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -81,5 +95,21 @@ public class ImposterRoomState {
 
     public void setFinished(boolean finished) {
         this.finished = finished;
+    }
+
+    public Integer getRandomTotalCount() {
+        return randomTotalCount;
+    }
+
+    public void setRandomTotalCount(Integer randomTotalCount) {
+        this.randomTotalCount = randomTotalCount;
+    }
+
+    public Set<Long> getPendingChoiceIds() {
+        return pendingChoiceIds;
+    }
+
+    public void setPendingChoiceIds(Set<Long> pendingChoiceIds) {
+        this.pendingChoiceIds = pendingChoiceIds;
     }
 }

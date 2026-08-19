@@ -25,6 +25,31 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
+      <div v-if="state.awaitingLineupChoice" class="tension-choice-overlay">
+        <template v-if="isPicker">
+          <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
+            Board {{ state.currentLineupIndex + 1 }} / {{ state.totalLineups }}
+          </div>
+          <h2 style="margin:0 0 24px;">Choose a board</h2>
+          <div class="tension-choice-grid">
+            <button
+              v-for="l in state.lineupChoices"
+              :key="l.id"
+              class="tension-choice-card"
+              :disabled="choosing"
+              @click="chooseLineup(l)"
+            >
+              <strong>{{ l.title }}</strong>
+              <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ l.teamName }} vs {{ l.opponentName }} · {{ l.formation }}</div>
+            </button>
+          </div>
+        </template>
+        <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
+          Waiting for {{ pickerName }} to choose a board…
+        </div>
+      </div>
+
+      <template v-else>
       <div class="mp-player-row">
         <div
           v-for="p in state.players"
@@ -113,6 +138,7 @@
           </div>
         </div>
       </div>
+      </template>
     </template>
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
@@ -171,6 +197,11 @@ const isYourTurn = computed(() => !!state.value && state.value.currentTurnPartic
 const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )
+const isPicker = computed(() => !!state.value && state.value.pickerParticipantId === props.yourParticipantId)
+const pickerName = computed(() =>
+  state.value?.players.find(p => p.participantId === state.value.pickerParticipantId)?.name || '…'
+)
+const choosing = ref(false)
 const rows = computed(() => state.value ? displayRowsFor(state.value.formation, state.value.slots) : [])
 function shirtStyle(slot) {
   const color = slot.slotIndex === 0
@@ -270,6 +301,18 @@ async function submitGuess(athlete) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
   } finally {
     guessing.value = false
+  }
+}
+
+async function chooseLineup(l) {
+  choosing.value = true
+  try {
+    const fresh = await api.chooseLineupBattleLineup(props.roomCode, l.id)
+    applyState(fresh)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not choose that board.'
+  } finally {
+    choosing.value = false
   }
 }
 

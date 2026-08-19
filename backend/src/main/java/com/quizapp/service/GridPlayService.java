@@ -167,6 +167,29 @@ public class GridPlayService {
     }
 
     /**
+     * For "Random" Grid Battle's round-start picker (mirrors TensionQuestionService
+     * .getRoundChoices): a small pool of candidate grids for the upcoming round,
+     * drawn from the same battle-eligible pool as findEligibleForGridBattle, minus
+     * whatever's already been played this game so a repeat never gets offered.
+     * Status/guessedCount aren't meaningful here (this isn't solo progress), so
+     * they're left null - the battle UI never reads them.
+     */
+    @Transactional(readOnly = true)
+    public List<GridSummaryDto> getBattleRoundChoices(int count, List<Long> excludeIds) {
+        List<Long> ids = gridRepository.findAll().stream()
+                .filter(g -> !g.isExcludedFromGridBattle())
+                .map(Grid::getId)
+                .filter(id -> excludeIds == null || !excludeIds.contains(id))
+                .collect(Collectors.toList());
+        Collections.shuffle(ids);
+        List<Long> sampled = ids.stream().limit(count).collect(Collectors.toList());
+        return gridRepository.findAllById(sampled).stream()
+                .map(g -> new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(),
+                        g.getEntries().size(), null, null))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * One query for all the user's attempts across every grid being listed, rather
      * than a separate query per grid - matters once there are a lot of grids.
      */

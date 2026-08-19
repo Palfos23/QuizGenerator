@@ -24,6 +24,14 @@ public class ImposterGridController {
         return playService.list(sport);
     }
 
+    /** Random Imposter Battle's round-start "choose one of 3" picker - see ImposterGridPlayService.getBattleRoundChoices. */
+    @GetMapping("/battle-round-choices")
+    public List<ImposterGridSummaryDto> battleRoundChoices(
+            @RequestParam(defaultValue = "3") int count,
+            @RequestParam(required = false) List<Long> excludeIds) {
+        return playService.getBattleRoundChoices(count, excludeIds);
+    }
+
     @GetMapping("/{id}/play")
     public ImposterPlayStateDto getPlayState(@PathVariable Long id) {
         return playService.getPlayState(id);

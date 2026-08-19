@@ -1,5 +1,6 @@
 package com.quizapp.service;
 
+import com.quizapp.dto.ImposterGridSummaryDto;
 import com.quizapp.dto.ImposterOnlinePlayerStateDto;
 import com.quizapp.dto.ImposterOnlineRevealDto;
 import com.quizapp.dto.ImposterOnlineStateDto;
@@ -22,6 +23,7 @@ public class ImposterOnlineService {
     private final ImposterFlippedTileRepository flippedTileRepository;
     private final ImposterGridRepository imposterGridRepository;
     private final ImposterTileRepository imposterTileRepository;
+    private final ImposterGridPlayService imposterGridPlayService;
     private final RoomService roomService;
 
     public ImposterOnlineService(GameRoomRepository gameRoomRepository,
@@ -30,6 +32,7 @@ public class ImposterOnlineService {
                                   ImposterFlippedTileRepository flippedTileRepository,
                                   ImposterGridRepository imposterGridRepository,
                                   ImposterTileRepository imposterTileRepository,
+                                  ImposterGridPlayService imposterGridPlayService,
                                   RoomService roomService) {
         this.gameRoomRepository = gameRoomRepository;
         this.roomStateRepository = roomStateRepository;
@@ -37,27 +40,31 @@ public class ImposterOnlineService {
         this.flippedTileRepository = flippedTileRepository;
         this.imposterGridRepository = imposterGridRepository;
         this.imposterTileRepository = imposterTileRepository;
+        this.imposterGridPlayService = imposterGridPlayService;
         this.roomService = roomService;
     }
 
-    /** Board sequence is decided at room-creation time, before anyone else has joined. */
+    /**
+     * "Pick my own" decides the whole board sequence right here. "Random"
+     * decides nothing yet - gridIds starts empty and grows one entry per
+     * round, as that round's starting player picks from 3 live-generated
+     * choices - see GridBattleOnlineService.initializeGridSequence for the
+     * full reasoning this mirrors.
+     */
     @Transactional
     public void initializeImposterSequence(GameRoom room, List<Long> gridIds, Integer randomCount) {
-        List<Long> sequence;
-        if (gridIds != null && !gridIds.isEmpty()) {
-            sequence = gridIds;
-        } else {
-            int count = (randomCount != null && randomCount >= 2 && randomCount <= 4) ? randomCount : 2;
-            List<ImposterGrid> all = imposterGridRepository.findAll();
-            Collections.shuffle(all);
-            sequence = all.stream().limit(count).map(ImposterGrid::getId).collect(Collectors.toList());
-        }
-        if (sequence.size() < 2 || sequence.size() > 4) {
-            throw new IllegalArgumentException("Choose 2-4 boards to play.");
-        }
         ImposterRoomState state = new ImposterRoomState();
         state.setRoom(room);
-        state.setGridIds(sequence);
+        if (gridIds != null && !gridIds.isEmpty()) {
+            if (gridIds.size() < 2 || gridIds.size() > 4) {
+                throw new IllegalArgumentException("Choose 2-4 boards to play.");
+            }
+            state.setGridIds(gridIds);
+        } else {
+            int count = (randomCount != null && randomCount >= 2 && randomCount <= 4) ? randomCount : 2;
+            state.setGridIds(new ArrayList<>());
+            state.setRandomTotalCount(count);
+        }
         roomStateRepository.save(state);
     }
 
@@ -100,7 +107,7 @@ public class ImposterOnlineService {
                 .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
         List<ImposterParticipantState> participantStates = participantStateRepository.findByRoomState_Id(state.getId());
 
-        dto.setTotalGrids(state.getGridIds().size());
+        dto.setTotalGrids(state.getRandomTotalCount() != null ? state.getRandomTotalCount() : state.getGridIds().size());
         dto.setCurrentGridIndex(state.getCurrentGridIndex());
         dto.setFinished(state.isFinished());
 
@@ -115,6 +122,18 @@ public class ImposterOnlineService {
                 .collect(Collectors.toList()));
 
         if (state.isFinished()) {
+            return dto;
+        }
+
+        // "Random" mode: this round's board hasn't been picked yet - offer 3
+        // choices to whoever starts this round instead of anything else about
+        // the round, which doesn't exist until they pick.
+        if (state.getRandomTotalCount() != null && state.getGridIds().size() <= state.getCurrentGridIndex()) {
+            ensurePendingChoices(state);
+            dto.setAwaitingGridChoice(true);
+            dto.setGridChoices(resolveChoiceSummaries(state.getPendingChoiceIds()));
+            List<GameRoomParticipant> ordered = room.getParticipants();
+            dto.setPickerParticipantId(ordered.get(state.getCurrentGridIndex() % ordered.size()).getId());
             return dto;
         }
 
@@ -277,7 +296,10 @@ public class ImposterOnlineService {
 
         flippedTileRepository.deleteByRoomState_Id(state.getId());
 
-        if (state.getCurrentGridIndex() + 1 >= state.getGridIds().size()) {
+        // "Random" mode's gridIds only holds what's been chosen so far, not the
+        // whole planned game - randomTotalCount is the real round count there.
+        int totalGrids = state.getRandomTotalCount() != null ? state.getRandomTotalCount() : state.getGridIds().size();
+        if (state.getCurrentGridIndex() + 1 >= totalGrids) {
             state.setFinished(true);
             room.setStatus(RoomStatus.FINISHED);
             gameRoomRepository.save(room);
@@ -288,5 +310,51 @@ public class ImposterOnlineService {
         }
         roomStateRepository.save(state);
         return getState(room, requestingEmail);
+    }
+
+    /**
+     * "Random" mode only: the current round's starting player picks one of the
+     * 3 live-generated choices getState() offered - mirrors
+     * GridBattleOnlineService.chooseGrid.
+     */
+    @Transactional
+    public ImposterOnlineStateDto chooseGrid(GameRoom room, String requestingEmail, Long gridId) {
+        GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
+        ImposterRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+
+        if (state.getRandomTotalCount() == null) {
+            throw new IllegalStateException("This room isn't using random board selection.");
+        }
+        if (state.getGridIds().size() > state.getCurrentGridIndex()) {
+            throw new IllegalStateException("A board has already been chosen for this round.");
+        }
+        List<GameRoomParticipant> ordered = room.getParticipants();
+        GameRoomParticipant picker = ordered.get(state.getCurrentGridIndex() % ordered.size());
+        if (!me.getId().equals(picker.getId())) {
+            throw new IllegalStateException("It's not your turn to choose.");
+        }
+        if (!state.getPendingChoiceIds().contains(gridId)) {
+            throw new IllegalArgumentException("That wasn't one of the offered choices.");
+        }
+
+        state.getGridIds().add(gridId);
+        state.setPendingChoiceIds(new HashSet<>());
+        state.setCurrentTurnParticipantIndex(state.getCurrentGridIndex() % ordered.size());
+        roomStateRepository.save(state);
+
+        return getState(room, requestingEmail);
+    }
+
+    private void ensurePendingChoices(ImposterRoomState state) {
+        if (!state.getPendingChoiceIds().isEmpty()) return;
+        List<ImposterGridSummaryDto> choices = imposterGridPlayService.getBattleRoundChoices(3, new ArrayList<>(state.getGridIds()));
+        state.setPendingChoiceIds(choices.stream().map(ImposterGridSummaryDto::getId).collect(Collectors.toSet()));
+        roomStateRepository.save(state);
+    }
+
+    private List<ImposterGridSummaryDto> resolveChoiceSummaries(Set<Long> ids) {
+        if (ids.isEmpty()) return Collections.emptyList();
+        return imposterGridPlayService.resolveSummaries(ids);
     }
 }

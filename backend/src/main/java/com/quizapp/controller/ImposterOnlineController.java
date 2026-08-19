@@ -1,5 +1,6 @@
 package com.quizapp.controller;
 
+import com.quizapp.dto.ImposterChooseRequest;
 import com.quizapp.dto.ImposterOnlineFlipRequest;
 import com.quizapp.dto.ImposterOnlineRevealDto;
 import com.quizapp.dto.ImposterOnlineStateDto;
@@ -29,6 +30,13 @@ public class ImposterOnlineController {
     public ImposterOnlineStateDto state(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);
         return imposterOnlineService.getState(room, authentication.getName());
+    }
+
+    @PostMapping("/choose-grid")
+    public ImposterOnlineStateDto chooseGrid(@PathVariable String code, @Valid @RequestBody ImposterChooseRequest request,
+                                              Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        return imposterOnlineService.chooseGrid(room, authentication.getName(), request.getGridId());
     }
 
     @PostMapping("/flip")

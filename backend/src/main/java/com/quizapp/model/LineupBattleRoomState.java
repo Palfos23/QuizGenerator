@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 // Mirrors GridBattleRoomState exactly - see that class for the reasoning.
 // A Starting XI Battle session steps through a sequence of 2-4 lineup boards
@@ -36,6 +38,18 @@ public class LineupBattleRoomState {
 
     @Column(nullable = false)
     private boolean finished = false;
+
+    // Null for "Pick my own". Set for "Random" - lineupIds instead grows
+    // lazily, one entry per round, as that round's starting player chooses
+    // from pendingChoiceIds - see GridBattleRoomState's identical fields for
+    // the full reasoning.
+    @Column(name = "random_total_count")
+    private Integer randomTotalCount;
+
+    @ElementCollection
+    @CollectionTable(name = "lineup_battle_pending_choices", joinColumns = @JoinColumn(name = "state_id"))
+    @Column(name = "lineup_id")
+    private Set<Long> pendingChoiceIds = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -83,5 +97,21 @@ public class LineupBattleRoomState {
 
     public void setFinished(boolean finished) {
         this.finished = finished;
+    }
+
+    public Integer getRandomTotalCount() {
+        return randomTotalCount;
+    }
+
+    public void setRandomTotalCount(Integer randomTotalCount) {
+        this.randomTotalCount = randomTotalCount;
+    }
+
+    public Set<Long> getPendingChoiceIds() {
+        return pendingChoiceIds;
+    }
+
+    public void setPendingChoiceIds(Set<Long> pendingChoiceIds) {
+        this.pendingChoiceIds = pendingChoiceIds;
     }
 }

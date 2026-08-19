@@ -34,6 +34,30 @@ public class ImposterGridPlayService {
         return grids.stream().map(this::toSummaryDto).collect(Collectors.toList());
     }
 
+    /**
+     * For "Random" Imposter's round-start picker (mirrors GridPlayService
+     * .getBattleRoundChoices / LineupPlayService.getBattleRoundChoices): a
+     * small pool of candidate boards for the upcoming round, minus whatever's
+     * already been played this game. Unlike Grid/Lineup, every ImposterGrid is
+     * always battle-eligible - there's no per-board "exclude from battle" flag.
+     */
+    @Transactional(readOnly = true)
+    public List<ImposterGridSummaryDto> getBattleRoundChoices(int count, List<Long> excludeIds) {
+        List<Long> ids = gridRepository.findAll().stream()
+                .map(ImposterGrid::getId)
+                .filter(id -> excludeIds == null || !excludeIds.contains(id))
+                .collect(Collectors.toList());
+        java.util.Collections.shuffle(ids);
+        List<Long> sampled = ids.stream().limit(count).collect(Collectors.toList());
+        return gridRepository.findAllById(sampled).stream().map(this::toSummaryDto).collect(Collectors.toList());
+    }
+
+    /** Resolves specific ids to summaries, in no particular order - for re-displaying an already-generated set of choices. */
+    @Transactional(readOnly = true)
+    public List<ImposterGridSummaryDto> resolveSummaries(java.util.Collection<Long> ids) {
+        return gridRepository.findAllById(ids).stream().map(this::toSummaryDto).collect(Collectors.toList());
+    }
+
     @Transactional(readOnly = true)
     public ImposterPlayStateDto getPlayState(Long gridId) {
         ImposterGrid grid = gridRepository.findById(gridId)

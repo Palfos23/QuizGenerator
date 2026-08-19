@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "grid_battle_room_states")
@@ -34,6 +36,22 @@ public class GridBattleRoomState {
 
     @Column(nullable = false)
     private boolean finished = false;
+
+    // Null for "Pick my own" (gridIds is already the full, fixed sequence).
+    // Set for "Random" - gridIds instead grows lazily, one entry per round, as
+    // that round's starting player chooses from pendingChoiceIds. This is the
+    // total round count, since gridIds.size() alone can't tell "3 of 4 chosen
+    // so far" apart from "this is a 3-grid game and we're done".
+    @Column(name = "random_total_count")
+    private Integer randomTotalCount;
+
+    // The current round's 3 (or so) offered candidates, once generated - cleared
+    // the moment that round's starting player picks one. Only ever populated
+    // when randomTotalCount is set.
+    @ElementCollection
+    @CollectionTable(name = "grid_battle_pending_choices", joinColumns = @JoinColumn(name = "state_id"))
+    @Column(name = "grid_id")
+    private Set<Long> pendingChoiceIds = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -81,5 +99,21 @@ public class GridBattleRoomState {
 
     public void setFinished(boolean finished) {
         this.finished = finished;
+    }
+
+    public Integer getRandomTotalCount() {
+        return randomTotalCount;
+    }
+
+    public void setRandomTotalCount(Integer randomTotalCount) {
+        this.randomTotalCount = randomTotalCount;
+    }
+
+    public Set<Long> getPendingChoiceIds() {
+        return pendingChoiceIds;
+    }
+
+    public void setPendingChoiceIds(Set<Long> pendingChoiceIds) {
+        this.pendingChoiceIds = pendingChoiceIds;
     }
 }
