@@ -1,8 +1,6 @@
 <template>
   <div>
-    <div v-if="loadingChoices" style="text-align:center; padding:60px 0; color:var(--text-dim);">
-      Loading question choices…
-    </div>
+    <LoadingState v-if="loadingChoices" message="Loading question choices…" />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
@@ -146,6 +144,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
 import TensionAnswerModal from './TensionAnswerModal.vue'
+import LoadingState from './LoadingState.vue'
 
 const props = defineProps({
   category: { type: String, default: '' },

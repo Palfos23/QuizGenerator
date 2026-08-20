@@ -5,7 +5,7 @@
       <div v-if="state" style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ state.gridTheme }}</div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <LoadingState v-if="loading" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
@@ -171,6 +171,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import api from '../services/api'
 import { readableTextColor, formatHint, sportLabel } from '../constants'
 import ConfirmModal from './ConfirmModal.vue'
+import LoadingState from './LoadingState.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const props = defineProps({

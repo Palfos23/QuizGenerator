@@ -1,8 +1,6 @@
 <template>
   <div>
-    <div v-if="loadingChoices" style="text-align:center; padding:60px 0; color:var(--text-dim);">
-      Loading board choices…
-    </div>
+    <LoadingState v-if="loadingChoices" message="Loading board choices…" />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
@@ -39,7 +37,7 @@
       </div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Loading board…</div>
+    <LoadingState v-if="loading" message="Loading board…" />
 
     <template v-else-if="lineupState">
       <div class="mp-player-row">
@@ -160,6 +158,7 @@ import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
 import PitchMarkings from './PitchMarkings.vue'
 import ConfirmModal from './ConfirmModal.vue'
+import LoadingState from './LoadingState.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const DEFAULT_KIT_COLOR = '#d92332'

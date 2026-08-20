@@ -2,9 +2,7 @@
   <div>
     <div v-if="error" class="banner error">{{ error }}</div>
 
-    <div v-if="loadingChoices" style="text-align:center; padding:60px 0; color:var(--text-dim);">
-      Loading board choices…
-    </div>
+    <LoadingState v-if="loadingChoices" message="Loading board choices…" />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
@@ -21,7 +19,7 @@
       </div>
     </div>
 
-    <div v-else-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <LoadingState v-else-if="loading" />
 
     <template v-else-if="playState">
       <div class="fiveoo-header">
@@ -110,6 +108,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
+import LoadingState from './LoadingState.vue'
 
 const props = defineProps({
   mode: { type: String, default: 'manual' }, // 'manual' | 'random'

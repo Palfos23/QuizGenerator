@@ -7,7 +7,7 @@
       <p class="fiveoo-rules-reminder">Fewest imposter hits wins - flip a tile on your turn</p>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <LoadingState v-if="loading" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
@@ -127,6 +127,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import api from '../services/api'
+import LoadingState from './LoadingState.vue'
 
 const props = defineProps({
   roomCode: { type: String, required: true },

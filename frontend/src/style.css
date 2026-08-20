@@ -1767,6 +1767,28 @@ table.scoreboard-table {
   .spinner { animation: none; }
 }
 
+/* Shared "a round/board/game is loading" state - used right after starting a
+   game in Tension, Grid Battle, XI Battle and Imposter (both pass-and-play
+   and online), replacing what used to be a bare line of dim text with the
+   same spinner language already established by .login-progress and
+   TensionView's pre-game overlay, so the wait actually reads as "in
+   progress" instead of looking like nothing is happening. */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 0;
+  color: var(--text-dim);
+  text-align: center;
+}
+.loading-state .spinner {
+  width: 30px;
+  height: 30px;
+  border-width: 3px;
+}
+
 /* ---------- Mobile ---------- */
 
 .bottom-nav {

@@ -1,8 +1,6 @@
 <template>
   <div>
-    <div v-if="loadingChoices" style="text-align:center; padding:60px 0; color:var(--text-dim);">
-      Loading grid choices…
-    </div>
+    <LoadingState v-if="loadingChoices" message="Loading grid choices…" />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
@@ -23,7 +21,7 @@
       <div v-if="gridState" style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ gridState.theme }}</div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Loading grid…</div>
+    <LoadingState v-if="loading" message="Loading grid…" />
 
     <template v-else-if="gridState">
       <div class="mp-player-row">
@@ -154,6 +152,7 @@ import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
 import { readableTextColor, formatHint, sportLabel } from '../constants'
 import ConfirmModal from './ConfirmModal.vue'
+import LoadingState from './LoadingState.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const props = defineProps({

@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <LoadingState v-if="loading" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
@@ -171,6 +171,7 @@ import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
 import PitchMarkings from './PitchMarkings.vue'
 import ConfirmModal from './ConfirmModal.vue'
+import LoadingState from './LoadingState.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const DEFAULT_KIT_COLOR = '#d92332'
