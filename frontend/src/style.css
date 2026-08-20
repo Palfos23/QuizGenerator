@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap');
 
 :root {
-  --nav-height: 64px; /* used by sticky elements positioned just below the top nav - keep in sync with .top-nav's actual rendered height per breakpoint */
+  --nav-height: 64px; /* used by sticky elements positioned just below the top nav - keep in sync with .top-nav's actual rendered height per breakpoint. Redefined for the mobile nav's shorter height in the @media (max-width: 760px) block below. */
   --ink: #101119;
   --ink-raised: #1a1c28;
   --gold: #f2b705;
@@ -1025,6 +1025,17 @@ mark {
                               centered underneath the search box, instead of
                               wedged beside it */
   align-items: center;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+/* Applied via useHideOnScroll while scrolling down a tall board/pitch - slides
+   the box off the top of the screen instead of leaving it permanently
+   camped over the content. A transform (not display/visibility) so its
+   sticky positioning and layout space are untouched; it just slides straight
+   back on the next upward scroll. */
+.guess-box-wrap.hide-on-scroll {
+  transform: translateY(-140%);
+  opacity: 0;
+  pointer-events: none;
 }
 .guess-box {
   max-width: 480px;
@@ -1763,12 +1774,25 @@ table.scoreboard-table {
 }
 
 @media (max-width: 760px) {
+  /* The mobile nav collapses to just the brand (every link/button beside it
+     is hidden below), so it renders noticeably shorter than the desktop
+     64px this variable is tuned for - measured ~50.5px. Redefining it here
+     keeps every sticky element anchored to the nav's real height at this
+     breakpoint instead of just the desktop one. */
+  :root {
+    --nav-height: 51px;
+  }
+
   .app-shell { flex-direction: column; }
 
   .top-nav { padding: 12px 16px; }
   .top-nav .nav-link, .top-nav-user, .top-nav .btn, .top-nav-dropdown { display: none; }
 
-  .guess-box-wrap { position: static; padding: 10px 0; }
+  /* Was position:static (scrolled away with the page) - now stays pinned
+     below the nav on mobile too, same as desktop, so the search box (and,
+     while results are open, the results themselves) stay reachable no
+     matter how far down a tall board/pitch the player has scrolled. */
+  .guess-box-wrap { padding: 10px 0; }
 
   .main-content {
     padding: 20px 16px 90px; /* extra bottom padding so content clears the bottom nav */

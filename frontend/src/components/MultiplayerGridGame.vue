@@ -47,7 +47,7 @@
         </div>
       </div>
 
-      <div v-if="!gridComplete" class="guess-box-wrap no-print">
+      <div v-if="!gridComplete" class="guess-box-wrap no-print" :class="{ 'hide-on-scroll': hideSearchBox }">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayerName }}'s turn</p>
           <input
@@ -154,6 +154,7 @@ import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
 import { readableTextColor, formatHint, sportLabel } from '../constants'
 import ConfirmModal from './ConfirmModal.vue'
+import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const props = defineProps({
   mode: { type: String, default: 'manual' }, // 'manual' | 'random'
@@ -162,6 +163,7 @@ const props = defineProps({
   players: { type: Array, required: true } // [{ name, color }]
 })
 const emit = defineEmits(['gameOver'])
+const { hidden: hideSearchBox } = useHideOnScroll()
 
 const totalGrids = computed(() => props.mode === 'random' ? props.numGrids : props.grids.length)
 // This round's starting player rotates by seat, same convention as Tension's

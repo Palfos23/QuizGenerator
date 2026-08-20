@@ -55,7 +55,7 @@
         </div>
       </div>
 
-      <div v-if="!state.gridComplete && isYourTurn" class="guess-box-wrap no-print">
+      <div v-if="!state.gridComplete && isYourTurn" class="guess-box-wrap no-print" :class="{ 'hide-on-scroll': hideSearchBox }">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">Your turn</p>
           <input
@@ -171,6 +171,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import api from '../services/api'
 import { readableTextColor, formatHint, sportLabel } from '../constants'
 import ConfirmModal from './ConfirmModal.vue'
+import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -178,6 +179,7 @@ const props = defineProps({
   isHost: { type: Boolean, default: false }
 })
 const emit = defineEmits(['gameOver', 'leave'])
+const { hidden: hideSearchBox } = useHideOnScroll()
 
 const state = ref(null)
 const scoresAtGridStart = ref({})

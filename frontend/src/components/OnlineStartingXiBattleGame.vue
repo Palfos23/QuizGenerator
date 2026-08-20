@@ -66,7 +66,7 @@
         </div>
       </div>
 
-      <div v-if="!state.lineupComplete && isYourTurn" class="guess-box-wrap no-print">
+      <div v-if="!state.lineupComplete && isYourTurn" class="guess-box-wrap no-print" :class="{ 'hide-on-scroll': hideSearchBox }">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">Your turn</p>
           <input
@@ -171,6 +171,7 @@ import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
 import PitchMarkings from './PitchMarkings.vue'
 import ConfirmModal from './ConfirmModal.vue'
+import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'
@@ -181,6 +182,7 @@ const props = defineProps({
   isHost: { type: Boolean, default: false }
 })
 const emit = defineEmits(['gameOver', 'leave'])
+const { hidden: hideSearchBox } = useHideOnScroll()
 
 const state = ref(null)
 const scoresAtLineupStart = ref({})
