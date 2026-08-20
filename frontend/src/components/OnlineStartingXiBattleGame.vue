@@ -82,11 +82,23 @@
               {{ a.name }}
             </button>
           </div>
-          <button class="btn btn-secondary btn-sm" style="margin-top:8px; width:100%;" :disabled="guessing" @click="skipTurn">
-            Pass turn (costs a life)
-          </button>
         </div>
+        <button
+          class="btn btn-danger pass-turn-btn"
+          :disabled="guessing"
+          @click="showSkipConfirm = true"
+        >Pass turn (costs a life)</button>
       </div>
+
+      <ConfirmModal
+        v-if="showSkipConfirm"
+        title="Pass your turn?"
+        message="You'll lose a life, same as a wrong guess."
+        confirm-text="Pass turn"
+        cancel-text="Keep guessing"
+        @confirm="confirmSkipTurn"
+        @cancel="showSkipConfirm = false"
+      />
 
       <div v-if="!state.lineupComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
         Waiting for {{ currentTurnName }}'s turn…
@@ -158,6 +170,7 @@ import api from '../services/api'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
 import PitchMarkings from './PitchMarkings.vue'
+import ConfirmModal from './ConfirmModal.vue'
 
 const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'
@@ -314,6 +327,12 @@ async function chooseLineup(l) {
   } finally {
     choosing.value = false
   }
+}
+
+const showSkipConfirm = ref(false)
+function confirmSkipTurn() {
+  showSkipConfirm.value = false
+  skipTurn()
 }
 
 async function skipTurn() {

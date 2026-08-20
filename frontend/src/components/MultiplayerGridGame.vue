@@ -69,14 +69,23 @@
               {{ a.name }}
             </button>
           </div>
-          <button
-            class="btn btn-secondary btn-sm"
-            style="margin-top:8px; width:100%;"
-            :disabled="guessing"
-            @click="skipTurn"
-          >Pass turn (costs a life)</button>
         </div>
+        <button
+          class="btn btn-danger pass-turn-btn"
+          :disabled="guessing"
+          @click="showSkipConfirm = true"
+        >Pass turn (costs a life)</button>
       </div>
+
+      <ConfirmModal
+        v-if="showSkipConfirm"
+        title="Pass your turn?"
+        message="You'll lose a life, same as a wrong guess."
+        confirm-text="Pass turn"
+        cancel-text="Keep guessing"
+        @confirm="confirmSkipTurn"
+        @cancel="showSkipConfirm = false"
+      />
 
       <div v-if="gridComplete" class="modal-backdrop">
         <div class="completion-popup">
@@ -144,6 +153,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
 import { readableTextColor, formatHint, sportLabel } from '../constants'
+import ConfirmModal from './ConfirmModal.vue'
 
 const props = defineProps({
   mode: { type: String, default: 'manual' }, // 'manual' | 'random'
@@ -321,6 +331,12 @@ async function submitGuess(athlete) {
   } finally {
     guessing.value = false
   }
+}
+
+const showSkipConfirm = ref(false)
+function confirmSkipTurn() {
+  showSkipConfirm.value = false
+  skipTurn()
 }
 
 function skipTurn() {

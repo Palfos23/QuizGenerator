@@ -1031,6 +1031,18 @@ mark {
   width: 100%;
   position: relative;
 }
+/* Deliberately separate from .guess-box (rather than its last child) with a
+   real gap above it - this sits right under a search input players are
+   actively tapping/typing into, and it costs a life, so it needs to read as
+   a distinct, deliberate action rather than "the next row in the list" a
+   thumb might land on by accident. Confirmed via ConfirmModal before it
+   actually fires (see the components using this class) as the other half of
+   that same guard. */
+.pass-turn-btn {
+  max-width: 480px;
+  width: 100%;
+  margin-top: 24px;
+}
 .guess-box input {
   width: 100%;
   padding: 14px 20px;

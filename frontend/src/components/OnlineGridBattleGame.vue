@@ -77,14 +77,23 @@
               {{ a.name }}
             </button>
           </div>
-          <button
-            class="btn btn-secondary btn-sm"
-            style="margin-top:8px; width:100%;"
-            :disabled="guessing"
-            @click="skipTurn"
-          >Pass turn (costs a life)</button>
         </div>
+        <button
+          class="btn btn-danger pass-turn-btn"
+          :disabled="guessing"
+          @click="showSkipConfirm = true"
+        >Pass turn (costs a life)</button>
       </div>
+
+      <ConfirmModal
+        v-if="showSkipConfirm"
+        title="Pass your turn?"
+        message="You'll lose a life, same as a wrong guess."
+        confirm-text="Pass turn"
+        cancel-text="Keep guessing"
+        @confirm="confirmSkipTurn"
+        @cancel="showSkipConfirm = false"
+      />
 
       <div v-if="!state.gridComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
         Waiting for {{ currentTurnName }}'s turn…
@@ -161,6 +170,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import api from '../services/api'
 import { readableTextColor, formatHint, sportLabel } from '../constants'
+import ConfirmModal from './ConfirmModal.vue'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -318,6 +328,12 @@ async function chooseGrid(g) {
   } finally {
     choosing.value = false
   }
+}
+
+const showSkipConfirm = ref(false)
+function confirmSkipTurn() {
+  showSkipConfirm.value = false
+  skipTurn()
 }
 
 async function skipTurn() {
