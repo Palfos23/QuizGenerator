@@ -1,6 +1,6 @@
 <template>
   <div>
-    <LoadingState v-if="loadingChoices" message="Loading grid choices…" />
+    <LoadingState v-if="loadingChoices" message="Loading grid choices…" full />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
@@ -21,7 +21,7 @@
       <div v-if="gridState" style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ gridState.theme }}</div>
     </div>
 
-    <LoadingState v-if="loading" message="Loading grid…" />
+    <LoadingState v-if="loading" message="Loading grid…" full />
 
     <template v-else-if="gridState">
       <div class="mp-player-row">

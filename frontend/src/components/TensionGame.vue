@@ -1,6 +1,6 @@
 <template>
   <div>
-    <LoadingState v-if="loadingChoices" message="Loading question choices…" />
+    <LoadingState v-if="loadingChoices" message="Loading question choices…" full />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">

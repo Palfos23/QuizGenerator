@@ -157,13 +157,15 @@ public class GridPlayService {
     // future) since it doesn't have "this week's theme" pacing - the one thing
     // it excludes is a grid an admin has explicitly retired after duplicating
     // it forward with updated content.
+    //
+    // Uses the lightweight findBattleEligiblePool() projection rather than
+    // findAll() - Grid.entries and GridEntry.athlete are both FetchType.EAGER,
+    // so hydrating full Grid entities here would issue a separate query per
+    // grid (and per entry) just to answer "how many entries does each have",
+    // which is the only thing about entries this screen actually needs.
     @Transactional(readOnly = true)
     public List<GridSummaryDto> findEligibleForGridBattle(String userEmail) {
-        List<Grid> grids = gridRepository.findAll().stream()
-                .filter(g -> !g.isExcludedFromGridBattle())
-                .sorted((a, b) -> b.getWeekStartDate().compareTo(a.getWeekStartDate()))
-                .collect(Collectors.toList());
-        return toSummariesWithStatus(grids, userEmail);
+        return toSummariesWithStatusFromProjections(gridRepository.findBattleEligiblePool(), userEmail);
     }
 
     /**
@@ -176,16 +178,17 @@ public class GridPlayService {
      */
     @Transactional(readOnly = true)
     public List<GridSummaryDto> getBattleRoundChoices(int count, List<Long> excludeIds) {
-        List<Long> ids = gridRepository.findAll().stream()
-                .filter(g -> !g.isExcludedFromGridBattle())
-                .map(Grid::getId)
+        List<Long> ids = gridRepository.findBattleEligibleIds().stream()
                 .filter(id -> excludeIds == null || !excludeIds.contains(id))
                 .collect(Collectors.toList());
         Collections.shuffle(ids);
         List<Long> sampled = ids.stream().limit(count).collect(Collectors.toList());
-        return gridRepository.findAllById(sampled).stream()
-                .map(g -> new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(),
-                        g.getEntries().size(), null, null))
+        if (sampled.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return gridRepository.findBattlePoolByIdIn(sampled).stream()
+                .map(row -> new GridSummaryDto(row.getId(), row.getTitle(), row.getSport(), row.getWeekStartDate(),
+                        row.getEntryCount().intValue(), null, null))
                 .collect(Collectors.toList());
     }
 
@@ -210,6 +213,32 @@ public class GridPlayService {
             GridSummaryDto dto = new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(),
                     g.getEntries().size(), status, guessedCount);
             dto.setExcludedFromGridBattle(g.isExcludedFromGridBattle());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Same as toSummariesWithStatus, but built from the lightweight
+     * GridBattlePoolProjection rows instead of full Grid entities - used by
+     * findEligibleForGridBattle, which never needs anything from Grid beyond
+     * these columns.
+     */
+    private List<GridSummaryDto> toSummariesWithStatusFromProjections(
+            List<com.quizapp.repository.GridBattlePoolProjection> rows, String userEmail) {
+        List<Long> gridIds = rows.stream().map(com.quizapp.repository.GridBattlePoolProjection::getId)
+                .collect(Collectors.toList());
+        java.util.Map<Long, GridAttempt> attemptByGridId = gridIds.isEmpty()
+                ? java.util.Map.of()
+                : gridAttemptRepository.findByGrid_IdInAndUser_Email(gridIds, userEmail).stream()
+                        .collect(Collectors.toMap(a -> a.getGrid().getId(), a -> a));
+
+        return rows.stream().map(row -> {
+            GridAttempt attempt = attemptByGridId.get(row.getId());
+            String status = attempt == null ? "NOT_STARTED" : (attempt.isCompleted() ? "COMPLETED" : "IN_PROGRESS");
+            Integer guessedCount = attempt == null ? null : attempt.getSolvedEntryIds().size();
+            GridSummaryDto dto = new GridSummaryDto(row.getId(), row.getTitle(), row.getSport(), row.getWeekStartDate(),
+                    row.getEntryCount().intValue(), status, guessedCount);
+            dto.setExcludedFromGridBattle(false); // findBattleEligiblePool() only ever returns non-excluded grids
             return dto;
         }).collect(Collectors.toList());
     }

@@ -1788,6 +1788,17 @@ table.scoreboard-table {
   height: 30px;
   border-width: 3px;
 }
+/* Full-screen variant, for right after "create/start game" - same overlay
+   treatment as .tension-intro-overlay so the whole page reads as busy
+   instead of just a small centered block in otherwise-empty layout. */
+.loading-state-full {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  padding: 0 24px;
+  background: rgba(8, 9, 14, 0.94);
+  backdrop-filter: blur(4px);
+}
 
 /* ---------- Mobile ---------- */
 

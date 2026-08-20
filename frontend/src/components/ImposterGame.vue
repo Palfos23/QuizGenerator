@@ -2,7 +2,7 @@
   <div>
     <div v-if="error" class="banner error">{{ error }}</div>
 
-    <LoadingState v-if="loadingChoices" message="Loading board choices…" />
+    <LoadingState v-if="loadingChoices" message="Loading board choices…" full />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <LoadingState v-else-if="loading" />
+    <LoadingState v-else-if="loading" full />
 
     <template v-else-if="playState">
       <div class="fiveoo-header">

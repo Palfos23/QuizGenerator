@@ -131,7 +131,7 @@
 
       <div v-if="onlineLineupMode === 'manual'" class="field">
         <label>Pick exactly {{ onlineNumLineups }} board(s) <span class="picker-hint">{{ onlineChosenLineups.length }}/{{ onlineNumLineups }} chosen</span></label>
-        <div v-if="loadingLineups" style="color:var(--text-dim);">Loading…</div>
+        <LoadingState v-if="loadingLineups" full />
         <div v-else class="saved-quiz-list">
           <div v-for="l in availableLineups" :key="l.id" class="saved-quiz-row">
             <div class="saved-quiz-info">
@@ -223,10 +223,11 @@
 
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'landing'">← Back</button>
-        <button class="btn btn-primary" :disabled="!allNamed || duplicateNames" @click="goToLineupChoice">
+        <button class="btn btn-primary" :disabled="!allNamed || duplicateNames || checkingPool" @click="goToLineupChoice">
           Next →
         </button>
       </div>
+      <LoadingState v-if="checkingPool" full />
     </template>
 
     <template v-else-if="stage === 'pickLineups'">
@@ -301,6 +302,7 @@ import passAndPlayState from '../services/passAndPlayState'
 import navTrigger from '../services/navTrigger'
 import MultiplayerLineupGame from '../components/MultiplayerLineupGame.vue'
 import OnlineStartingXiBattleGame from '../components/OnlineStartingXiBattleGame.vue'
+import LoadingState from '../components/LoadingState.vue'
 
 const colorOptions = ['#4f46e5', '#F22C05', '#F2BB05', '#032E8A', '#05D6F2', '#f43f5e', '#5D038A', '#22c55e']
 
@@ -381,6 +383,8 @@ async function loadAvailableLineups() {
   }
 }
 
+const checkingPool = ref(false)
+
 async function goToLineupChoice() {
   error.value = ''
   if (lineupMode.value === 'random') {
@@ -388,11 +392,14 @@ async function goToLineupChoice() {
     // MultiplayerLineupGame's round-choice screen), not resolved up front -
     // this just checks there's actually enough of a pool to draw from at all.
     let poolSize = 0
+    checkingPool.value = true
     try {
       const all = await api.listLineups()
       poolSize = all.filter(l => !l.excludedFromBattle).length
     } catch (e) {
       poolSize = 0
+    } finally {
+      checkingPool.value = false
     }
     if (poolSize < numLineups.value) {
       error.value = `Only found ${poolSize} board(s) - need at least ${numLineups.value}. Try picking your own, or ask an admin to add more boards.`

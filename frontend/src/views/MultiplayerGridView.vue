@@ -140,7 +140,7 @@
 
       <div v-if="onlineGridMode === 'manual'" class="field">
         <label>Pick exactly {{ onlineNumGrids }} grid(s) <span class="picker-hint">{{ onlineChosenGrids.length }}/{{ onlineNumGrids }} chosen</span></label>
-        <div v-if="loadingGrids" style="color:var(--text-dim);">Loading…</div>
+        <LoadingState v-if="loadingGrids" full />
         <div v-else class="saved-quiz-list">
           <div v-for="g in availableGrids" :key="g.id" class="saved-quiz-row">
             <div class="saved-quiz-info">
@@ -237,17 +237,18 @@
 
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'landing'">← Back</button>
-        <button class="btn btn-primary" :disabled="!allNamed || duplicateNames" @click="goToGridChoice">
+        <button class="btn btn-primary" :disabled="!allNamed || duplicateNames || checkingPool" @click="goToGridChoice">
           Next →
         </button>
       </div>
+      <LoadingState v-if="checkingPool" full />
     </template>
 
     <template v-else-if="stage === 'pickGrids'">
       <h1>Choose {{ numGrids }} grid{{ numGrids > 1 ? 's' : '' }}</h1>
       <p class="page-subtitle">{{ chosenGrids.length }} / {{ numGrids }} selected</p>
 
-      <div v-if="loadingGrids" style="color:var(--text-dim);">Loading…</div>
+      <LoadingState v-if="loadingGrids" full />
       <div v-else-if="!availableGrids.length" class="empty-state">No grids available yet.</div>
 
       <div v-else class="saved-quiz-list">
@@ -321,6 +322,7 @@ import navTrigger from '../services/navTrigger'
 import { sportLabel } from '../constants'
 import MultiplayerGridGame from '../components/MultiplayerGridGame.vue'
 import OnlineGridBattleGame from '../components/OnlineGridBattleGame.vue'
+import LoadingState from '../components/LoadingState.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },
@@ -405,6 +407,8 @@ async function loadAvailableGrids() {
   }
 }
 
+const checkingPool = ref(false)
+
 async function goToGridChoice() {
   error.value = ''
   if (gridMode.value === 'random') {
@@ -412,10 +416,13 @@ async function goToGridChoice() {
     // MultiplayerGridGame's round-choice screen), not resolved up front - this
     // just checks there's actually enough of a pool to draw from at all.
     let poolSize = 0
+    checkingPool.value = true
     try {
       poolSize = (await api.getBattleEligibleGrids()).length
     } catch (e) {
       poolSize = 0
+    } finally {
+      checkingPool.value = false
     }
     if (poolSize < numGrids.value) {
       error.value = `Only found ${poolSize} grid(s) - need at least ${numGrids.value}. Try picking your own, or ask an admin to add more grids.`
