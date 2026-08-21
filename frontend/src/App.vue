@@ -28,6 +28,7 @@
         <router-link v-if="!auth.isAdmin.value" to="/imposter" class="nav-link" @click="onNavClick('/imposter', 'imposter')">Imposter</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/starting-xi-battle" class="nav-link" @click="onNavClick('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/bullseye" class="nav-link" @click="onNavClick('/bullseye', 'bullseye')">Bullseye</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/questions" class="nav-link">Question bank</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/question-labels" class="nav-link">Labels</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/athletes" class="nav-link">Subjects</router-link>
@@ -38,6 +39,7 @@
         <router-link v-if="auth.isAdmin.value" to="/admin/tension-questions" class="nav-link">Tension</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/501" class="nav-link">501</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/imposter" class="nav-link">Imposter</router-link>
+        <router-link v-if="auth.isAdmin.value" to="/admin/bullseye" class="nav-link">Bullseye</router-link>
         <router-link v-if="auth.isAdmin.value" to="/admin/reports" class="nav-link">Reports</router-link>
 
         <div class="top-nav-spacer"></div>
@@ -84,6 +86,7 @@
           <router-link to="/imposter" role="menuitem" @click="closeGamesMenu('/imposter', 'imposter')">Imposter</router-link>
           <router-link to="/grid-battle" role="menuitem" @click="closeGamesMenu('/grid-battle', 'gridBattle')">Grid Battle</router-link>
           <router-link to="/starting-xi-battle" role="menuitem" @click="closeGamesMenu('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
+          <router-link to="/bullseye" role="menuitem" @click="closeGamesMenu('/bullseye', 'bullseye')">Bullseye</router-link>
         </div>
       </div>
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
@@ -96,6 +99,7 @@
       <router-link v-if="auth.isAdmin.value" to="/admin/tension-questions">Tension</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/501">501</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/imposter">Imposter</router-link>
+      <router-link v-if="auth.isAdmin.value" to="/admin/bullseye">Bullseye</router-link>
       <router-link v-if="auth.isAdmin.value" to="/admin/reports">Reports</router-link>
       <button @click="logout">Log out</button>
     </nav>
@@ -133,7 +137,7 @@ import { useEscapeKey } from './composables/useEscapeKey'
 
 const router = useRouter()
 
-const GAME_PATHS = ['/tension', '/501', '/imposter', '/grid-battle', '/starting-xi-battle']
+const GAME_PATHS = ['/tension', '/501', '/imposter', '/grid-battle', '/starting-xi-battle', '/bullseye']
 const showGamesMenu = ref(false)
 const isGameRoute = computed(() => GAME_PATHS.includes(router.currentRoute.value.path))
 

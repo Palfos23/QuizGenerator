@@ -274,7 +274,7 @@ async function chooseCategory(id) {
     chosenCategory.value = await api.getFiveOhOneCategory(id)
     stage.value = 'setup'
   } catch (e) {
-    error.value = 'Could not load that category.'
+    error.value = e.response?.data?.message || 'Could not load that category.'
   }
 }
 

@@ -271,7 +271,7 @@ async function loadLineup(lineupId) {
     lineupState.value = await api.getMultiplayerLineupStart(lineupId)
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
   } catch (e) {
-    toast.show('Could not load this board - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Could not load this board - please try again.', 'error')
   } finally {
     loading.value = false
   }
@@ -282,7 +282,7 @@ async function loadRoundChoices() {
   try {
     roundChoices.value = await api.fetchLineupBattleRoundChoices(3, chosenLineups.value.map(l => l.id))
   } catch (e) {
-    toast.show('Could not load the next round - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
   } finally {
     loadingChoices.value = false
   }

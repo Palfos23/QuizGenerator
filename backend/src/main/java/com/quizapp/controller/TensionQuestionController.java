@@ -1,7 +1,9 @@
 package com.quizapp.controller;
 
 import com.quizapp.dto.TensionQuestionDto;
+import com.quizapp.service.PlayAccessService;
 import com.quizapp.service.TensionQuestionService;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,16 +17,20 @@ import java.util.List;
 public class TensionQuestionController {
 
     private final TensionQuestionService questionService;
+    private final PlayAccessService playAccessService;
 
-    public TensionQuestionController(TensionQuestionService questionService) {
+    public TensionQuestionController(TensionQuestionService questionService, PlayAccessService playAccessService) {
         this.questionService = questionService;
+        this.playAccessService = playAccessService;
     }
 
     @GetMapping("/random")
     public List<TensionQuestionDto> random(
             @RequestParam(defaultValue = "5") int count,
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) List<String> excludeCategories) {
+            @RequestParam(required = false) List<String> excludeCategories,
+            Authentication authentication) {
+        playAccessService.requireTensionAccess(authentication);
         return questionService.getRandom(count, category, excludeCategories == null ? Collections.emptyList() : excludeCategories);
     }
 
@@ -33,7 +39,9 @@ public class TensionQuestionController {
             @RequestParam(defaultValue = "3") int count,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) List<String> excludeCategories,
-            @RequestParam(required = false) List<Long> excludeIds) {
+            @RequestParam(required = false) List<Long> excludeIds,
+            Authentication authentication) {
+        playAccessService.requireTensionAccess(authentication);
         return questionService.getRoundChoices(count, category,
                 excludeCategories == null ? Collections.emptyList() : excludeCategories,
                 excludeIds == null ? Collections.emptyList() : excludeIds);

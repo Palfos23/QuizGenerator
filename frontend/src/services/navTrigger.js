@@ -7,7 +7,8 @@ const state = reactive({
   fiveOhOne: 0,
   myQuizzes: 0,
   generate: 0,
-  startingXiBattle: 0
+  startingXiBattle: 0,
+  bullseye: 0
 })
 
 export default {

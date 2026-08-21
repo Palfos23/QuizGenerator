@@ -5,6 +5,8 @@ import com.quizapp.dto.ImposterGridSummaryDto;
 import com.quizapp.dto.ImposterPlayStateDto;
 import com.quizapp.dto.ImposterRevealDto;
 import com.quizapp.service.ImposterGridPlayService;
+import com.quizapp.service.PlayAccessService;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,9 +16,11 @@ import java.util.List;
 public class ImposterGridController {
 
     private final ImposterGridPlayService playService;
+    private final PlayAccessService playAccessService;
 
-    public ImposterGridController(ImposterGridPlayService playService) {
+    public ImposterGridController(ImposterGridPlayService playService, PlayAccessService playAccessService) {
         this.playService = playService;
+        this.playAccessService = playAccessService;
     }
 
     @GetMapping
@@ -28,7 +32,9 @@ public class ImposterGridController {
     @GetMapping("/battle-round-choices")
     public List<ImposterGridSummaryDto> battleRoundChoices(
             @RequestParam(defaultValue = "3") int count,
-            @RequestParam(required = false) List<Long> excludeIds) {
+            @RequestParam(required = false) List<Long> excludeIds,
+            Authentication authentication) {
+        playAccessService.requireImposterAccess(authentication);
         return playService.getBattleRoundChoices(count, excludeIds);
     }
 

@@ -377,7 +377,7 @@ async function loadRoundChoices() {
       3, props.category, props.excludeCategories, chosenQuestions.value.map(q => q.id)
     )
   } catch (e) {
-    toast.show('Could not load the next round - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
   } finally {
     loadingChoices.value = false
   }

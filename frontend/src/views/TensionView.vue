@@ -379,7 +379,7 @@ async function startGame() {
     savedPassAndPlay.value = passAndPlayState.load('tension')
     stage.value = 'game'
   } catch (e) {
-    error.value = 'Could not load questions.'
+    error.value = e.response?.data?.message || 'Could not load questions.'
     stage.value = 'landing'
   } finally {
     starting.value = false

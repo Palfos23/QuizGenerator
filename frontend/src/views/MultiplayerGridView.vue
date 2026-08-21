@@ -401,7 +401,7 @@ async function loadAvailableGrids() {
   try {
     availableGrids.value = await api.getBattleEligibleGrids()
   } catch (e) {
-    error.value = 'Could not load grids.'
+    error.value = e.response?.data?.message || 'Could not load grids.'
   } finally {
     loadingGrids.value = false
   }
@@ -416,13 +416,19 @@ async function goToGridChoice() {
     // MultiplayerGridGame's round-choice screen), not resolved up front - this
     // just checks there's actually enough of a pool to draw from at all.
     let poolSize = 0
+    let accessError = ''
     checkingPool.value = true
     try {
       poolSize = (await api.getBattleEligibleGrids()).length
     } catch (e) {
-      poolSize = 0
+      accessError = e.response?.data?.message || ''
     } finally {
       checkingPool.value = false
+    }
+    if (accessError) {
+      error.value = accessError
+      stage.value = 'landing'
+      return
     }
     if (poolSize < numGrids.value) {
       error.value = `Only found ${poolSize} grid(s) - need at least ${numGrids.value}. Try picking your own, or ask an admin to add more grids.`

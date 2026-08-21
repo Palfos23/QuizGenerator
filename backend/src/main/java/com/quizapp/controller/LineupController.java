@@ -8,6 +8,7 @@ import com.quizapp.dto.LineupPlayStateDto;
 import com.quizapp.dto.LineupScoreboardDto;
 import com.quizapp.dto.LineupSummaryDto;
 import com.quizapp.service.LineupPlayService;
+import com.quizapp.service.PlayAccessService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +21,11 @@ import java.util.Map;
 public class LineupController {
 
     private final LineupPlayService lineupPlayService;
+    private final PlayAccessService playAccessService;
 
-    public LineupController(LineupPlayService lineupPlayService) {
+    public LineupController(LineupPlayService lineupPlayService, PlayAccessService playAccessService) {
         this.lineupPlayService = lineupPlayService;
+        this.playAccessService = playAccessService;
     }
 
     @GetMapping
@@ -34,7 +37,9 @@ public class LineupController {
     @GetMapping("/battle-round-choices")
     public List<LineupSummaryDto> battleRoundChoices(
             @RequestParam(defaultValue = "3") int count,
-            @RequestParam(required = false) List<Long> excludeIds) {
+            @RequestParam(required = false) List<Long> excludeIds,
+            Authentication authentication) {
+        playAccessService.requireStartingXiBattleAccess(authentication);
         return lineupPlayService.getBattleRoundChoices(count, excludeIds);
     }
 
@@ -60,7 +65,8 @@ public class LineupController {
 
     /** Starting shirts for a local pass-and-play multiplayer game - no persisted attempt involved. */
     @GetMapping("/{id}/multiplayer-start")
-    public LineupPlayStateDto multiplayerStart(@PathVariable Long id) {
+    public LineupPlayStateDto multiplayerStart(@PathVariable Long id, Authentication authentication) {
+        playAccessService.requireStartingXiBattleAccess(authentication);
         return lineupPlayService.getMultiplayerStartState(id);
     }
 

@@ -9,6 +9,7 @@ import com.quizapp.service.GridBattleOnlineService;
 import com.quizapp.service.FiveOhOneOnlineService;
 import com.quizapp.service.ImposterOnlineService;
 import com.quizapp.service.LineupBattleOnlineService;
+import com.quizapp.service.PlayAccessService;
 import com.quizapp.service.RoomService;
 import com.quizapp.service.TensionOnlineService;
 import jakarta.validation.Valid;
@@ -27,21 +28,25 @@ public class RoomController {
     private final ImposterOnlineService imposterOnlineService;
     private final FiveOhOneOnlineService fiveOhOneOnlineService;
     private final LineupBattleOnlineService lineupBattleOnlineService;
+    private final PlayAccessService playAccessService;
 
     public RoomController(RoomService roomService, GridBattleOnlineService gridBattleOnlineService,
                            TensionOnlineService tensionOnlineService, ImposterOnlineService imposterOnlineService,
                            FiveOhOneOnlineService fiveOhOneOnlineService,
-                           LineupBattleOnlineService lineupBattleOnlineService) {
+                           LineupBattleOnlineService lineupBattleOnlineService,
+                           PlayAccessService playAccessService) {
         this.roomService = roomService;
         this.gridBattleOnlineService = gridBattleOnlineService;
         this.tensionOnlineService = tensionOnlineService;
         this.imposterOnlineService = imposterOnlineService;
         this.fiveOhOneOnlineService = fiveOhOneOnlineService;
         this.lineupBattleOnlineService = lineupBattleOnlineService;
+        this.playAccessService = playAccessService;
     }
 
     @PostMapping
     public ResponseEntity<RoomDto> create(@Valid @RequestBody CreateRoomRequest request, Authentication authentication) {
+        playAccessService.requireAccessForGameType(authentication, request.getGameType());
         String email = authentication.getName();
         GameRoom room = roomService.createRoomShell(request.getGameType(), email, request.getDisplayName(), request.getColor());
 
@@ -63,6 +68,8 @@ public class RoomController {
 
     @PostMapping("/{code}/join")
     public RoomDto join(@PathVariable String code, @RequestBody JoinRoomRequest request, Authentication authentication) {
+        GameRoom existing = roomService.findByCode(code);
+        playAccessService.requireAccessForGameType(authentication, existing.getGameType());
         String email = authentication.getName();
         GameRoom room = roomService.join(code, email, request.getDisplayName(), request.getColor());
         return roomService.toDto(room, email);

@@ -30,6 +30,8 @@ import AdminSubmissionsView from '../views/AdminSubmissionsView.vue'
 import AdminQuizTemplatesView from '../views/AdminQuizTemplatesView.vue'
 import ReportProblemView from '../views/ReportProblemView.vue'
 import AdminReportsView from '../views/AdminReportsView.vue'
+import BullseyeView from '../views/BullseyeView.vue'
+import AdminBullseyeView from '../views/AdminBullseyeView.vue'
 import auth from '../services/auth'
 
 const routes = [
@@ -64,6 +66,8 @@ const routes = [
   { path: '/admin/501', name: 'admin-501', component: AdminFiveOhOneView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/imposter', name: 'imposter', component: ImposterView, meta: { requiresAuth: true } },
   { path: '/admin/imposter', name: 'admin-imposter', component: AdminImposterView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/bullseye', name: 'bullseye', component: BullseyeView, meta: { requiresAuth: true } },
+  { path: '/admin/bullseye', name: 'admin-bullseye', component: AdminBullseyeView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/tension-questions', name: 'admin-tension-questions', component: AdminTensionQuestionsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/tension-categories', name: 'admin-tension-categories', component: AdminTensionCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/suggest-question', name: 'suggest-question', component: SuggestQuestionView, meta: { requiresAuth: true } },

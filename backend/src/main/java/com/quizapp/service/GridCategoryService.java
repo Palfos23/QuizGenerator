@@ -6,6 +6,7 @@ import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.GridCategory;
 import com.quizapp.repository.AthletePoolRepository;
 import com.quizapp.repository.AthleteRepository;
+import com.quizapp.repository.BullseyeQuestionRepository;
 import com.quizapp.repository.ClubRepository;
 import com.quizapp.repository.GridCategoryRepository;
 import com.quizapp.repository.GridRepository;
@@ -23,15 +24,18 @@ public class GridCategoryService {
     private final ClubRepository clubRepository;
     private final GridRepository gridRepository;
     private final AthletePoolRepository athletePoolRepository;
+    private final BullseyeQuestionRepository bullseyeQuestionRepository;
 
     public GridCategoryService(GridCategoryRepository categoryRepository, AthleteRepository athleteRepository,
                                 ClubRepository clubRepository, GridRepository gridRepository,
-                                AthletePoolRepository athletePoolRepository) {
+                                AthletePoolRepository athletePoolRepository,
+                                BullseyeQuestionRepository bullseyeQuestionRepository) {
         this.categoryRepository = categoryRepository;
         this.athleteRepository = athleteRepository;
         this.clubRepository = clubRepository;
         this.gridRepository = gridRepository;
         this.athletePoolRepository = athletePoolRepository;
+        this.bullseyeQuestionRepository = bullseyeQuestionRepository;
     }
 
     @Transactional(readOnly = true)
@@ -81,6 +85,7 @@ public class GridCategoryService {
             clubRepository.renameSport(oldName, newName);
             gridRepository.renameSport(oldName, newName);
             athletePoolRepository.renameSport(oldName, newName);
+            bullseyeQuestionRepository.renameSport(oldName, newName);
         }
 
         return toDto(category);
@@ -98,10 +103,11 @@ public class GridCategoryService {
         boolean inUse = athleteRepository.existsBySport(name)
                 || clubRepository.existsBySport(name)
                 || gridRepository.existsBySport(name)
-                || athletePoolRepository.existsBySport(name);
+                || athletePoolRepository.existsBySport(name)
+                || bullseyeQuestionRepository.existsBySport(name);
         if (inUse) {
             throw new IllegalArgumentException(
-                    "This category is still used by at least one athlete, club, grid, or pool - reassign those first.");
+                    "This category is still used by at least one athlete, club, grid, pool, or bullseye question - reassign those first.");
         }
         categoryRepository.deleteById(id);
     }

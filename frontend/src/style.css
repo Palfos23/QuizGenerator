@@ -1243,6 +1243,9 @@ mark {
 .tension-row-revealed td { background: rgba(61, 220, 151, 0.08); }
 .tension-row-trap td { background: rgba(255, 77, 109, 0.1); }
 
+.bullseye-row-revealed td { background: rgba(61, 220, 151, 0.08); }
+.bullseye-row-eliminated td { background: rgba(255, 77, 109, 0.12); font-weight: 700; }
+
 .tension-intro-overlay {
   position: fixed;
   inset: 0;
@@ -1489,6 +1492,22 @@ mark {
 }
 .mp-player-card.eliminated {
   opacity: 0.4;
+}
+
+/* Bullseye's "you're out" moment - a one-shot pop/shake that settles into the
+   same dimmed .eliminated look above, rather than just fading straight there. */
+.mp-player-card.bullseye-just-eliminated {
+  animation: bullseye-elimination-pop 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes bullseye-elimination-pop {
+  0%   { transform: scale(1); }
+  15%  { transform: scale(1.12) rotate(-2deg); box-shadow: 0 0 0 4px rgba(255,77,109,0.6); }
+  35%  { transform: scale(0.96) rotate(2deg); }
+  55%  { transform: scale(1.04); }
+  100% { transform: scale(1); opacity: 0.4; box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp-player-card.bullseye-just-eliminated { animation: none; opacity: 0.4; }
 }
 
 .you-row td {

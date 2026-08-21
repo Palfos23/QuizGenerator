@@ -203,7 +203,7 @@ async function loadRoundChoices() {
   try {
     roundChoices.value = await api.fetchImposterBattleRoundChoices(3, chosenGridIds.value)
   } catch (e) {
-    error.value = 'Could not load the next round.'
+    error.value = e.response?.data?.message || 'Could not load the next round.'
     loading.value = false // loadPlayState never ran to clear this - avoid a stuck spinner
   } finally {
     loadingChoices.value = false

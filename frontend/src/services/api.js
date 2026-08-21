@@ -583,5 +583,35 @@ export default {
   },
   adminDeleteImposterGrid(id) {
     return client.delete(`/admin/imposter-grids/${id}`)
+  },
+
+  // --- Bullseye: user-facing (local pass-and-play - stateless, no persisted attempt) ---
+  getBattleEligibleBullseyeQuestions() {
+    return client.get('/bullseye/battle-eligible').then(r => r.data)
+  },
+  fetchBullseyeBattleRoundChoices(count, excludeIds) {
+    const params = new URLSearchParams({ count: String(count) })
+    ;(excludeIds || []).forEach(id => params.append('excludeIds', String(id)))
+    return client.get(`/bullseye/battle-round-choices?${params.toString()}`).then(r => r.data)
+  },
+  getMultiplayerBullseyeStart(id) {
+    return client.get(`/bullseye/${id}/multiplayer-start`).then(r => r.data)
+  },
+
+  // --- Bullseye: admin ---
+  adminListBullseyeQuestions() {
+    return client.get('/admin/bullseye').then(r => r.data)
+  },
+  adminGetBullseyeQuestion(id) {
+    return client.get(`/admin/bullseye/${id}`).then(r => r.data)
+  },
+  adminCreateBullseyeQuestion(payload) {
+    return client.post('/admin/bullseye', payload).then(r => r.data)
+  },
+  adminUpdateBullseyeQuestion(id, payload) {
+    return client.put(`/admin/bullseye/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteBullseyeQuestion(id) {
+    return client.delete(`/admin/bullseye/${id}`)
   }
 }

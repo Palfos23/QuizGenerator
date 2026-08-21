@@ -246,7 +246,7 @@ async function loadGrid(gridId) {
     gridState.value = await api.getMultiplayerGridStart(gridId)
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
   } catch (e) {
-    toast.show('Could not load this grid - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Could not load this grid - please try again.', 'error')
   } finally {
     loading.value = false
   }
@@ -257,7 +257,7 @@ async function loadRoundChoices() {
   try {
     roundChoices.value = await api.fetchGridBattleRoundChoices(3, chosenGrids.value.map(g => g.id))
   } catch (e) {
-    toast.show('Could not load the next round - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
   } finally {
     loadingChoices.value = false
   }

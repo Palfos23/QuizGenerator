@@ -8,6 +8,7 @@ import com.quizapp.dto.GuessRequest;
 import com.quizapp.dto.GuessResultDto;
 import com.quizapp.service.GridCategoryService;
 import com.quizapp.service.GridPlayService;
+import com.quizapp.service.PlayAccessService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +21,13 @@ public class GridController {
 
     private final GridPlayService gridPlayService;
     private final GridCategoryService gridCategoryService;
+    private final PlayAccessService playAccessService;
 
-    public GridController(GridPlayService gridPlayService, GridCategoryService gridCategoryService) {
+    public GridController(GridPlayService gridPlayService, GridCategoryService gridCategoryService,
+                           PlayAccessService playAccessService) {
         this.gridPlayService = gridPlayService;
         this.gridCategoryService = gridCategoryService;
+        this.playAccessService = playAccessService;
     }
 
     @GetMapping("/categories")
@@ -63,6 +67,7 @@ public class GridController {
 
     @GetMapping("/battle-eligible")
     public List<GridSummaryDto> battleEligible(Authentication authentication) {
+        playAccessService.requireGridBattleAccess(authentication);
         return gridPlayService.findEligibleForGridBattle(authentication.getName());
     }
 
@@ -70,7 +75,9 @@ public class GridController {
     @GetMapping("/battle-round-choices")
     public List<GridSummaryDto> battleRoundChoices(
             @RequestParam(defaultValue = "3") int count,
-            @RequestParam(required = false) List<Long> excludeIds) {
+            @RequestParam(required = false) List<Long> excludeIds,
+            Authentication authentication) {
+        playAccessService.requireGridBattleAccess(authentication);
         return gridPlayService.getBattleRoundChoices(count, excludeIds);
     }
 
@@ -86,7 +93,8 @@ public class GridController {
 
     /** Starting tiles for a local pass-and-play multiplayer game - no persisted attempt involved. */
     @GetMapping("/{id}/multiplayer-start")
-    public GridPlayStateDto multiplayerStart(@PathVariable Long id) {
+    public GridPlayStateDto multiplayerStart(@PathVariable Long id, Authentication authentication) {
+        playAccessService.requireGridBattleAccess(authentication);
         return gridPlayService.getMultiplayerStartState(id);
     }
 

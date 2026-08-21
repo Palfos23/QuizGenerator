@@ -3,6 +3,8 @@ package com.quizapp.controller;
 import com.quizapp.dto.FiveOhOneCategoryDto;
 import com.quizapp.dto.FiveOhOneCategorySummaryDto;
 import com.quizapp.service.FiveOhOneCategoryService;
+import com.quizapp.service.PlayAccessService;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,9 +14,11 @@ import java.util.List;
 public class FiveOhOneCategoryController {
 
     private final FiveOhOneCategoryService categoryService;
+    private final PlayAccessService playAccessService;
 
-    public FiveOhOneCategoryController(FiveOhOneCategoryService categoryService) {
+    public FiveOhOneCategoryController(FiveOhOneCategoryService categoryService, PlayAccessService playAccessService) {
         this.categoryService = categoryService;
+        this.playAccessService = playAccessService;
     }
 
     @GetMapping
@@ -23,7 +27,8 @@ public class FiveOhOneCategoryController {
     }
 
     @GetMapping("/{id}")
-    public FiveOhOneCategoryDto getOne(@PathVariable Long id) {
+    public FiveOhOneCategoryDto getOne(@PathVariable Long id, Authentication authentication) {
+        playAccessService.requireFiveOhOneAccess(authentication);
         return categoryService.getOne(id);
     }
 }
