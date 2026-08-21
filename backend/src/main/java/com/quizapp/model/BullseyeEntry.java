@@ -20,9 +20,11 @@ public class BullseyeEntry {
     @JoinColumn(name = "athlete_id", nullable = false)
     private Athlete athlete;
 
-    // This athlete's real stat value for this question, e.g. 27 goals -
-    // always required, unlike GridEntry.hintValue there's no "unranked" mode
-    // here since every entry must have a number to measure distance from.
+    // This athlete's real stat value for this question, e.g. 27 goals - always
+    // required, same as GridEntry.hintValue on a ranked grid. Coverage for
+    // "everyone else in the category, no value needed" comes from
+    // BullseyeQuestion.entireCategoryPool instead of a null value here - see
+    // BullseyePlayService.getMultiplayerStartState.
     @Column(name = "stat_value", nullable = false)
     private Integer statValue;
 

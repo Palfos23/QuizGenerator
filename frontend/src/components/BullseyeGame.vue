@@ -56,13 +56,22 @@
 
       <div v-if="revealed" class="tension-answers-panel" style="margin-top:16px;">
         <h3 style="text-align:center; margin-top:0;">Answers</h3>
+
+        <div v-if="bullseyeAnswers.length" class="bullseye-truth-callout">
+          <div class="bullseye-truth-label">{{ bullseyeAnswers[0].distance === 0 ? '🎯 Bullseye' : 'Closest possible answer' }}</div>
+          <div class="bullseye-truth-names">
+            {{ bullseyeAnswers.map(e => `${e.athleteName} (${e.statValue})`).join(', ') }}
+          </div>
+        </div>
+
         <table class="table scoreboard-table">
           <thead>
             <tr>
-              <th style="width:10%;">#</th>
-              <th style="width:30%;">Player</th>
-              <th style="width:35%;">Answer</th>
-              <th style="width:25%;">Distance</th>
+              <th style="width:8%;">#</th>
+              <th style="width:27%;">Player</th>
+              <th style="width:30%;">Answer</th>
+              <th style="width:15%;">Value</th>
+              <th style="width:20%;">Distance</th>
             </tr>
           </thead>
           <tbody>
@@ -77,6 +86,7 @@
               <td>{{ idx + 1 }}</td>
               <td>{{ revealIndex > idx ? a.player : '???' }}</td>
               <td>{{ revealIndex > idx ? a.name : '???' }}</td>
+              <td>{{ revealIndex > idx ? a.statValue : '' }}</td>
               <td>{{ revealIndex > idx ? a.distance : '' }}</td>
             </tr>
           </tbody>
@@ -156,14 +166,16 @@ function submitAnswer(name) {
 }
 
 // Case-insensitive exact-name match against the round's authored answer key -
-// an unmatched name (including anything typed that isn't in the pool at all)
-// resolves to a stat value of 0, same as the rest of the app's free-text
-// guess handling. Closest-first so the reveal builds toward who's eliminated.
+// an unmatched name (including anything typed that isn't in the pool at all,
+// or a subject only present because the question is in "auto pool" mode, with
+// no authored value of their own) resolves to a stat value of 0, same as the
+// rest of the app's free-text guess handling. Closest-first so the reveal
+// builds toward who's eliminated.
 const rankedAnswers = computed(() => {
   if (!roundState.value) return []
   return roundAnswers.value.map((a, i) => {
     const matched = roundState.value.entries.find(e => e.athleteName.toLowerCase() === a.name.trim().toLowerCase())
-    const statValue = matched ? matched.statValue : 0
+    const statValue = matched && matched.statValue !== null ? matched.statValue : 0
     return { ...a, submissionIndex: i, statValue, distance: Math.abs(statValue - roundState.value.targetValue) }
   }).sort((x, y) => x.distance - y.distance || x.submissionIndex - y.submissionIndex)
 })
@@ -173,6 +185,19 @@ const rankedAnswers = computed(() => {
 const eliminatedThisRound = computed(() => {
   if (!rankedAnswers.value.length) return null
   return [...rankedAnswers.value].sort((a, b) => b.distance - a.distance || a.submissionIndex - b.submissionIndex)[0]
+})
+
+// The actual best possible answer(s) in the whole pool - not just among what
+// players guessed - so the reveal shows what the "bullseye" really was, not
+// only how close each player's own pick landed. Ties (e.g. two athletes both
+// on exactly the target) are all shown together.
+const bullseyeAnswers = computed(() => {
+  if (!roundState.value) return []
+  const valued = roundState.value.entries.filter(e => e.statValue !== null)
+  if (!valued.length) return []
+  const withDistance = valued.map(e => ({ ...e, distance: Math.abs(e.statValue - roundState.value.targetValue) }))
+  const minDistance = Math.min(...withDistance.map(e => e.distance))
+  return withDistance.filter(e => e.distance === minDistance)
 })
 
 let countdownTimer = null

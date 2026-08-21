@@ -27,6 +27,7 @@
             <div class="saved-quiz-title">
               {{ q.title }}
               <span v-if="q.excludedFromBullseye" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Bullseye</span>
+              <span v-if="q.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
             </div>
             <div class="saved-quiz-meta">
               {{ sportLabel(q.sport) }} · {{ q.entryCount }} answers · "{{ q.targetValue }} {{ q.statLabel }}"
@@ -85,6 +86,18 @@
 
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
+          <input type="checkbox" v-model="form.entireCategoryPool" style="width:auto;" />
+          Use every subject in "{{ form.sport || '…' }}" as the pool
+        </label>
+        <p class="page-subtitle" style="margin-top:4px;">
+          Every subject in this category becomes guessable automatically, including ones added to it
+          later - nothing to re-import. Anyone not listed below as an answer just resolves to 0 if
+          picked. You still add the ones with a real stat value below.
+        </p>
+      </div>
+
+      <div class="field">
+        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.excludedFromBullseye" style="width:auto;" />
           Exclude from Bullseye
         </label>
@@ -96,7 +109,10 @@
 
       <div class="field">
         <label>
-          Answers <span class="picker-hint">every athlete a player could name, with their real stat value</span>
+          {{ form.entireCategoryPool ? 'Answers with a known value' : 'Answers' }}
+          <span class="picker-hint">
+            {{ form.entireCategoryPool ? 'everyone else in the category is guessable too, resolving to 0' : 'every athlete a player could name, with their real stat value' }}
+          </span>
         </label>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
@@ -120,7 +136,7 @@
         <p class="page-subtitle" style="margin-top:-4px;">
           CSV format: one row per answer, <code>name,value</code> - e.g. <code>Erling Haaland,27</code>.
           Names are matched against existing subjects in "{{ form.sport || '…' }}"; anything unmatched is skipped
-          so you can add that subject first and re-import.
+          so you can add that subject first and re-import. Every row here still needs a value filled in before saving.
         </p>
 
         <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
@@ -135,7 +151,7 @@
         </div>
 
         <div v-if="!entries.length" class="empty-state" style="padding:20px;">
-          No subjects added yet - search above, or import every subject in this category.
+          No answers added yet - search above to add subjects with a real stat value.
         </div>
 
         <div v-else class="candidate-list">
@@ -206,11 +222,12 @@ const form = reactive({
   sport: gridCategories.categories.value[0] || '',
   targetValue: null,
   statLabel: '',
-  excludedFromBullseye: false
+  excludedFromBullseye: false,
+  entireCategoryPool: false
 })
-// [{ athleteId, name, team, statValue }] - every row here IS an answer, unlike
-// Grid's candidates (which mixes correct answers with decoys) - there's no
-// decoy concept in Bullseye, an unfilled statValue is just dropped on save.
+// [{ athleteId, name, team, statValue }] - every row here is an answer with a
+// real, required value. Coverage for "everyone else in the category, no value
+// needed" comes from form.entireCategoryPool instead (see BullseyePlayService).
 const entries = ref([])
 
 const ENTRY_PAGE_SIZE = 25
@@ -304,7 +321,7 @@ async function importAllInCategory() {
   try {
     const all = await api.adminSearchAthletes({ sport: form.sport })
     const added = addEntriesBulk(all)
-    toast.show(`Imported ${added} subject(s) from "${form.sport}" (${all.length - added} were already in this list). Now fill in each one's stat value.`)
+    toast.show(`Imported ${added} subject(s) from "${form.sport}" (${all.length - added} were already in this list). Fill in each one's stat value, or remove the ones you don't need.`)
   } catch (e) {
     error.value = 'Could not import subjects for that category.'
   } finally {
@@ -403,6 +420,7 @@ function resetForm() {
   form.targetValue = null
   form.statLabel = ''
   form.excludedFromBullseye = false
+  form.entireCategoryPool = false
   entries.value = []
   entryPage.value = 1
   entryFilterTerm.value = ''
@@ -425,6 +443,7 @@ async function openEdit(id) {
     form.targetValue = detail.targetValue
     form.statLabel = detail.statLabel
     form.excludedFromBullseye = detail.excludedFromBullseye
+    form.entireCategoryPool = detail.entireCategoryPool || false
 
     entries.value = detail.entries.map(e => ({
       athleteId: e.athlete.id, name: e.athlete.name, team: e.athlete.team, statValue: e.statValue
@@ -445,14 +464,14 @@ async function saveQuestion() {
     error.value = 'Title, category, target number, and prompt are all required.'
     return
   }
-  const filled = entries.value.filter(e => e.statValue !== null && e.statValue !== '')
-  if (filled.length < 2) {
-    error.value = 'Add at least 2 athletes with a stat value filled in.'
+  if (entries.value.length < 2) {
+    error.value = 'Add at least 2 athletes with a stat value.'
     return
   }
-  const skipped = entries.value.length - filled.length
-  if (skipped > 0) {
-    toast.show(`${skipped} subject(s) with no stat value entered weren't saved as answers.`)
+  const missingValue = entries.value.find(e => e.statValue === null || e.statValue === '')
+  if (missingValue) {
+    error.value = `'${missingValue.name}' is missing a stat value - fill one in or remove that row.`
+    return
   }
 
   const payload = {
@@ -461,7 +480,8 @@ async function saveQuestion() {
     targetValue: form.targetValue,
     statLabel: form.statLabel,
     excludedFromBullseye: form.excludedFromBullseye,
-    entries: filled.map(e => ({ athleteId: e.athleteId, statValue: e.statValue }))
+    entireCategoryPool: form.entireCategoryPool,
+    entries: entries.value.map(e => ({ athleteId: e.athleteId, statValue: e.statValue }))
   }
 
   saving.value = true

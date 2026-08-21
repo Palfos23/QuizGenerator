@@ -50,6 +50,23 @@ public class BullseyeQuestion {
         this.excludedFromBullseye = excludedFromBullseye;
     }
 
+    // When true, every subject in this question's "sport" category is
+    // guessable too - not just the explicit entries below - resolving to 0 if
+    // picked (same as any other unmatched name). BullseyePlayService queries
+    // Athlete live for these rather than storing a row per subject, so someone
+    // added to the category tomorrow is immediately guessable here too, no
+    // re-import needed. Mirrors Grid.entireCategoryPool exactly.
+    @Column(name = "entire_category_pool", nullable = false, columnDefinition = "boolean default false")
+    private boolean entireCategoryPool = false;
+
+    public boolean isEntireCategoryPool() {
+        return entireCategoryPool;
+    }
+
+    public void setEntireCategoryPool(boolean entireCategoryPool) {
+        this.entireCategoryPool = entireCategoryPool;
+    }
+
     // The authored answer pool: every athlete a player could name, each with
     // its own real stat value for this specific question. Set, not List -
     // same Hibernate bag-diffing reasoning as Grid.entries.

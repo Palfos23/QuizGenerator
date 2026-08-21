@@ -110,6 +110,16 @@ class BullseyeAdminServiceTest {
     }
 
     @Test
+    void persistsTheEntireCategoryPoolFlag() {
+        BullseyeQuestionRequest request = baseRequest();
+        request.setEntireCategoryPool(true);
+
+        BullseyeQuestionAdminDetailDto detail = bullseyeAdminService.create(request);
+
+        assertThat(detail.isEntireCategoryPool()).isTrue();
+    }
+
+    @Test
     void deleteCascadesToEntries() {
         BullseyeQuestionAdminDetailDto created = bullseyeAdminService.create(baseRequest());
         bullseyeAdminService.delete(created.getId());

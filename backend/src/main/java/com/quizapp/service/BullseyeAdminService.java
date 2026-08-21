@@ -40,7 +40,7 @@ public class BullseyeAdminService {
                 .sorted((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()))
                 .map(row -> new BullseyeQuestionSummaryDto(row.getId(), row.getTitle(), row.getSport(),
                         row.getTargetValue(), row.getStatLabel(), row.getEntryCount().intValue(),
-                        row.getExcludedFromBullseye()))
+                        row.getExcludedFromBullseye(), row.getEntireCategoryPool()))
                 .collect(Collectors.toList());
     }
 
@@ -80,6 +80,7 @@ public class BullseyeAdminService {
         question.setTargetValue(request.getTargetValue());
         question.setStatLabel(request.getStatLabel());
         question.setExcludedFromBullseye(request.isExcludedFromBullseye());
+        question.setEntireCategoryPool(request.isEntireCategoryPool());
 
         if (request.getEntries().size() < 2) {
             throw new IllegalArgumentException("Add at least 2 athletes with stat values.");
@@ -128,6 +129,7 @@ public class BullseyeAdminService {
         dto.setTargetValue(question.getTargetValue());
         dto.setStatLabel(question.getStatLabel());
         dto.setExcludedFromBullseye(question.isExcludedFromBullseye());
+        dto.setEntireCategoryPool(question.isEntireCategoryPool());
 
         List<Athlete> distinctAthletes = question.getEntries().stream()
                 .map(BullseyeEntry::getAthlete)

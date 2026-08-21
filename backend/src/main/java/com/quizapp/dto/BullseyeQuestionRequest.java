@@ -23,6 +23,8 @@ public class BullseyeQuestionRequest {
 
     private boolean excludedFromBullseye = false;
 
+    private boolean entireCategoryPool = false;
+
     @NotEmpty
     @Valid
     private List<BullseyeEntryInputDto> entries;
@@ -65,6 +67,14 @@ public class BullseyeQuestionRequest {
 
     public void setExcludedFromBullseye(boolean excludedFromBullseye) {
         this.excludedFromBullseye = excludedFromBullseye;
+    }
+
+    public boolean isEntireCategoryPool() {
+        return entireCategoryPool;
+    }
+
+    public void setEntireCategoryPool(boolean entireCategoryPool) {
+        this.entireCategoryPool = entireCategoryPool;
     }
 
     public List<BullseyeEntryInputDto> getEntries() {

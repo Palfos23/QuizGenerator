@@ -10,6 +10,7 @@ public class BullseyeQuestionAdminDetailDto {
     private Integer targetValue;
     private String statLabel;
     private boolean excludedFromBullseye;
+    private boolean entireCategoryPool;
     private List<EntryDetail> entries;
 
     public static class EntryDetail {
@@ -82,6 +83,14 @@ public class BullseyeQuestionAdminDetailDto {
 
     public void setExcludedFromBullseye(boolean excludedFromBullseye) {
         this.excludedFromBullseye = excludedFromBullseye;
+    }
+
+    public boolean isEntireCategoryPool() {
+        return entireCategoryPool;
+    }
+
+    public void setEntireCategoryPool(boolean entireCategoryPool) {
+        this.entireCategoryPool = entireCategoryPool;
     }
 
     public List<EntryDetail> getEntries() {
