@@ -111,8 +111,9 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import api from '../services/api'
+import { usePolling } from '../composables/usePolling'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -140,8 +141,6 @@ function showThrowOverlay(text, kind) {
     overlayTimeout = setTimeout(() => { throwOverlay.value = null }, 1400)
   })
 }
-
-let pollTimer = null
 
 const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
 const currentTurnName = computed(() =>
@@ -192,15 +191,11 @@ async function applyState(fresh) {
   }
   state.value = fresh
   if (fresh.finished) {
-    clearInterval(pollTimer)
+    stopPolling()
   }
 }
 
-onMounted(() => {
-  poll()
-  pollTimer = setInterval(poll, 1200)
-})
-onUnmounted(() => clearInterval(pollTimer))
+const { stop: stopPolling } = usePolling(poll, 1200)
 
 async function submitThrow(entry) {
   throwing.value = true
@@ -233,7 +228,7 @@ function finish() {
 }
 
 function leave() {
-  clearInterval(pollTimer)
+  stopPolling()
   emit('leave')
 }
 </script>

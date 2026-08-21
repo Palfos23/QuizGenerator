@@ -125,9 +125,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
+import { usePolling } from '../composables/usePolling'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -154,8 +155,6 @@ function showFlipOverlay(imposter) {
     overlayTimeout = setTimeout(() => { flipOverlay.value = null }, 1200)
   })
 }
-
-let pollTimer = null
 
 const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
 const currentTurnName = computed(() =>
@@ -203,17 +202,13 @@ function applyState(fresh) {
     api.getImposterOnlineReveal(props.roomCode).then(list => { revealList.value = list }).catch(() => {})
   }
   if (fresh.finished) {
-    clearInterval(pollTimer)
+    stopPolling()
     const scores = fresh.players.map(p => [p.name, p.totalScore])
     emit('gameOver', scores)
   }
 }
 
-onMounted(() => {
-  poll()
-  pollTimer = setInterval(poll, 1200)
-})
-onUnmounted(() => clearInterval(pollTimer))
+const { stop: stopPolling } = usePolling(poll, 1200)
 
 async function chooseGrid(g) {
   choosing.value = true
@@ -258,7 +253,7 @@ async function nextBoard() {
 }
 
 function leave() {
-  clearInterval(pollTimer)
+  stopPolling()
   emit('leave')
 }
 </script>

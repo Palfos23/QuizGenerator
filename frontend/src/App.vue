@@ -8,12 +8,19 @@
         <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
         <div v-if="!auth.isAdmin.value" class="top-nav-dropdown">
           <div v-if="showWeeklyMenu" class="top-nav-dropdown-backdrop" @click="showWeeklyMenu = false"></div>
-          <button type="button" class="nav-link top-nav-dropdown-toggle" :class="{ 'router-link-exact-active': isWeeklyQuizRoute }" @click="showWeeklyMenu = !showWeeklyMenu">
+          <button
+            type="button"
+            class="nav-link top-nav-dropdown-toggle"
+            :class="{ 'router-link-exact-active': isWeeklyQuizRoute }"
+            aria-haspopup="true"
+            :aria-expanded="showWeeklyMenu"
+            @click="showWeeklyMenu = !showWeeklyMenu"
+          >
             Weekly quiz ▾
           </button>
-          <div v-if="showWeeklyMenu" class="top-nav-dropdown-popup">
-            <router-link to="/weekly-grid" class="nav-link" @click="showWeeklyMenu = false">Grid</router-link>
-            <router-link to="/starting-xi" class="nav-link" @click="showWeeklyMenu = false">Starting XI</router-link>
+          <div v-if="showWeeklyMenu" class="top-nav-dropdown-popup" role="menu">
+            <router-link to="/weekly-grid" class="nav-link" role="menuitem" @click="showWeeklyMenu = false">Grid</router-link>
+            <router-link to="/starting-xi" class="nav-link" role="menuitem" @click="showWeeklyMenu = false">Starting XI</router-link>
           </div>
         </div>
         <router-link v-if="!auth.isAdmin.value" to="/tension" class="nav-link" @click="onNavClick('/tension', 'tension')">Tension</router-link>
@@ -52,21 +59,31 @@
       <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
       <div v-if="!auth.isAdmin.value" style="position:relative; flex:1; display:flex;">
         <div v-if="showWeeklyMenu" class="bottom-nav-backdrop" @click="showWeeklyMenu = false"></div>
-        <button @click="showWeeklyMenu = !showWeeklyMenu" :class="{ active: isWeeklyQuizRoute }">Weekly quiz ▾</button>
-        <div v-if="showWeeklyMenu" class="games-popup">
-          <router-link to="/weekly-grid" @click="showWeeklyMenu = false">Grid</router-link>
-          <router-link to="/starting-xi" @click="showWeeklyMenu = false">Starting XI</router-link>
+        <button
+          aria-haspopup="true"
+          :aria-expanded="showWeeklyMenu"
+          @click="showWeeklyMenu = !showWeeklyMenu"
+          :class="{ active: isWeeklyQuizRoute }"
+        >Weekly quiz ▾</button>
+        <div v-if="showWeeklyMenu" class="games-popup" role="menu">
+          <router-link to="/weekly-grid" role="menuitem" @click="showWeeklyMenu = false">Grid</router-link>
+          <router-link to="/starting-xi" role="menuitem" @click="showWeeklyMenu = false">Starting XI</router-link>
         </div>
       </div>
       <div v-if="!auth.isAdmin.value" style="position:relative; flex:1; display:flex;">
         <div v-if="showGamesMenu" class="bottom-nav-backdrop" @click="showGamesMenu = false"></div>
-        <button @click="showGamesMenu = !showGamesMenu" :class="{ active: isGameRoute }">Games ▾</button>
-        <div v-if="showGamesMenu" class="games-popup">
-          <router-link to="/tension" @click="closeGamesMenu('/tension', 'tension')">Tension</router-link>
-          <router-link to="/501" @click="closeGamesMenu('/501', 'fiveOhOne')">501</router-link>
-          <router-link to="/imposter" @click="closeGamesMenu('/imposter', 'imposter')">Imposter</router-link>
-          <router-link to="/grid-battle" @click="closeGamesMenu('/grid-battle', 'gridBattle')">Grid Battle</router-link>
-          <router-link to="/starting-xi-battle" @click="closeGamesMenu('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
+        <button
+          aria-haspopup="true"
+          :aria-expanded="showGamesMenu"
+          @click="showGamesMenu = !showGamesMenu"
+          :class="{ active: isGameRoute }"
+        >Games ▾</button>
+        <div v-if="showGamesMenu" class="games-popup" role="menu">
+          <router-link to="/tension" role="menuitem" @click="closeGamesMenu('/tension', 'tension')">Tension</router-link>
+          <router-link to="/501" role="menuitem" @click="closeGamesMenu('/501', 'fiveOhOne')">501</router-link>
+          <router-link to="/imposter" role="menuitem" @click="closeGamesMenu('/imposter', 'imposter')">Imposter</router-link>
+          <router-link to="/grid-battle" role="menuitem" @click="closeGamesMenu('/grid-battle', 'gridBattle')">Grid Battle</router-link>
+          <router-link to="/starting-xi-battle" role="menuitem" @click="closeGamesMenu('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
         </div>
       </div>
       <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
@@ -112,6 +129,7 @@ import auth from './services/auth'
 import { useRouter } from 'vue-router'
 import navTrigger from './services/navTrigger'
 import ToastHost from './components/ToastHost.vue'
+import { useEscapeKey } from './composables/useEscapeKey'
 
 const router = useRouter()
 
@@ -141,6 +159,13 @@ const isWeeklyQuizRoute = computed(() => {
 // this popup's own links, which already close it themselves) while a
 // dropdown happens to be open.
 watch(() => router.currentRoute.value.path, () => {
+  showGamesMenu.value = false
+  showWeeklyMenu.value = false
+})
+
+// A keyboard user can open either dropdown, but until now had no way to
+// close it again without tabbing all the way through its links.
+useEscapeKey(() => {
   showGamesMenu.value = false
   showWeeklyMenu.value = false
 })
@@ -190,6 +215,17 @@ function dismissExpiryWarning() {
   expiryWarningDismissed = true
   showExpiryWarning.value = false
 }
+
+// Escape mirrors whichever action is the non-destructive one for the modal
+// currently showing - staying signed in, or just acknowledging the heads-up -
+// never the "log out now" option.
+useEscapeKey(() => {
+  if (showInactivityWarning.value) {
+    staySignedIn()
+  } else if (showExpiryWarning.value) {
+    dismissExpiryWarning()
+  }
+})
 
 // A new login (including a re-login after a session expired) gets its own
 // fresh token - resets both the dismissal flag and the countdown state so a

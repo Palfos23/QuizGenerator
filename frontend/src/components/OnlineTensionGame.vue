@@ -127,9 +127,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
+import { usePolling } from '../composables/usePolling'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -150,7 +151,6 @@ const filteredOptions = ref([])
 const showDropdown = ref(false)
 const validSelection = ref(false)
 
-let pollTimer = null
 let lastCategory = null
 let wasRevealed = false
 let revealTimer = null
@@ -210,7 +210,7 @@ function applyState(fresh) {
   }
   wasRevealed = fresh.roundRevealed
   if (fresh.finished) {
-    clearInterval(pollTimer)
+    stopPolling()
     const scores = fresh.players.map(p => [p.name, p.totalScore])
     emit('gameOver', scores)
   }
@@ -239,14 +239,9 @@ async function loadOptions(category) {
   }
 }
 
-onMounted(() => {
-  poll()
-  pollTimer = setInterval(poll, 2000)
-})
-onUnmounted(() => {
-  clearInterval(pollTimer)
-  clearTimeout(revealTimer)
-})
+const { stop: stopPolling } = usePolling(poll, 2000)
+
+onUnmounted(() => clearTimeout(revealTimer))
 
 function onInput() {
   validSelection.value = false
@@ -294,7 +289,7 @@ async function nextQuestion() {
 }
 
 function leave() {
-  clearInterval(pollTimer)
+  stopPolling()
   emit('leave')
 }
 </script>

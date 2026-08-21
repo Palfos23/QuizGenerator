@@ -167,12 +167,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import api from '../services/api'
 import { readableTextColor, formatHint, sportLabel } from '../constants'
 import ConfirmModal from './ConfirmModal.vue'
 import LoadingState from './LoadingState.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
+import { usePolling } from '../composables/usePolling'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -224,8 +225,6 @@ function showResultOverlay(correct) {
   })
 }
 
-let pollTimer = null
-
 const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
 const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
@@ -263,17 +262,13 @@ function applyState(fresh) {
     api.getMultiplayerGridReveal(fresh.currentGridId).then(map => { revealMap.value = map }).catch(() => {})
   }
   if (fresh.finished) {
-    clearInterval(pollTimer)
+    stopPolling()
     const scores = fresh.players.map(p => [p.name, p.totalScore])
     emit('gameOver', scores)
   }
 }
 
-onMounted(() => {
-  poll()
-  pollTimer = setInterval(poll, 1200)
-})
-onUnmounted(() => clearInterval(pollTimer))
+const { stop: stopPolling } = usePolling(poll, 1200)
 
 let searchDebounce = null
 watch(searchTerm, (val) => {
@@ -366,7 +361,7 @@ async function nextGrid() {
 }
 
 function leave() {
-  clearInterval(pollTimer)
+  stopPolling()
   emit('leave')
 }
 </script>

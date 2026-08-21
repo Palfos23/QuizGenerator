@@ -165,7 +165,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import api from '../services/api'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
@@ -173,6 +173,7 @@ import PitchMarkings from './PitchMarkings.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import LoadingState from './LoadingState.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
+import { usePolling } from '../composables/usePolling'
 
 const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'
@@ -206,8 +207,6 @@ function showResultOverlay(correct) {
     resultOverlayTimeout = setTimeout(() => { resultOverlay.value = null }, 1200)
   })
 }
-
-let pollTimer = null
 
 const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
 const currentTurnName = computed(() =>
@@ -265,17 +264,13 @@ function applyState(fresh) {
     api.getMultiplayerLineupReveal(fresh.currentLineupId).then(map => { revealMap.value = map }).catch(() => {})
   }
   if (fresh.finished) {
-    clearInterval(pollTimer)
+    stopPolling()
     const scores = fresh.players.map(p => [p.name, p.totalScore])
     emit('gameOver', scores)
   }
 }
 
-onMounted(() => {
-  poll()
-  pollTimer = setInterval(poll, 1200)
-})
-onUnmounted(() => clearInterval(pollTimer))
+const { stop: stopPolling } = usePolling(poll, 1200)
 
 let searchDebounce = null
 watch(searchTerm, (val) => {
@@ -365,7 +360,7 @@ async function nextLineup() {
 }
 
 function leave() {
-  clearInterval(pollTimer)
+  stopPolling()
   emit('leave')
 }
 </script>

@@ -14,6 +14,8 @@
 </template>
 
 <script setup>
+import { useEscapeKey } from '../composables/useEscapeKey'
+
 defineProps({
   title: { type: String, default: 'Are you sure?' },
   message: { type: String, required: true },
@@ -21,5 +23,7 @@ defineProps({
   cancelText: { type: String, default: 'Cancel' }
 })
 
-defineEmits(['confirm', 'cancel'])
+const emit = defineEmits(['confirm', 'cancel'])
+
+useEscapeKey(() => emit('cancel'))
 </script>
