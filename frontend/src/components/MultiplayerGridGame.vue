@@ -138,6 +138,11 @@
         </div>
       </div>
     </template>
+
+    <div v-else class="empty-state">
+      <p>Couldn't load this grid.</p>
+      <button class="btn btn-primary" @click="proceedToCurrentRound">Try again</button>
+    </div>
     </template>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
@@ -149,6 +154,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
 import { readableTextColor, formatHint, sportLabel } from '../constants'
 import ConfirmModal from './ConfirmModal.vue'
@@ -239,6 +245,8 @@ async function loadGrid(gridId) {
   try {
     gridState.value = await api.getMultiplayerGridStart(gridId)
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
+  } catch (e) {
+    toast.show('Could not load this grid - please try again.', 'error')
   } finally {
     loading.value = false
   }
@@ -248,6 +256,8 @@ async function loadRoundChoices() {
   loadingChoices.value = true
   try {
     roundChoices.value = await api.fetchGridBattleRoundChoices(3, chosenGrids.value.map(g => g.id))
+  } catch (e) {
+    toast.show('Could not load the next round - please try again.', 'error')
   } finally {
     loadingChoices.value = false
   }

@@ -142,6 +142,11 @@
         </div>
       </div>
     </template>
+
+    <div v-else class="empty-state">
+      <p>Couldn't load this board.</p>
+      <button class="btn btn-primary" @click="proceedToCurrentRound">Try again</button>
+    </div>
     </template>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
@@ -153,6 +158,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
@@ -264,6 +270,8 @@ async function loadLineup(lineupId) {
   try {
     lineupState.value = await api.getMultiplayerLineupStart(lineupId)
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
+  } catch (e) {
+    toast.show('Could not load this board - please try again.', 'error')
   } finally {
     loading.value = false
   }
@@ -273,6 +281,8 @@ async function loadRoundChoices() {
   loadingChoices.value = true
   try {
     roundChoices.value = await api.fetchLineupBattleRoundChoices(3, chosenLineups.value.map(l => l.id))
+  } catch (e) {
+    toast.show('Could not load the next round - please try again.', 'error')
   } finally {
     loadingChoices.value = false
   }

@@ -18,6 +18,7 @@ import com.quizapp.repository.AthleteDescriptionRepository;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.GridAttemptRepository;
 import com.quizapp.repository.GridRepository;
+import com.quizapp.repository.GridSummaryProjection;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,22 +122,22 @@ public class GridPlayService {
     @Transactional(readOnly = true)
     public List<GridSummaryDto> findActive(String userEmail) {
         LocalDate today = LocalDate.now();
-        List<Grid> grids = gridRepository.findAll().stream()
-                .filter(g -> isActive(g, today))
+        List<GridSummaryProjection> rows = gridRepository.findAllSummaries().stream()
+                .filter(row -> isActive(row, today))
                 .collect(Collectors.toList());
-        return toSummariesWithStatus(grids, userEmail);
+        return toSummariesWithStatusFromProjections(rows, userEmail);
     }
 
     @Transactional(readOnly = true)
     public List<GridSummaryDto> findArchive(String userEmail) {
         LocalDate today = LocalDate.now();
-        List<Grid> grids = gridRepository.findAll().stream()
-                .filter(g -> !isActive(g, today) && g.getWeekStartDate().isBefore(today))
+        List<GridSummaryProjection> rows = gridRepository.findAllSummaries().stream()
+                .filter(row -> !isActive(row, today) && row.getWeekStartDate().isBefore(today))
                 .sorted((a, b) -> b.getWeekStartDate().compareTo(a.getWeekStartDate()))
                 .limit(9) // together with the 1 currently-active grid, matches the 10-grid
                           // window GridAttemptCleanupService also uses - keep these in sync
                 .collect(Collectors.toList());
-        return toSummariesWithStatus(grids, userEmail);
+        return toSummariesWithStatusFromProjections(rows, userEmail);
     }
 
     // Grids scheduled for a future week - not yet visible on the regular Weekly
@@ -146,26 +147,24 @@ public class GridPlayService {
     @Transactional(readOnly = true)
     public List<GridSummaryDto> findFuture(String userEmail) {
         LocalDate today = LocalDate.now();
-        List<Grid> grids = gridRepository.findAll().stream()
-                .filter(g -> g.getWeekStartDate().isAfter(today))
+        List<GridSummaryProjection> rows = gridRepository.findAllSummaries().stream()
+                .filter(row -> row.getWeekStartDate().isAfter(today))
                 .sorted((a, b) -> a.getWeekStartDate().compareTo(b.getWeekStartDate()))
                 .collect(Collectors.toList());
-        return toSummariesWithStatus(grids, userEmail);
+        return toSummariesWithStatusFromProjections(rows, userEmail);
     }
 
     // Grid Battle draws from every grid regardless of date (past, current, or
     // future) since it doesn't have "this week's theme" pacing - the one thing
     // it excludes is a grid an admin has explicitly retired after duplicating
     // it forward with updated content.
-    //
-    // Uses the lightweight findBattleEligiblePool() projection rather than
-    // findAll() - Grid.entries and GridEntry.athlete are both FetchType.EAGER,
-    // so hydrating full Grid entities here would issue a separate query per
-    // grid (and per entry) just to answer "how many entries does each have",
-    // which is the only thing about entries this screen actually needs.
     @Transactional(readOnly = true)
     public List<GridSummaryDto> findEligibleForGridBattle(String userEmail) {
-        return toSummariesWithStatusFromProjections(gridRepository.findBattleEligiblePool(), userEmail);
+        List<GridSummaryProjection> rows = gridRepository.findAllSummaries().stream()
+                .filter(row -> !row.getExcludedFromGridBattle())
+                .sorted((a, b) -> b.getWeekStartDate().compareTo(a.getWeekStartDate()))
+                .collect(Collectors.toList());
+        return toSummariesWithStatusFromProjections(rows, userEmail);
     }
 
     /**
@@ -186,7 +185,7 @@ public class GridPlayService {
         if (sampled.isEmpty()) {
             return Collections.emptyList();
         }
-        return gridRepository.findBattlePoolByIdIn(sampled).stream()
+        return gridRepository.findSummariesByIdIn(sampled).stream()
                 .map(row -> new GridSummaryDto(row.getId(), row.getTitle(), row.getSport(), row.getWeekStartDate(),
                         row.getEntryCount().intValue(), null, null))
                 .collect(Collectors.toList());
@@ -196,37 +195,8 @@ public class GridPlayService {
      * One query for all the user's attempts across every grid being listed, rather
      * than a separate query per grid - matters once there are a lot of grids.
      */
-    private List<GridSummaryDto> toSummariesWithStatus(List<Grid> grids, String userEmail) {
-        List<Long> gridIds = grids.stream().map(Grid::getId).collect(Collectors.toList());
-        java.util.Map<Long, GridAttempt> attemptByGridId = gridIds.isEmpty()
-                ? java.util.Map.of()
-                : gridAttemptRepository.findByGrid_IdInAndUser_Email(gridIds, userEmail).stream()
-                        .collect(Collectors.toMap(a -> a.getGrid().getId(), a -> a));
-
-        return grids.stream().map(g -> {
-            GridAttempt attempt = attemptByGridId.get(g.getId());
-            String status = attempt == null ? "NOT_STARTED" : (attempt.isCompleted() ? "COMPLETED" : "IN_PROGRESS");
-            // solvedEntryIds only ever contains genuinely-correct guesses (overtime
-            // included) - never entries that were merely revealed - so this is the
-            // same "found" count shown during actual play, not an inflated one.
-            Integer guessedCount = attempt == null ? null : attempt.getSolvedEntryIds().size();
-            GridSummaryDto dto = new GridSummaryDto(g.getId(), g.getTitle(), g.getSport(), g.getWeekStartDate(),
-                    g.getEntries().size(), status, guessedCount);
-            dto.setExcludedFromGridBattle(g.isExcludedFromGridBattle());
-            return dto;
-        }).collect(Collectors.toList());
-    }
-
-    /**
-     * Same as toSummariesWithStatus, but built from the lightweight
-     * GridBattlePoolProjection rows instead of full Grid entities - used by
-     * findEligibleForGridBattle, which never needs anything from Grid beyond
-     * these columns.
-     */
-    private List<GridSummaryDto> toSummariesWithStatusFromProjections(
-            List<com.quizapp.repository.GridBattlePoolProjection> rows, String userEmail) {
-        List<Long> gridIds = rows.stream().map(com.quizapp.repository.GridBattlePoolProjection::getId)
-                .collect(Collectors.toList());
+    private List<GridSummaryDto> toSummariesWithStatusFromProjections(List<GridSummaryProjection> rows, String userEmail) {
+        List<Long> gridIds = rows.stream().map(GridSummaryProjection::getId).collect(Collectors.toList());
         java.util.Map<Long, GridAttempt> attemptByGridId = gridIds.isEmpty()
                 ? java.util.Map.of()
                 : gridAttemptRepository.findByGrid_IdInAndUser_Email(gridIds, userEmail).stream()
@@ -235,16 +205,19 @@ public class GridPlayService {
         return rows.stream().map(row -> {
             GridAttempt attempt = attemptByGridId.get(row.getId());
             String status = attempt == null ? "NOT_STARTED" : (attempt.isCompleted() ? "COMPLETED" : "IN_PROGRESS");
+            // solvedEntryIds only ever contains genuinely-correct guesses (overtime
+            // included) - never entries that were merely revealed - so this is the
+            // same "found" count shown during actual play, not an inflated one.
             Integer guessedCount = attempt == null ? null : attempt.getSolvedEntryIds().size();
             GridSummaryDto dto = new GridSummaryDto(row.getId(), row.getTitle(), row.getSport(), row.getWeekStartDate(),
                     row.getEntryCount().intValue(), status, guessedCount);
-            dto.setExcludedFromGridBattle(false); // findBattleEligiblePool() only ever returns non-excluded grids
+            dto.setExcludedFromGridBattle(row.getExcludedFromGridBattle());
             return dto;
         }).collect(Collectors.toList());
     }
 
-    private boolean isActive(Grid grid, LocalDate today) {
-        LocalDate start = grid.getWeekStartDate();
+    private boolean isActive(GridSummaryProjection row, LocalDate today) {
+        LocalDate start = row.getWeekStartDate();
         LocalDate end = start.plusDays(6);
         return !today.isBefore(start) && !today.isAfter(end);
     }

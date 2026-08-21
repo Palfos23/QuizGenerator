@@ -43,24 +43,28 @@ public interface GridRepository extends JpaRepository<Grid, Long> {
     @Query("SELECT DISTINCT g FROM Grid g JOIN g.linkedPools p WHERE p.id = :poolId")
     List<Grid> findByLinkedPoolId(Long poolId);
 
-    // Lightweight projections for Grid Battle's pool listing and round-choice
-    // picker - selecting just these columns (with entry count via a COUNT
-    // subquery) never touches Grid.entries or GridEntry.athlete, both of which
-    // are FetchType.EAGER on the entity itself. Loading full Grid entities via
-    // findAll()/findAllById() would otherwise trigger a separate query per grid
-    // (and per entry) to hydrate those eager associations - fine for one grid,
-    // but N+1 across the whole table just to answer "how many are there" or
-    // "give me 3 random ones".
+    // Lightweight projection covering every grid-listing screen (active,
+    // archive, future, and Grid Battle's eligible pool) - selecting just these
+    // columns (with entry count via a COUNT subquery) never touches
+    // Grid.entries or GridEntry.athlete, both of which are FetchType.EAGER on
+    // the entity itself. Loading full Grid entities via findAll() would
+    // otherwise trigger a separate query per grid (and per entry) to hydrate
+    // those eager associations - fine for one grid, but N+1 across the whole
+    // table just to answer "how many are there" or "which ones are active".
+    // Each caller filters/sorts this in Java, same as it always has, just
+    // without paying for the eager entity graph to do it.
     @Query("SELECT g.id as id, g.title as title, g.sport as sport, g.weekStartDate as weekStartDate, " +
-           "(SELECT COUNT(e) FROM GridEntry e WHERE e.grid = g) as entryCount " +
-           "FROM Grid g WHERE g.excludedFromGridBattle = false ORDER BY g.weekStartDate DESC")
-    List<GridBattlePoolProjection> findBattleEligiblePool();
+           "(SELECT COUNT(e) FROM GridEntry e WHERE e.grid = g) as entryCount, " +
+           "g.excludedFromGridBattle as excludedFromGridBattle " +
+           "FROM Grid g")
+    List<GridSummaryProjection> findAllSummaries();
 
     @Query("SELECT g.id FROM Grid g WHERE g.excludedFromGridBattle = false")
     List<Long> findBattleEligibleIds();
 
     @Query("SELECT g.id as id, g.title as title, g.sport as sport, g.weekStartDate as weekStartDate, " +
-           "(SELECT COUNT(e) FROM GridEntry e WHERE e.grid = g) as entryCount " +
+           "(SELECT COUNT(e) FROM GridEntry e WHERE e.grid = g) as entryCount, " +
+           "g.excludedFromGridBattle as excludedFromGridBattle " +
            "FROM Grid g WHERE g.id IN :ids")
-    List<GridBattlePoolProjection> findBattlePoolByIdIn(List<Long> ids);
+    List<GridSummaryProjection> findSummariesByIdIn(List<Long> ids);
 }

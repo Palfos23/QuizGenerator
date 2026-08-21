@@ -8,6 +8,7 @@ import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.ImposterGrid;
 import com.quizapp.model.ImposterTile;
 import com.quizapp.repository.ImposterGridRepository;
+import com.quizapp.repository.ImposterGridSummaryProjection;
 import com.quizapp.repository.ImposterTileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,10 +29,10 @@ public class ImposterGridPlayService {
 
     @Transactional(readOnly = true)
     public List<ImposterGridSummaryDto> list(String sport) {
-        List<ImposterGrid> grids = sport != null && !sport.isBlank()
-                ? gridRepository.findBySportOrderByCreatedAtDesc(sport)
-                : gridRepository.findAllByOrderByCreatedAtDesc();
-        return grids.stream().map(this::toSummaryDto).collect(Collectors.toList());
+        List<ImposterGridSummaryProjection> rows = sport != null && !sport.isBlank()
+                ? gridRepository.findSummariesBySportOrderByCreatedAtDesc(sport)
+                : gridRepository.findSummariesOrderByCreatedAtDesc();
+        return rows.stream().map(this::toSummaryDto).collect(Collectors.toList());
     }
 
     /**
@@ -43,19 +44,21 @@ public class ImposterGridPlayService {
      */
     @Transactional(readOnly = true)
     public List<ImposterGridSummaryDto> getBattleRoundChoices(int count, List<Long> excludeIds) {
-        List<Long> ids = gridRepository.findAll().stream()
-                .map(ImposterGrid::getId)
+        List<Long> ids = gridRepository.findAllIds().stream()
                 .filter(id -> excludeIds == null || !excludeIds.contains(id))
                 .collect(Collectors.toList());
         java.util.Collections.shuffle(ids);
         List<Long> sampled = ids.stream().limit(count).collect(Collectors.toList());
-        return gridRepository.findAllById(sampled).stream().map(this::toSummaryDto).collect(Collectors.toList());
+        if (sampled.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return gridRepository.findSummariesByIdIn(sampled).stream().map(this::toSummaryDto).collect(Collectors.toList());
     }
 
     /** Resolves specific ids to summaries, in no particular order - for re-displaying an already-generated set of choices. */
     @Transactional(readOnly = true)
     public List<ImposterGridSummaryDto> resolveSummaries(java.util.Collection<Long> ids) {
-        return gridRepository.findAllById(ids).stream().map(this::toSummaryDto).collect(Collectors.toList());
+        return gridRepository.findSummariesByIdIn(ids).stream().map(this::toSummaryDto).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -123,14 +126,14 @@ public class ImposterGridPlayService {
                 .collect(Collectors.toList());
     }
 
-    private ImposterGridSummaryDto toSummaryDto(ImposterGrid grid) {
+    private ImposterGridSummaryDto toSummaryDto(ImposterGridSummaryProjection row) {
         ImposterGridSummaryDto dto = new ImposterGridSummaryDto();
-        dto.setId(grid.getId());
-        dto.setTitle(grid.getTitle());
-        dto.setDescription(grid.getDescription());
-        dto.setSport(grid.getSport());
-        dto.setTileCount(grid.getTiles().size());
-        dto.setImposterCount((int) grid.getTiles().stream().filter(ImposterTile::isImposter).count());
+        dto.setId(row.getId());
+        dto.setTitle(row.getTitle());
+        dto.setDescription(row.getDescription());
+        dto.setSport(row.getSport());
+        dto.setTileCount(row.getTileCount().intValue());
+        dto.setImposterCount(row.getImposterCount().intValue());
         return dto;
     }
 }

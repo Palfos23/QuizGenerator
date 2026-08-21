@@ -19,6 +19,7 @@ import com.quizapp.repository.AppUserRepository;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.LineupAttemptRepository;
 import com.quizapp.repository.LineupRepository;
+import com.quizapp.repository.LineupSummaryProjection;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,8 +60,8 @@ public class LineupPlayService {
     @Transactional(readOnly = true)
     public List<LineupSummaryDto> findAll(String userEmail) {
         LocalDate today = LocalDate.now();
-        List<Lineup> lineups = lineupRepository.findByWeekStartDateLessThanEqualOrderByWeekStartDateDescIdDesc(today);
-        return toSummariesWithStatus(lineups, userEmail);
+        List<LineupSummaryProjection> rows = lineupRepository.findSummariesByWeekStartDateLessThanEqual(today);
+        return toSummariesWithStatus(rows, userEmail);
     }
 
     /**
@@ -73,41 +74,46 @@ public class LineupPlayService {
      */
     @Transactional(readOnly = true)
     public List<LineupSummaryDto> getBattleRoundChoices(int count, List<Long> excludeIds) {
-        List<Long> ids = lineupRepository.findAll().stream()
-                .filter(l -> !l.isExcludedFromBattle())
-                .map(Lineup::getId)
+        List<Long> ids = lineupRepository.findBattleEligibleIds().stream()
                 .filter(id -> excludeIds == null || !excludeIds.contains(id))
                 .collect(Collectors.toList());
         Collections.shuffle(ids);
         List<Long> sampled = ids.stream().limit(count).collect(Collectors.toList());
-        return lineupRepository.findAllById(sampled).stream()
-                .map(l -> new LineupSummaryDto(l.getId(), l.getTitle(), l.getCompetition(), l.getTeamName(),
-                        l.getOpponentName(), l.getScoreFor(), l.getScoreAgainst(), l.getMatchDate(),
-                        l.getWeekStartDate(), l.getFormation()))
+        if (sampled.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return lineupRepository.findSummariesByIdIn(sampled).stream()
+                .map(row -> new LineupSummaryDto(row.getId(), row.getTitle(), row.getCompetition(), row.getTeamName(),
+                        row.getOpponentName(), row.getScoreFor(), row.getScoreAgainst(), row.getMatchDate(),
+                        row.getWeekStartDate(), row.getFormation()))
                 .collect(Collectors.toList());
     }
 
     /**
      * One query for all the user's attempts across every board being listed, rather
      * than a separate query per board - same reasoning as GridPlayService's version.
+     * Built from the lightweight LineupSummaryProjection rather than full Lineup
+     * entities - Lineup.entries and LineupEntry.athlete are both FetchType.EAGER,
+     * so loading entities here would N+1 across the whole table just to list
+     * titles/scores and count entries.
      */
-    private List<LineupSummaryDto> toSummariesWithStatus(List<Lineup> lineups, String userEmail) {
-        List<Long> lineupIds = lineups.stream().map(Lineup::getId).collect(Collectors.toList());
+    private List<LineupSummaryDto> toSummariesWithStatus(List<LineupSummaryProjection> rows, String userEmail) {
+        List<Long> lineupIds = rows.stream().map(LineupSummaryProjection::getId).collect(Collectors.toList());
         java.util.Map<Long, LineupAttempt> attemptByLineupId = lineupIds.isEmpty()
                 ? java.util.Map.of()
                 : lineupAttemptRepository.findByLineup_IdInAndUser_Email(lineupIds, userEmail).stream()
                         .collect(Collectors.toMap(a -> a.getLineup().getId(), a -> a));
 
-        return lineups.stream().map(l -> {
-            LineupAttempt attempt = attemptByLineupId.get(l.getId());
+        return rows.stream().map(row -> {
+            LineupAttempt attempt = attemptByLineupId.get(row.getId());
             String status = attempt == null ? "NOT_STARTED" : (attempt.isCompleted() ? "COMPLETED" : "IN_PROGRESS");
             Integer guessedCount = attempt == null ? null : attempt.getSolvedEntryIds().size();
-            LineupSummaryDto dto = new LineupSummaryDto(l.getId(), l.getTitle(), l.getCompetition(), l.getTeamName(),
-                    l.getOpponentName(), l.getScoreFor(), l.getScoreAgainst(), l.getMatchDate(),
-                    l.getWeekStartDate(), l.getFormation());
+            LineupSummaryDto dto = new LineupSummaryDto(row.getId(), row.getTitle(), row.getCompetition(), row.getTeamName(),
+                    row.getOpponentName(), row.getScoreFor(), row.getScoreAgainst(), row.getMatchDate(),
+                    row.getWeekStartDate(), row.getFormation());
             dto.setStatus(status);
             dto.setGuessedCount(guessedCount);
-            dto.setEntryCount(l.getEntries().size());
+            dto.setEntryCount(row.getEntryCount().intValue());
             return dto;
         }).collect(Collectors.toList());
     }

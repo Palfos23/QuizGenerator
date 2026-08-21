@@ -14,6 +14,11 @@
       </div>
     </div>
 
+    <div v-else-if="!question" class="empty-state">
+      <p>Couldn't load this round's questions.</p>
+      <button class="btn btn-primary" @click="loadRoundChoices">Try again</button>
+    </div>
+
     <template v-else>
     <div class="grid-status-bar">
       <div class="grid-progress">Question {{ currentQuestionIndex + 1 }} / {{ roundCount }}</div>
@@ -142,6 +147,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
 import TensionAnswerModal from './TensionAnswerModal.vue'
 import LoadingState from './LoadingState.vue'
@@ -370,6 +376,8 @@ async function loadRoundChoices() {
     roundChoices.value = await api.fetchTensionRoundChoices(
       3, props.category, props.excludeCategories, chosenQuestions.value.map(q => q.id)
     )
+  } catch (e) {
+    toast.show('Could not load the next round - please try again.', 'error')
   } finally {
     loadingChoices.value = false
   }

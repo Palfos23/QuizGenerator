@@ -73,6 +73,11 @@
       </div>
     </template>
 
+    <div v-else class="empty-state">
+      <p>Couldn't load this board.</p>
+      <button class="btn btn-primary" @click="proceedToCurrentRound">Try again</button>
+    </div>
+
     <div v-if="flipOverlay" class="imposter-flip-overlay" :class="flipOverlay.imposter ? 'imposter-hit' : 'imposter-fit'">
       <div class="imposter-overlay-text">{{ flipOverlay.imposter ? 'IMPOSTER!' : 'Correct' }}</div>
     </div>
@@ -194,8 +199,12 @@ onMounted(async () => {
 
 async function loadRoundChoices() {
   loadingChoices.value = true
+  error.value = ''
   try {
     roundChoices.value = await api.fetchImposterBattleRoundChoices(3, chosenGridIds.value)
+  } catch (e) {
+    error.value = 'Could not load the next round.'
+    loading.value = false // loadPlayState never ran to clear this - avoid a stuck spinner
   } finally {
     loadingChoices.value = false
   }
