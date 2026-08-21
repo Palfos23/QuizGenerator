@@ -139,6 +139,21 @@
           so you can add that subject first and re-import. Every row here still needs a value filled in before saving.
         </p>
 
+        <div v-if="csvUnmatchedNames.length" style="background:rgba(242,183,5,0.1); border:1px solid rgba(242,183,5,0.3); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+            <strong style="color:var(--gold);">
+              {{ csvUnmatchedNames.length }} name{{ csvUnmatchedNames.length > 1 ? 's' : '' }} from the CSV weren't found in "{{ form.sport }}"
+            </strong>
+            <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">Dismiss</button>
+          </div>
+          <p class="page-subtitle" style="margin:6px 0 10px;">
+            Add these as subjects first (or fix a typo in the CSV), then re-import.
+          </p>
+          <ul style="margin:0; padding-left:20px; max-height:200px; overflow-y:auto; line-height:1.8;">
+            <li v-for="name in csvUnmatchedNames" :key="name">{{ name }}</li>
+          </ul>
+        </div>
+
         <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
           <button
             v-for="a in athleteSearchResults"
@@ -331,6 +346,7 @@ async function importAllInCategory() {
 
 const csvInput = ref(null)
 const importingCsv = ref(false)
+const csvUnmatchedNames = ref([]) // full list, shown in-page - the toast only ever had room for a few
 
 function triggerCsvUpload() {
   csvInput.value?.click()
@@ -346,6 +362,7 @@ async function handleCsvFile(event) {
   if (!file || !form.sport) return
 
   error.value = ''
+  csvUnmatchedNames.value = []
   importingCsv.value = true
   try {
     const rows = parseCsv(await file.text())
@@ -377,10 +394,11 @@ async function handleCsvFile(event) {
     }
     entryPage.value = 1
     entryFilterTerm.value = ''
+    csvUnmatchedNames.value = unmatched
 
     let message = `CSV import: ${added} answer(s) added, ${updated} updated.`
     if (unmatched.length) {
-      message += ` ${unmatched.length} name(s) not found in "${form.sport}" and skipped: ${unmatched.slice(0, 5).join(', ')}${unmatched.length > 5 ? ', …' : ''}.`
+      message += ` ${unmatched.length} name(s) weren't found - see the list below.`
     }
     toast.show(message, unmatched.length ? 'error' : 'success')
   } catch (e) {
@@ -426,6 +444,7 @@ function resetForm() {
   entryFilterTerm.value = ''
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
+  csvUnmatchedNames.value = []
 }
 
 function openCreate() {
@@ -436,6 +455,7 @@ function openCreate() {
 
 async function openEdit(id) {
   error.value = ''
+  csvUnmatchedNames.value = []
   try {
     const detail = await api.adminGetBullseyeQuestion(id)
     form.title = detail.title
