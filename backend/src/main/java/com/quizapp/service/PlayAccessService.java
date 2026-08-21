@@ -57,6 +57,21 @@ public class PlayAccessService {
         }
     }
 
+    // For PlayAccessController's upfront "can this account even open this
+    // game" check - keyed by the same short string each frontend *View.vue
+    // uses as its route/game identifier.
+    public void requireAccessForKey(Authentication authentication, String gameKey) {
+        switch (gameKey) {
+            case "tension" -> requireTensionAccess(authentication);
+            case "grid-battle" -> requireGridBattleAccess(authentication);
+            case "501" -> requireFiveOhOneAccess(authentication);
+            case "imposter" -> requireImposterAccess(authentication);
+            case "starting-xi-battle" -> requireStartingXiBattleAccess(authentication);
+            case "bullseye" -> requireBullseyeAccess(authentication);
+            default -> throw new IllegalArgumentException("Unknown game: " + gameKey);
+        }
+    }
+
     // Admin accounts are a completely separate credential system (AdminUser,
     // not AppUser) - an admin JWT's subject wouldn't resolve to an AppUser row
     // to begin with, so this check is mostly belt-and-suspenders, but it keeps

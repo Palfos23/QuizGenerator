@@ -1,4 +1,5 @@
 <template>
+  <GameAccessGate game="bullseye">
   <div>
     <template v-if="stage === 'landing'">
       <h1>Bullseye</h1>
@@ -79,6 +80,7 @@
       </div>
     </template>
   </div>
+  </GameAccessGate>
 </template>
 
 <script setup>
@@ -88,6 +90,7 @@ import passAndPlayState from '../services/passAndPlayState'
 import navTrigger from '../services/navTrigger'
 import BullseyeGame from '../components/BullseyeGame.vue'
 import LoadingState from '../components/LoadingState.vue'
+import GameAccessGate from '../components/GameAccessGate.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },

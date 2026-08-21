@@ -1,4 +1,5 @@
 <template>
+  <GameAccessGate game="501">
   <div>
     <template v-if="stage === 'modeChoice'">
       <h1>501</h1>
@@ -215,6 +216,7 @@
     />
 
   </div>
+  </GameAccessGate>
 </template>
 
 <script setup>
@@ -226,6 +228,7 @@ import passAndPlayState from '../services/passAndPlayState'
 import navTrigger from '../services/navTrigger'
 import FiveOhOneGame from '../components/FiveOhOneGame.vue'
 import OnlineFiveOhOneGame from '../components/OnlineFiveOhOneGame.vue'
+import GameAccessGate from '../components/GameAccessGate.vue'
 
 const stage = ref('modeChoice')
 const error = ref('')

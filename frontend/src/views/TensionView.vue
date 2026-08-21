@@ -1,4 +1,5 @@
 <template>
+  <GameAccessGate game="tension">
   <div>
     <template v-if="stage === 'modeChoice'">
       <h1>Tension</h1>
@@ -288,6 +289,7 @@
       </div>
     </template>
   </div>
+  </GameAccessGate>
 </template>
 
 <script setup>
@@ -300,6 +302,7 @@ import navTrigger from '../services/navTrigger'
 import TensionGame from '../components/TensionGame.vue'
 import OnlineTensionGame from '../components/OnlineTensionGame.vue'
 import LoadingState from '../components/LoadingState.vue'
+import GameAccessGate from '../components/GameAccessGate.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },

@@ -92,4 +92,29 @@ class PlayAccessServiceTest {
         assertThatThrownBy(() -> playAccessService.requireTensionAccess(userAuth("nobody-" + System.nanoTime() + "@example.com")))
                 .isInstanceOf(GameAccessDeniedException.class);
     }
+
+    @Test
+    void requireAccessForKeyDispatchesToTheRightGame() {
+        AppUser user = appUserRepository.save(freshAppUser());
+        user.setCanPlayBullseye(false);
+        appUserRepository.save(user);
+
+        // Every other game's flag defaults true, so those keys still pass...
+        playAccessService.requireAccessForKey(userAuth(user.getEmail()), "tension");
+        playAccessService.requireAccessForKey(userAuth(user.getEmail()), "grid-battle");
+        playAccessService.requireAccessForKey(userAuth(user.getEmail()), "501");
+        playAccessService.requireAccessForKey(userAuth(user.getEmail()), "imposter");
+        playAccessService.requireAccessForKey(userAuth(user.getEmail()), "starting-xi-battle");
+        // ...but "bullseye" specifically is denied for this account.
+        assertThatThrownBy(() -> playAccessService.requireAccessForKey(userAuth(user.getEmail()), "bullseye"))
+                .isInstanceOf(GameAccessDeniedException.class)
+                .hasMessageContaining("Bullseye");
+    }
+
+    @Test
+    void requireAccessForKeyRejectsAnUnknownGame() {
+        AppUser user = appUserRepository.save(freshAppUser());
+        assertThatThrownBy(() -> playAccessService.requireAccessForKey(userAuth(user.getEmail()), "not-a-real-game"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
 }

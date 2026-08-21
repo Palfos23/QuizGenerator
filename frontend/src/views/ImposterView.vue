@@ -1,4 +1,5 @@
 <template>
+  <GameAccessGate game="imposter">
   <div>
     <template v-if="stage === 'modeChoice'">
       <h1>Imposter</h1>
@@ -283,6 +284,7 @@
       </div>
     </template>
   </div>
+  </GameAccessGate>
 </template>
 
 <script setup>
@@ -294,6 +296,7 @@ import passAndPlayState from '../services/passAndPlayState'
 import navTrigger from '../services/navTrigger'
 import ImposterGame from '../components/ImposterGame.vue'
 import OnlineImposterGame from '../components/OnlineImposterGame.vue'
+import GameAccessGate from '../components/GameAccessGate.vue'
 
 const stage = ref('modeChoice')
 const error = ref('')

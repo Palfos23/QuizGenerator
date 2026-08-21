@@ -613,5 +613,10 @@ export default {
   },
   adminDeleteBullseyeQuestion(id) {
     return client.delete(`/admin/bullseye/${id}`)
+  },
+
+  // --- Per-game play access ---
+  checkGameAccess(game) {
+    return client.get(`/play-access/${game}`)
   }
 }

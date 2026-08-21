@@ -1,4 +1,5 @@
 <template>
+  <GameAccessGate game="grid-battle">
   <div>
     <template v-if="stage === 'modeChoice'">
       <h1>Grid Battle</h1>
@@ -310,6 +311,7 @@
       </div>
     </template>
   </div>
+  </GameAccessGate>
 </template>
 
 <script setup>
@@ -323,6 +325,7 @@ import { sportLabel } from '../constants'
 import MultiplayerGridGame from '../components/MultiplayerGridGame.vue'
 import OnlineGridBattleGame from '../components/OnlineGridBattleGame.vue'
 import LoadingState from '../components/LoadingState.vue'
+import GameAccessGate from '../components/GameAccessGate.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },

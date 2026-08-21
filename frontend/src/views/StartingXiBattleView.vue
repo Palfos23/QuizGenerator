@@ -1,4 +1,5 @@
 <template>
+  <GameAccessGate game="starting-xi-battle">
   <div>
     <template v-if="stage === 'modeChoice'">
       <h1>XI Battle</h1>
@@ -291,6 +292,7 @@
       </div>
     </template>
   </div>
+  </GameAccessGate>
 </template>
 
 <script setup>
@@ -303,6 +305,7 @@ import navTrigger from '../services/navTrigger'
 import MultiplayerLineupGame from '../components/MultiplayerLineupGame.vue'
 import OnlineStartingXiBattleGame from '../components/OnlineStartingXiBattleGame.vue'
 import LoadingState from '../components/LoadingState.vue'
+import GameAccessGate from '../components/GameAccessGate.vue'
 
 const colorOptions = ['#4f46e5', '#F22C05', '#F2BB05', '#032E8A', '#05D6F2', '#f43f5e', '#5D038A', '#22c55e']
 
