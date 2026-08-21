@@ -54,7 +54,7 @@
         </p>
       </div>
 
-      <div v-if="revealed" class="tension-answers-panel" style="margin-top:16px;">
+      <div v-if="revealed" class="tension-answers-panel" style="margin:16px auto 0;">
         <h3 style="text-align:center; margin-top:0;">Answers</h3>
 
         <div v-if="bullseyeAnswers.length" class="bullseye-truth-callout">
