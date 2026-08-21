@@ -5,7 +5,7 @@
       <div v-if="state" style="color:var(--text-dim); font-size:0.85rem;">Tension answers: {{ state.tensionAnswerCount }}</div>
     </div>
 
-    <LoadingState v-if="loading" full />
+    <LoadingState v-if="loading" full message="Loading the game…" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">

@@ -253,11 +253,7 @@
         </button>
       </div>
 
-      <div v-if="starting" class="tension-intro-overlay">
-        <span class="spinner" style="width:32px; height:32px; border-width:4px; margin-bottom:20px;"></span>
-        <h1>Shuffling your questions…</h1>
-        <p style="margin-top:12px; color:var(--text-dim);">First round starts in just a moment.</p>
-      </div>
+      <LoadingState v-if="starting" full message="Shuffling your questions…" subtitle="First round starts in just a moment." />
     </template>
 
     <TensionGame
@@ -303,6 +299,7 @@ import passAndPlayState from '../services/passAndPlayState'
 import navTrigger from '../services/navTrigger'
 import TensionGame from '../components/TensionGame.vue'
 import OnlineTensionGame from '../components/OnlineTensionGame.vue'
+import LoadingState from '../components/LoadingState.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },

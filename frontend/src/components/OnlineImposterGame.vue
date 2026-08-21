@@ -7,7 +7,7 @@
       <p class="fiveoo-rules-reminder">Fewest imposter hits wins - flip a tile on your turn</p>
     </div>
 
-    <LoadingState v-if="loading" full />
+    <LoadingState v-if="loading" full message="Loading the board…" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">

@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <LoadingState v-else-if="loading" full />
+    <LoadingState v-else-if="loading" full message="Loading the board…" />
 
     <template v-else-if="playState">
       <div class="fiveoo-header">

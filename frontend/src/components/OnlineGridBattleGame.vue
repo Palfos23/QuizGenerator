@@ -5,7 +5,7 @@
       <div v-if="state" style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ state.gridTheme }}</div>
     </div>
 
-    <LoadingState v-if="loading" full />
+    <LoadingState v-if="loading" full message="Loading the grid…" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">

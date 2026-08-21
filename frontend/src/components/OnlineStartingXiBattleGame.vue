@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <LoadingState v-if="loading" full />
+    <LoadingState v-if="loading" full message="Loading the lineup…" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">

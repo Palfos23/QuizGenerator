@@ -241,7 +241,7 @@
           Next →
         </button>
       </div>
-      <LoadingState v-if="checkingPool" full />
+      <LoadingState v-if="checkingPool" full message="Shuffling your grids…" subtitle="First round starts in just a moment." />
     </template>
 
     <template v-else-if="stage === 'pickGrids'">

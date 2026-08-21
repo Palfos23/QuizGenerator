@@ -1789,8 +1789,10 @@ table.scoreboard-table {
   border-width: 3px;
 }
 /* Full-screen variant, for right after "create/start game" - same overlay
-   treatment as .tension-intro-overlay so the whole page reads as busy
-   instead of just a small centered block in otherwise-empty layout. */
+   treatment (and same big spinner + headline language) as
+   TensionView's original pre-game overlay, so every game mode's "starting"
+   moment reads the same instead of some being a small inline spinner and
+   others a full announcement. */
 .loading-state-full {
   position: fixed;
   inset: 0;
@@ -1798,6 +1800,18 @@ table.scoreboard-table {
   padding: 0 24px;
   background: rgba(8, 9, 14, 0.94);
   backdrop-filter: blur(4px);
+}
+.loading-state-full .spinner {
+  width: 32px;
+  height: 32px;
+  border-width: 4px;
+}
+.loading-state-full h1 {
+  max-width: 80%;
+  margin: 0 auto;
+}
+.loading-state-subtitle {
+  color: var(--text-dim);
 }
 
 /* ---------- Mobile ---------- */
