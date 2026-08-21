@@ -84,6 +84,25 @@
     </nav>
 
     <ToastHost />
+
+    <div v-if="showInactivityWarning" class="modal-backdrop">
+      <div class="modal" role="alertdialog" aria-modal="true" aria-label="Still there?" style="max-width:420px; text-align:center;">
+        <h2 style="margin-top:0;">Still there?</h2>
+        <p class="page-subtitle">You've been inactive for a while - you'll be logged out in {{ inactivityWarningSecondsLeft }}s.</p>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+          <button class="btn btn-secondary" @click="logoutNow">Log out now</button>
+          <button class="btn btn-primary" @click="staySignedIn">Stay logged in</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="showExpiryWarning" class="modal-backdrop">
+      <div class="modal" role="alertdialog" aria-modal="true" aria-label="Your session will expire soon" style="max-width:420px; text-align:center;">
+        <h2 style="margin-top:0;">Your session will expire soon</h2>
+        <p class="page-subtitle">You'll be logged out shortly and will need to sign in again - staying active won't postpone this one. Might be a good time to wrap up.</p>
+        <button class="btn btn-primary" style="margin-top:8px;" @click="dismissExpiryWarning">Got it</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -141,17 +160,68 @@ function logout() {
 // (much longer) expiry - the JWT expiring handles "closed the laptop for a
 // week", this handles "left a tab open and walked away for a while".
 const INACTIVITY_LIMIT_MS = 60 * 60 * 1000 // 60 minutes
+// How long before either cutoff to show a heads-up, so a hard logout never
+// just appears out of nowhere mid-game.
+const INACTIVITY_WARNING_MS = 60 * 1000
+const EXPIRY_WARNING_MS = 2 * 60 * 1000
 let lastActivity = Date.now()
 let inactivityTimer = null
 
+const showInactivityWarning = ref(false)
+const inactivityWarningSecondsLeft = ref(0)
+const showExpiryWarning = ref(false)
+let expiryWarningDismissed = false
+
 function resetActivity() {
   lastActivity = Date.now()
+  showInactivityWarning.value = false
 }
 
-function checkInactivity() {
-  if (auth.isAuthenticated.value && Date.now() - lastActivity > INACTIVITY_LIMIT_MS) {
+function staySignedIn() {
+  resetActivity()
+}
+
+function logoutNow() {
+  showInactivityWarning.value = false
+  logout()
+}
+
+function dismissExpiryWarning() {
+  expiryWarningDismissed = true
+  showExpiryWarning.value = false
+}
+
+// A new login (including a re-login after a session expired) gets its own
+// fresh token - resets both the dismissal flag and the countdown state so a
+// warning tied to the previous token can't linger onto the new one.
+watch(() => auth.state.token, () => {
+  expiryWarningDismissed = false
+  showExpiryWarning.value = false
+  showInactivityWarning.value = false
+})
+
+function checkSessionTimers() {
+  if (!auth.isAuthenticated.value) return
+
+  const idleRemaining = INACTIVITY_LIMIT_MS - (Date.now() - lastActivity)
+  if (idleRemaining <= 0) {
+    showInactivityWarning.value = false
     auth.logout()
     router.push('/?sessionExpired=1')
+    return
+  }
+  showInactivityWarning.value = idleRemaining <= INACTIVITY_WARNING_MS
+  if (showInactivityWarning.value) {
+    inactivityWarningSecondsLeft.value = Math.ceil(idleRemaining / 1000)
+    return // don't stack the token-expiry warning on top of this one
+  }
+
+  // The token's own absolute expiry can't be postponed by activity (no
+  // refresh token exists) - this is purely a "wrap up soon" heads-up, not
+  // something staySignedIn() can defer.
+  const tokenRemaining = auth.msUntilTokenExpiry()
+  if (!expiryWarningDismissed && tokenRemaining !== null && tokenRemaining > 0 && tokenRemaining <= EXPIRY_WARNING_MS) {
+    showExpiryWarning.value = true
   }
 }
 
@@ -159,9 +229,9 @@ const activityEvents = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll']
 
 // On mobile, or an installed/standalone Chrome or Safari "app", the tab can sit
 // backgrounded for arbitrarily long stretches - background timers get
-// throttled or suspended entirely to save battery, so the 60-second interval
+// throttled or suspended entirely to save battery, so the 1-second interval
 // below isn't reliable while backgrounded. Worse, the very act of returning
-// and clicking something resets `lastActivity` before checkInactivity() ever
+// and clicking something resets `lastActivity` before checkSessionTimers() ever
 // gets a chance to notice the gap - so by the time a request goes out on the
 // stale token, nothing about the UI looks wrong yet. Checking the token's own
 // expiry the instant the tab becomes visible again catches this proactively,
@@ -175,7 +245,7 @@ function checkTokenOnResume() {
 
 onMounted(() => {
   activityEvents.forEach(evt => window.addEventListener(evt, resetActivity, { passive: true }))
-  inactivityTimer = setInterval(checkInactivity, 60 * 1000)
+  inactivityTimer = setInterval(checkSessionTimers, 1000)
   document.addEventListener('visibilitychange', checkTokenOnResume)
   checkTokenOnResume()
 })

@@ -32,6 +32,21 @@ function isTokenExpired() {
   }
 }
 
+// Milliseconds remaining until the token's own (absolute) expiry, or null if
+// there's no token or no exp claim. Lets a caller warn as that hard cap
+// approaches - unlike App.vue's separate inactivity timeout, this one can't
+// be postponed by staying active, since there's no refresh token to extend it.
+function msUntilTokenExpiry() {
+  if (!state.token) return null
+  try {
+    const payload = JSON.parse(atob(state.token.split('.')[1]))
+    if (!payload.exp) return null
+    return payload.exp * 1000 - Date.now()
+  } catch (e) {
+    return 0 // malformed - treat as already expired, same as isTokenExpired()
+  }
+}
+
 function logout() {
   state.token = null
   state.displayName = null
@@ -50,5 +65,6 @@ export default {
   logout,
   isAuthenticated,
   isAdmin,
-  isTokenExpired
+  isTokenExpired,
+  msUntilTokenExpiry
 }
