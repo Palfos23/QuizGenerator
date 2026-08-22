@@ -100,10 +100,16 @@ onMounted(async () => {
 function onInput() {
   validSelection.value = false
   duplicateError.value = false
-  if (value.value.trim().length >= 3) {
-    const term = value.value.toLowerCase()
+  const term = value.value.trim().toLowerCase()
+  if (term.length >= 3) {
     filteredOptions.value = allOptions.value.filter(o => o.toLowerCase().includes(term)).slice(0, 8)
     showDropdown.value = true
+  } else if (term.length === 2) {
+    // Below the normal "contains" threshold (too noisy at 2 characters across
+    // a big answer list), but a short answer that's an exact match - like
+    // "MG" - needs to still be reachable, not just prefix/substring matches.
+    filteredOptions.value = allOptions.value.filter(o => o.toLowerCase() === term)
+    showDropdown.value = filteredOptions.value.length > 0
   } else {
     filteredOptions.value = []
     showDropdown.value = false
