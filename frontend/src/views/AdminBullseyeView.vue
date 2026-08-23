@@ -30,7 +30,7 @@
               <span v-if="q.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
             </div>
             <div class="saved-quiz-meta">
-              {{ sportLabel(q.sport) }} · {{ q.entryCount }} answers · "{{ q.targetValue }} {{ q.statLabel }}"
+              {{ sportLabel(q.sport) }} · {{ q.entryCount }} answers · "{{ formatNumber(q.targetValue) }} {{ q.statLabel }}"
             </div>
           </div>
           <div style="display:flex; gap:8px;">
@@ -81,7 +81,7 @@
         </div>
       </div>
       <p class="page-subtitle" style="margin-top:-8px;">
-        Players will see: <strong>"{{ form.targetValue ?? '…' }} {{ form.statLabel || '…' }}"</strong>
+        Players will see: <strong>"{{ form.targetValue !== null ? formatNumber(form.targetValue) : '…' }} {{ form.statLabel || '…' }}"</strong>
       </p>
 
       <div class="field">
@@ -221,7 +221,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import Pagination from '../components/Pagination.vue'
-import { sportLabel } from '../constants'
+import { formatNumber, sportLabel } from '../constants'
 import gridCategories from '../services/gridCategories'
 
 const view = ref('list')

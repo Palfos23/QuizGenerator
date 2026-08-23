@@ -9,7 +9,7 @@
       <h2 style="margin:0 0 24px;">{{ rotatedActivePlayers[0]?.name }}, choose a question</h2>
       <div class="tension-choice-grid">
         <button v-for="q in roundChoices" :key="q.id" class="tension-choice-card" @click="chooseQuestion(q)">
-          <strong>{{ q.targetValue }} {{ q.statLabel }}</strong>
+          <strong>{{ formatNumber(q.targetValue) }} {{ q.statLabel }}</strong>
           <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">
             {{ sportLabel(q.sport) }} · {{ q.entryCount }} possible answers
           </div>
@@ -30,7 +30,7 @@
         <div style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ sportLabel(roundState.sport) }}</div>
       </div>
 
-      <h1 style="text-align:center; margin:6px 0 20px;">{{ roundState.targetValue }} {{ roundState.statLabel }}</h1>
+      <h1 style="text-align:center; margin:6px 0 20px;">{{ formatNumber(roundState.targetValue) }} {{ roundState.statLabel }}</h1>
 
       <div class="mp-player-row">
         <div
@@ -60,7 +60,7 @@
         <div v-if="bullseyeAnswers.length" class="bullseye-truth-callout">
           <div class="bullseye-truth-label">{{ bullseyeAnswers[0].distance === 0 ? '🎯 Bullseye' : 'Closest possible answer' }}</div>
           <div class="bullseye-truth-names">
-            {{ bullseyeAnswers.map(e => `${e.athleteName} (${e.statValue})`).join(', ') }}
+            {{ bullseyeAnswers.map(e => `${e.athleteName} (${formatNumber(e.statValue)})`).join(', ') }}
           </div>
         </div>
 
@@ -86,8 +86,8 @@
               <td>{{ idx + 1 }}</td>
               <td>{{ revealIndex > idx ? a.player : '???' }}</td>
               <td>{{ revealIndex > idx ? a.name : '???' }}</td>
-              <td>{{ revealIndex > idx ? a.statValue : '' }}</td>
-              <td>{{ revealIndex > idx ? a.distance : '' }}</td>
+              <td>{{ revealIndex > idx ? formatNumber(a.statValue) : '' }}</td>
+              <td>{{ revealIndex > idx ? formatNumber(a.distance) : '' }}</td>
             </tr>
           </tbody>
         </table>
@@ -122,7 +122,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
-import { sportLabel } from '../constants'
+import { formatNumber, sportLabel } from '../constants'
 import BullseyeAnswerModal from './BullseyeAnswerModal.vue'
 import LoadingState from './LoadingState.vue'
 

@@ -31,6 +31,19 @@ export function formatHint(label, value) {
   return label && label.trim() ? `${label} | ${value}` : `${value}`
 }
 
+// Large stat values (e.g. a country's population) are unreadable as a raw digit
+// string - this groups them with spaces ("19945850" -> "19 945 850") for display.
+// Non-numeric or missing values pass through untouched.
+export function formatNumber(value) {
+  if (value === null || value === undefined || value === '') return value
+  const n = Number(value)
+  if (Number.isNaN(n)) return value
+  const negative = n < 0
+  const digits = Math.abs(Math.trunc(n)).toString()
+  const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  return negative ? `-${grouped}` : grouped
+}
+
 // text color has to adapt rather than always being the same dark shade - this picks
 // black or white based on the background's relative luminance (WCAG-style).
 export function readableTextColor(hex) {
