@@ -6,6 +6,7 @@
         <p class="page-subtitle">Whoever or whatever a grid is about - people, movies, countries, anything - used to build weekly grid candidate pools.</p>
       </div>
       <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" @click="downloadCsv">Download CSV</button>
         <button class="btn btn-secondary" @click="triggerFilePicker">Import CSV</button>
         <button class="btn btn-primary" @click="openCreate">+ Add subject</button>
       </div>
@@ -254,6 +255,38 @@ function onFileSelected(event) {
     showImportPreview.value = true
   }
   reader.readAsText(file)
+}
+
+function csvEscape(value) {
+  const str = value === null || value === undefined ? '' : String(value)
+  return /[",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+}
+
+// Exports whatever category is currently selected in the filter above (all
+// subjects if "All categories" is selected) in the same name,category,group,photoUrl
+// shape the CSV importer expects, so an exported file can be edited and re-imported.
+function downloadCsv() {
+  const rows = sportFilter.value === 'ALL' ? athletes.value : athletes.value.filter(a => a.sport === sportFilter.value)
+  if (!rows.length) {
+    toast.show('No subjects to download for that category.', 'error')
+    return
+  }
+
+  const lines = ['name,category,group,photoUrl']
+  for (const a of rows) {
+    lines.push([csvEscape(a.name), csvEscape(a.sport), csvEscape(a.team), csvEscape(a.photoUrl)].join(','))
+  }
+
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  const safeName = (sportFilter.value === 'ALL' ? 'all-categories' : sportFilter.value).toLowerCase().replace(/[^a-z0-9]+/g, '-')
+  link.download = `subjects-${safeName}.csv`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
 function closeImportPreview() {
