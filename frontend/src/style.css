@@ -2,6 +2,7 @@
 
 :root {
   --nav-height: 64px; /* used by sticky elements positioned just below the top nav - keep in sync with .top-nav's actual rendered height per breakpoint. Redefined for the mobile nav's shorter height in the @media (max-width: 760px) block below. */
+  --bottom-nav-height: 0px; /* the fixed mobile .bottom-nav is hidden above 760px, so anything sticky to the viewport bottom can sit flush at 0 by default - redefined below for the breakpoint where that bar actually covers the bottom of the screen. */
   --ink: #101119;
   --ink-raised: #1a1c28;
   --gold: #f2b705;
@@ -419,7 +420,7 @@ input[type="range"]::-moz-range-progress {
   gap: 12px;
   margin-top: 20px;
   position: sticky;
-  bottom: 0;
+  bottom: var(--bottom-nav-height);
   padding: 14px 0;
   background: var(--ink);
   border-top: 1px solid var(--border);
@@ -1885,6 +1886,11 @@ table.scoreboard-table {
      breakpoint instead of just the desktop one. */
   :root {
     --nav-height: 51px;
+    /* matches .main-content's 90px bottom-clearance padding below, which was
+       measured against the real fixed bottom nav (icon+label tabs plus the
+       safe-area inset) - so anything sticky to the viewport bottom lands
+       flush above it instead of getting cut in half underneath it. */
+    --bottom-nav-height: 90px;
   }
 
   .app-shell { flex-direction: column; }
