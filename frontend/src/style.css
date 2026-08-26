@@ -1886,11 +1886,12 @@ table.scoreboard-table {
      breakpoint instead of just the desktop one. */
   :root {
     --nav-height: 51px;
-    /* matches .main-content's 90px bottom-clearance padding below, which was
-       measured against the real fixed bottom nav (icon+label tabs plus the
-       safe-area inset) - so anything sticky to the viewport bottom lands
-       flush above it instead of getting cut in half underneath it. */
-    --bottom-nav-height: 90px;
+    /* .bottom-nav's own rendered height (~38.5px of tab labels/padding) plus
+       a small visible gap and its safe-area inset - deliberately NOT the
+       larger 90px .main-content reserves below the fold, which is scroll-end
+       breathing room rather than the nav's real size; using that here left a
+       persistently visible dead gap above the nav instead of a snug dock. */
+    --bottom-nav-height: calc(47px + env(safe-area-inset-bottom));
   }
 
   .app-shell { flex-direction: column; }
@@ -1907,6 +1908,16 @@ table.scoreboard-table {
   .main-content {
     padding: 20px 16px 90px; /* extra bottom padding so content clears the bottom nav */
     max-width: 100%;
+  }
+
+  /* .pick-grids-actions sticks to the bottom of the viewport, but it sits
+     ahead of .main-content's own 90px trailing padding above - without
+     cancelling that out, scrolling to the true end of a (short) grid list
+     lets the sticky bar run out of room and detach from its pinned spot,
+     leaving a dead gap above the bottom nav instead of docking flush
+     against it. */
+  .pick-grids-actions {
+    margin-bottom: -90px;
   }
 
   h1 { font-size: 1.6rem; }
