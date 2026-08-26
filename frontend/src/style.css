@@ -1887,11 +1887,11 @@ table.scoreboard-table {
   :root {
     --nav-height: 51px;
     /* .bottom-nav's own rendered height (~38.5px of tab labels/padding) plus
-       a small visible gap and its safe-area inset - deliberately NOT the
-       larger 90px .main-content reserves below the fold, which is scroll-end
-       breathing room rather than the nav's real size; using that here left a
-       persistently visible dead gap above the nav instead of a snug dock. */
-    --bottom-nav-height: calc(47px + env(safe-area-inset-bottom));
+       its safe-area inset - deliberately NOT the larger 90px .main-content
+       reserves below the fold, which is scroll-end breathing room rather
+       than the nav's real size; using that here left a persistently visible
+       dead gap above the nav instead of a flush dock. */
+    --bottom-nav-height: calc(39px + env(safe-area-inset-bottom));
   }
 
   .app-shell { flex-direction: column; }
