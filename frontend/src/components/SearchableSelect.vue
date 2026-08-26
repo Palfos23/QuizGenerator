@@ -5,6 +5,9 @@
       v-model="searchTerm"
       :placeholder="placeholder"
       autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
       @blur="onBlur"
     />
     <div v-if="showDropdown" class="guess-results" style="position:absolute; top:100%; left:0; right:0; z-index:10; margin-top:4px; max-height:220px; overflow-y:auto;">

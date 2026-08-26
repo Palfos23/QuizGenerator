@@ -25,6 +25,9 @@
               @input="onInput"
               placeholder="Type any name…"
               autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
               style="text-align:center;"
             />
           </div>

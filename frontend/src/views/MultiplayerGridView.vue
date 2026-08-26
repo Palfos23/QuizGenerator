@@ -269,11 +269,14 @@
         </div>
       </div>
 
-      <div style="display:flex; gap:12px; margin-top:20px;">
+      <div class="pick-grids-actions">
         <button class="btn btn-secondary" @click="stage = 'setup'">← Back</button>
-        <button class="btn btn-primary" :disabled="chosenGrids.length !== numGrids" @click="startGame">
-          Start game ({{ chosenGrids.length }}/{{ numGrids }})
-        </button>
+        <button
+          class="btn btn-primary"
+          :class="{ 'btn-ready-pulse': chosenGrids.length === numGrids }"
+          :disabled="chosenGrids.length !== numGrids"
+          @click="startGame"
+        >{{ chosenGrids.length === numGrids ? `Start game ✓ (${chosenGrids.length}/${numGrids})` : `Start game (${chosenGrids.length}/${numGrids})` }}</button>
       </div>
     </template>
 

@@ -70,6 +70,9 @@
             placeholder="Search for a player…"
             aria-label="Search for a player"
             autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
             @keydown.esc="searchTerm = ''"
           />
           <div v-if="searchResults.length" class="guess-results">

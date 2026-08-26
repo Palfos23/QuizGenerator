@@ -255,7 +255,7 @@ function buildFinalScores() {
   const n = props.players.length
   return props.players.map(p => {
     const round = eliminationOrder.value.indexOf(p.name) + 1 // 0 = never eliminated = winner
-    return [p.name, round === 0 ? n : n - round]
+    return [p.name, round === 0 ? n : round]
   })
 }
 

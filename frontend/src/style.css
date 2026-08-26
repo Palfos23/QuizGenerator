@@ -414,6 +414,24 @@ input[type="range"]::-moz-range-progress {
 .btn-primary:hover { filter: brightness(1.06); box-shadow: 0 4px 26px rgba(242, 183, 5, 0.4); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
+.pick-grids-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  position: sticky;
+  bottom: 0;
+  padding: 14px 0;
+  background: var(--ink);
+  border-top: 1px solid var(--border);
+  z-index: 20;
+}
+
+.btn-ready-pulse { animation: btn-ready-pulse 1.4s ease-in-out infinite; }
+@keyframes btn-ready-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(242, 183, 5, 0.25); }
+  50% { box-shadow: 0 4px 28px rgba(242, 183, 5, 0.7); }
+}
+
 .btn-secondary { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text); }
 .btn-secondary:hover { border-color: var(--text-dim); background: rgba(255,255,255,0.06); }
 

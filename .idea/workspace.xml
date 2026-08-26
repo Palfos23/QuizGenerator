@@ -4,7 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="" />
+    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/BullseyeAnswerModal.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/BullseyeAnswerModal.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/BullseyeGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/BullseyeGame.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/FiveOhOneGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/FiveOhOneGame.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/MultiplayerGridGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MultiplayerGridGame.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/MultiplayerLineupGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MultiplayerLineupGame.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/OnlineFiveOhOneGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/OnlineFiveOhOneGame.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/OnlineGridBattleGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/OnlineGridBattleGame.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/OnlineStartingXiBattleGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/OnlineStartingXiBattleGame.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/OnlineTensionGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/OnlineTensionGame.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/SearchableSelect.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/SearchableSelect.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/TensionAnswerModal.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/TensionAnswerModal.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/MultiplayerGridView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/MultiplayerGridView.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/StartingXiPlayView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/StartingXiPlayView.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/WeeklyGridPlayView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/WeeklyGridPlayView.vue" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

@@ -54,6 +54,9 @@
             placeholder="Search for an answer…"
             aria-label="Search for an answer"
             autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
             @keydown.esc="searchTerm = ''"
           />
           <div v-if="searchResults.length" class="guess-results">

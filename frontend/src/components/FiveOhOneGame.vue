@@ -45,6 +45,9 @@
           v-model="searchTerm"
           placeholder="Search a name…"
           autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
         />
         <div v-if="searchResults.length" class="guess-results">
           <button

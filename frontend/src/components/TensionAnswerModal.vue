@@ -28,6 +28,9 @@
               @input="onInput"
               placeholder="Type your answer…"
               autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
               style="text-align:center;"
             />
           </div>
