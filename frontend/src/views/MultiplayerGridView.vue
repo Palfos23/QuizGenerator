@@ -269,7 +269,7 @@
         </div>
       </div>
 
-      <div class="pick-grids-actions">
+      <div class="board-picker-actions">
         <button class="btn btn-secondary" @click="stage = 'setup'">← Back</button>
         <button
           class="btn btn-primary"

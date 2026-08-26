@@ -253,11 +253,14 @@
         </div>
       </div>
 
-      <div style="display:flex; gap:12px; margin-top:20px;">
+      <div class="board-picker-actions">
         <button class="btn btn-secondary" @click="stage = 'setup'">← Back</button>
-        <button class="btn btn-primary" :disabled="chosenLineups.length !== numLineups" @click="startGame">
-          Start game ({{ chosenLineups.length }}/{{ numLineups }})
-        </button>
+        <button
+          class="btn btn-primary"
+          :class="{ 'btn-ready-pulse': chosenLineups.length === numLineups }"
+          :disabled="chosenLineups.length !== numLineups"
+          @click="startGame"
+        >{{ chosenLineups.length === numLineups ? `Start game ✓ (${chosenLineups.length}/${numLineups})` : `Start game (${chosenLineups.length}/${numLineups})` }}</button>
       </div>
     </template>
 

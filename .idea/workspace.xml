@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="" />
+    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/frontend/src/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/ImposterView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/ImposterView.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/MultiplayerGridView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/MultiplayerGridView.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/StartingXiBattleView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/StartingXiBattleView.vue" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

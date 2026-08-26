@@ -415,7 +415,11 @@ input[type="range"]::-moz-range-progress {
 .btn-primary:hover { filter: brightness(1.06); box-shadow: 0 4px 26px rgba(242, 183, 5, 0.4); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-.pick-grids-actions {
+/* Shared by every "choose N boards" picker screen (Grid Battle, Starting XI
+   Battle, Imposter) - keeps the Back/Start row pinned in view while the
+   board list scrolls, instead of requiring a scroll to the very bottom to
+   find the start button. */
+.board-picker-actions {
   display: flex;
   gap: 12px;
   margin-top: 20px;
@@ -1891,7 +1895,7 @@ table.scoreboard-table {
        reserves below the fold, which is scroll-end breathing room rather
        than the nav's real size; using that here left a persistently visible
        dead gap above the nav instead of a flush dock. */
-    --bottom-nav-height: calc(39px + env(safe-area-inset-bottom));
+    --bottom-nav-height: calc(38.5px + env(safe-area-inset-bottom));
   }
 
   .app-shell { flex-direction: column; }
@@ -1910,13 +1914,13 @@ table.scoreboard-table {
     max-width: 100%;
   }
 
-  /* .pick-grids-actions sticks to the bottom of the viewport, but it sits
+  /* .board-picker-actions sticks to the bottom of the viewport, but it sits
      ahead of .main-content's own 90px trailing padding above - without
-     cancelling that out, scrolling to the true end of a (short) grid list
+     cancelling that out, scrolling to the true end of a (short) board list
      lets the sticky bar run out of room and detach from its pinned spot,
      leaving a dead gap above the bottom nav instead of docking flush
      against it. */
-  .pick-grids-actions {
+  .board-picker-actions {
     margin-bottom: -90px;
   }
 
