@@ -38,34 +38,34 @@ const guesses = [
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 0 18px;
+  padding: 6px 0 16px;
 }
 .bp-rings {
   position: absolute;
-  top: -4px;
-  width: 92px;
-  height: 92px;
+  top: -2px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   background:
     radial-gradient(circle,
-      rgba(255, 77, 109, 0.6) 0 14%,
-      transparent 14% 20%,
-      rgba(242, 183, 5, 0.4) 20% 38%,
-      transparent 38% 44%,
-      rgba(255, 255, 255, 0.16) 44% 64%,
-      transparent 64%);
+      rgba(255, 77, 109, 0.6) 0 15%,
+      transparent 15% 22%,
+      rgba(242, 183, 5, 0.4) 22% 42%,
+      transparent 42% 48%,
+      rgba(255, 255, 255, 0.16) 48% 72%,
+      transparent 72%);
 }
 .bp-val {
   position: relative;
   font-family: var(--font-display);
-  font-size: 2.5rem;
+  font-size: 2.1rem;
   font-weight: 700;
   color: var(--gold);
   line-height: 1;
 }
 .bp-cap {
   position: relative;
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 0.72rem;
   color: var(--text-dim);
 }
@@ -73,6 +73,8 @@ const guesses = [
   display: flex;
   flex-direction: column;
   gap: 5px;
+  max-width: 500px;
+  margin: 0 auto;
 }
 .bp-guess {
   display: grid;

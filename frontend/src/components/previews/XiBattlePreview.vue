@@ -46,7 +46,8 @@ const rows = [
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  max-width: 440px;
+  margin: 0 auto 12px;
 }
 .xp-match { font-size: 0.8rem; color: var(--text-dim); }
 .xp-lives { display: inline-flex; gap: 3px; }
@@ -57,7 +58,9 @@ const rows = [
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 16px 8px;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 16px 12px;
   border-radius: var(--radius-md);
   background:
     repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 22px, transparent 22px 44px),
