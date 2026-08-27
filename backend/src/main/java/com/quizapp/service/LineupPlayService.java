@@ -250,6 +250,22 @@ public class LineupPlayService {
                 .collect(Collectors.toMap(LineupEntry::getId, e -> e.getAthlete().getName()));
     }
 
+    /**
+     * Every slot fully revealed - name and photo - in formation order. Feeds the
+     * Starting XI Battle results modal's pitch recap, which needs each slot's real
+     * answer regardless of who (if anyone) guessed it. No attempt required, same
+     * shape as GridPlayService.revealAllEntries.
+     */
+    @Transactional(readOnly = true)
+    public List<LineupSlotDto> revealAllSlots(Long lineupId) {
+        Lineup lineup = findLineup(lineupId);
+        return lineup.getEntries().stream()
+                .sorted(slotOrder())
+                .map(e -> new LineupSlotDto(e.getId(), e.getSlotIndex(), e.getShirtNumber(), e.isCaptain(),
+                        true, false, e.getAthlete().getName(), e.getAthlete().getPhotoUrl()))
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public LineupGuessResultDto guess(Long lineupId, String userEmail, Long athleteId) {
         Lineup lineup = findLineup(lineupId);

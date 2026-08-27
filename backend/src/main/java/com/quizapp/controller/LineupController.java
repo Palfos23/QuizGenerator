@@ -6,6 +6,7 @@ import com.quizapp.dto.LineupGuessRequest;
 import com.quizapp.dto.LineupGuessResultDto;
 import com.quizapp.dto.LineupPlayStateDto;
 import com.quizapp.dto.LineupScoreboardDto;
+import com.quizapp.dto.LineupSlotDto;
 import com.quizapp.dto.LineupSummaryDto;
 import com.quizapp.service.LineupPlayService;
 import com.quizapp.service.PlayAccessService;
@@ -74,6 +75,12 @@ public class LineupController {
     @GetMapping("/{id}/multiplayer-reveal")
     public Map<Long, String> multiplayerReveal(@PathVariable Long id) {
         return lineupPlayService.getMultiplayerReveal(id);
+    }
+
+    /** Every slot fully revealed (name + photo), for the battle results modal's pitch recap. */
+    @GetMapping("/{id}/reveal-all")
+    public List<LineupSlotDto> revealAll(@PathVariable Long id) {
+        return lineupPlayService.revealAllSlots(id);
     }
 
     /** Stateless guess check for multiplayer mode - the client tracks revealed slots itself. */

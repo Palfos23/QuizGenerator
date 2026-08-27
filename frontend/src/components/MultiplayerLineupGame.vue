@@ -102,12 +102,16 @@
             </div>
           </div>
 
-          <div v-if="unsolvedSlots.length" style="text-align:left; margin-top:4px;">
-            <div style="color:var(--text-dim); font-size:0.82rem; margin-bottom:8px;">Not found:</div>
-            <div v-for="s in unsolvedSlots" :key="s.id" class="imposter-reveal-entry" style="background:rgba(255,255,255,0.03); border-color:var(--border);">
-              <span style="font-weight:700;">{{ s.name }}</span>
+          <template v-if="recapSlots.length && recapFoundCount < recapSlots.length">
+            <div class="grid-recap-label">
+              {{ recapFoundCount }} / {{ recapSlots.length }} found — <span style="color:var(--coral);">red</span> shirts went unguessed
             </div>
-          </div>
+            <PitchRecap
+              :rows="recapRows"
+              :kit-color="lineupState.kitColor || DEFAULT_KIT_COLOR"
+              :goalkeeper-kit-color="lineupState.goalkeeperKitColor || DEFAULT_GK_KIT_COLOR"
+            />
+          </template>
 
           <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextLineup">
             {{ currentLineupIndex + 1 < totalLineups ? 'Next board' : 'Finish game' }}
@@ -159,6 +163,7 @@ import passAndPlayState from '../services/passAndPlayState'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
 import PitchMarkings from './PitchMarkings.vue'
+import PitchRecap from './PitchRecap.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
@@ -193,7 +198,7 @@ const lineupState = ref(null)
 const loading = ref(true)
 const guessedSlotIds = ref([])
 const solvedById = ref({}) // slot id -> solved LineupSlotDto from the server
-const revealedNames = ref({}) // slot id -> name, once a board's given up on (everyone eliminated)
+const revealedSlots = ref({}) // slot id -> fully-revealed LineupSlotDto (name + photo), once the board's given up on (everyone eliminated)
 const livesUsed = ref({})
 const eliminatedPlayers = ref([])
 const currentPlayerIdx = ref(0)
@@ -227,26 +232,30 @@ const leaderboardForLineup = computed(() => {
     }))
     .sort((a, b) => b.total - a.total)
 })
-// Only non-empty when the board ended by everyone running out of lives -
-// a full solve (allSolved) never leaves anything for revealRemaining() to
-// have populated revealedNames with in the first place.
-const unsolvedSlots = computed(() => {
-  if (!lineupState.value) return []
-  return lineupState.value.slots
-    .filter(s => !guessedSlotIds.value.includes(s.id))
-    .map(s => ({ id: s.id, name: revealedNames.value[s.id] }))
-    .filter(s => s.name)
-})
-
 const rows = computed(() => {
   if (!lineupState.value) return []
   const merged = lineupState.value.slots.map(s => {
     if (solvedById.value[s.id]) return solvedById.value[s.id]
-    if (revealedNames.value[s.id]) return { ...s, solved: true, athleteName: revealedNames.value[s.id] }
+    if (revealedSlots.value[s.id]) return { ...s, ...revealedSlots.value[s.id], solved: true }
     return s
   })
   return displayRowsFor(lineupState.value.formation, merged)
 })
+
+// Board recap for the results modal: every slot revealed, flagged by whether a
+// player actually guessed it. Only shown once revealRemaining() has run - i.e.
+// the board ended with the XI incomplete.
+const recapRows = computed(() => {
+  if (!lineupState.value || !Object.keys(revealedSlots.value).length) return []
+  const merged = lineupState.value.slots.map(s => ({
+    ...s,
+    ...(revealedSlots.value[s.id] || {}),
+    wasFound: guessedSlotIds.value.includes(s.id)
+  }))
+  return displayRowsFor(lineupState.value.formation, merged)
+})
+const recapSlots = computed(() => recapRows.value.flatMap(r => r.items))
+const recapFoundCount = computed(() => recapSlots.value.filter(s => s.wasFound).length)
 
 function shirtStyle(slot) {
   const color = slot.slotIndex === 0
@@ -259,7 +268,7 @@ async function loadLineup(lineupId) {
   loading.value = true
   guessedSlotIds.value = []
   solvedById.value = {}
-  revealedNames.value = {}
+  revealedSlots.value = {}
   eliminatedPlayers.value = []
   lineupComplete.value = false
   scoresAtLineupStart.value = { ...scores.value }
@@ -402,7 +411,8 @@ function advanceTurn() {
 
 async function revealRemaining() {
   try {
-    revealedNames.value = await api.getMultiplayerLineupReveal(currentLineupId.value)
+    const all = await api.revealAllLineupSlots(currentLineupId.value)
+    revealedSlots.value = Object.fromEntries(all.map(s => [s.id, s]))
   } catch (e) {
     // if this fails, shirts just stay hidden - not worth blocking the game-over flow over
   }
@@ -439,7 +449,7 @@ function saveProgress() {
     currentLineupIndex: currentLineupIndex.value,
     guessedSlotIds: guessedSlotIds.value,
     solvedById: solvedById.value,
-    revealedNames: revealedNames.value,
+    revealedSlots: revealedSlots.value,
     livesUsed: livesUsed.value,
     eliminatedPlayers: eliminatedPlayers.value,
     currentPlayerIdx: currentPlayerIdx.value,
@@ -459,7 +469,7 @@ async function initGame() {
     await proceedToCurrentRound()
     guessedSlotIds.value = saved.guessedSlotIds
     solvedById.value = saved.solvedById || {}
-    revealedNames.value = saved.revealedNames || {}
+    revealedSlots.value = saved.revealedSlots || {}
     livesUsed.value = saved.livesUsed
     eliminatedPlayers.value = saved.eliminatedPlayers
     currentPlayerIdx.value = saved.currentPlayerIdx
@@ -471,11 +481,20 @@ async function initGame() {
 }
 
 watch(
-  [guessedSlotIds, solvedById, revealedNames, livesUsed, eliminatedPlayers, currentPlayerIdx, scores, lineupComplete, currentLineupIndex, chosenLineups],
+  [guessedSlotIds, solvedById, revealedSlots, livesUsed, eliminatedPlayers, currentPlayerIdx, scores, lineupComplete, currentLineupIndex, chosenLineups],
   saveProgress,
   { deep: true }
 )
 
 onMounted(initGame)
 watch(currentLineupIndex, proceedToCurrentRound)
+
+// Safety net for the results-modal pitch recap: if the board is finished but the
+// full reveal never landed (e.g. restored into a completed round), fetch it now.
+watch(lineupComplete, (done) => {
+  if (done && lineupState.value?.slots.some(s => !guessedSlotIds.value.includes(s.id))
+      && !Object.keys(revealedSlots.value).length) {
+    revealRemaining()
+  }
+})
 </script>

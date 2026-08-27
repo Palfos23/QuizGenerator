@@ -102,6 +102,19 @@ class LineupPlayServiceTest {
     }
 
     @Test
+    void revealAllSlotsReturnsEveryAnswerInFormationOrder() {
+        var slots = lineupPlayService.revealAllSlots(lineup.getId());
+
+        assertThat(slots).hasSize(2);
+        assertThat(slots).allMatch(com.quizapp.dto.LineupSlotDto::isSolved);
+        assertThat(slots).noneMatch(com.quizapp.dto.LineupSlotDto::isGuessedByUser);
+        assertThat(slots).extracting(com.quizapp.dto.LineupSlotDto::getAthleteName)
+                .containsExactlyInAnyOrder("David Raya", "Bukayo Saka");
+        // slotOrder() puts the goalkeeper (slotIndex 0) first
+        assertThat(slots.get(0).getSlotIndex()).isZero();
+    }
+
+    @Test
     void correctGuessPersistsAndShowsUpOnReload() {
         LineupGuessResultDto result = lineupPlayService.guess(lineup.getId(), userEmail, correctPlayer.getId());
         assertThat(result.isCorrect()).isTrue();

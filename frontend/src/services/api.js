@@ -221,6 +221,9 @@ export default {
   getMultiplayerLineupReveal(id) {
     return client.get(`/lineups/${id}/multiplayer-reveal`).then(r => r.data)
   },
+  revealAllLineupSlots(id) {
+    return client.get(`/lineups/${id}/reveal-all`).then(r => r.data)
+  },
   submitMultiplayerLineupGuess(id, athleteId, revealedEntryIds) {
     return client.post(`/lineups/${id}/multiplayer-guess`, { athleteId, revealedEntryIds }).then(r => r.data)
   },

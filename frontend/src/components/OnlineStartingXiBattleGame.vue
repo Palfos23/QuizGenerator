@@ -116,12 +116,16 @@
             </div>
           </div>
 
-          <div v-if="unsolvedEntries.length" style="text-align:left; margin-top:4px;">
-            <div style="color:var(--text-dim); font-size:0.82rem; margin-bottom:8px;">Not found:</div>
-            <div v-for="e in unsolvedEntries" :key="e.id" class="imposter-reveal-entry" style="background:rgba(255,255,255,0.03); border-color:var(--border);">
-              <span style="font-weight:700;">{{ e.name }}</span>
+          <template v-if="recapSlots.length && recapFoundCount < recapSlots.length">
+            <div class="grid-recap-label">
+              {{ recapFoundCount }} / {{ recapSlots.length }} found — <span style="color:var(--coral);">red</span> shirts went unguessed
             </div>
-          </div>
+            <PitchRecap
+              :rows="recapRows"
+              :kit-color="state.kitColor || DEFAULT_KIT_COLOR"
+              :goalkeeper-kit-color="state.goalkeeperKitColor || DEFAULT_GK_KIT_COLOR"
+            />
+          </template>
 
           <button v-if="isHost" class="btn btn-primary" style="margin-top:12px; width:100%;" :disabled="advancing" @click="nextLineup">
             {{ advancing ? 'Loading…' : (state.currentLineupIndex + 1 < state.totalLineups ? 'Next board' : 'Finish game') }}
@@ -171,6 +175,7 @@ import api from '../services/api'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
 import PitchMarkings from './PitchMarkings.vue'
+import PitchRecap from './PitchRecap.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
@@ -232,16 +237,24 @@ const leaderboardForLineup = computed(() => {
     .map(p => ({ name: p.name, total: p.totalScore, roundDelta: p.totalScore - (scoresAtLineupStart.value[p.name] || 0) }))
     .sort((a, b) => b.total - a.total)
 })
-const revealMap = ref({}) // slot id -> athleteName, fetched once the board completes
-// Only non-empty when the board ended by everyone running out of lives -
-// a full solve never leaves anything unsolved to report here.
-const unsolvedEntries = computed(() => {
-  if (!state.value) return []
-  return state.value.slots
-    .filter(s => !s.solved)
-    .map(s => ({ id: s.id, name: revealMap.value[s.id] }))
-    .filter(s => s.name)
+// Full slot data (name + photo) for every slot, fetched once the board completes
+// so the results modal can show the pitch recap - which shirts were found and
+// which went unguessed.
+const revealedSlots = ref({}) // slot id -> fully-revealed LineupSlotDto
+
+// The pitch as it stood at the buzzer: every slot revealed, flagged by whether a
+// player guessed it (state.slots[].solved is only ever set by a correct guess).
+const recapRows = computed(() => {
+  if (!state.value || !Object.keys(revealedSlots.value).length) return []
+  const merged = state.value.slots.map(s => ({
+    ...s,
+    ...(revealedSlots.value[s.id] || {}),
+    wasFound: s.solved
+  }))
+  return displayRowsFor(state.value.formation, merged)
 })
+const recapSlots = computed(() => recapRows.value.flatMap(r => r.items))
+const recapFoundCount = computed(() => recapSlots.value.filter(s => s.wasFound).length)
 
 async function poll() {
   try {
@@ -259,11 +272,13 @@ function applyState(fresh) {
   if (fresh.currentLineupIndex !== lastLineupIndexSeen) {
     scoresAtLineupStart.value = Object.fromEntries((fresh.players || []).map(p => [p.name, p.totalScore]))
     lastLineupIndexSeen = fresh.currentLineupIndex
-    revealMap.value = {}
+    revealedSlots.value = {}
   }
   state.value = fresh
-  if (fresh.lineupComplete && Object.keys(revealMap.value).length === 0) {
-    api.getMultiplayerLineupReveal(fresh.currentLineupId).then(map => { revealMap.value = map }).catch(() => {})
+  if (fresh.lineupComplete && !Object.keys(revealedSlots.value).length) {
+    api.revealAllLineupSlots(fresh.currentLineupId)
+      .then(all => { revealedSlots.value = Object.fromEntries(all.map(s => [s.id, s])) })
+      .catch(() => {})
   }
   if (fresh.finished) {
     stopPolling()

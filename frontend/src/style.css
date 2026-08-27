@@ -2985,3 +2985,42 @@ table.scoreboard-table {
     border-radius: 6px 6px 3px 3px;
   }
 }
+
+/* Shrunk, non-interactive pitch for the Starting XI Battle results modal - see
+   PitchRecap.vue. MUST come after both the base ".pitch-*" rules and the
+   "@media (max-width: 760px)" pitch block above: same selectors, same
+   specificity, so a copy earlier in the file would lose to those. Unconditional
+   (no media query) on purpose - the recap is always this compact, phone or not,
+   because it lives in a ~316px modal column and has to show up to 5 rows. */
+.pitch-recap {
+  gap: 14px;
+  padding: 14px 6px 12px;
+  max-width: 296px;
+  margin: 6px auto 0;
+  pointer-events: none;
+}
+.pitch-recap .pitch-row { gap: 4px; }
+.pitch-recap .pitch-row--central { gap: 12px; }
+.pitch-recap .pitch-row--wide { padding: 0 4%; }
+.pitch-recap .pitch-slot { width: 46px; gap: 2px; }
+.pitch-recap .pitch-shirt {
+  width: 30px;
+  height: 33px;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  border-radius: 6px 6px 4px 4px;
+}
+.pitch-recap .pitch-shirt.solved,
+.pitch-recap .pitch-shirt.revealed-only { border-width: 2px; }
+.pitch-recap .pitch-shirt-captain {
+  top: -4px;
+  right: -4px;
+  width: 11px;
+  height: 11px;
+  font-size: 0.42rem;
+}
+.pitch-recap .pitch-slot-name {
+  font-size: 0.54rem;
+  line-height: 1.15;
+  min-height: 0;
+}
