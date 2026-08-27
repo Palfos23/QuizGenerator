@@ -70,14 +70,7 @@
 
       <div class="grid-status-bar">
         <div class="grid-progress">{{ guessedCount }} / {{ state.entries.length }} found</div>
-        <div class="strike-dots">
-          <span
-            v-for="i in state.maxStrikes"
-            :key="i"
-            class="strike-dot"
-            :class="{ used: i <= state.strikesUsed, 'just-used': i === state.strikesUsed && justStruck }"
-          ></span>
-        </div>
+        <LivesHearts :max="state.maxStrikes" :used="state.strikesUsed" />
       </div>
 
       <div v-if="allSolved" class="banner success">
@@ -219,6 +212,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import { readableTextColor, formatHint } from '../constants'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import LivesHearts from '../components/LivesHearts.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const route = useRoute()
@@ -249,7 +243,6 @@ function scrollSolvedTileIntoView(entryId) {
     el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' })
   })
 }
-const justStruck = ref(false)
 const shakeGuessBox = ref(false)
 
 const resultOverlay = ref(null) // { correct } or null when hidden
@@ -334,9 +327,7 @@ async function submitGuess(athlete) {
       justSolvedId.value = result.entry.id
       setTimeout(() => { if (justSolvedId.value === result.entry.id) justSolvedId.value = null }, 700)
     } else {
-      justStruck.value = true
       shakeGuessBox.value = true
-      setTimeout(() => { justStruck.value = false }, 500)
       setTimeout(() => { shakeGuessBox.value = false }, 450)
     }
 

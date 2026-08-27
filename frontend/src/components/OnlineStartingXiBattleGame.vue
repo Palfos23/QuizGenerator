@@ -59,9 +59,7 @@
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <div class="lives-hearts" style="margin-top:4px;">
-            <span v-for="i in state.maxStrikes" :key="i" class="life-heart" :class="{ lost: i > state.maxStrikes - p.livesUsed }"></span>
-          </div>
+          <LivesHearts :max="state.maxStrikes" :used="p.livesUsed" style="margin-top:4px;" />
           <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ p.totalScore }}</div>
         </div>
       </div>
@@ -174,6 +172,7 @@ import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
 import PitchMarkings from './PitchMarkings.vue'
 import ConfirmModal from './ConfirmModal.vue'
+import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
 import { usePolling } from '../composables/usePolling'

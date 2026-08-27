@@ -86,14 +86,7 @@
       </div>
 
       <div class="grid-status-bar" style="justify-content:center; gap:20px;">
-        <div class="strike-dots">
-          <span
-            v-for="i in state.maxStrikes"
-            :key="i"
-            class="strike-dot"
-            :class="{ used: i <= state.strikesUsed, 'just-used': i === state.strikesUsed && justStruck }"
-          ></span>
-        </div>
+        <LivesHearts :max="state.maxStrikes" :used="state.strikesUsed" />
       </div>
 
       <div v-if="allSolved" class="banner success">
@@ -163,6 +156,7 @@ import toast from '../services/toast'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor } from '../constants'
 import PitchMarkings from '../components/PitchMarkings.vue'
+import LivesHearts from '../components/LivesHearts.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const DEFAULT_KIT_COLOR = '#d92332'
@@ -176,7 +170,6 @@ const state = ref(null)
 const loading = ref(true)
 const error = ref('')
 
-const justStruck = ref(false)
 const shakeGuessBox = ref(false)
 const searchTerm = ref('')
 const searchResults = ref([])
@@ -242,9 +235,8 @@ async function submitGuess(athlete) {
       const idx = state.value.slots.findIndex(s => s.id === result.slot.id)
       if (idx !== -1) state.value.slots.splice(idx, 1, result.slot)
     } else {
-      justStruck.value = true
       shakeGuessBox.value = true
-      setTimeout(() => { justStruck.value = false; shakeGuessBox.value = false }, 400)
+      setTimeout(() => { shakeGuessBox.value = false }, 400)
     }
 
     if (result.gameOver || result.allSolved) {

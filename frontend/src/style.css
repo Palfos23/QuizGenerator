@@ -858,46 +858,35 @@ mark {
   font-family: var(--font-mono);
 }
 
+/* Shared lives indicator for every game mode - see LivesHearts.vue. Hearts
+   start filled red and empty to an outline (rightmost first) as lives are lost. */
 .lives-hearts {
   display: flex;
   justify-content: center;
-  gap: 3px;
+  align-items: center;
+  gap: 4px;
 }
 
 .life-heart {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid var(--coral);
-  background: var(--coral);
-  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  display: inline-flex;
 }
-.life-heart.lost {
-  background: transparent;
-  opacity: 0.4;
+.life-heart svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+  transition: transform 0.2s ease;
 }
-.life-heart.just-lost {
-  animation: strike-pop 0.5s ease;
+.life-heart svg path {
+  fill: var(--coral);
+  stroke: var(--coral);
+  stroke-width: 1.5;
+  transition: fill 0.2s ease, opacity 0.2s ease;
 }
-
-.strike-dots {
-  display: flex;
-  gap: 6px;
+.life-heart.lost svg path {
+  fill: none;
+  opacity: 0.45;
 }
-
-.strike-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  background: transparent;
-  transition: background 0.2s ease, border-color 0.2s ease;
-}
-.strike-dot.used {
-  background: var(--coral);
-  border-color: var(--coral);
-}
-.strike-dot.just-used {
+.life-heart.just-lost svg {
   animation: strike-pop 0.5s ease;
 }
 
@@ -953,7 +942,7 @@ mark {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .strike-dot.just-used, .grid-tile.just-solved, .guess-box.shake { animation: none; }
+  .life-heart.just-lost svg, .grid-tile.just-solved, .guess-box.shake { animation: none; }
 }
 
 .grid-tile-logo {

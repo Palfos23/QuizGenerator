@@ -33,14 +33,7 @@
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <div class="lives-hearts" style="margin-top:4px;">
-            <span
-              v-for="i in gridState.maxStrikes"
-              :key="i"
-              class="life-heart"
-              :class="{ lost: i > gridState.maxStrikes - (livesUsed[p.name] || 0) }"
-            ></span>
-          </div>
+          <LivesHearts :max="gridState.maxStrikes" :used="livesUsed[p.name] || 0" style="margin-top:4px;" />
           <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ scores[p.name] || 0 }}</div>
         </div>
       </div>
@@ -161,6 +154,7 @@ import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
 import { readableTextColor, formatHint, sportLabel } from '../constants'
 import ConfirmModal from './ConfirmModal.vue'
+import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
 
