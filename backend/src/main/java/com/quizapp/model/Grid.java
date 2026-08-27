@@ -107,6 +107,25 @@ public class Grid {
         this.revealMode = revealMode;
     }
 
+    // How a solved tile's image is fitted to the (square) tile. Default false =
+    // the long-standing "cover" behaviour: fill the tile, crop the overflow -
+    // fine for portrait photos. True = "contain": scale the whole image to fit
+    // with padding, so nothing is cropped - meant for flags and full-frame
+    // logos where the edges carry meaning. Grid-level rather than per-entry
+    // since a grid like "name that country" is entirely one or the other.
+    // columnDefinition gives an explicit DB default, same reasoning as
+    // entireCategoryPool above, so ddl-auto=update adds it cleanly.
+    @Column(name = "fit_images", nullable = false, columnDefinition = "boolean default false")
+    private boolean fitImages = false;
+
+    public boolean isFitImages() {
+        return fitImages;
+    }
+
+    public void setFitImages(boolean fitImages) {
+        this.fitImages = fitImages;
+    }
+
     public void setExcludedFromGridBattle(boolean excludedFromGridBattle) {
         this.excludedFromGridBattle = excludedFromGridBattle;
     }

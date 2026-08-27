@@ -15,6 +15,7 @@ public class GridBattleStateDto {
     private String gridTitle;
     private String gridTheme;
     private int maxStrikes;
+    private boolean fitImages; // true = fit whole tile image (flags); false = cover/crop
     private List<GridBattleEntryDto> entries;
     private Long currentTurnParticipantId;
     private boolean gridComplete;
@@ -47,6 +48,8 @@ public class GridBattleStateDto {
     public void setGridTheme(String gridTheme) { this.gridTheme = gridTheme; }
     public int getMaxStrikes() { return maxStrikes; }
     public void setMaxStrikes(int maxStrikes) { this.maxStrikes = maxStrikes; }
+    public boolean isFitImages() { return fitImages; }
+    public void setFitImages(boolean fitImages) { this.fitImages = fitImages; }
     public List<GridBattleEntryDto> getEntries() { return entries; }
     public void setEntries(List<GridBattleEntryDto> entries) { this.entries = entries; }
     public Long getCurrentTurnParticipantId() { return currentTurnParticipantId; }

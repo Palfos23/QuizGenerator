@@ -118,6 +118,7 @@ public class GridAdminService {
         grid.setRevealMode(request.getRevealMode() != null
                 ? Grid.RevealMode.valueOf(request.getRevealMode())
                 : Grid.RevealMode.PHOTO);
+        grid.setFitImages(request.isFitImages());
         grid.setEntireCategoryPool(request.isEntireCategoryPool());
 
         if (request.getLinkedPoolIds() != null && !request.getLinkedPoolIds().isEmpty()) {
@@ -261,6 +262,7 @@ public class GridAdminService {
         dto.setRanked(grid.isRanked());
         dto.setExcludedFromGridBattle(grid.isExcludedFromGridBattle());
         dto.setRevealMode(grid.getRevealMode().name());
+        dto.setFitImages(grid.isFitImages());
         dto.setEntireCategoryPool(grid.isEntireCategoryPool());
 
         // Batch-convert every distinct athlete across both candidates and

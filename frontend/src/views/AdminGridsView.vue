@@ -126,6 +126,17 @@
         </div>
       </div>
 
+      <div v-if="form.revealMode === 'PHOTO'" class="field">
+        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
+          <input type="checkbox" v-model="form.fitImages" style="width:auto;" />
+          Fit the whole image in each tile
+        </label>
+        <p class="picker-hint" style="margin:4px 0 0;">
+          For flags and full-frame logos - shows the entire image with a little padding
+          instead of cropping it to fill the square. Leave off for portrait photos.
+        </p>
+      </div>
+
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.entireCategoryPool" style="width:auto;" @change="onEntireCategoryToggle" />
@@ -281,7 +292,7 @@
               :src="previewImage(c)"
               alt=""
               class="grid-tile-logo"
-              :class="{ 'is-photo': previewIsPhoto(c) }"
+              :class="{ 'is-photo': previewIsPhoto(c), 'is-fit': form.fitImages && previewIsPhoto(c) }"
               @error="$event.target.style.display = 'none'"
             />
             <div v-if="form.ranked || c.hintLabel" class="grid-tile-hint" :style="{ background: previewClubColor(c) || 'var(--gold)', color: readableTextColor(previewClubColor(c)) }">
@@ -351,6 +362,7 @@ const form = reactive({
   ranked: true,
   excludedFromGridBattle: false,
   revealMode: 'PHOTO',
+  fitImages: false,
   entireCategoryPool: false
 })
 const candidates = ref([]) // [{ athleteId, name, team, correct, hintLabel, hintValue, clubId, showLogo, useOwnPhotoAsLogo }]
@@ -636,6 +648,7 @@ function resetForm() {
   form.ranked = true
   form.excludedFromGridBattle = false
   form.revealMode = 'PHOTO'
+  form.fitImages = false
   form.entireCategoryPool = false
   candidates.value = []
   candidatePage.value = 1
@@ -669,6 +682,7 @@ async function openEdit(id) {
     form.ranked = detail.ranked
     form.excludedFromGridBattle = detail.excludedFromGridBattle
     form.revealMode = detail.revealMode || 'PHOTO'
+    form.fitImages = detail.fitImages || false
     form.entireCategoryPool = detail.entireCategoryPool || false
 
     // In "entire category" mode there's no stored candidate list at all (see
@@ -743,6 +757,7 @@ async function saveGrid() {
     ranked: form.ranked,
     excludedFromGridBattle: form.excludedFromGridBattle,
     revealMode: form.revealMode,
+    fitImages: form.fitImages,
     entireCategoryPool: form.entireCategoryPool,
     candidateAthleteIds: form.entireCategoryPool ? [] : candidates.value.map(c => c.athleteId),
     linkedPoolIds: linkedPoolIds.value,

@@ -15,6 +15,7 @@ public class GridPlayStateDto {
     private boolean overtime;
     private boolean revealed;
     private String revealMode; // "PHOTO" or "DESCRIPTION" - tells the client which one to render once an entry is solved
+    private boolean fitImages; // true = fit whole image in the tile (flags); false = cover/crop
     private List<GridEntryViewDto> entries;
 
     public Long getId() {
@@ -95,6 +96,14 @@ public class GridPlayStateDto {
 
     public void setRevealMode(String revealMode) {
         this.revealMode = revealMode;
+    }
+
+    public boolean isFitImages() {
+        return fitImages;
+    }
+
+    public void setFitImages(boolean fitImages) {
+        this.fitImages = fitImages;
     }
 
     public List<GridEntryViewDto> getEntries() {

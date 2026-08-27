@@ -28,6 +28,7 @@ public class GridRequest {
     private boolean ranked = true;
     private boolean excludedFromGridBattle = false;
     private String revealMode = "PHOTO"; // "PHOTO" or "DESCRIPTION"
+    private boolean fitImages = false; // true = contain (show whole image, e.g. flags); false = cover
 
     // When true, ignore candidateAthleteIds entirely - GridAdminService stores
     // no explicit candidates at all and the search box draws live from every
@@ -129,6 +130,14 @@ public class GridRequest {
 
     public void setRevealMode(String revealMode) {
         this.revealMode = revealMode;
+    }
+
+    public boolean isFitImages() {
+        return fitImages;
+    }
+
+    public void setFitImages(boolean fitImages) {
+        this.fitImages = fitImages;
     }
 
     public List<Long> getCandidateAthleteIds() {

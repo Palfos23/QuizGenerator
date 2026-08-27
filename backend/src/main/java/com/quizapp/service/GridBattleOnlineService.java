@@ -133,6 +133,7 @@ public class GridBattleOnlineService {
         dto.setGridTitle(grid.getTitle());
         dto.setGridTheme(grid.getTheme());
         dto.setMaxStrikes(grid.getMaxStrikes());
+        dto.setFitImages(grid.isFitImages());
 
         List<GridBattleSolvedEntry> solved = solvedEntryRepository.findByRoomState_Id(state.getId());
         Map<Long, GridBattleSolvedEntry> solvedByEntryId = solved.stream()

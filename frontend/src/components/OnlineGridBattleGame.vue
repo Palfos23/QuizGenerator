@@ -127,7 +127,7 @@
                   :src="tileImage(e)"
                   alt=""
                   class="grid-tile-logo"
-                  :class="{ 'is-photo': !!e.athletePhotoUrl }"
+                  :class="{ 'is-photo': !!e.athletePhotoUrl, 'is-fit': state.fitImages && !!e.athletePhotoUrl }"
                   @error="$event.target.style.display = 'none'"
                 />
                 <div
@@ -164,7 +164,7 @@
             :src="tileImage(e)"
             alt=""
             class="grid-tile-logo"
-            :class="{ 'is-photo': e.athletePhotoUrl }"
+            :class="{ 'is-photo': e.athletePhotoUrl, 'is-fit': state.fitImages && e.athletePhotoUrl }"
             @error="$event.target.style.display = 'none'"
           />
           <div

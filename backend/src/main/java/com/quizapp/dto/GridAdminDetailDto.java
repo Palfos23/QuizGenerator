@@ -16,6 +16,7 @@ public class GridAdminDetailDto {
     private boolean ranked;
     private boolean excludedFromGridBattle;
     private String revealMode;
+    private boolean fitImages;
     private boolean entireCategoryPool;
     private List<AthleteDto> candidates;
     private List<EntryDetail> entries;
@@ -159,6 +160,14 @@ public class GridAdminDetailDto {
 
     public void setRevealMode(String revealMode) {
         this.revealMode = revealMode;
+    }
+
+    public boolean isFitImages() {
+        return fitImages;
+    }
+
+    public void setFitImages(boolean fitImages) {
+        this.fitImages = fitImages;
     }
 
     public boolean isEntireCategoryPool() {

@@ -965,6 +965,17 @@ mark {
   object-position: top center;
   padding: 4px;
 }
+/* "Fit" tiles (grid.fitImages) - the whole image scaled to fit with padding, so
+   nothing is cropped. Meant for flags and full-frame logos where the edges
+   matter. Overrides .is-photo's cover/crop; sits after it so source order wins.
+   No cream backing (a flag fills its own rectangle - it's not a transparent
+   crest); the letterboxed gap just shows the tile behind it. */
+.grid-tile-logo.is-fit {
+  object-fit: contain;
+  object-position: center;
+  padding: 30px 14px 40px;
+  background: transparent;
+}
 
 .grid-tile-hint {
   position: absolute;
