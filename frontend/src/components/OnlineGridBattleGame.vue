@@ -106,12 +106,39 @@
             </div>
           </div>
 
-          <div v-if="unsolvedEntries.length" style="text-align:left; margin-top:4px;">
-            <div style="color:var(--text-dim); font-size:0.82rem; margin-bottom:8px;">Not found:</div>
-            <div v-for="e in unsolvedEntries" :key="e.id" class="imposter-reveal-entry" style="background:rgba(255,255,255,0.03); border-color:var(--border);">
-              <span style="font-weight:700;">{{ e.name }}</span>
+          <template v-if="recapTiles.length && recapSolvedCount < recapTiles.length">
+            <div class="grid-recap-label">
+              {{ recapSolvedCount }} / {{ recapTiles.length }} found — <span style="color:var(--coral);">red</span> tiles went unguessed
             </div>
-          </div>
+            <div class="grid-tiles-recap">
+              <div
+                v-for="e in recapTiles"
+                :key="e.id"
+                class="grid-tile"
+                :class="e.wasSolved ? 'correct' : 'revealed-only'"
+              >
+                <span v-if="e.wasSolved" class="grid-tile-status correct">✓</span>
+                <span v-else class="grid-tile-status wrong">✕</span>
+                <div v-if="state.revealMode === 'DESCRIPTION'" class="grid-tile-description">
+                  {{ e.revealedDescription || '?' }}
+                </div>
+                <img
+                  v-else-if="tileImage(e)"
+                  :src="tileImage(e)"
+                  alt=""
+                  class="grid-tile-logo"
+                  :class="{ 'is-photo': !!e.athletePhotoUrl }"
+                  @error="$event.target.style.display = 'none'"
+                />
+                <div
+                  v-if="e.hintValue != null || e.hintLabel"
+                  class="grid-tile-hint"
+                  :style="{ background: e.hintColor || 'var(--gold)', color: readableTextColor(e.hintColor) }"
+                >{{ e.hintValue != null ? formatHint(e.hintLabel, e.hintValue) : e.hintLabel }}</div>
+                <div class="grid-tile-name">{{ e.athleteName || '?' }}</div>
+              </div>
+            </div>
+          </template>
 
           <button v-if="isHost" class="btn btn-primary" style="margin-top:12px; width:100%;" :disabled="advancing" @click="nextGrid">
             {{ advancing ? 'Loading…' : (state.currentGridIndex + 1 < state.totalGrids ? 'Next grid' : 'Finish game') }}
@@ -182,7 +209,10 @@ const { hidden: hideSearchBox } = useHideOnScroll()
 
 const state = ref(null)
 const scoresAtGridStart = ref({})
-const revealMap = ref({}) // entryId -> athleteName, fetched once the grid completes
+// Full tile data (photo/description/hint/name) for every entry, fetched once the
+// grid completes so the results modal can show the board recap - which answers
+// were found and which went unguessed.
+const revealedEntries = ref([])
 
 const leaderboardForGrid = computed(() => {
   if (!state.value) return []
@@ -194,13 +224,21 @@ const leaderboardForGrid = computed(() => {
     }))
     .sort((a, b) => b.total - a.total)
 })
-const unsolvedEntries = computed(() => {
-  if (!state.value) return []
+// The board as it stood at the buzzer: every entry with its real answer, flagged
+// by whether a player actually guessed it. Sorted the same way the live board is
+// (state.entries), so the recap reads top-to-bottom identically.
+const recapTiles = computed(() => {
+  if (!state.value || !revealedEntries.value.length) return []
+  const solvedIds = new Set(state.value.entries.filter(e => e.solved).map(e => e.id))
+  const byId = new Map(revealedEntries.value.map(e => [e.id, e]))
   return state.value.entries
-    .filter(e => !e.solved && !e.athleteName)
-    .map(e => ({ id: e.id, name: revealMap.value[e.id] }))
-    .filter(e => e.name)
+    .map(e => {
+      const full = byId.get(e.id)
+      return full ? { ...full, wasSolved: solvedIds.has(e.id) } : null
+    })
+    .filter(Boolean)
 })
+const recapSolvedCount = computed(() => recapTiles.value.filter(e => e.wasSolved).length)
 let lastGridIndexSeen = null
 const loading = ref(true)
 const error = ref('')
@@ -252,11 +290,11 @@ function applyState(fresh) {
   if (fresh.currentGridIndex !== lastGridIndexSeen) {
     scoresAtGridStart.value = Object.fromEntries(fresh.players.map(p => [p.name, p.totalScore]))
     lastGridIndexSeen = fresh.currentGridIndex
-    revealMap.value = {}
+    revealedEntries.value = []
   }
   state.value = fresh
-  if (fresh.gridComplete && Object.keys(revealMap.value).length === 0) {
-    api.getMultiplayerGridReveal(fresh.currentGridId).then(map => { revealMap.value = map }).catch(() => {})
+  if (fresh.gridComplete && !revealedEntries.value.length) {
+    api.revealAllGridEntries(fresh.currentGridId).then(list => { revealedEntries.value = list }).catch(() => {})
   }
   if (fresh.finished) {
     stopPolling()

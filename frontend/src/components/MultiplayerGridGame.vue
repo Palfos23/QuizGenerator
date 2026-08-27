@@ -92,12 +92,39 @@
             </div>
           </div>
 
-          <div v-if="unsolvedEntries.length" style="text-align:left; margin-top:4px;">
-            <div style="color:var(--text-dim); font-size:0.82rem; margin-bottom:8px;">Not found:</div>
-            <div v-for="e in unsolvedEntries" :key="e.id" class="imposter-reveal-entry" style="background:rgba(255,255,255,0.03); border-color:var(--border);">
-              <span style="font-weight:700;">{{ e.name }}</span>
+          <template v-if="recapTiles.length && recapSolvedCount < recapTiles.length">
+            <div class="grid-recap-label">
+              {{ recapSolvedCount }} / {{ recapTiles.length }} found — <span style="color:var(--coral);">red</span> tiles went unguessed
             </div>
-          </div>
+            <div class="grid-tiles-recap">
+              <div
+                v-for="e in recapTiles"
+                :key="e.id"
+                class="grid-tile"
+                :class="e.wasSolved ? 'correct' : 'revealed-only'"
+              >
+                <span v-if="e.wasSolved" class="grid-tile-status correct">✓</span>
+                <span v-else class="grid-tile-status wrong">✕</span>
+                <div v-if="gridState.revealMode === 'DESCRIPTION'" class="grid-tile-description">
+                  {{ e.revealedDescription || '?' }}
+                </div>
+                <img
+                  v-else-if="tileImage(e)"
+                  :src="tileImage(e)"
+                  alt=""
+                  class="grid-tile-logo"
+                  :class="{ 'is-photo': !!e.athletePhotoUrl }"
+                  @error="$event.target.style.display = 'none'"
+                />
+                <div
+                  v-if="e.hintValue != null || e.hintLabel"
+                  class="grid-tile-hint"
+                  :style="{ background: e.hintColor || 'var(--gold)', color: readableTextColor(e.hintColor) }"
+                >{{ e.hintValue != null ? formatHint(e.hintLabel, e.hintValue) : e.hintLabel }}</div>
+                <div class="grid-tile-name">{{ e.athleteName || '?' }}</div>
+              </div>
+            </div>
+          </template>
 
           <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextGrid">
             {{ currentGridIndex + 1 < totalGrids ? 'Next grid' : 'Finish game' }}
@@ -198,15 +225,15 @@ const leaderboardForGrid = computed(() => {
     }))
     .sort((a, b) => b.total - a.total)
 })
-const unsolvedEntries = computed(() => {
+// The board at the buzzer for the results modal - every entry with its real
+// answer (revealRemaining() has merged the unfound ones in by this point),
+// flagged by whether a player actually guessed it.
+const recapTiles = computed(() => {
   if (!gridState.value) return []
-  return gridState.value.entries
-    .filter(e => !revealedEntryIds.value.includes(e.id))
-    .map(e => ({ id: e.id, name: revealMap.value[e.id] }))
-    .filter(e => e.name)
+  return gridState.value.entries.map(e => ({ ...e, wasSolved: !!e.guessedByUser }))
 })
+const recapSolvedCount = computed(() => recapTiles.value.filter(e => e.wasSolved).length)
 const gridComplete = ref(false)
-const revealMap = ref({}) // entryId -> athleteName, fetched once the grid completes
 const searchTerm = ref('')
 const searchResults = ref([])
 const guessing = ref(false)
@@ -234,7 +261,6 @@ function tileImage(entry) {
 async function loadGrid(gridId) {
   loading.value = true
   revealedEntryIds.value = []
-  revealMap.value = {}
   eliminatedPlayers.value = []
   gridComplete.value = false
   scoresAtGridStart.value = { ...scores.value }
@@ -462,13 +488,11 @@ async function initGame() {
 }
 
 watch([revealedEntryIds, livesUsed, eliminatedPlayers, currentPlayerIdx, scores, gridComplete, currentGridIndex, chosenGrids], saveProgress, { deep: true })
-watch(gridComplete, async (val) => {
-  if (val) {
-    try {
-      revealMap.value = await api.getMultiplayerGridReveal(currentGridId.value)
-    } catch (e) {
-      // reveal failing shouldn't block the rest of the completion modal
-    }
+// Make sure the buzzer board is fully revealed for the results modal - covers
+// the restore-into-a-finished-grid path, where revealRemaining() never ran.
+watch(gridComplete, (val) => {
+  if (val && gridState.value?.entries.some(e => !e.solved)) {
+    revealRemaining()
   }
 })
 
