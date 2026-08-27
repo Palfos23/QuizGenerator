@@ -60,6 +60,7 @@ const tiles = [
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 96px));
   gap: 6px;
+  justify-content: center;
 }
 .gb-tile {
   position: relative;

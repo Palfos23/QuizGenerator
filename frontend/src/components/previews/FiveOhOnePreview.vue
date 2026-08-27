@@ -61,6 +61,7 @@
   display: flex;
   gap: 22px;
   align-items: center;
+  justify-content: center;
 }
 .fp-board {
   flex-shrink: 0;
@@ -101,9 +102,8 @@
   margin-top: 2px;
 }
 .fp-throws {
-  flex: 1;
+  flex: 0 1 380px;
   min-width: 0;
-  max-width: 400px;
   display: flex;
   flex-direction: column;
   gap: 3px;
