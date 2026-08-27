@@ -4,7 +4,7 @@
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
         <div>
-          <h1>Starting XI</h1>
+          <h1>Starting XI <span v-if="!loading && lineups.length" class="header-count">{{ lineups.length }}</span></h1>
           <p class="page-subtitle">
             Create and manage "guess the lineup" boards for a specific football match.
           </p>
@@ -19,7 +19,7 @@
       </div>
 
       <div v-else class="saved-quiz-list">
-        <div v-for="l in lineups" :key="l.id" class="saved-quiz-row">
+        <div v-for="l in pagedLineups" :key="l.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ l.title }}
@@ -38,6 +38,8 @@
           </div>
         </div>
       </div>
+
+      <Pagination v-if="!loading" v-model:page="lineupPage" :page-size="LINEUP_PAGE_SIZE" :total-items="lineups.length" />
     </template>
 
     <!-- Builder view -->
@@ -325,6 +327,18 @@ const DEFAULT_GK_KIT_COLOR = '#f2c230'
 const view = ref('list')
 const lineups = ref([])
 const loading = ref(true)
+
+// Paginate the board list once it grows past a screenful.
+const LINEUP_PAGE_SIZE = 10
+const lineupPage = ref(1)
+const pagedLineups = computed(() => {
+  const start = (lineupPage.value - 1) * LINEUP_PAGE_SIZE
+  return lineups.value.slice(start, start + LINEUP_PAGE_SIZE)
+})
+watch(() => lineups.value.length, () => {
+  const maxPage = Math.max(1, Math.ceil(lineups.value.length / LINEUP_PAGE_SIZE))
+  if (lineupPage.value > maxPage) lineupPage.value = maxPage
+})
 const error = ref('')
 const saving = ref(false)
 const pendingDelete = ref(null)

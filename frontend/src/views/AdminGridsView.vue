@@ -4,7 +4,7 @@
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
         <div>
-          <h1>Weekly grids</h1>
+          <h1>Weekly grids <span v-if="!loading && grids.length" class="header-count">{{ grids.length }}</span></h1>
           <p class="page-subtitle">
             Create and manage the weekly guessing-grid challenges.
             <router-link to="/admin/clubs">Manage clubs →</router-link>
@@ -22,7 +22,7 @@
       </div>
 
       <div v-else class="saved-quiz-list">
-        <div v-for="g in grids" :key="g.id" class="saved-quiz-row">
+        <div v-for="g in pagedGrids" :key="g.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ g.title }}
@@ -37,6 +37,8 @@
           </div>
         </div>
       </div>
+
+      <Pagination v-if="!loading" v-model:page="gridPage" :page-size="GRID_PAGE_SIZE" :total-items="grids.length" />
     </template>
 
     <!-- Builder view -->
@@ -325,6 +327,18 @@ const error = ref('')
 const saving = ref(false)
 const pendingDelete = ref(null)
 const editingAthleteForModal = ref(null)
+
+// Paginate the grid list once it grows past a screenful.
+const GRID_PAGE_SIZE = 10
+const gridPage = ref(1)
+const pagedGrids = computed(() => {
+  const start = (gridPage.value - 1) * GRID_PAGE_SIZE
+  return grids.value.slice(start, start + GRID_PAGE_SIZE)
+})
+watch(() => grids.value.length, () => {
+  const maxPage = Math.max(1, Math.ceil(grids.value.length / GRID_PAGE_SIZE))
+  if (gridPage.value > maxPage) gridPage.value = maxPage
+})
 
 const editingGridId = ref(null)
 const form = reactive({

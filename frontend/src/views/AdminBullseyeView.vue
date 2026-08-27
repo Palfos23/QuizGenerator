@@ -4,7 +4,7 @@
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
         <div>
-          <h1>Bullseye</h1>
+          <h1>Bullseye <span v-if="!loading && questions.length" class="header-count">{{ questions.length }}</span></h1>
           <p class="page-subtitle">
             Create and manage Bullseye questions - a target number, and every
             athlete's real stat value for it.
@@ -22,7 +22,7 @@
       </div>
 
       <div v-else class="saved-quiz-list">
-        <div v-for="q in questions" :key="q.id" class="saved-quiz-row">
+        <div v-for="q in pagedQuestions" :key="q.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ q.title }}
@@ -39,6 +39,8 @@
           </div>
         </div>
       </div>
+
+      <Pagination v-if="!loading" v-model:page="questionPage" :page-size="QUESTION_PAGE_SIZE" :total-items="questions.length" />
     </template>
 
     <!-- Builder view -->
@@ -227,6 +229,18 @@ import gridCategories from '../services/gridCategories'
 const view = ref('list')
 const questions = ref([])
 const loading = ref(true)
+
+// Paginate the question list once it grows past a screenful.
+const QUESTION_PAGE_SIZE = 10
+const questionPage = ref(1)
+const pagedQuestions = computed(() => {
+  const start = (questionPage.value - 1) * QUESTION_PAGE_SIZE
+  return questions.value.slice(start, start + QUESTION_PAGE_SIZE)
+})
+watch(() => questions.value.length, () => {
+  const maxPage = Math.max(1, Math.ceil(questions.value.length / QUESTION_PAGE_SIZE))
+  if (questionPage.value > maxPage) questionPage.value = maxPage
+})
 const error = ref('')
 const saving = ref(false)
 const pendingDelete = ref(null)

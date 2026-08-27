@@ -2,7 +2,7 @@
   <div>
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-        <h1 style="margin:0;">Imposter boards</h1>
+        <h1 style="margin:0;">Imposter boards <span v-if="!loading && grids.length" class="header-count">{{ grids.length }}</span></h1>
         <button class="btn btn-primary" @click="openCreate">+ New board</button>
       </div>
       <p class="page-subtitle">
@@ -18,7 +18,7 @@
           <tr><th>Title</th><th>Category</th><th>Tiles</th><th>Imposters</th><th></th></tr>
         </thead>
         <tbody>
-          <tr v-for="g in grids" :key="g.id">
+          <tr v-for="g in pagedGrids" :key="g.id">
             <td>{{ g.title }}</td>
             <td>{{ g.sport }}</td>
             <td>{{ g.tileCount }}</td>
@@ -30,6 +30,8 @@
           </tr>
         </tbody>
       </table>
+
+      <Pagination v-if="!loading" v-model:page="gridPage" :page-size="GRID_PAGE_SIZE" :total-items="grids.length" />
     </template>
 
     <template v-else>
@@ -210,12 +212,25 @@ import api from '../services/api'
 import gridCategories from '../services/gridCategories'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import AthleteFormModal from '../components/AthleteFormModal.vue'
+import Pagination from '../components/Pagination.vue'
 import toast from '../services/toast'
 
 const view = ref('list')
 const error = ref('')
 const loading = ref(true)
 const grids = ref([])
+
+// Paginate the board list once it grows past a screenful.
+const GRID_PAGE_SIZE = 10
+const gridPage = ref(1)
+const pagedGrids = computed(() => {
+  const start = (gridPage.value - 1) * GRID_PAGE_SIZE
+  return grids.value.slice(start, start + GRID_PAGE_SIZE)
+})
+watch(() => grids.value.length, () => {
+  const maxPage = Math.max(1, Math.ceil(grids.value.length / GRID_PAGE_SIZE))
+  if (gridPage.value > maxPage) gridPage.value = maxPage
+})
 const saving = ref(false)
 const pendingDelete = ref(null)
 const editingAthleteForModal = ref(null)

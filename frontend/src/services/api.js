@@ -448,6 +448,11 @@ export default {
     return client.get('/reports/mine').then(r => r.data)
   },
 
+  // --- Admin statistics dashboard ---
+  adminGetStatistics() {
+    return client.get('/admin/statistics').then(r => r.data)
+  },
+
   // --- Reports: admin ---
   adminListReports() {
     return client.get('/admin/reports').then(r => r.data)

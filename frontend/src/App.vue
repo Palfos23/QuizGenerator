@@ -29,18 +29,31 @@
         <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/starting-xi-battle" class="nav-link" @click="onNavClick('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/bullseye" class="nav-link" @click="onNavClick('/bullseye', 'bullseye')">Bullseye</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/questions" class="nav-link">Question bank</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/question-labels" class="nav-link">Labels</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/athletes" class="nav-link">Subjects</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/athlete-pools" class="nav-link">Pools</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/grid-categories" class="nav-link">Categories</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/grids" class="nav-link">Weekly grids</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/lineups" class="nav-link">Starting XI</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/tension-questions" class="nav-link">Tension</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/501" class="nav-link">501</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/imposter" class="nav-link">Imposter</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/bullseye" class="nav-link">Bullseye</router-link>
-        <router-link v-if="auth.isAdmin.value" to="/admin/reports" class="nav-link">Reports</router-link>
+        <template v-if="auth.isAdmin.value">
+          <div v-for="menu in ADMIN_MENUS" :key="menu.label" class="top-nav-dropdown">
+            <div v-if="openAdminMenu === menu.label" class="top-nav-dropdown-backdrop" @click="closeAdminMenu"></div>
+            <button
+              type="button"
+              class="nav-link top-nav-dropdown-toggle"
+              :class="{ 'router-link-exact-active': adminMenuActive(menu) }"
+              aria-haspopup="true"
+              :aria-expanded="openAdminMenu === menu.label"
+              @click="toggleAdminMenu(menu.label)"
+            >
+              {{ menu.label }} ▾
+            </button>
+            <div v-if="openAdminMenu === menu.label" class="top-nav-dropdown-popup" role="menu">
+              <router-link
+                v-for="item in menu.items"
+                :key="item.to"
+                :to="item.to"
+                class="nav-link"
+                role="menuitem"
+                @click="closeAdminMenu"
+              >{{ item.label }}</router-link>
+            </div>
+          </div>
+        </template>
 
         <div class="top-nav-spacer"></div>
         <span class="top-nav-user">{{ auth.state.displayName }}</span>
@@ -89,18 +102,26 @@
           <router-link to="/bullseye" role="menuitem" @click="closeGamesMenu('/bullseye', 'bullseye')">Bullseye</router-link>
         </div>
       </div>
-      <router-link v-if="auth.isAdmin.value" to="/admin/questions">Bank</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/question-labels">Labels</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/athletes">Subjects</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/athlete-pools">Pools</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/grid-categories">Categories</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/grids">Grids</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/lineups">Starting XI</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/tension-questions">Tension</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/501">501</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/imposter">Imposter</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/bullseye">Bullseye</router-link>
-      <router-link v-if="auth.isAdmin.value" to="/admin/reports">Reports</router-link>
+      <template v-if="auth.isAdmin.value">
+        <div v-for="menu in ADMIN_MENUS" :key="menu.label" style="position:relative; flex:1; display:flex;">
+          <div v-if="openAdminMenu === menu.label" class="bottom-nav-backdrop" @click="closeAdminMenu"></div>
+          <button
+            aria-haspopup="true"
+            :aria-expanded="openAdminMenu === menu.label"
+            :class="{ active: adminMenuActive(menu) }"
+            @click="toggleAdminMenu(menu.label)"
+          >{{ menu.label }} ▾</button>
+          <div v-if="openAdminMenu === menu.label" class="games-popup admin-menu-popup" role="menu">
+            <router-link
+              v-for="item in menu.items"
+              :key="item.to"
+              :to="item.to"
+              role="menuitem"
+              @click="closeAdminMenu"
+            >{{ item.label }}</router-link>
+          </div>
+        </div>
+      </template>
       <button @click="logout">Log out</button>
     </nav>
 
@@ -158,6 +179,61 @@ const isWeeklyQuizRoute = computed(() => {
   return WEEKLY_QUIZ_PATH_PREFIXES.some(prefix => path === prefix || path.startsWith(prefix + '/'))
 })
 
+// The admin nav used to be ~14 flat links crammed side by side (unusable as a
+// mobile bottom bar). It's now four labelled dropdowns, driven by this config
+// on both desktop (top-nav) and mobile (bottom-nav popup) - same markup, same
+// single `openAdminMenu` (one menu open at a time), mirroring the Games popup.
+const ADMIN_MENUS = [
+  {
+    label: 'Questions',
+    items: [
+      { to: '/admin/questions', label: 'Question bank' },
+      { to: '/admin/question-labels', label: 'Labels' },
+      { to: '/admin/question-submissions', label: 'User submissions' },
+      { to: '/admin/quiz-templates', label: 'Quiz templates' }
+    ]
+  },
+  {
+    label: 'Content',
+    items: [
+      { to: '/admin/athletes', label: 'Subjects' },
+      { to: '/admin/athlete-pools', label: 'Pools' },
+      { to: '/admin/grid-categories', label: 'Categories' },
+      { to: '/admin/clubs', label: 'Clubs' }
+    ]
+  },
+  {
+    label: 'Games',
+    items: [
+      { to: '/admin/grids', label: 'Weekly grids' },
+      { to: '/admin/lineups', label: 'Starting XI' },
+      { to: '/admin/tension-questions', label: 'Tension' },
+      { to: '/admin/501', label: '501' },
+      { to: '/admin/imposter', label: 'Imposter' },
+      { to: '/admin/bullseye', label: 'Bullseye' }
+    ]
+  },
+  {
+    label: 'Insights',
+    items: [
+      { to: '/admin/statistics', label: 'Statistics' },
+      { to: '/admin/reports', label: 'Reports' }
+    ]
+  }
+]
+const openAdminMenu = ref(null)
+function toggleAdminMenu(label) {
+  openAdminMenu.value = openAdminMenu.value === label ? null : label
+}
+function closeAdminMenu() {
+  openAdminMenu.value = null
+}
+// Highlights the toggle whenever the current route lives under one of its items.
+function adminMenuActive(menu) {
+  const path = router.currentRoute.value.path
+  return menu.items.some(item => path === item.to || path.startsWith(item.to + '/'))
+}
+
 // Belt-and-suspenders close for both popups on any navigation - covers the
 // case where a click lands on a different nav item entirely (not one of
 // this popup's own links, which already close it themselves) while a
@@ -165,6 +241,7 @@ const isWeeklyQuizRoute = computed(() => {
 watch(() => router.currentRoute.value.path, () => {
   showGamesMenu.value = false
   showWeeklyMenu.value = false
+  openAdminMenu.value = null
 })
 
 // A keyboard user can open either dropdown, but until now had no way to
@@ -172,6 +249,7 @@ watch(() => router.currentRoute.value.path, () => {
 useEscapeKey(() => {
   showGamesMenu.value = false
   showWeeklyMenu.value = false
+  openAdminMenu.value = null
 })
 
 function onNavClick(path, key) {

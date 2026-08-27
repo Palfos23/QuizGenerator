@@ -2,7 +2,7 @@
   <div>
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-        <h1 style="margin:0;">501 categories</h1>
+        <h1 style="margin:0;">501 categories <span v-if="!loading && categories.length" class="header-count">{{ categories.length }}</span></h1>
         <button class="btn btn-primary" @click="openCreate">+ New category</button>
       </div>
       <p class="page-subtitle">Each category is a ranked set of names and numbers - e.g. "Premier League appearances".</p>
@@ -12,7 +12,7 @@
       <div v-else-if="!categories.length" class="empty-state friendly">No categories yet - create the first one.</div>
 
       <div v-else class="saved-quiz-list">
-        <div v-for="c in categories" :key="c.id" class="saved-quiz-row">
+        <div v-for="c in pagedCategories" :key="c.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ c.title }}</div>
             <div class="saved-quiz-meta">{{ c.entryCount }} entries<span v-if="c.description"> · {{ c.description }}</span></div>
@@ -23,6 +23,8 @@
           </div>
         </div>
       </div>
+
+      <Pagination v-if="!loading" v-model:page="categoryPage" :page-size="CATEGORY_PAGE_SIZE" :total-items="categories.length" />
     </template>
 
     <template v-else>
@@ -82,7 +84,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
@@ -91,6 +93,18 @@ import Pagination from '../components/Pagination.vue'
 const view = ref('list')
 const categories = ref([])
 const loading = ref(true)
+
+// Paginate the category list once it grows past a screenful.
+const CATEGORY_PAGE_SIZE = 10
+const categoryPage = ref(1)
+const pagedCategories = computed(() => {
+  const start = (categoryPage.value - 1) * CATEGORY_PAGE_SIZE
+  return categories.value.slice(start, start + CATEGORY_PAGE_SIZE)
+})
+watch(() => categories.value.length, () => {
+  const maxPage = Math.max(1, Math.ceil(categories.value.length / CATEGORY_PAGE_SIZE))
+  if (categoryPage.value > maxPage) categoryPage.value = maxPage
+})
 const error = ref('')
 const saving = ref(false)
 const editingId = ref(null)
