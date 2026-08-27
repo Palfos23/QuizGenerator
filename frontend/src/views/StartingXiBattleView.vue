@@ -28,12 +28,14 @@
         </div>
       </div>
 
-      <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:20px;">
-        <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'landing'">
+      <XiBattlePreview />
+
+      <div class="mode-choice-row">
+        <button class="mode-choice-card" @click="stage = 'landing'">
           <h3>Same device</h3>
           <p>Pass the phone around - everyone takes their turn on one screen.</p>
         </button>
-        <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'onlineChoice'">
+        <button class="mode-choice-card" @click="stage = 'onlineChoice'">
           <h3>Play online</h3>
           <p>Everyone plays from their own device with a shared room code.</p>
         </button>
@@ -309,6 +311,7 @@ import MultiplayerLineupGame from '../components/MultiplayerLineupGame.vue'
 import OnlineStartingXiBattleGame from '../components/OnlineStartingXiBattleGame.vue'
 import LoadingState from '../components/LoadingState.vue'
 import GameAccessGate from '../components/GameAccessGate.vue'
+import XiBattlePreview from '../components/previews/XiBattlePreview.vue'
 
 const colorOptions = ['#4f46e5', '#F22C05', '#F2BB05', '#032E8A', '#05D6F2', '#f43f5e', '#5D038A', '#22c55e']
 

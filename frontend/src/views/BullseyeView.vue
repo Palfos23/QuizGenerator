@@ -19,6 +19,8 @@
         </div>
       </div>
 
+      <BullseyePreview />
+
       <div class="field">
         <label>Players</label>
         <select v-model.number="numPlayers">
@@ -91,6 +93,7 @@ import navTrigger from '../services/navTrigger'
 import BullseyeGame from '../components/BullseyeGame.vue'
 import LoadingState from '../components/LoadingState.vue'
 import GameAccessGate from '../components/GameAccessGate.vue'
+import BullseyePreview from '../components/previews/BullseyePreview.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },

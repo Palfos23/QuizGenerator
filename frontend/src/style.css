@@ -1806,6 +1806,88 @@ table.scoreboard-table {
 .dashboard-feature-card h3 { font-size: 1rem; margin-bottom: 6px; }
 .dashboard-feature-card p { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
 
+/* ---------- Game-mode intro preview ("here's what this looks like") ---------- */
+/* A decorative, non-interactive freeze-frame of the game, shown on each mode's
+   landing screen. Every <XxxPreview> component renders its own guts; this is
+   just the shared frame they sit in. */
+.game-preview {
+  position: relative;
+  margin: 22px 0 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 24px;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  background:
+    radial-gradient(130% 130% at 0% 0%, rgba(242, 183, 5, 0.07), transparent 55%),
+    radial-gradient(130% 130% at 100% 100%, rgba(139, 124, 255, 0.08), transparent 55%),
+    rgba(255, 255, 255, 0.015);
+}
+.game-preview-tag {
+  position: absolute;
+  top: 13px;
+  right: 15px;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-dim);
+  opacity: 0.75;
+}
+.game-preview-caption {
+  margin: 16px 2px 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.game-preview-caption strong { color: var(--text); font-weight: 600; }
+.game-preview-caption .good { color: var(--teal); }
+.game-preview-caption .bad { color: var(--coral); }
+
+/* The two "Same device / Play online" cards, upgraded from a bare bordered box
+   to something with a bit more intent - a leading arrow that slides on hover. */
+.mode-choice-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.mode-choice-card {
+  flex: 1;
+  min-width: 220px;
+  text-align: left;
+  cursor: pointer;
+  display: block;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.mode-choice-card:hover {
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.045);
+}
+.mode-choice-card h3 {
+  font-size: 1rem;
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mode-choice-card h3::after {
+  content: '→';
+  color: var(--gold);
+  margin-left: auto;
+  transform: translateX(-3px);
+  opacity: 0;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.mode-choice-card:hover h3::after { transform: translateX(0); opacity: 1; }
+.mode-choice-card p { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+
 .landing-hero {
   padding: 20px 0 8px;
 }

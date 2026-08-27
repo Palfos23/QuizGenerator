@@ -28,12 +28,14 @@
         </div>
       </div>
 
-      <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:20px;">
-        <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'landing'">
+      <GridBattlePreview />
+
+      <div class="mode-choice-row">
+        <button class="mode-choice-card" @click="stage = 'landing'">
           <h3>Same device</h3>
           <p>Pass the phone around - everyone takes their turn on one screen.</p>
         </button>
-        <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'onlineChoice'">
+        <button class="mode-choice-card" @click="stage = 'onlineChoice'">
           <h3>Play online</h3>
           <p>Everyone plays from their own device with a shared room code.</p>
         </button>
@@ -329,6 +331,7 @@ import MultiplayerGridGame from '../components/MultiplayerGridGame.vue'
 import OnlineGridBattleGame from '../components/OnlineGridBattleGame.vue'
 import LoadingState from '../components/LoadingState.vue'
 import GameAccessGate from '../components/GameAccessGate.vue'
+import GridBattlePreview from '../components/previews/GridBattlePreview.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },

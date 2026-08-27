@@ -28,12 +28,14 @@
         </div>
       </div>
 
-      <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:20px;">
-        <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'category'">
+      <FiveOhOnePreview />
+
+      <div class="mode-choice-row">
+        <button class="mode-choice-card" @click="stage = 'category'">
           <h3>Same device</h3>
           <p>Pass the phone around - one throw each, back and forth.</p>
         </button>
-        <button class="dashboard-feature-card" style="flex:1; min-width:220px; text-align:center; cursor:pointer; border:1px solid var(--border);" @click="stage = 'onlineChoice'">
+        <button class="mode-choice-card" @click="stage = 'onlineChoice'">
           <h3>Play online</h3>
           <p>You and one friend, each on your own device with a shared room code.</p>
         </button>
@@ -229,6 +231,7 @@ import navTrigger from '../services/navTrigger'
 import FiveOhOneGame from '../components/FiveOhOneGame.vue'
 import OnlineFiveOhOneGame from '../components/OnlineFiveOhOneGame.vue'
 import GameAccessGate from '../components/GameAccessGate.vue'
+import FiveOhOnePreview from '../components/previews/FiveOhOnePreview.vue'
 
 const stage = ref('modeChoice')
 const error = ref('')
