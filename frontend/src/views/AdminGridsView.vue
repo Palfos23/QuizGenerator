@@ -46,6 +46,7 @@
           </div>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-secondary btn-sm" @click="openEdit(g.id)">Edit</button>
+            <button class="btn btn-secondary btn-sm" @click="duplicateGrid(g.id)">⧉ Duplicate</button>
             <button class="btn btn-danger btn-sm" @click="requestDelete(g)">Delete</button>
           </div>
         </div>
@@ -736,6 +737,15 @@ async function openEdit(id) {
   } catch (e) {
     error.value = 'Could not load that grid.'
   }
+}
+
+// One-click duplicate straight from the list - loads the grid into the
+// builder exactly like Edit would, then immediately detaches it into a new
+// unsaved copy via duplicateAsNewVersion, so there's no need to open Edit
+// first just to reach the button buried at the bottom of the builder.
+async function duplicateGrid(id) {
+  await openEdit(id)
+  if (editingGridId.value === id) duplicateAsNewVersion()
 }
 
 function duplicateAsNewVersion() {

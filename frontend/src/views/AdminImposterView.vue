@@ -38,6 +38,7 @@
             <td>{{ g.imposterCount }}</td>
             <td style="text-align:right; white-space:nowrap;">
               <button class="btn btn-secondary btn-sm" @click="openEdit(g.id)">Edit</button>
+              <button class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="duplicateBoard(g.id)">⧉ Duplicate</button>
               <button class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="confirmDelete(g)">Delete</button>
             </td>
           </tr>
@@ -207,6 +208,9 @@
       </div>
 
       <div style="margin-top:20px; display:flex; align-items:center; gap:16px;">
+        <button v-if="editingId" class="btn btn-secondary" @click="duplicateAsNewVersion">
+          ⧉ Duplicate as new version
+        </button>
         <button class="btn btn-primary" :disabled="saving || !canSave" @click="save">
           {{ saving ? 'Saving…' : 'Save board' }}
         </button>
@@ -444,6 +448,25 @@ function chooseReplaced(t, athlete) {
   t.replacedAthleteName = athlete.name
   t.replacedSearchTerm = ''
   t.replacedSearchResults = []
+}
+
+// One-click duplicate straight from the list - loads the board into the
+// builder exactly like Edit would, then immediately detaches it into a new
+// unsaved copy via duplicateAsNewVersion, so there's no need to open Edit
+// first just to reach the button at the bottom of the builder.
+async function duplicateBoard(id) {
+  await openEdit(id)
+  if (editingId.value === id) duplicateAsNewVersion()
+}
+
+// Keeps every current form field and tile exactly as-is - only clearing the
+// editing id, so the next save creates a brand new board via POST instead
+// of overwriting the original via PUT. The original stays completely
+// untouched until this copy is saved.
+function duplicateAsNewVersion() {
+  editingId.value = null
+  form.value.title = form.value.title + ' (updated)'
+  toast.show('Now editing a new duplicate - the original board is untouched. Remember to save this copy.')
 }
 
 async function save() {

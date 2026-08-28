@@ -47,6 +47,7 @@
           </div>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-secondary btn-sm" @click="openEdit(l.id)">Edit</button>
+            <button class="btn btn-secondary btn-sm" @click="duplicateLineup(l.id)">⧉ Duplicate</button>
             <button class="btn btn-danger btn-sm" @click="requestDelete(l)">Delete</button>
           </div>
         </div>
@@ -258,6 +259,9 @@
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" :disabled="filledSlotCount === 0" @click="showPreview = true">
           Preview ({{ filledSlotCount }}/{{ requiredSlotCount }} slots)
+        </button>
+        <button v-if="editingLineupId" class="btn btn-secondary" @click="duplicateAsNewVersion">
+          ⧉ Duplicate as new version
         </button>
         <button class="btn btn-primary" :disabled="saving" @click="saveLineup">
           {{ saving ? 'Saving…' : 'Save board' }}
@@ -674,6 +678,26 @@ async function openEdit(id) {
   } catch (e) {
     error.value = 'Could not load that board.'
   }
+}
+
+// One-click duplicate straight from the list - loads the board into the
+// builder exactly like Edit would, then immediately detaches it into a new
+// unsaved copy via duplicateAsNewVersion, so there's no need to open Edit
+// first just to reach the button at the bottom of the builder.
+async function duplicateLineup(id) {
+  await openEdit(id)
+  if (editingLineupId.value === id) duplicateAsNewVersion()
+}
+
+// Keeps every current form field and candidate/entry exactly as-is - only
+// clearing the editing id, so the next save creates a brand new board via
+// POST instead of overwriting the original via PUT. The original stays
+// completely untouched until this copy is saved.
+function duplicateAsNewVersion() {
+  editingLineupId.value = null
+  form.title = form.title + ' (updated)'
+  form.excludedFromBattle = false
+  toast.show('Now editing a new duplicate - the original board is untouched. Remember to save this copy.')
 }
 
 async function saveLineup() {
