@@ -18,10 +18,24 @@
         </select>
         <button
           type="button"
-          class="btn btn-secondary btn-sm board-toolbar-dir"
+          class="board-toolbar-dir"
+          :aria-label="sortDir === 'asc' ? 'Sorted ascending, click for descending' : 'Sorted descending, click for ascending'"
           :title="sortDir === 'asc' ? 'Ascending' : 'Descending'"
           @click="$emit('update:sortDir', sortDir === 'asc' ? 'desc' : 'asc')"
-        >{{ sortDir === 'asc' ? '↑' : '↓' }}</button>
+        >
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path
+              v-if="sortDir === 'asc'"
+              d="M8 3.5v9M8 3.5 4.5 7M8 3.5 11.5 7"
+              fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+            />
+            <path
+              v-else
+              d="M8 12.5v-9M8 12.5 4.5 9M8 12.5 11.5 9"
+              fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+            />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -59,15 +73,30 @@ defineEmits(['update:search', 'update:sortKey', 'update:sortDir'])
 .board-toolbar .field { margin-bottom: 0; }
 .board-toolbar-search { flex: 2; min-width: 200px; }
 .board-toolbar-sort { flex: 1; min-width: 190px; }
-.board-toolbar-sort-row { display: flex; gap: 8px; }
-.board-toolbar-sort-row select { flex: 1; }
-.board-toolbar-dir {
-  flex-shrink: 0;
-  width: 40px;
-  padding: 0;
-  font-size: 1rem;
-  line-height: 1;
+
+.board-toolbar-sort-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
 }
+.board-toolbar-sort-row select { flex: 1; min-width: 0; }
+
+.board-toolbar-dir {
+  flex: 0 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-dim);
+}
+.board-toolbar-dir:hover {
+  border-color: var(--gold);
+  color: var(--text);
+}
+.board-toolbar-dir:active { transform: none; }
+
 .board-toolbar-count {
   font-size: 0.82rem;
   color: var(--text-dim);
