@@ -7,6 +7,7 @@ public class ImposterPlayStateDto {
     private String title;
     private String description;
     private String displayMode;
+    private boolean fitImages;
     private int imposterCount;
     private List<TileView> tiles;
 
@@ -48,6 +49,14 @@ public class ImposterPlayStateDto {
 
     public void setDisplayMode(String displayMode) {
         this.displayMode = displayMode;
+    }
+
+    public boolean isFitImages() {
+        return fitImages;
+    }
+
+    public void setFitImages(boolean fitImages) {
+        this.fitImages = fitImages;
     }
 
     public List<TileView> getTiles() {

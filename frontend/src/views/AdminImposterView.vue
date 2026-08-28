@@ -86,6 +86,17 @@
         </div>
       </div>
 
+      <div v-if="form.displayMode !== 'NAME_ONLY'" class="field">
+        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
+          <input type="checkbox" v-model="form.fitImages" style="width:auto;" />
+          Fit the whole image in each tile
+        </label>
+        <p class="picker-hint" style="margin:4px 0 0;">
+          For flags and full-frame logos - shows the entire image with a little padding
+          instead of cropping it to fill the square. Leave off for portrait photos.
+        </p>
+      </div>
+
       <div class="field" style="position:relative;">
         <label>Add subjects to the board</label>
         <input type="text" v-model="athleteSearchTerm" placeholder="Search subjects by name…" />
@@ -186,7 +197,7 @@
                 :src="previewImage(t)"
                 alt=""
                 class="grid-tile-logo"
-                :class="{ 'is-photo': previewIsPhoto(t) }"
+                :class="{ 'is-photo': previewIsPhoto(t), 'is-fit': form.fitImages && previewIsPhoto(t) }"
                 @error="$event.target.style.display = 'none'"
               />
               <div v-if="form.displayMode !== 'PHOTO_ONLY'" class="grid-tile-name">{{ t.name }}</div>
@@ -255,7 +266,7 @@ const pendingDelete = ref(null)
 const editingAthleteForModal = ref(null)
 const editingId = ref(null)
 
-const form = ref({ title: '', description: '', sport: '', displayMode: 'NAME_AND_PHOTO' })
+const form = ref({ title: '', description: '', sport: '', displayMode: 'NAME_AND_PHOTO', fitImages: false })
 const tiles = ref([]) // [{ athleteId, name, imposter, replacedAthleteId, replacedAthleteName, replacedSearchTerm, replacedSearchResults, clubId }]
 
 const clubOptions = ref([])
@@ -285,7 +296,7 @@ async function loadList() {
 
 function openCreate() {
   editingId.value = null
-  form.value = { title: '', description: '', sport: gridCategories.categories.value[0] || '', displayMode: 'NAME_AND_PHOTO' }
+  form.value = { title: '', description: '', sport: gridCategories.categories.value[0] || '', displayMode: 'NAME_AND_PHOTO', fitImages: false }
   tiles.value = []
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
@@ -303,7 +314,8 @@ async function openEdit(id) {
       title: detail.title,
       description: detail.description || '',
       sport: detail.sport,
-      displayMode: detail.displayMode
+      displayMode: detail.displayMode,
+      fitImages: detail.fitImages || false
     }
     tiles.value = detail.tiles.map(t => ({
       athleteId: t.athlete.id,
@@ -442,6 +454,7 @@ async function save() {
     description: form.value.description,
     sport: form.value.sport,
     displayMode: form.value.displayMode,
+    fitImages: form.value.fitImages,
     tiles: tiles.value.map(t => ({
       athleteId: t.athleteId,
       imposter: t.imposter,

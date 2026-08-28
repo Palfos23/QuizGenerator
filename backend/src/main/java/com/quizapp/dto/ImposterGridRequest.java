@@ -20,6 +20,8 @@ public class ImposterGridRequest {
     @NotBlank
     private String displayMode; // NAME_AND_LOGO, NAME_AND_PHOTO, PHOTO_ONLY
 
+    private boolean fitImages = false; // true = fit whole image in the tile (flags); false = cover/crop
+
     @NotEmpty
     @Valid
     private List<TileInput> tiles;
@@ -54,6 +56,14 @@ public class ImposterGridRequest {
 
     public void setDisplayMode(String displayMode) {
         this.displayMode = displayMode;
+    }
+
+    public boolean isFitImages() {
+        return fitImages;
+    }
+
+    public void setFitImages(boolean fitImages) {
+        this.fitImages = fitImages;
     }
 
     public List<TileInput> getTiles() {

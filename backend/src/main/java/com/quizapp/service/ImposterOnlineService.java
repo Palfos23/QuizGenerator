@@ -144,6 +144,7 @@ public class ImposterOnlineService {
         dto.setGridTitle(grid.getTitle());
         dto.setGridDescription(grid.getDescription());
         dto.setDisplayMode(grid.getDisplayMode().name());
+        dto.setFitImages(grid.isFitImages());
 
         List<ImposterFlippedTile> flips = flippedTileRepository.findByRoomState_Id(state.getId());
         Map<Long, ImposterFlippedTile> flipByTileId = flips.stream()

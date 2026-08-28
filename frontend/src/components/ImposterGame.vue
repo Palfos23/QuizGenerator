@@ -61,7 +61,10 @@
               :src="tileImage(t)"
               alt=""
               class="grid-tile-logo"
-              :class="{ 'is-photo': !!t.photoUrl && playState.displayMode !== 'NAME_AND_LOGO' }"
+              :class="{
+                'is-photo': !!t.photoUrl && playState.displayMode !== 'NAME_AND_LOGO',
+                'is-fit': playState.fitImages && !!t.photoUrl && playState.displayMode !== 'NAME_AND_LOGO'
+              }"
               @error="$event.target.style.display = 'none'"
             />
             <div v-if="playState.displayMode !== 'PHOTO_ONLY' || flippedTiles[t.id]" class="grid-tile-name">{{ t.athleteName }}</div>

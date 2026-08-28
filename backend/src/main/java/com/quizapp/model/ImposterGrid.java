@@ -40,6 +40,15 @@ public class ImposterGrid {
     @Column(nullable = false)
     private DisplayMode displayMode = DisplayMode.NAME_AND_PHOTO;
 
+    // How a tile's image is fitted to the square tile. false (default) = the
+    // long-standing "cover" behaviour: fill the tile, crop the overflow - fine
+    // for portrait photos. true = "contain": scale the whole image to fit with
+    // padding, nothing cropped - for flags and full-frame logos. Mirrors
+    // Grid.fitImages; columnDefinition gives an explicit DB default so
+    // ddl-auto=update adds it cleanly to an existing table.
+    @Column(name = "fit_images", nullable = false, columnDefinition = "boolean default false")
+    private boolean fitImages = false;
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -84,6 +93,14 @@ public class ImposterGrid {
 
     public void setDisplayMode(DisplayMode displayMode) {
         this.displayMode = displayMode;
+    }
+
+    public boolean isFitImages() {
+        return fitImages;
+    }
+
+    public void setFitImages(boolean fitImages) {
+        this.fitImages = fitImages;
     }
 
     public Instant getCreatedAt() {

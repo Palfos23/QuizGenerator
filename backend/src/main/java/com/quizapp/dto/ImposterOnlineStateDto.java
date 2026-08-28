@@ -15,6 +15,7 @@ public class ImposterOnlineStateDto {
     private String gridTitle;
     private String gridDescription;
     private String displayMode;
+    private boolean fitImages;
     private int imposterCount;
     private List<ImposterOnlineTileDto> tiles;
     private Long currentTurnParticipantId;
@@ -48,6 +49,8 @@ public class ImposterOnlineStateDto {
     public void setGridDescription(String gridDescription) { this.gridDescription = gridDescription; }
     public String getDisplayMode() { return displayMode; }
     public void setDisplayMode(String displayMode) { this.displayMode = displayMode; }
+    public boolean isFitImages() { return fitImages; }
+    public void setFitImages(boolean fitImages) { this.fitImages = fitImages; }
     public int getImposterCount() { return imposterCount; }
     public void setImposterCount(int imposterCount) { this.imposterCount = imposterCount; }
     public List<ImposterOnlineTileDto> getTiles() { return tiles; }

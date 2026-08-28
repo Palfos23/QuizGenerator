@@ -8,6 +8,7 @@ public class ImposterGridAdminDetailDto {
     private String description;
     private String sport;
     private String displayMode;
+    private boolean fitImages;
     private List<TileDetail> tiles;
 
     public Long getId() {
@@ -48,6 +49,14 @@ public class ImposterGridAdminDetailDto {
 
     public void setDisplayMode(String displayMode) {
         this.displayMode = displayMode;
+    }
+
+    public boolean isFitImages() {
+        return fitImages;
+    }
+
+    public void setFitImages(boolean fitImages) {
+        this.fitImages = fitImages;
     }
 
     public List<TileDetail> getTiles() {
