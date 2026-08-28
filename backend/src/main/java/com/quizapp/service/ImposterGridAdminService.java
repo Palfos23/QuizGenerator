@@ -77,6 +77,7 @@ public class ImposterGridAdminService {
         grid.setSport(request.getSport());
         grid.setDisplayMode(ImposterGrid.DisplayMode.valueOf(request.getDisplayMode()));
         grid.setFitImages(request.isFitImages());
+        grid.setUpdatedAt(java.time.Instant.now());
 
         List<ImposterTile> tiles = new ArrayList<>();
         int index = 0;

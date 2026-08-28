@@ -98,6 +98,7 @@ public class TensionOnlineService {
         Long currentQuestionId = state.getQuestionIds().get(state.getCurrentQuestionIndex());
         TensionQuestionDto question = tensionQuestionService.getOne(currentQuestionId);
         dto.setQuestionTitle(question.getTitle());
+        dto.setQuestionUpdatedAt(question.getUpdatedAt());
         dto.setAnswersCategory(question.getAnswersCategory());
         dto.setSource(question.getSource());
         dto.setTensionAnswerCount(question.getTensionAnswers().size());

@@ -52,6 +52,18 @@ public class ImposterGrid {
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
+    // Same purpose as Grid.updatedAt - see that field for the full reasoning.
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     @OneToMany(mappedBy = "imposterGrid", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ImposterTile> tiles = new ArrayList<>();
 

@@ -1,5 +1,6 @@
 package com.quizapp.dto;
 
+import java.time.Instant;
 import java.util.List;
 
 public class ImposterPlayStateDto {
@@ -7,6 +8,7 @@ public class ImposterPlayStateDto {
     private String title;
     private String description;
     private String displayMode;
+    private Instant updatedAt;
     private boolean fitImages;
     private int imposterCount;
     private List<TileView> tiles;
@@ -49,6 +51,14 @@ public class ImposterPlayStateDto {
 
     public void setDisplayMode(String displayMode) {
         this.displayMode = displayMode;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public boolean isFitImages() {

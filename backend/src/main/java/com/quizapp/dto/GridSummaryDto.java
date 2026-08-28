@@ -1,6 +1,7 @@
 package com.quizapp.dto;
 
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 public class GridSummaryDto {
@@ -91,5 +92,17 @@ public class GridSummaryDto {
 
     public Integer getGuessedCount() {
         return guessedCount;
+    }
+
+    // When this grid's content was last saved - shown to players as a
+    // "might be outdated" signal, and to admins on the management list.
+    private Instant updatedAt;
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

@@ -10,8 +10,11 @@
 
     <template v-if="state && !state.finished">
       <h1 style="text-align:center; margin:6px 0 4px;">{{ state.questionTitle }}</h1>
-      <p v-if="state.source" style="text-align:center; margin:0 0 20px; color:var(--text-dim); font-size:0.8rem;">
+      <p v-if="state.source" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
         Source: {{ state.source }}
+      </p>
+      <p v-if="lastUpdatedLabel" style="text-align:center; margin:0 0 20px; color:var(--text-dim); font-size:0.75rem;">
+        {{ lastUpdatedLabel }}
       </p>
 
       <div class="tension-layout">
@@ -134,6 +137,7 @@ import { computed, onUnmounted, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
 import { usePolling } from '../composables/usePolling'
+import { formatLastUpdated } from '../constants'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -143,6 +147,7 @@ const props = defineProps({
 const emit = defineEmits(['gameOver', 'leave'])
 
 const state = ref(null)
+const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.questionUpdatedAt))
 const loading = ref(true)
 const error = ref('')
 const submitting = ref(false)

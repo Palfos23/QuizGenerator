@@ -13,6 +13,7 @@
       </div>
       <h1 style="margin:0 0 6px; text-align:center;">{{ state.title }}</h1>
       <p class="page-subtitle" style="text-align:center;">{{ state.competition }}</p>
+      <p v-if="lastUpdatedLabel" class="page-subtitle" style="text-align:center; margin-top:-8px; font-size:0.78rem;">{{ lastUpdatedLabel }}</p>
 
       <div class="pitch-scoreline">
         <div class="pitch-scoreline-team">
@@ -154,7 +155,7 @@ import { useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
 import { displayRowsFor } from '../services/formations'
-import { readableTextColor } from '../constants'
+import { readableTextColor, formatLastUpdated } from '../constants'
 import PitchMarkings from '../components/PitchMarkings.vue'
 import LivesHearts from '../components/LivesHearts.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
@@ -175,6 +176,7 @@ const searchTerm = ref('')
 const searchResults = ref([])
 const guessing = ref(false)
 
+const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.updatedAt))
 const guessedCount = computed(() => state.value?.slots.filter(s => s.guessedByUser).length || 0)
 const allSolved = computed(() => !!state.value && guessedCount.value === state.value.slots.length)
 const gameOver = computed(() => !!state.value && state.value.completed && !allSolved.value && !state.value.revealed)

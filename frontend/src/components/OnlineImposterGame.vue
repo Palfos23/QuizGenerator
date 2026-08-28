@@ -4,6 +4,7 @@
       <div class="grid-progress" style="text-align:center;">Board {{ (state?.currentGridIndex ?? 0) + 1 }} / {{ state?.totalGrids ?? '?' }}</div>
       <h2>{{ state?.gridTitle }}</h2>
       <p v-if="state?.gridDescription" class="fiveoo-description">{{ state.gridDescription }}</p>
+      <p v-if="lastUpdatedLabel" class="fiveoo-description" style="font-size:0.75rem;">{{ lastUpdatedLabel }}</p>
       <p class="fiveoo-rules-reminder">Fewest imposter hits wins - flip a tile on your turn</p>
     </div>
 
@@ -132,6 +133,7 @@ import { computed, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
 import { usePolling } from '../composables/usePolling'
+import { formatLastUpdated } from '../constants'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -141,6 +143,7 @@ const props = defineProps({
 const emit = defineEmits(['gameOver', 'leave'])
 
 const state = ref(null)
+const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.gridUpdatedAt))
 const revealList = ref([])
 let lastGridIndexSeen = null
 const loading = ref(true)

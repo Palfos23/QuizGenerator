@@ -2,6 +2,7 @@ package com.quizapp.dto;
 
 import com.quizapp.model.RoomStatus;
 
+import java.time.Instant;
 import java.util.List;
 
 public class TensionOnlineStateDto {
@@ -11,6 +12,7 @@ public class TensionOnlineStateDto {
     private int currentQuestionIndex;
     private int totalQuestions;
     private String questionTitle;
+    private Instant questionUpdatedAt;
     private String answersCategory;
     private String source;
     private int tensionAnswerCount;
@@ -35,6 +37,8 @@ public class TensionOnlineStateDto {
     public void setTotalQuestions(int totalQuestions) { this.totalQuestions = totalQuestions; }
     public String getQuestionTitle() { return questionTitle; }
     public void setQuestionTitle(String questionTitle) { this.questionTitle = questionTitle; }
+    public Instant getQuestionUpdatedAt() { return questionUpdatedAt; }
+    public void setQuestionUpdatedAt(Instant questionUpdatedAt) { this.questionUpdatedAt = questionUpdatedAt; }
     public String getAnswersCategory() { return answersCategory; }
     public void setAnswersCategory(String answersCategory) { this.answersCategory = answersCategory; }
     public String getSource() { return source; }

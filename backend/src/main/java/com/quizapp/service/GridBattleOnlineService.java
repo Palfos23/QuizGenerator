@@ -132,6 +132,7 @@ public class GridBattleOnlineService {
         dto.setCurrentGridId(currentGridId);
         dto.setGridTitle(grid.getTitle());
         dto.setGridTheme(grid.getTheme());
+        dto.setGridUpdatedAt(grid.getUpdatedAt());
         dto.setMaxStrikes(grid.getMaxStrikes());
         dto.setFitImages(grid.isFitImages());
 

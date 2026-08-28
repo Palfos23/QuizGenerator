@@ -2,6 +2,7 @@ package com.quizapp.dto;
 
 import com.quizapp.model.RoomStatus;
 
+import java.time.Instant;
 import java.util.List;
 
 public class LineupBattleStateDto {
@@ -14,6 +15,7 @@ public class LineupBattleStateDto {
     private Long currentLineupId;
     private String lineupTitle;
     private String lineupCompetition;
+    private Instant lineupUpdatedAt;
     private String teamName;
     private String teamCrestUrl;
     private String opponentName;
@@ -52,6 +54,8 @@ public class LineupBattleStateDto {
     public void setCurrentLineupId(Long currentLineupId) { this.currentLineupId = currentLineupId; }
     public String getLineupTitle() { return lineupTitle; }
     public void setLineupTitle(String lineupTitle) { this.lineupTitle = lineupTitle; }
+    public Instant getLineupUpdatedAt() { return lineupUpdatedAt; }
+    public void setLineupUpdatedAt(Instant lineupUpdatedAt) { this.lineupUpdatedAt = lineupUpdatedAt; }
     public String getLineupCompetition() { return lineupCompetition; }
     public void setLineupCompetition(String lineupCompetition) { this.lineupCompetition = lineupCompetition; }
     public String getTeamName() { return teamName; }

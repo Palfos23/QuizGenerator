@@ -10,6 +10,18 @@ export function languageLabel(code) {
   return LANGUAGES.find(l => l.code === code)?.label || code
 }
 
+// "Updated Jan 2026" from an ISO timestamp - shown next to a board/question
+// during play so stale content (a stat that's since changed, a player who's
+// moved clubs) reads as "might be outdated" rather than as a bug. Returns ''
+// for anything not yet backfilled with an updatedAt (older content saved
+// before this field existed) so callers can just skip rendering it.
+export function formatLastUpdated(isoString) {
+  if (!isoString) return ''
+  const d = new Date(isoString)
+  if (Number.isNaN(d.getTime())) return ''
+  return 'Updated ' + d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+}
+
 // Categories are now an open, admin-managed list (see services/gridCategories.js)
 // rather than a fixed enum, so the stored value IS the display label already -
 // this just exists so existing `sportLabel(x)` call sites keep working.

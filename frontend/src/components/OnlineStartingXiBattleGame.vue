@@ -4,6 +4,7 @@
       <div class="grid-progress" style="text-align:center; width:100%;">
         Board {{ (state?.currentLineupIndex ?? 0) + 1 }} / {{ state?.totalLineups ?? '?' }}: {{ state?.lineupTitle }}
       </div>
+      <div v-if="lastUpdatedLabel" style="color:var(--text-dim); font-size:0.75rem; text-align:center; width:100%;">{{ lastUpdatedLabel }}</div>
     </div>
 
     <div v-if="state && (state.teamName || state.opponentName)" class="pitch-scoreline">
@@ -173,7 +174,7 @@
 import { computed, ref, watch } from 'vue'
 import api from '../services/api'
 import { displayRowsFor } from '../services/formations'
-import { readableTextColor } from '../constants'
+import { readableTextColor, formatLastUpdated } from '../constants'
 import PitchMarkings from './PitchMarkings.vue'
 import PitchRecap from './PitchRecap.vue'
 import ConfirmModal from './ConfirmModal.vue'
@@ -194,6 +195,7 @@ const emit = defineEmits(['gameOver', 'leave'])
 const { hidden: hideSearchBox } = useHideOnScroll()
 
 const state = ref(null)
+const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.lineupUpdatedAt))
 const scoresAtLineupStart = ref({})
 let lastLineupIndexSeen = null
 const loading = ref(true)

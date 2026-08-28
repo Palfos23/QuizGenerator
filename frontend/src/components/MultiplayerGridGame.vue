@@ -19,6 +19,7 @@
     <div class="grid-status-bar">
       <div class="grid-progress" style="text-align:center; width:100%;">Grid {{ currentGridIndex + 1 }} / {{ totalGrids }}: {{ gridState?.title }}</div>
       <div v-if="gridState" style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ gridState.theme }}</div>
+      <div v-if="lastUpdatedLabel" style="color:var(--text-dim); font-size:0.75rem; text-align:center; width:100%;">{{ lastUpdatedLabel }}</div>
     </div>
 
     <LoadingState v-if="loading" message="Loading grid…" full />
@@ -179,7 +180,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
-import { readableTextColor, formatHint, sportLabel } from '../constants'
+import { readableTextColor, formatHint, sportLabel, formatLastUpdated } from '../constants'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
@@ -208,6 +209,7 @@ const chosenGrids = ref([]) // grids actually picked so far ('random' mode only)
 const roundChoices = ref([]) // this round's 3 candidate grids, before a pick is made ('random' mode only)
 const loadingChoices = ref(false)
 const gridState = ref(null)
+const lastUpdatedLabel = computed(() => formatLastUpdated(gridState.value?.updatedAt))
 const loading = ref(true)
 const revealedEntryIds = ref([])
 const livesUsed = ref({})

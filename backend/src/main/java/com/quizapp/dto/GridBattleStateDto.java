@@ -2,6 +2,7 @@ package com.quizapp.dto;
 
 import com.quizapp.model.RoomStatus;
 
+import java.time.Instant;
 import java.util.List;
 
 public class GridBattleStateDto {
@@ -14,6 +15,7 @@ public class GridBattleStateDto {
     private Long currentGridId;
     private String gridTitle;
     private String gridTheme;
+    private Instant gridUpdatedAt;
     private int maxStrikes;
     private boolean fitImages; // true = fit whole tile image (flags); false = cover/crop
     private List<GridBattleEntryDto> entries;
@@ -46,6 +48,8 @@ public class GridBattleStateDto {
     public void setGridTitle(String gridTitle) { this.gridTitle = gridTitle; }
     public String getGridTheme() { return gridTheme; }
     public void setGridTheme(String gridTheme) { this.gridTheme = gridTheme; }
+    public Instant getGridUpdatedAt() { return gridUpdatedAt; }
+    public void setGridUpdatedAt(Instant gridUpdatedAt) { this.gridUpdatedAt = gridUpdatedAt; }
     public int getMaxStrikes() { return maxStrikes; }
     public void setMaxStrikes(int maxStrikes) { this.maxStrikes = maxStrikes; }
     public boolean isFitImages() { return fitImages; }

@@ -1,5 +1,6 @@
 package com.quizapp.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class LineupPlayStateDto {
     private Integer scoreAgainst;
     private LocalDate matchDate;
     private String formation;
+    private Instant updatedAt;
     private int maxStrikes;
     private int strikesUsed;
     private boolean completed;
@@ -38,6 +40,8 @@ public class LineupPlayStateDto {
     public void setCompetition(String competition) { this.competition = competition; }
     public String getTeamName() { return teamName; }
     public void setTeamName(String teamName) { this.teamName = teamName; }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
     public String getTeamCrestUrl() { return teamCrestUrl; }
     public void setTeamCrestUrl(String teamCrestUrl) { this.teamCrestUrl = teamCrestUrl; }
     public String getOpponentName() { return opponentName; }

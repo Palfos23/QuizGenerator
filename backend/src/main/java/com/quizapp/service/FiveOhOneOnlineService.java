@@ -114,6 +114,7 @@ public class FiveOhOneOnlineService {
         dto.setCategoryId(category.getId());
         dto.setCategoryTitle(category.getTitle());
         dto.setCategoryDescription(category.getDescription());
+        dto.setCategoryUpdatedAt(category.getUpdatedAt());
 
         List<FiveOhOneThrow> allThrows = throwRepository.findByRoomState_IdOrderByIdAsc(state.getId());
         Set<Long> usedEntryIds = allThrows.stream().map(FiveOhOneThrow::getEntryId).collect(Collectors.toSet());

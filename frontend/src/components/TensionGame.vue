@@ -26,8 +26,11 @@
     </div>
 
     <h1 style="text-align:center; margin:6px 0 4px;">{{ question.title }}</h1>
-    <p v-if="question.source" style="text-align:center; margin:0 0 20px; color:var(--text-dim); font-size:0.8rem;">
+    <p v-if="question.source" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
       Source: {{ question.source }}
+    </p>
+    <p v-if="lastUpdatedLabel" style="text-align:center; margin:0 0 20px; color:var(--text-dim); font-size:0.75rem;">
+      {{ lastUpdatedLabel }}
     </p>
 
     <div class="tension-layout">
@@ -151,6 +154,7 @@ import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
 import TensionAnswerModal from './TensionAnswerModal.vue'
 import LoadingState from './LoadingState.vue'
+import { formatLastUpdated } from '../constants'
 
 const props = defineProps({
   category: { type: String, default: '' },
@@ -177,6 +181,7 @@ const rankBeforeRound = ref([]) // player names, ordered by score, captured at t
 
 const playerNames = props.players.map(p => p.name)
 const question = computed(() => chosenQuestions.value[currentQuestionIndex.value])
+const lastUpdatedLabel = computed(() => formatLastUpdated(question.value?.updatedAt))
 
 function colorOf(name) {
   return props.players.find(p => p.name === name)?.color || 'var(--border)'

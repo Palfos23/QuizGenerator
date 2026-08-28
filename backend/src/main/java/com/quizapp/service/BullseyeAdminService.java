@@ -79,6 +79,7 @@ public class BullseyeAdminService {
         question.setSport(request.getSport());
         question.setTargetValue(request.getTargetValue());
         question.setStatLabel(request.getStatLabel());
+        question.setUpdatedAt(java.time.Instant.now());
         question.setExcludedFromBullseye(request.isExcludedFromBullseye());
         question.setEntireCategoryPool(request.isEntireCategoryPool());
 

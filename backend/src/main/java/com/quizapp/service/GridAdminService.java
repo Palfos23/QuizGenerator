@@ -59,6 +59,7 @@ public class GridAdminService {
                     dto.setMaxStrikes(g.getMaxStrikes());
                     dto.setExcludedFromGridBattle(g.isExcludedFromGridBattle());
                     dto.setEntireCategoryPool(g.isEntireCategoryPool());
+                    dto.setUpdatedAt(g.getUpdatedAt());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -120,6 +121,7 @@ public class GridAdminService {
                 : Grid.RevealMode.PHOTO);
         grid.setFitImages(request.isFitImages());
         grid.setEntireCategoryPool(request.isEntireCategoryPool());
+        grid.setUpdatedAt(java.time.Instant.now());
 
         if (request.getLinkedPoolIds() != null && !request.getLinkedPoolIds().isEmpty()) {
             List<AthletePool> pools = athletePoolRepository.findAllById(request.getLinkedPoolIds());

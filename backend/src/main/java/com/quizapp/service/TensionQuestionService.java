@@ -118,6 +118,7 @@ public class TensionQuestionService {
         q.setSource(dto.getSource());
         q.setSafeAnswers(toEntryEntities(dto.getSafeAnswers()));
         q.setTensionAnswers(toEntryEntities(dto.getTensionAnswers()));
+        q.setUpdatedAt(java.time.Instant.now());
     }
 
     private List<TensionAnswerEntry> toEntryEntities(List<TensionAnswerEntryDto> dtos) {
@@ -134,6 +135,7 @@ public class TensionQuestionService {
         TensionQuestionDto dto = new TensionQuestionDto();
         dto.setId(q.getId());
         dto.setTitle(q.getTitle());
+        dto.setUpdatedAt(q.getUpdatedAt());
         dto.setMainCategory(q.getMainCategory());
         dto.setAnswersCategory(q.getAnswersCategory());
         dto.setSource(q.getSource());

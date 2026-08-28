@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.time.Instant;
 import java.util.List;
 
 public class TensionQuestionDto {
@@ -12,6 +13,8 @@ public class TensionQuestionDto {
 
     @NotBlank
     private String title;
+
+    private Instant updatedAt;
 
     private String mainCategory;
 
@@ -39,6 +42,14 @@ public class TensionQuestionDto {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public String getMainCategory() {

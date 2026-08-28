@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,6 +36,24 @@ public class Grid {
 
     @Column(name = "max_strikes", nullable = false)
     private int maxStrikes = 5;
+
+    // Set to "now" every time an admin saves this grid (see GridAdminService)
+    // - shown to players so stale content (a stat that's since changed, a
+    // retired player still on the board) reads as "might be outdated" rather
+    // than as a bug. Deliberately a plain field set explicitly in the service
+    // rather than a @PreUpdate hook, since editing just the candidate/entry
+    // rows (a very common edit) doesn't dirty this entity's own columns and
+    // wouldn't reliably fire one.
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     // Most grids rank by "biggest number wins" (goals, appearances) so tiles sort
     // highest-value-first by default. A grid themed around finishing position

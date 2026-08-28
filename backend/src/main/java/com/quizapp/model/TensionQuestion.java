@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,18 @@ public class TensionQuestion {
     // shown to players so they can see the source behind a question's answers.
     @Column(name = "source", length = 300)
     private String source;
+
+    // Same purpose as Grid.updatedAt - see that field for the full reasoning.
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     public String getSource() {
         return source;

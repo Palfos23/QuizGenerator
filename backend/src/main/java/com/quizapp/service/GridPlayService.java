@@ -285,6 +285,7 @@ public class GridPlayService {
         dto.setTitle(grid.getTitle());
         dto.setTheme(grid.getTheme());
         dto.setSport(grid.getSport());
+        dto.setUpdatedAt(grid.getUpdatedAt());
         dto.setMaxStrikes(grid.getMaxStrikes());
         dto.setStrikesUsed(0);
         dto.setCompleted(false);
@@ -433,6 +434,7 @@ public class GridPlayService {
         dto.setTitle(grid.getTitle());
         dto.setTheme(grid.getTheme());
         dto.setSport(grid.getSport());
+        dto.setUpdatedAt(grid.getUpdatedAt());
         dto.setMaxStrikes(grid.getMaxStrikes());
         dto.setStrikesUsed(attempt.getStrikesUsed());
         dto.setCompleted(attempt.isCompleted());

@@ -60,6 +60,7 @@ public class FiveOhOneCategoryService {
     private void applyRequest(FiveOhOneCategory category, FiveOhOneCategoryRequest request) {
         category.setTitle(request.getTitle());
         category.setDescription(request.getDescription());
+        category.setUpdatedAt(java.time.Instant.now());
 
         // Reuse existing entries by name where possible, rather than always creating
         // fresh rows - keeps saves fast for large categories and avoids needlessly
@@ -82,6 +83,8 @@ public class FiveOhOneCategoryService {
         List<FiveOhOneEntryDto> entries = c.getEntries().stream()
                 .map(e -> new FiveOhOneEntryDto(e.getId(), e.getName(), e.getValue()))
                 .collect(Collectors.toList());
-        return new FiveOhOneCategoryDto(c.getId(), c.getTitle(), c.getDescription(), entries);
+        FiveOhOneCategoryDto dto = new FiveOhOneCategoryDto(c.getId(), c.getTitle(), c.getDescription(), entries);
+        dto.setUpdatedAt(c.getUpdatedAt());
+        return dto;
     }
 }

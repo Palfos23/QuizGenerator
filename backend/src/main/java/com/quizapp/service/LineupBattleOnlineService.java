@@ -139,6 +139,7 @@ public class LineupBattleOnlineService {
         dto.setCurrentLineupId(currentLineupId);
         dto.setLineupTitle(lineup.getTitle());
         dto.setLineupCompetition(lineup.getCompetition());
+        dto.setLineupUpdatedAt(lineup.getUpdatedAt());
         dto.setTeamName(lineup.getTeamName());
         dto.setTeamCrestUrl(lineup.getTeamCrestUrl());
         dto.setOpponentName(lineup.getOpponentName());

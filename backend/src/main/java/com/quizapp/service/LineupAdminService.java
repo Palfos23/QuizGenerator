@@ -107,6 +107,7 @@ public class LineupAdminService {
             }
         }
 
+        lineup.setUpdatedAt(java.time.Instant.now());
         lineup.setTitle(request.getTitle());
         lineup.setCompetition(request.getCompetition());
         lineup.setMatchDate(request.getMatchDate());

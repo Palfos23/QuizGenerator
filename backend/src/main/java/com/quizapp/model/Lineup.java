@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -78,6 +79,18 @@ public class Lineup {
 
     @Column(name = "max_strikes", nullable = false)
     private int maxStrikes = 5;
+
+    // Same purpose as Grid.updatedAt - see that field for the full reasoning.
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     // Same purpose as Grid.excludedFromGridBattle - hide a stale board from
     // Starting XI Battle's random/manual pick pool without touching its

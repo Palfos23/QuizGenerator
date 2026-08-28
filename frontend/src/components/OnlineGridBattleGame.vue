@@ -3,6 +3,7 @@
     <div class="grid-status-bar">
       <div class="grid-progress" style="text-align:center; width:100%;">Grid {{ (state?.currentGridIndex ?? 0) + 1 }} / {{ state?.totalGrids ?? '?' }}: {{ state?.gridTitle }}</div>
       <div v-if="state" style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ state.gridTheme }}</div>
+      <div v-if="lastUpdatedLabel" style="color:var(--text-dim); font-size:0.75rem; text-align:center; width:100%;">{{ lastUpdatedLabel }}</div>
     </div>
 
     <LoadingState v-if="loading" full message="Loading the grid…" />
@@ -192,7 +193,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import api from '../services/api'
-import { readableTextColor, formatHint, sportLabel } from '../constants'
+import { readableTextColor, formatHint, sportLabel, formatLastUpdated } from '../constants'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
@@ -208,6 +209,7 @@ const emit = defineEmits(['gameOver', 'leave'])
 const { hidden: hideSearchBox } = useHideOnScroll()
 
 const state = ref(null)
+const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.gridUpdatedAt))
 const scoresAtGridStart = ref({})
 // Full tile data (photo/description/hint/name) for every entry, fetched once the
 // grid completes so the results modal can show the board recap - which answers

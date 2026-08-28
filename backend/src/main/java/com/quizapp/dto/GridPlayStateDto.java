@@ -1,6 +1,7 @@
 package com.quizapp.dto;
 
 
+import java.time.Instant;
 import java.util.List;
 
 public class GridPlayStateDto {
@@ -9,6 +10,7 @@ public class GridPlayStateDto {
     private String title;
     private String theme;
     private String sport;
+    private Instant updatedAt;
     private int maxStrikes;
     private int strikesUsed;
     private boolean completed;
@@ -48,6 +50,14 @@ public class GridPlayStateDto {
 
     public void setSport(String sport) {
         this.sport = sport;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public int getMaxStrikes() {

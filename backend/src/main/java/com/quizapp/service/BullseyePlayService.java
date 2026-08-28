@@ -107,7 +107,7 @@ public class BullseyePlayService {
         }
 
         return new BullseyeRoundStateDto(question.getId(), question.getTitle(), question.getSport(),
-                question.getTargetValue(), question.getStatLabel(), entries);
+                question.getTargetValue(), question.getStatLabel(), question.getUpdatedAt(), entries);
     }
 
     // Tie-broken by id - same reasoning as GridPlayService.entrySortOrder: a Set

@@ -143,6 +143,7 @@ public class ImposterOnlineService {
         dto.setCurrentGridId(currentGridId);
         dto.setGridTitle(grid.getTitle());
         dto.setGridDescription(grid.getDescription());
+        dto.setGridUpdatedAt(grid.getUpdatedAt());
         dto.setDisplayMode(grid.getDisplayMode().name());
         dto.setFitImages(grid.isFitImages());
 

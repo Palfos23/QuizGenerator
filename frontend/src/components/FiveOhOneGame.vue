@@ -4,6 +4,7 @@
     <div class="fiveoo-header">
       <h2>{{ category.title }}</h2>
       <p v-if="category.description" class="fiveoo-description">{{ category.description }}</p>
+      <p v-if="lastUpdatedLabel" class="fiveoo-description" style="font-size:0.75rem;">{{ lastUpdatedLabel }}</p>
       <p class="fiveoo-rules-reminder">First to checkout between 0 and -10 wins</p>
     </div>
 
@@ -107,12 +108,15 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import passAndPlayState from '../services/passAndPlayState'
+import { formatLastUpdated } from '../constants'
 
 const props = defineProps({
   category: { type: Object, required: true },
   players: { type: Array, required: true }
 })
 defineEmits(['gameOver'])
+
+const lastUpdatedLabel = computed(() => formatLastUpdated(props.category?.updatedAt))
 
 const IMPOSSIBLE_CHECKOUTS = new Set([163, 166, 169, 172, 173, 175, 176, 178, 179])
 

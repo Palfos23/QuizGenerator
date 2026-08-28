@@ -1,5 +1,6 @@
 package com.quizapp.dto;
 
+import java.time.Instant;
 import java.util.List;
 
 public class BullseyeRoundStateDto {
@@ -9,15 +10,17 @@ public class BullseyeRoundStateDto {
     private String sport;
     private Integer targetValue;
     private String statLabel;
+    private Instant updatedAt;
     private List<BullseyeEntryViewDto> entries;
 
     public BullseyeRoundStateDto(Long id, String title, String sport, Integer targetValue, String statLabel,
-                                  List<BullseyeEntryViewDto> entries) {
+                                  Instant updatedAt, List<BullseyeEntryViewDto> entries) {
         this.id = id;
         this.title = title;
         this.sport = sport;
         this.targetValue = targetValue;
         this.statLabel = statLabel;
+        this.updatedAt = updatedAt;
         this.entries = entries;
     }
 
@@ -39,6 +42,10 @@ public class BullseyeRoundStateDto {
 
     public String getStatLabel() {
         return statLabel;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 
     public List<BullseyeEntryViewDto> getEntries() {

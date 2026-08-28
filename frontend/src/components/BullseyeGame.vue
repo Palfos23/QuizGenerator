@@ -31,6 +31,7 @@
       </div>
 
       <h1 style="text-align:center; margin:6px 0 20px;">{{ formatNumber(roundState.targetValue) }} {{ roundState.statLabel }}</h1>
+      <p v-if="lastUpdatedLabel" style="color:var(--text-dim); font-size:0.75rem; text-align:center; margin:-14px 0 20px;">{{ lastUpdatedLabel }}</p>
 
       <div class="mp-player-row">
         <div
@@ -122,7 +123,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
-import { formatNumber, sportLabel } from '../constants'
+import { formatNumber, sportLabel, formatLastUpdated } from '../constants'
 import BullseyeAnswerModal from './BullseyeAnswerModal.vue'
 import LoadingState from './LoadingState.vue'
 
@@ -139,6 +140,7 @@ const roundChoices = ref([])
 const loadingChoices = ref(false)
 const loading = ref(true)
 const roundState = ref(null)
+const lastUpdatedLabel = computed(() => formatLastUpdated(roundState.value?.updatedAt))
 const roundAnswers = ref([]) // [{ player, name }] push order = submission order
 const currentTurnIdx = ref(0)
 const revealed = ref(false)

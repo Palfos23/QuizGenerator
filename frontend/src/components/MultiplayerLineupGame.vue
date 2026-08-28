@@ -20,6 +20,7 @@
       <div class="grid-progress" style="text-align:center; width:100%;">
         Board {{ currentLineupIndex + 1 }} / {{ totalLineups }}: {{ lineupState?.title }}
       </div>
+      <div v-if="lastUpdatedLabel" style="color:var(--text-dim); font-size:0.75rem; text-align:center; width:100%;">{{ lastUpdatedLabel }}</div>
     </div>
 
     <div v-if="lineupState && (lineupState.teamName || lineupState.opponentName)" class="pitch-scoreline">
@@ -161,7 +162,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
 import { displayRowsFor } from '../services/formations'
-import { readableTextColor } from '../constants'
+import { readableTextColor, formatLastUpdated } from '../constants'
 import PitchMarkings from './PitchMarkings.vue'
 import PitchRecap from './PitchRecap.vue'
 import ConfirmModal from './ConfirmModal.vue'
@@ -195,6 +196,7 @@ const chosenLineups = ref([]) // boards actually picked so far ('random' mode on
 const roundChoices = ref([]) // this round's 3 candidate boards, before a pick is made ('random' mode only)
 const loadingChoices = ref(false)
 const lineupState = ref(null)
+const lastUpdatedLabel = computed(() => formatLastUpdated(lineupState.value?.updatedAt))
 const loading = ref(true)
 const guessedSlotIds = ref([])
 const solvedById = ref({}) // slot id -> solved LineupSlotDto from the server

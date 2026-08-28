@@ -71,6 +71,7 @@ public class ImposterGridPlayService {
         dto.setTitle(grid.getTitle());
         dto.setDescription(grid.getDescription());
         dto.setDisplayMode(grid.getDisplayMode().name());
+        dto.setUpdatedAt(grid.getUpdatedAt());
         dto.setFitImages(grid.isFitImages());
         dto.setImposterCount((int) grid.getTiles().stream().filter(ImposterTile::isImposter).count());
         dto.setTiles(grid.getTiles().stream()

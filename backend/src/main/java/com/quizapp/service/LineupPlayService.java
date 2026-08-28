@@ -364,6 +364,7 @@ public class LineupPlayService {
         dto.setScoreAgainst(lineup.getScoreAgainst());
         dto.setMatchDate(lineup.getMatchDate());
         dto.setFormation(lineup.getFormation());
+        dto.setUpdatedAt(lineup.getUpdatedAt());
         dto.setMaxStrikes(lineup.getMaxStrikes());
         dto.setKitColor(lineup.getKitColor() != null ? lineup.getKitColor() : DEFAULT_KIT_COLOR);
         dto.setGoalkeeperKitColor(lineup.getGoalkeeperKitColor() != null ? lineup.getGoalkeeperKitColor() : DEFAULT_GK_KIT_COLOR);

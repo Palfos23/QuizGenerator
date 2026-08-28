@@ -2,6 +2,7 @@ package com.quizapp.dto;
 
 import com.quizapp.model.RoomStatus;
 
+import java.time.Instant;
 import java.util.List;
 
 public class FiveOhOneOnlineStateDto {
@@ -12,6 +13,7 @@ public class FiveOhOneOnlineStateDto {
     private Long categoryId;
     private String categoryTitle;
     private String categoryDescription;
+    private Instant categoryUpdatedAt;
     private List<Long> usedEntryIds;
     private Long currentTurnParticipantId;
     private Long windowReacherParticipantId;
@@ -35,6 +37,8 @@ public class FiveOhOneOnlineStateDto {
     public void setCategoryTitle(String categoryTitle) { this.categoryTitle = categoryTitle; }
     public String getCategoryDescription() { return categoryDescription; }
     public void setCategoryDescription(String categoryDescription) { this.categoryDescription = categoryDescription; }
+    public Instant getCategoryUpdatedAt() { return categoryUpdatedAt; }
+    public void setCategoryUpdatedAt(Instant categoryUpdatedAt) { this.categoryUpdatedAt = categoryUpdatedAt; }
     public List<Long> getUsedEntryIds() { return usedEntryIds; }
     public void setUsedEntryIds(List<Long> usedEntryIds) { this.usedEntryIds = usedEntryIds; }
     public Long getCurrentTurnParticipantId() { return currentTurnParticipantId; }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +37,18 @@ public class BullseyeQuestion {
     @NotBlank
     @Column(name = "stat_label", nullable = false)
     private String statLabel;
+
+    // Same purpose as Grid.updatedAt - see that field for the full reasoning.
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     // Same purpose as Grid.excludedFromGridBattle - retires a stale question
     // from the random/manual pick pool without deleting it.

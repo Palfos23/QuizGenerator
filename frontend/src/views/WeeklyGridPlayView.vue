@@ -11,6 +11,7 @@
         <button class="btn btn-secondary btn-sm" @click="openScoreboard" title="Scoreboard">Results</button>
       </div>
       <p class="page-subtitle" style="text-align:center;">{{ state.theme }}</p>
+      <p v-if="lastUpdatedLabel" class="page-subtitle" style="text-align:center; margin-top:-8px; font-size:0.78rem;">{{ lastUpdatedLabel }}</p>
 
       <div v-if="showScoreboard" class="modal-backdrop no-print" @click.self="showScoreboard = false">
         <div class="modal">
@@ -210,7 +211,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
-import { readableTextColor, formatHint } from '../constants'
+import { readableTextColor, formatHint, formatLastUpdated } from '../constants'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import LivesHearts from '../components/LivesHearts.vue'
 import { useHideOnScroll } from '../composables/useHideOnScroll'
@@ -256,6 +257,7 @@ function showResultOverlay(correct) {
   })
 }
 
+const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.updatedAt))
 const guessedCount = computed(() => state.value?.entries.filter(e => e.guessedByUser).length || 0)
 const allSolved = computed(() => !!state.value && guessedCount.value === state.value.entries.length)
 const overtimeSolvedCount = computed(() => state.value?.entries.filter(e => e.solvedInOvertime).length || 0)

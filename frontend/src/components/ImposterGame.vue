@@ -26,6 +26,7 @@
         <div class="grid-progress" style="text-align:center;">Board {{ currentGridIndex + 1 }} / {{ totalBoards }}</div>
         <h2>{{ playState.title }}</h2>
         <p v-if="playState.description" class="fiveoo-description">{{ playState.description }}</p>
+        <p v-if="lastUpdatedLabel" class="fiveoo-description" style="font-size:0.75rem;">{{ lastUpdatedLabel }}</p>
         <p class="fiveoo-rules-reminder">Fewest imposter hits wins - flip a tile on your turn</p>
       </div>
 
@@ -117,6 +118,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
 import LoadingState from './LoadingState.vue'
+import { formatLastUpdated } from '../constants'
 
 const props = defineProps({
   mode: { type: String, default: 'manual' }, // 'manual' | 'random'
@@ -141,6 +143,7 @@ const loadingChoices = ref(false)
 const loading = ref(true)
 const error = ref('')
 const playState = ref(null)
+const lastUpdatedLabel = computed(() => formatLastUpdated(playState.value?.updatedAt))
 const flippedTiles = reactive({}) // tileId -> { imposter: bool } - across the whole session, not just the current board
 const currentGridIndex = ref(0)
 const currentPlayerIdx = ref(0)

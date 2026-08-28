@@ -4,6 +4,7 @@
     <div class="fiveoo-header">
       <h2>{{ state?.categoryTitle }}</h2>
       <p v-if="state?.categoryDescription" class="fiveoo-description">{{ state.categoryDescription }}</p>
+      <p v-if="lastUpdatedLabel" class="fiveoo-description" style="font-size:0.75rem;">{{ lastUpdatedLabel }}</p>
       <p class="fiveoo-rules-reminder">First to checkout between 0 and -10 wins</p>
     </div>
 
@@ -117,6 +118,7 @@
 import { computed, ref } from 'vue'
 import api from '../services/api'
 import { usePolling } from '../composables/usePolling'
+import { formatLastUpdated } from '../constants'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -125,6 +127,7 @@ const props = defineProps({
 const emit = defineEmits(['gameOver', 'leave'])
 
 const state = ref(null)
+const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.categoryUpdatedAt))
 const categoryEntries = ref([]) // fetched once, from the existing category endpoint - not part of the polled state
 let loadedCategoryId = null
 const loading = ref(true)

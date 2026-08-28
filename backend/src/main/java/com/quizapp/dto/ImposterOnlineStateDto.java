@@ -2,6 +2,7 @@ package com.quizapp.dto;
 
 import com.quizapp.model.RoomStatus;
 
+import java.time.Instant;
 import java.util.List;
 
 public class ImposterOnlineStateDto {
@@ -14,6 +15,7 @@ public class ImposterOnlineStateDto {
     private Long currentGridId;
     private String gridTitle;
     private String gridDescription;
+    private Instant gridUpdatedAt;
     private String displayMode;
     private boolean fitImages;
     private int imposterCount;
@@ -47,6 +49,8 @@ public class ImposterOnlineStateDto {
     public void setGridTitle(String gridTitle) { this.gridTitle = gridTitle; }
     public String getGridDescription() { return gridDescription; }
     public void setGridDescription(String gridDescription) { this.gridDescription = gridDescription; }
+    public Instant getGridUpdatedAt() { return gridUpdatedAt; }
+    public void setGridUpdatedAt(Instant gridUpdatedAt) { this.gridUpdatedAt = gridUpdatedAt; }
     public String getDisplayMode() { return displayMode; }
     public void setDisplayMode(String displayMode) { this.displayMode = displayMode; }
     public boolean isFitImages() { return fitImages; }
