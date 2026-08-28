@@ -18,6 +18,19 @@
         No Starting XI boards yet. Add some football subjects on the Subjects page, then create your first board here.
       </div>
 
+      <template v-else>
+      <BoardListToolbar
+        v-model:search="searchTerm"
+        v-model:sort-key="sortKey"
+        v-model:sort-dir="sortDir"
+        :sorts="lineupSorts"
+        :total-count="lineups.length"
+        :filtered-count="filteredLineups.length"
+        placeholder="Search boards by title, team or formation…"
+      />
+
+      <div v-if="!filteredLineups.length" class="empty-state">No boards match your search.</div>
+
       <div v-else class="saved-quiz-list">
         <div v-for="l in pagedLineups" :key="l.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
@@ -39,7 +52,8 @@
         </div>
       </div>
 
-      <Pagination v-if="!loading" v-model:page="lineupPage" :page-size="LINEUP_PAGE_SIZE" :total-items="lineups.length" />
+      <Pagination v-model:page="lineupPage" :page-size="10" :total-items="filteredLineups.length" />
+      </template>
     </template>
 
     <!-- Builder view -->
@@ -316,6 +330,8 @@ import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import AthleteFormModal from '../components/AthleteFormModal.vue'
 import Pagination from '../components/Pagination.vue'
+import BoardListToolbar from '../components/BoardListToolbar.vue'
+import { useBoardList } from '../composables/useBoardList'
 import PitchMarkings from '../components/PitchMarkings.vue'
 import { readableTextColor } from '../constants'
 import { FORMATION_NAMES, slotLabels, slotCount, displayRowsFor } from '../services/formations'
@@ -328,16 +344,19 @@ const view = ref('list')
 const lineups = ref([])
 const loading = ref(true)
 
-// Paginate the board list once it grows past a screenful.
-const LINEUP_PAGE_SIZE = 10
-const lineupPage = ref(1)
-const pagedLineups = computed(() => {
-  const start = (lineupPage.value - 1) * LINEUP_PAGE_SIZE
-  return lineups.value.slice(start, start + LINEUP_PAGE_SIZE)
-})
-watch(() => lineups.value.length, () => {
-  const maxPage = Math.max(1, Math.ceil(lineups.value.length / LINEUP_PAGE_SIZE))
-  if (lineupPage.value > maxPage) lineupPage.value = maxPage
+// Search / sort / paginate the board list.
+const {
+  searchTerm, sortKey, sortDir, page: lineupPage,
+  filtered: filteredLineups, paged: pagedLineups, sorts: lineupSorts
+} = useBoardList(lineups, {
+  pageSize: 10,
+  searchFields: [l => l.title, l => l.teamName, l => l.opponentName, l => l.formation],
+  sorts: [
+    { key: 'week', label: 'Week', accessor: l => l.weekStartDate, dir: 'desc' },
+    { key: 'title', label: 'Title', accessor: l => l.title },
+    { key: 'team', label: 'Team', accessor: l => l.teamName },
+    { key: 'formation', label: 'Formation', accessor: l => l.formation }
+  ]
 })
 const error = ref('')
 const saving = ref(false)

@@ -11,6 +11,19 @@
       <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
       <div v-else-if="!categories.length" class="empty-state friendly">No categories yet - create the first one.</div>
 
+      <template v-else>
+      <BoardListToolbar
+        v-model:search="searchTerm"
+        v-model:sort-key="sortKey"
+        v-model:sort-dir="sortDir"
+        :sorts="categorySorts"
+        :total-count="categories.length"
+        :filtered-count="filteredCategories.length"
+        placeholder="Search categories by title or description…"
+      />
+
+      <div v-if="!filteredCategories.length" class="empty-state">No categories match your search.</div>
+
       <div v-else class="saved-quiz-list">
         <div v-for="c in pagedCategories" :key="c.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
@@ -24,7 +37,8 @@
         </div>
       </div>
 
-      <Pagination v-if="!loading" v-model:page="categoryPage" :page-size="CATEGORY_PAGE_SIZE" :total-items="categories.length" />
+      <Pagination v-model:page="categoryPage" :page-size="10" :total-items="filteredCategories.length" />
+      </template>
     </template>
 
     <template v-else>
@@ -89,21 +103,24 @@ import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import Pagination from '../components/Pagination.vue'
+import BoardListToolbar from '../components/BoardListToolbar.vue'
+import { useBoardList } from '../composables/useBoardList'
 
 const view = ref('list')
 const categories = ref([])
 const loading = ref(true)
 
-// Paginate the category list once it grows past a screenful.
-const CATEGORY_PAGE_SIZE = 10
-const categoryPage = ref(1)
-const pagedCategories = computed(() => {
-  const start = (categoryPage.value - 1) * CATEGORY_PAGE_SIZE
-  return categories.value.slice(start, start + CATEGORY_PAGE_SIZE)
-})
-watch(() => categories.value.length, () => {
-  const maxPage = Math.max(1, Math.ceil(categories.value.length / CATEGORY_PAGE_SIZE))
-  if (categoryPage.value > maxPage) categoryPage.value = maxPage
+// Search / sort / paginate the category list.
+const {
+  searchTerm, sortKey, sortDir, page: categoryPage,
+  filtered: filteredCategories, paged: pagedCategories, sorts: categorySorts
+} = useBoardList(categories, {
+  pageSize: 10,
+  searchFields: [c => c.title, c => c.description],
+  sorts: [
+    { key: 'title', label: 'Title', accessor: c => c.title },
+    { key: 'entries', label: 'Entries', accessor: c => c.entryCount, dir: 'desc' }
+  ]
 })
 const error = ref('')
 const saving = ref(false)

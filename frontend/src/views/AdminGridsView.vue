@@ -21,6 +21,19 @@
         No grids yet. Add a few subjects on the Subjects page, then create your first grid here.
       </div>
 
+      <template v-else>
+      <BoardListToolbar
+        v-model:search="searchTerm"
+        v-model:sort-key="sortKey"
+        v-model:sort-dir="sortDir"
+        :sorts="gridSorts"
+        :total-count="grids.length"
+        :filtered-count="filteredGrids.length"
+        placeholder="Search grids by title or category…"
+      />
+
+      <div v-if="!filteredGrids.length" class="empty-state">No grids match your search.</div>
+
       <div v-else class="saved-quiz-list">
         <div v-for="g in pagedGrids" :key="g.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
@@ -38,7 +51,8 @@
         </div>
       </div>
 
-      <Pagination v-if="!loading" v-model:page="gridPage" :page-size="GRID_PAGE_SIZE" :total-items="grids.length" />
+      <Pagination v-model:page="gridPage" :page-size="10" :total-items="filteredGrids.length" />
+      </template>
     </template>
 
     <!-- Builder view -->
@@ -328,6 +342,8 @@ import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import AthleteFormModal from '../components/AthleteFormModal.vue'
 import Pagination from '../components/Pagination.vue'
+import BoardListToolbar from '../components/BoardListToolbar.vue'
+import { useBoardList } from '../composables/useBoardList'
 import { sportLabel, readableTextColor, formatHint } from '../constants'
 import gridCategories from '../services/gridCategories'
 
@@ -339,16 +355,19 @@ const saving = ref(false)
 const pendingDelete = ref(null)
 const editingAthleteForModal = ref(null)
 
-// Paginate the grid list once it grows past a screenful.
-const GRID_PAGE_SIZE = 10
-const gridPage = ref(1)
-const pagedGrids = computed(() => {
-  const start = (gridPage.value - 1) * GRID_PAGE_SIZE
-  return grids.value.slice(start, start + GRID_PAGE_SIZE)
-})
-watch(() => grids.value.length, () => {
-  const maxPage = Math.max(1, Math.ceil(grids.value.length / GRID_PAGE_SIZE))
-  if (gridPage.value > maxPage) gridPage.value = maxPage
+// Search / sort / paginate the grid list.
+const {
+  searchTerm, sortKey, sortDir, page: gridPage,
+  filtered: filteredGrids, paged: pagedGrids, sorts: gridSorts
+} = useBoardList(grids, {
+  pageSize: 10,
+  searchFields: [g => g.title, g => g.sport],
+  sorts: [
+    { key: 'week', label: 'Week', accessor: g => g.weekStartDate, dir: 'desc' },
+    { key: 'title', label: 'Title', accessor: g => g.title },
+    { key: 'category', label: 'Category', accessor: g => g.sport },
+    { key: 'entries', label: 'Entries', accessor: g => g.entryCount, dir: 'desc' }
+  ]
 })
 
 const editingGridId = ref(null)
