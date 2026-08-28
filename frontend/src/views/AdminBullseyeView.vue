@@ -48,6 +48,7 @@
           </div>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-secondary btn-sm" @click="openEdit(q.id)">Edit</button>
+            <button class="btn btn-secondary btn-sm" @click="duplicateQuestion(q.id)">⧉ Duplicate</button>
             <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Delete</button>
           </div>
         </div>
@@ -215,6 +216,9 @@
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button v-if="editingQuestionId" class="btn btn-secondary" @click="duplicateAsNewVersion">
+          ⧉ Duplicate as new version
+        </button>
         <button class="btn btn-primary" :disabled="saving" @click="saveQuestion">
           {{ saving ? 'Saving…' : 'Save question' }}
         </button>
@@ -509,6 +513,26 @@ async function openEdit(id) {
   } catch (e) {
     error.value = 'Could not load that question.'
   }
+}
+
+// One-click duplicate straight from the list - loads the question into the
+// builder exactly like Edit would, then immediately detaches it into a new
+// unsaved copy via duplicateAsNewVersion, so there's no need to open Edit
+// first just to reach the button at the bottom of the builder.
+async function duplicateQuestion(id) {
+  await openEdit(id)
+  if (editingQuestionId.value === id) duplicateAsNewVersion()
+}
+
+// Keeps every current form field and entry exactly as-is - only clearing
+// the editing id, so the next save creates a brand new question via POST
+// instead of overwriting the original via PUT. The original stays
+// completely untouched until this copy is saved.
+function duplicateAsNewVersion() {
+  editingQuestionId.value = null
+  form.title = form.title + ' (updated)'
+  form.excludedFromBullseye = false
+  toast.show('Now editing a new duplicate - the original question is untouched. Remember to save this copy.')
 }
 
 async function saveQuestion() {
