@@ -55,7 +55,7 @@
           @click="flipTile(t)"
           :style="{ cursor: boardFinished ? 'default' : 'pointer' }"
         >
-          <div v-if="playState.displayMode === 'NAME_ONLY'" class="grid-tile-name-fill">{{ t.athleteName }}</div>
+          <div v-if="isNameOnlyTile(t)" class="grid-tile-name-fill">{{ t.athleteName }}</div>
           <template v-else>
             <img
               v-if="tileImage(t)"
@@ -264,6 +264,14 @@ function tileImage(t) {
   if (flipped && flipped.revealPhotoUrl) return flipped.revealPhotoUrl
   if (playState.value.displayMode === 'NAME_AND_LOGO') return t.logoUrl
   return t.photoUrl
+}
+
+// NAME_ONLY never shows a photo. NAME_UNTIL_REVEALED shows just the name
+// too, but only until this specific tile is flipped - once flipped it falls
+// through to the same photo+name markup as NAME_AND_PHOTO.
+function isNameOnlyTile(t) {
+  const mode = playState.value.displayMode
+  return mode === 'NAME_ONLY' || (mode === 'NAME_UNTIL_REVEALED' && !flippedTiles[t.id])
 }
 
 function tileClass(t) {

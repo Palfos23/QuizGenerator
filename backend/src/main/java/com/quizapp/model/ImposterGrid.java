@@ -33,7 +33,15 @@ public class ImposterGrid {
     // the whole point is a consistent set of tiles to compare against each
     // other.
     public enum DisplayMode {
-        NAME_AND_LOGO, NAME_AND_PHOTO, PHOTO_ONLY, NAME_ONLY
+        NAME_AND_LOGO, NAME_AND_PHOTO, PHOTO_ONLY, NAME_ONLY,
+        // Name only until a tile is flipped, then its photo (and name) appear -
+        // e.g. "Countries with green in their flag": guess from the name alone,
+        // then the flag reveals. Unlike the other modes, this one's appearance
+        // actually changes on flip; ImposterGridPlayService/ImposterOnlineService
+        // already return a photo URL on every flip regardless of display mode,
+        // so no backend change was needed beyond this constant - the frontend
+        // just withholds the tile image until flippedTiles[t.id] is set.
+        NAME_UNTIL_REVEALED
     }
 
     @Enumerated(EnumType.STRING)

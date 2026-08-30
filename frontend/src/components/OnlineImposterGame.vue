@@ -67,7 +67,7 @@
           @click="flipTile(t)"
           :style="{ cursor: (state.boardComplete || !isYourTurn) ? 'default' : 'pointer' }"
         >
-          <div v-if="state.displayMode === 'NAME_ONLY'" class="grid-tile-name-fill">{{ t.athleteName }}</div>
+          <div v-if="isNameOnlyTile(t)" class="grid-tile-name-fill">{{ t.athleteName }}</div>
           <template v-else>
             <img
               v-if="tileImage(t)"
@@ -179,6 +179,13 @@ const sortedPlayers = computed(() => {
 function tileImage(t) {
   if (state.value.displayMode === 'NAME_AND_LOGO') return t.logoUrl
   return t.photoUrl
+}
+
+// Same reasoning as ImposterGame.vue's isNameOnlyTile - NAME_UNTIL_REVEALED
+// withholds the photo until this specific tile has been flipped.
+function isNameOnlyTile(t) {
+  const mode = state.value.displayMode
+  return mode === 'NAME_ONLY' || (mode === 'NAME_UNTIL_REVEALED' && !t.flipped)
 }
 
 function tileClass(t) {

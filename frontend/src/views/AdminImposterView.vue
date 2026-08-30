@@ -84,6 +84,9 @@
           <button class="language-btn" :class="{ active: form.displayMode === 'NAME_AND_LOGO' }" @click="form.displayMode = 'NAME_AND_LOGO'">Name + logo</button>
           <button class="language-btn" :class="{ active: form.displayMode === 'PHOTO_ONLY' }" @click="form.displayMode = 'PHOTO_ONLY'">Photo only</button>
           <button class="language-btn" :class="{ active: form.displayMode === 'NAME_ONLY' }" @click="form.displayMode = 'NAME_ONLY'">Name only</button>
+          <button class="language-btn" :class="{ active: form.displayMode === 'NAME_UNTIL_REVEALED' }" @click="form.displayMode = 'NAME_UNTIL_REVEALED'">
+            Name, then photo on flip
+          </button>
         </div>
       </div>
 
