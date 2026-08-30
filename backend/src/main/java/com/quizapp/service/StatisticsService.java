@@ -4,6 +4,7 @@ import com.quizapp.dto.AdminStatisticsDto;
 import com.quizapp.dto.AdminStatisticsDto.CountEntry;
 import com.quizapp.dto.AdminStatisticsDto.WeeklyGridStat;
 import com.quizapp.model.Athlete;
+import com.quizapp.model.BattleGameType;
 import com.quizapp.model.Grid;
 import com.quizapp.model.GridAttempt;
 import com.quizapp.model.TensionQuestion;
@@ -49,6 +50,7 @@ public class StatisticsService {
     private final BullseyeQuestionRepository bullseyeQuestionRepository;
     private final FiveOhOneCategoryRepository fiveOhOneCategoryRepository;
     private final TensionQuestionRepository tensionQuestionRepository;
+    private final GamePlayEventService gamePlayEventService;
 
     public StatisticsService(AppUserRepository appUserRepository,
                              AthleteRepository athleteRepository,
@@ -59,7 +61,8 @@ public class StatisticsService {
                              ImposterGridRepository imposterGridRepository,
                              BullseyeQuestionRepository bullseyeQuestionRepository,
                              FiveOhOneCategoryRepository fiveOhOneCategoryRepository,
-                             TensionQuestionRepository tensionQuestionRepository) {
+                             TensionQuestionRepository tensionQuestionRepository,
+                             GamePlayEventService gamePlayEventService) {
         this.appUserRepository = appUserRepository;
         this.athleteRepository = athleteRepository;
         this.gridCategoryRepository = gridCategoryRepository;
@@ -70,6 +73,7 @@ public class StatisticsService {
         this.bullseyeQuestionRepository = bullseyeQuestionRepository;
         this.fiveOhOneCategoryRepository = fiveOhOneCategoryRepository;
         this.tensionQuestionRepository = tensionQuestionRepository;
+        this.gamePlayEventService = gamePlayEventService;
     }
 
     @Transactional(readOnly = true)
@@ -82,6 +86,7 @@ public class StatisticsService {
 
         dto.setUsersByMonth(usersByMonth());
         dto.setBoardsByGameMode(boardsByGameMode());
+        dto.setBattleGamesPlayed(battleGamesPlayed());
         dto.setSubjectsByCategory(subjectsByCategory());
         dto.setGridsByCategory(gridsByCategory());
         dto.setTensionQuestionsByCategory(tensionQuestionsByCategory());
@@ -121,6 +126,21 @@ public class StatisticsService {
         out.add(new CountEntry("501", fiveOhOneCategoryRepository.count()));
         out.add(new CountEntry("Imposter", imposterGridRepository.count()));
         out.add(new CountEntry("Bullseye", bullseyeQuestionRepository.count()));
+        return out;
+    }
+
+    // Fixed order matching how these are presented everywhere else in the
+    // admin (Games menu order), not sorted by count - unlike the other
+    // breakdowns here, the whole point is comparing modes against each
+    // other in a stable position, not spotlighting whichever is biggest.
+    private List<CountEntry> battleGamesPlayed() {
+        Map<BattleGameType, Long> counts = gamePlayEventService.countsByGameType();
+        List<CountEntry> out = new ArrayList<>();
+        out.add(new CountEntry("501", counts.get(BattleGameType.FIVE_O_ONE)));
+        out.add(new CountEntry("Grid Battle", counts.get(BattleGameType.GRID_BATTLE)));
+        out.add(new CountEntry("XI Battle", counts.get(BattleGameType.STARTING_XI_BATTLE)));
+        out.add(new CountEntry("Imposter", counts.get(BattleGameType.IMPOSTER)));
+        out.add(new CountEntry("Bullseye", counts.get(BattleGameType.BULLSEYE)));
         return out;
     }
 

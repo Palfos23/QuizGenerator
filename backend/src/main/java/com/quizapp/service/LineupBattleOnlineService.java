@@ -32,13 +32,14 @@ public class LineupBattleOnlineService {
     private final LineupRepository lineupRepository;
     private final LineupPlayService lineupPlayService;
     private final RoomService roomService;
+    private final GamePlayEventService gamePlayEventService;
 
     public LineupBattleOnlineService(GameRoomRepository gameRoomRepository,
                                       LineupBattleRoomStateRepository roomStateRepository,
                                       LineupBattleParticipantStateRepository participantStateRepository,
                                       LineupBattleSolvedEntryRepository solvedEntryRepository,
                                       LineupRepository lineupRepository, LineupPlayService lineupPlayService,
-                                      RoomService roomService) {
+                                      RoomService roomService, GamePlayEventService gamePlayEventService) {
         this.gameRoomRepository = gameRoomRepository;
         this.roomStateRepository = roomStateRepository;
         this.participantStateRepository = participantStateRepository;
@@ -46,6 +47,7 @@ public class LineupBattleOnlineService {
         this.lineupRepository = lineupRepository;
         this.lineupPlayService = lineupPlayService;
         this.roomService = roomService;
+        this.gamePlayEventService = gamePlayEventService;
     }
 
     /**
@@ -301,6 +303,7 @@ public class LineupBattleOnlineService {
             state.setFinished(true);
             room.setStatus(RoomStatus.FINISHED);
             gameRoomRepository.save(room);
+            gamePlayEventService.record(BattleGameType.STARTING_XI_BATTLE);
         } else {
             state.setCurrentLineupIndex(state.getCurrentLineupIndex() + 1);
             state.setCurrentTurnParticipantIndex(state.getCurrentLineupIndex() % room.getParticipants().size());

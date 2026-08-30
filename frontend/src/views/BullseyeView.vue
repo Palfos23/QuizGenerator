@@ -181,6 +181,7 @@ async function goToGame() {
 const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] - a[1]))
 
 function onGameOver(scores) {
+  api.recordGamePlayed('BULLSEYE')
   passAndPlayState.clear('bullseye')
   passAndPlayState.clear('bullseye-progress')
   savedPassAndPlay.value = null

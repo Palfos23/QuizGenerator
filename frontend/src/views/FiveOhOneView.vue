@@ -292,6 +292,7 @@ function startGame() {
 }
 
 function onGameOver() {
+  api.recordGamePlayed('FIVE_O_ONE')
   passAndPlayState.clear('501')
   passAndPlayState.clear('501-progress')
   savedPassAndPlay.value = null

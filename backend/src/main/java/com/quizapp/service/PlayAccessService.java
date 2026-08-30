@@ -2,6 +2,7 @@ package com.quizapp.service;
 
 import com.quizapp.exception.GameAccessDeniedException;
 import com.quizapp.model.AppUser;
+import com.quizapp.model.BattleGameType;
 import com.quizapp.model.RoomGameType;
 import com.quizapp.repository.AppUserRepository;
 import org.springframework.security.core.Authentication;
@@ -54,6 +55,20 @@ public class PlayAccessService {
             case FIVE_O_ONE -> requireFiveOhOneAccess(authentication);
             case IMPOSTER -> requireImposterAccess(authentication);
             case STARTING_XI_BATTLE -> requireStartingXiBattleAccess(authentication);
+        }
+    }
+
+    // For GamePlayEventController, where a pass-and-play session self-reports
+    // that it finished (see GamePlayEvent) - same access rule as actually
+    // opening that game, so the stats endpoint can't be used to probe or pad
+    // counts for a game this account isn't even allowed to play.
+    public void requireAccessForBattleGameType(Authentication authentication, BattleGameType type) {
+        switch (type) {
+            case GRID_BATTLE -> requireGridBattleAccess(authentication);
+            case FIVE_O_ONE -> requireFiveOhOneAccess(authentication);
+            case IMPOSTER -> requireImposterAccess(authentication);
+            case STARTING_XI_BATTLE -> requireStartingXiBattleAccess(authentication);
+            case BULLSEYE -> requireBullseyeAccess(authentication);
         }
     }
 

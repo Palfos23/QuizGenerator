@@ -402,6 +402,7 @@ function startGame() {
 }
 
 function onGameOver({ scores }) {
+  api.recordGamePlayed('IMPOSTER')
   passAndPlayState.clear('imposter')
   savedPassAndPlay.value = null
   lastGameWasOnline.value = false

@@ -25,6 +25,7 @@ public class ImposterOnlineService {
     private final ImposterTileRepository imposterTileRepository;
     private final ImposterGridPlayService imposterGridPlayService;
     private final RoomService roomService;
+    private final GamePlayEventService gamePlayEventService;
 
     public ImposterOnlineService(GameRoomRepository gameRoomRepository,
                                   ImposterRoomStateRepository roomStateRepository,
@@ -33,7 +34,8 @@ public class ImposterOnlineService {
                                   ImposterGridRepository imposterGridRepository,
                                   ImposterTileRepository imposterTileRepository,
                                   ImposterGridPlayService imposterGridPlayService,
-                                  RoomService roomService) {
+                                  RoomService roomService,
+                                  GamePlayEventService gamePlayEventService) {
         this.gameRoomRepository = gameRoomRepository;
         this.roomStateRepository = roomStateRepository;
         this.participantStateRepository = participantStateRepository;
@@ -42,6 +44,7 @@ public class ImposterOnlineService {
         this.imposterTileRepository = imposterTileRepository;
         this.imposterGridPlayService = imposterGridPlayService;
         this.roomService = roomService;
+        this.gamePlayEventService = gamePlayEventService;
     }
 
     /**
@@ -305,6 +308,7 @@ public class ImposterOnlineService {
             state.setFinished(true);
             room.setStatus(RoomStatus.FINISHED);
             gameRoomRepository.save(room);
+            gamePlayEventService.record(BattleGameType.IMPOSTER);
         } else {
             state.setCurrentGridIndex(state.getCurrentGridIndex() + 1);
             // rotate who starts each board, same convention as grid battle between grids

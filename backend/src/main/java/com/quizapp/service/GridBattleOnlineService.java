@@ -23,6 +23,7 @@ public class GridBattleOnlineService {
     private final GridRepository gridRepository;
     private final GridPlayService gridPlayService;
     private final RoomService roomService;
+    private final GamePlayEventService gamePlayEventService;
 
     public GridBattleOnlineService(GameRoomRepository gameRoomRepository,
                                     GridBattleRoomStateRepository roomStateRepository,
@@ -30,7 +31,8 @@ public class GridBattleOnlineService {
                                     GridBattleSolvedEntryRepository solvedEntryRepository,
                                     GridRepository gridRepository,
                                     GridPlayService gridPlayService,
-                                    RoomService roomService) {
+                                    RoomService roomService,
+                                    GamePlayEventService gamePlayEventService) {
         this.gameRoomRepository = gameRoomRepository;
         this.roomStateRepository = roomStateRepository;
         this.participantStateRepository = participantStateRepository;
@@ -38,6 +40,7 @@ public class GridBattleOnlineService {
         this.gridRepository = gridRepository;
         this.gridPlayService = gridPlayService;
         this.roomService = roomService;
+        this.gamePlayEventService = gamePlayEventService;
     }
 
     /**
@@ -295,6 +298,7 @@ public class GridBattleOnlineService {
             state.setFinished(true);
             room.setStatus(RoomStatus.FINISHED);
             gameRoomRepository.save(room);
+            gamePlayEventService.record(BattleGameType.GRID_BATTLE);
         } else {
             state.setCurrentGridIndex(state.getCurrentGridIndex() + 1);
             // rotate who starts each grid, same convention as Tension between questions

@@ -33,6 +33,10 @@
           <div class="stat-kpi-value">{{ stats.totalCategories.toLocaleString() }}</div>
           <div class="stat-kpi-label">Categories</div>
         </div>
+        <div class="stat-kpi">
+          <div class="stat-kpi-value">{{ totalBattleGamesPlayed.toLocaleString() }}</div>
+          <div class="stat-kpi-label">Battle games played</div>
+        </div>
       </div>
 
       <!-- This week's Grid -->
@@ -90,6 +94,15 @@
         <StatBarList :items="stats.boardsByGameMode" color="var(--gold)" />
       </section>
 
+      <!-- Battle games played -->
+      <section class="stat-section">
+        <h2>Battle games played</h2>
+        <p class="page-subtitle" style="margin-top:0;">
+          Completed games, online and pass-and-play combined, since this was added.
+        </p>
+        <StatBarList :items="stats.battleGamesPlayed" color="var(--teal)" />
+      </section>
+
       <div class="stat-two-col">
         <!-- Sign-ups per month -->
         <section class="stat-section">
@@ -142,6 +155,10 @@ const error = ref('')
 
 const totalBoards = computed(() =>
   (stats.value?.boardsByGameMode || []).reduce((sum, b) => sum + b.count, 0)
+)
+
+const totalBattleGamesPlayed = computed(() =>
+  (stats.value?.battleGamesPlayed || []).reduce((sum, b) => sum + b.count, 0)
 )
 
 const maxMonth = computed(() =>

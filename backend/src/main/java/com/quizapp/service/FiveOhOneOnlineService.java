@@ -23,19 +23,22 @@ public class FiveOhOneOnlineService {
     private final FiveOhOneThrowRepository throwRepository;
     private final FiveOhOneCategoryRepository categoryRepository;
     private final RoomService roomService;
+    private final GamePlayEventService gamePlayEventService;
 
     public FiveOhOneOnlineService(GameRoomRepository gameRoomRepository,
                                    FiveOhOneRoomStateRepository roomStateRepository,
                                    FiveOhOneParticipantStateRepository participantStateRepository,
                                    FiveOhOneThrowRepository throwRepository,
                                    FiveOhOneCategoryRepository categoryRepository,
-                                   RoomService roomService) {
+                                   RoomService roomService,
+                                   GamePlayEventService gamePlayEventService) {
         this.gameRoomRepository = gameRoomRepository;
         this.roomStateRepository = roomStateRepository;
         this.participantStateRepository = participantStateRepository;
         this.throwRepository = throwRepository;
         this.categoryRepository = categoryRepository;
         this.roomService = roomService;
+        this.gamePlayEventService = gamePlayEventService;
     }
 
     /** Category is decided at room-creation time, before anyone else has joined. */
@@ -220,6 +223,7 @@ public class FiveOhOneOnlineService {
             }
             state.setFinished(true);
             roomStateRepository.save(state);
+            gamePlayEventService.record(BattleGameType.FIVE_O_ONE);
             return getState(room, requestingEmail);
         }
 
@@ -232,6 +236,7 @@ public class FiveOhOneOnlineService {
                 state.setWinnerParticipantId(me.getId());
                 state.setFinished(true);
                 roomStateRepository.save(state);
+                gamePlayEventService.record(BattleGameType.FIVE_O_ONE);
                 return getState(room, requestingEmail);
             }
             // the first-starting player reached it - the second-starting player still

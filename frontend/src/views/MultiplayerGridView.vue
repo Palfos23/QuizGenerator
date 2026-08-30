@@ -479,6 +479,7 @@ function startGame() {
 const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] - a[1]))
 
 function onGameOver(scores) {
+  api.recordGamePlayed('GRID_BATTLE')
   passAndPlayState.clear('grid-battle')
   passAndPlayState.clear('grid-battle-progress')
   savedPassAndPlay.value = null

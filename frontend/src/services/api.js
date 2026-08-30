@@ -626,5 +626,17 @@ export default {
   // --- Per-game play access ---
   checkGameAccess(game) {
     return client.get(`/play-access/${game}`)
+  },
+
+  // --- Battle game play-count stats (admin Statistics page) ---
+  // Only for pass-and-play games self-reporting they finished - online
+  // battle games are recorded server-side instead (see GamePlayEventController).
+  // gameType is one of BattleGameType's names: GRID_BATTLE, STARTING_XI_BATTLE,
+  // IMPOSTER, FIVE_O_ONE, BULLSEYE.
+  recordGamePlayed(gameType) {
+    return client.post(`/stats/game-played?gameType=${gameType}`).catch(() => {
+      // Best-effort - a failed stats ping should never interrupt the
+      // "game over" screen the player is already looking at.
+    })
   }
 }

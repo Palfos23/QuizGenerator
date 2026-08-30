@@ -23,6 +23,10 @@ public class AdminStatisticsDto {
     // One row per game mode - "how many boards exist for each".
     private List<CountEntry> boardsByGameMode;
 
+    // One row per battle game mode - "how many games have ever been played",
+    // online and pass-and-play combined. See GamePlayEvent.
+    private List<CountEntry> battleGamesPlayed;
+
     // Subjects (athletes) grouped by their category, biggest first.
     private List<CountEntry> subjectsByCategory;
 
@@ -74,6 +78,14 @@ public class AdminStatisticsDto {
 
     public void setBoardsByGameMode(List<CountEntry> boardsByGameMode) {
         this.boardsByGameMode = boardsByGameMode;
+    }
+
+    public List<CountEntry> getBattleGamesPlayed() {
+        return battleGamesPlayed;
+    }
+
+    public void setBattleGamesPlayed(List<CountEntry> battleGamesPlayed) {
+        this.battleGamesPlayed = battleGamesPlayed;
     }
 
     public List<CountEntry> getSubjectsByCategory() {
