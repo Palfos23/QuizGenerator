@@ -46,7 +46,13 @@
   height: 12px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
-  margin: 40px 0 8px;
+  /* Bottom margin has to clear the "hi"/"trap" pin labels below, which are
+     ~2 lines tall and absolutely positioned starting 20px under the track -
+     too little room here and .tp-scale (the safe/risky/overshoot captions,
+     right below in normal flow) collides with and garbles into them,
+     especially on narrow screens where there's less width for the text to
+     dodge each other horizontally. */
+  margin: 40px 0 46px;
 }
 .tp-fill {
   position: absolute;

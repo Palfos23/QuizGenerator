@@ -7,20 +7,20 @@
         <router-link v-if="!auth.isAdmin.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Create a quiz</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
         <div v-if="!auth.isAdmin.value" class="top-nav-dropdown">
-          <div v-if="showWeeklyMenu" class="top-nav-dropdown-backdrop" @click="showWeeklyMenu = false"></div>
+          <div v-if="openPlayerMenu === 'weekly'" class="top-nav-dropdown-backdrop" @click="closePlayerMenu"></div>
           <button
             type="button"
             class="nav-link top-nav-dropdown-toggle"
             :class="{ 'router-link-exact-active': isWeeklyQuizRoute }"
             aria-haspopup="true"
-            :aria-expanded="showWeeklyMenu"
-            @click="showWeeklyMenu = !showWeeklyMenu"
+            :aria-expanded="openPlayerMenu === 'weekly'"
+            @click="togglePlayerMenu('weekly')"
           >
             Weekly quiz ▾
           </button>
-          <div v-if="showWeeklyMenu" class="top-nav-dropdown-popup" role="menu">
-            <router-link to="/weekly-grid" class="nav-link" role="menuitem" @click="showWeeklyMenu = false">Grid</router-link>
-            <router-link to="/starting-xi" class="nav-link" role="menuitem" @click="showWeeklyMenu = false">Starting XI</router-link>
+          <div v-if="openPlayerMenu === 'weekly'" class="top-nav-dropdown-popup" role="menu">
+            <router-link to="/weekly-grid" class="nav-link" role="menuitem" @click="closePlayerMenu">Grid</router-link>
+            <router-link to="/starting-xi" class="nav-link" role="menuitem" @click="closePlayerMenu">Starting XI</router-link>
           </div>
         </div>
         <router-link v-if="!auth.isAdmin.value" to="/tension" class="nav-link" @click="onNavClick('/tension', 'tension')">Tension</router-link>
@@ -73,27 +73,27 @@
       <router-link v-if="!auth.isAdmin.value" to="/generate" @click="onNavClick('/generate', 'generate')">Create</router-link>
       <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
       <div v-if="!auth.isAdmin.value" style="position:relative; flex:1; display:flex;">
-        <div v-if="showWeeklyMenu" class="bottom-nav-backdrop" @click="showWeeklyMenu = false"></div>
+        <div v-if="openPlayerMenu === 'weekly'" class="bottom-nav-backdrop" @click="closePlayerMenu"></div>
         <button
           aria-haspopup="true"
-          :aria-expanded="showWeeklyMenu"
-          @click="showWeeklyMenu = !showWeeklyMenu"
+          :aria-expanded="openPlayerMenu === 'weekly'"
+          @click="togglePlayerMenu('weekly')"
           :class="{ active: isWeeklyQuizRoute }"
         >Weekly quiz ▾</button>
-        <div v-if="showWeeklyMenu" class="games-popup" role="menu">
-          <router-link to="/weekly-grid" role="menuitem" @click="showWeeklyMenu = false">Grid</router-link>
-          <router-link to="/starting-xi" role="menuitem" @click="showWeeklyMenu = false">Starting XI</router-link>
+        <div v-if="openPlayerMenu === 'weekly'" class="games-popup" role="menu">
+          <router-link to="/weekly-grid" role="menuitem" @click="closePlayerMenu">Grid</router-link>
+          <router-link to="/starting-xi" role="menuitem" @click="closePlayerMenu">Starting XI</router-link>
         </div>
       </div>
       <div v-if="!auth.isAdmin.value" style="position:relative; flex:1; display:flex;">
-        <div v-if="showGamesMenu" class="bottom-nav-backdrop" @click="showGamesMenu = false"></div>
+        <div v-if="openPlayerMenu === 'games'" class="bottom-nav-backdrop" @click="closePlayerMenu"></div>
         <button
           aria-haspopup="true"
-          :aria-expanded="showGamesMenu"
-          @click="showGamesMenu = !showGamesMenu"
+          :aria-expanded="openPlayerMenu === 'games'"
+          @click="togglePlayerMenu('games')"
           :class="{ active: isGameRoute }"
         >Games ▾</button>
-        <div v-if="showGamesMenu" class="games-popup" role="menu">
+        <div v-if="openPlayerMenu === 'games'" class="games-popup" role="menu">
           <router-link to="/tension" role="menuitem" @click="closeGamesMenu('/tension', 'tension')">Tension</router-link>
           <router-link to="/501" role="menuitem" @click="closeGamesMenu('/501', 'fiveOhOne')">501</router-link>
           <router-link to="/imposter" role="menuitem" @click="closeGamesMenu('/imposter', 'imposter')">Imposter</router-link>
@@ -159,11 +159,23 @@ import { useEscapeKey } from './composables/useEscapeKey'
 const router = useRouter()
 
 const GAME_PATHS = ['/tension', '/501', '/imposter', '/grid-battle', '/starting-xi-battle', '/bullseye']
-const showGamesMenu = ref(false)
 const isGameRoute = computed(() => GAME_PATHS.includes(router.currentRoute.value.path))
 
+// Single "which player dropdown is open" ref (null | 'weekly' | 'games'),
+// same one-at-a-time pattern as openAdminMenu below - previously these were
+// two independent booleans, which let both popups end up open together
+// (open Games, then open Weekly quiz without the first closing) and stack
+// on top of each other on mobile.
+const openPlayerMenu = ref(null)
+function togglePlayerMenu(key) {
+  openPlayerMenu.value = openPlayerMenu.value === key ? null : key
+}
+function closePlayerMenu() {
+  openPlayerMenu.value = null
+}
+
 function closeGamesMenu(path, key) {
-  showGamesMenu.value = false
+  closePlayerMenu()
   if (key) onNavClick(path, key)
 }
 
@@ -173,7 +185,6 @@ function closeGamesMenu(path, key) {
 // multiplayer Battle variants stay as separate top-level links since those
 // aren't part of "this week's board".
 const WEEKLY_QUIZ_PATH_PREFIXES = ['/weekly-grid', '/starting-xi']
-const showWeeklyMenu = ref(false)
 const isWeeklyQuizRoute = computed(() => {
   const path = router.currentRoute.value.path
   return WEEKLY_QUIZ_PATH_PREFIXES.some(prefix => path === prefix || path.startsWith(prefix + '/'))
@@ -239,16 +250,14 @@ function adminMenuActive(menu) {
 // this popup's own links, which already close it themselves) while a
 // dropdown happens to be open.
 watch(() => router.currentRoute.value.path, () => {
-  showGamesMenu.value = false
-  showWeeklyMenu.value = false
+  closePlayerMenu()
   openAdminMenu.value = null
 })
 
 // A keyboard user can open either dropdown, but until now had no way to
 // close it again without tabbing all the way through its links.
 useEscapeKey(() => {
-  showGamesMenu.value = false
-  showWeeklyMenu.value = false
+  closePlayerMenu()
   openAdminMenu.value = null
 })
 
