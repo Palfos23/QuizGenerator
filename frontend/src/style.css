@@ -25,6 +25,15 @@
 
 * { box-sizing: border-box; }
 
+html {
+  /* This app only ever renders a dark theme - without this, browsers assume
+     a light UI and render every native-chrome control (select's dropdown
+     popup, the date-picker calendar popup, default checkbox styling,
+     scrollbars) with light OS chrome, clashing hard against the dark page
+     around them. */
+  color-scheme: dark;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -61,6 +70,14 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
+}
+
+/* Checkboxes/radios otherwise render in the browser's default accent (blue
+   in Chrome/Edge) - jarring against this app's gold/teal/violet dark theme,
+   since it's the one native control color-scheme:dark alone doesn't retint. */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--gold);
 }
 
 /* ---------- Layout shell ---------- */
@@ -318,6 +335,41 @@ h2 { font-size: 1.35rem; }
   color: #fff;
 }
 
+/* ---------- Two-way view switcher (e.g. "My quizzes" vs "Quiz templates") ----------
+   Same segmented-control language as .language-row/.language-btn above, kept as its
+   own class since it's about switching which LIST is showing, not picking a value. */
+.view-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.view-tab {
+  padding: 10px 18px;
+  border: none;
+  border-right: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.view-tab:last-child { border-right: none; }
+.view-tab.active { background: var(--violet); color: #fff; }
+.view-tab-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.1);
+  color: var(--text-dim);
+}
+.view-tab.active .view-tab-count { background: rgba(255,255,255,0.25); color: #fff; }
+
 /* ---------- Difficulty range sliders ---------- */
 
 .difficulty-slider-group {
@@ -407,13 +459,25 @@ input[type="range"]::-moz-range-progress {
   text-decoration: none;
 }
 
+/* Baseline for every variant - :disabled is set on secondary/danger buttons
+   in dozens of places (pagination, move up/down, "give up", CSV imports…)
+   but previously only .btn-primary had a disabled look, so those buttons
+   stayed full-opacity and mouse-pointer-cursor, indistinguishable from an
+   enabled button. pointer-events:none also stops :hover backgrounds/borders
+   from still applying to a disabled button on hover. */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, #ffce3d, var(--gold));
   color: #241c00;
   box-shadow: 0 4px 20px rgba(242, 183, 5, 0.25);
 }
 .btn-primary:hover { filter: brightness(1.06); box-shadow: 0 4px 26px rgba(242, 183, 5, 0.4); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+.btn-primary:disabled { box-shadow: none; }
 
 /* Shared by every "choose N boards" picker screen (Grid Battle, Starting XI
    Battle, Imposter) - keeps the Back/Start row pinned in view while the
@@ -1514,14 +1578,6 @@ mark {
   letter-spacing: 0.03em;
 }
 
-.templates-panel {
-  margin-bottom: 32px;
-  padding: 20px 24px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(242,183,5,0.06), rgba(255,255,255,0.02));
-}
-
 .stats-panel {
   margin-bottom: 24px;
   padding: 16px;
@@ -1663,6 +1719,11 @@ table.scoreboard-table {
   padding: 10px;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
+}
+/* Helps track a row across many columns while scanning - most of these
+   tables are wide enough to need .table-scroll's horizontal scroll. */
+.table tbody tr:hover td {
+  background: rgba(255,255,255,0.03);
 }
 
 .modal-backdrop {

@@ -30,9 +30,30 @@ export function sportLabel(value) {
 }
 
 // Maps a 1-10 difficulty to a hue on a green(easy) -> red(hard) scale, used for badges/sliders.
+// Returns hex (not hsl()) specifically so difficultyTextColor below can feed
+// it straight into readableTextColor's hex parser.
 export function difficultyColor(level) {
   const hue = Math.round(130 - ((level - 1) / 9) * 130) // 130 = green, 0 = red
-  return `hsl(${hue}, 70%, 45%)`
+  return hslToHex(hue, 70, 45)
+}
+
+// The difficulty badge used to hardcode white text - fine at the green/red
+// ends, but the yellow/yellow-green midrange (level ~5-7) is bright enough
+// that white text loses most of its contrast against it. Picks black or
+// white per badge the same way readableTextColor already does for
+// admin-chosen club colors.
+export function difficultyTextColor(level) {
+  return readableTextColor(difficultyColor(level))
+}
+
+function hslToHex(h, s, l) {
+  s /= 100
+  l /= 100
+  const k = n => (n + h / 30) % 12
+  const a = s * Math.min(l, 1 - l)
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))
+  const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0')
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`
 }
 
 // Club hint-badge colors are admin-chosen and can be light or dark, so the badge

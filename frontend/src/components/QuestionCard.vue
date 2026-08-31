@@ -4,7 +4,7 @@
       <span class="question-number">Q{{ index + 1 }}</span>
       <div class="question-tags">
         <span class="tag category">{{ question.category }}</span>
-        <span class="tag difficulty-tag" :style="{ background: difficultyColor(question.difficultyLevel) }">
+        <span class="tag difficulty-tag" :style="{ background: difficultyColor(question.difficultyLevel), color: difficultyTextColor(question.difficultyLevel) }">
           {{ question.difficultyLevel }}/10
         </span>
         <span v-for="name in (question.labelNames || [])" :key="name" class="tag" style="background:rgba(139,124,255,0.15); color:#8b7cff;">{{ name }}</span>
@@ -48,7 +48,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { difficultyColor } from '../constants'
+import { difficultyColor, difficultyTextColor } from '../constants'
 
 defineProps({
   question: { type: Object, required: true },

@@ -1,15 +1,22 @@
 <template>
   <div>
     <h1>My quizzes</h1>
-    <p class="page-subtitle">Quizzes you've explicitly saved. Generating one doesn't save it automatically.</p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <!-- List view -->
     <section v-if="!openQuiz">
-      <div v-if="templates.length" class="templates-panel">
-        <h2 style="font-size:1.1rem; margin-top:0;">Available templates</h2>
-        <p class="page-subtitle" style="margin-top:-6px;">Published by an admin - copy one to get your own editable version.</p>
+      <div class="view-tabs" v-if="showTemplatesTab">
+        <button type="button" class="view-tab" :class="{ active: activeTab === 'mine' }" @click="activeTab = 'mine'">
+          My quizzes <span class="view-tab-count">{{ quizzes.length }}</span>
+        </button>
+        <button type="button" class="view-tab" :class="{ active: activeTab === 'templates' }" @click="activeTab = 'templates'">
+          Quiz templates <span class="view-tab-count">{{ templates.length }}</span>
+        </button>
+      </div>
+
+      <template v-if="activeTab === 'templates' && showTemplatesTab">
+        <p class="page-subtitle" style="margin-top:0;">Published by an admin - copy one to get your own editable version.</p>
         <div class="saved-quiz-list">
           <div v-for="t in templates" :key="t.id" class="saved-quiz-row">
             <div class="saved-quiz-info">
@@ -21,39 +28,41 @@
             </button>
           </div>
         </div>
-      </div>
+      </template>
 
-      <h2 style="margin-top:32px;">My quizzes</h2>
+      <template v-else>
+        <p class="page-subtitle" style="margin-top:0;">Quizzes you've explicitly saved. Generating one doesn't save it automatically.</p>
 
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+        <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
-      <div v-else-if="!quizzes.length" class="empty-state friendly">
-        No saved quizzes yet. Generate one on the <router-link to="/generate">Create a quiz</router-link> page,
-        then hit "Save to My Quizzes".
-      </div>
+        <div v-else-if="!quizzes.length" class="empty-state friendly">
+          No saved quizzes yet. Generate one on the <router-link to="/generate">Create a quiz</router-link> page,
+          then hit "Save to My Quizzes"<template v-if="showTemplatesTab">, or copy a <a href="#" @click.prevent="activeTab = 'templates'">quiz template</a> to get started</template>.
+        </div>
 
-      <div v-else class="saved-quiz-list">
-        <div v-for="q in quizzes" :key="q.id" class="saved-quiz-row">
-          <div class="saved-quiz-info">
-            <div class="saved-quiz-title">{{ q.title }}</div>
-            <div class="saved-quiz-meta">
-              {{ flagFor(q.language) }} {{ languageLabel(q.language) }} · {{ q.questionCount }} questions ·
-              saved {{ formatDate(q.createdAt) }}
+        <div v-else class="saved-quiz-list">
+          <div v-for="q in quizzes" :key="q.id" class="saved-quiz-row">
+            <div class="saved-quiz-info">
+              <div class="saved-quiz-title">{{ q.title }}</div>
+              <div class="saved-quiz-meta">
+                {{ flagFor(q.language) }} {{ languageLabel(q.language) }} · {{ q.questionCount }} questions ·
+                saved {{ formatDate(q.createdAt) }}
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-sm" @click="openOne(q.id)">View &amp; edit</button>
+              <button
+                class="btn btn-secondary btn-sm"
+                :disabled="duplicatingId === q.id"
+                @click="duplicateAndRegenerate(q)"
+              >
+                {{ duplicatingId === q.id ? 'Regenerating…' : 'Duplicate & regenerate' }}
+              </button>
+              <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Delete</button>
             </div>
           </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn btn-secondary btn-sm" @click="openOne(q.id)">View &amp; edit</button>
-            <button
-              class="btn btn-secondary btn-sm"
-              :disabled="duplicatingId === q.id"
-              @click="duplicateAndRegenerate(q)"
-            >
-              {{ duplicatingId === q.id ? 'Regenerating…' : 'Duplicate & regenerate' }}
-            </button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Delete</button>
-          </div>
         </div>
-      </div>
+      </template>
     </section>
 
     <!-- Detail / edit view -->
@@ -150,13 +159,15 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { onBeforeRouteLeave } from 'vue-router'
+import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import api from '../services/api'
 import navTrigger from '../services/navTrigger'
 import toast from '../services/toast'
 import QuizReviewEditor from '../components/QuizReviewEditor.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import { LANGUAGES, languageLabel } from '../constants'
+
+const route = useRoute()
 
 const quizzes = ref([])
 const loading = ref(true)
@@ -172,6 +183,13 @@ const showUnsavedConfirm = ref(false)
 const duplicatingId = ref(null)
 const templates = ref([])
 const copyingId = ref(null)
+
+// The dashboard's "Quiz templates" and "My quizzes" cards both land here but
+// promise two different things - this lets a click on "Quiz templates" open
+// straight to that tab instead of dumping the visitor onto their (possibly
+// empty) own list with the templates they actually wanted buried above it.
+const activeTab = ref(route.query.tab === 'templates' ? 'templates' : 'mine')
+const showTemplatesTab = computed(() => templates.value.length > 0)
 
 // A regenerated-but-not-yet-saved copy has no id from the server yet - that's
 // the signal for "Save as new" instead of "Update".
@@ -194,7 +212,10 @@ onBeforeRouteLeave(() => {
 // Clicking the "My quizzes" nav tab while already on this page doesn't trigger any
 // navigation event on its own, so it needs its own trigger to close whatever quiz
 // is open and go back to the list - reusing the same discard-confirmation flow.
+// Also jumps back to the "My quizzes" tab itself, since that's what the nav
+// link says regardless of which tab was left open.
 watch(() => navTrigger.state.myQuizzes, () => {
+  activeTab.value = 'mine'
   if (openQuiz.value) backToList()
 })
 

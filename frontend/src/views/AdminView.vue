@@ -112,7 +112,7 @@
               <td style="max-width:280px;" v-html="highlight(q.questionText)"></td>
               <td v-html="highlight(q.category)"></td>
               <td>{{ flagFor(q.language) }}</td>
-              <td><span class="tag difficulty-tag" :style="{ background: difficultyColor(q.difficultyLevel) }">{{ q.difficultyLevel }}/10</span></td>
+              <td><span class="tag difficulty-tag" :style="{ background: difficultyColor(q.difficultyLevel), color: difficultyTextColor(q.difficultyLevel) }">{{ q.difficultyLevel }}/10</span></td>
               <td v-html="highlight(q.answer)"></td>
               <td>
                 <span v-if="q.couldChange" class="tag changeable">May change</span>
@@ -158,7 +158,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import QuestionFormModal from '../components/QuestionFormModal.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
-import { LANGUAGES, difficultyColor } from '../constants'
+import { LANGUAGES, difficultyColor, difficultyTextColor } from '../constants'
 
 const PAGE_SIZE = 15
 

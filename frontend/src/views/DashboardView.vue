@@ -11,7 +11,7 @@
 
     <h2 style="margin-top:48px;">More ways to play</h2>
     <div class="dashboard-features">
-      <router-link to="/my-quizzes" class="dashboard-feature-card">
+      <router-link to="/my-quizzes?tab=templates" class="dashboard-feature-card">
         <h3>Quiz templates</h3>
         <p>Pre-made quizzes published by an admin - download a PDF right away, or copy one to edit.</p>
       </router-link>
