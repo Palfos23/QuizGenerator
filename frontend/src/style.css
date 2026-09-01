@@ -67,7 +67,8 @@ button:active { transform: scale(0.97); }
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+a:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
@@ -662,7 +663,10 @@ input[type="range"]::-moz-range-progress {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 28px;
+  /* Clears the fixed mobile bottom-nav (--bottom-nav-height is 0 on desktop,
+     where the nav doesn't exist) - otherwise the toast's higher z-index sat
+     it right on top of the nav's own buttons instead of above them. */
+  bottom: calc(28px + var(--bottom-nav-height));
   transform: translateX(-50%);
   padding: 12px 22px;
   border-radius: 999px;
@@ -871,6 +875,21 @@ mark {
   height: 28px;
   object-fit: contain;
 }
+
+/* Sits where .club-logo-thumb would go when there's no photo/logo set - an
+   empty table cell there reads as broken/still-loading rather than
+   intentionally blank, especially next to rows that do have a thumbnail. */
+.photo-thumb-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+}
+.photo-thumb-placeholder svg { width: 14px; height: 14px; }
 
 .color-swatch {
   display: inline-block;

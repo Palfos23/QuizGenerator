@@ -45,7 +45,12 @@
         </thead>
         <tbody>
           <tr v-for="c in pagedClubs" :key="c.id">
-            <td><img v-if="c.logoUrl" :src="c.logoUrl" alt="" class="club-logo-thumb" /></td>
+            <td>
+              <img v-if="c.logoUrl" :src="c.logoUrl" alt="" class="club-logo-thumb" />
+              <span v-else class="photo-thumb-placeholder" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              </span>
+            </td>
             <td>{{ c.name }}</td>
             <td>{{ sportLabel(c.sport) }}</td>
             <td><span class="color-swatch" :style="{ background: c.color || 'var(--gold)' }"></span></td>
