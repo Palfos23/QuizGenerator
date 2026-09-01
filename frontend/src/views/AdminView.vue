@@ -71,6 +71,13 @@
         </select>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
+        <label>Category</label>
+        <select v-model="categoryFilter">
+          <option value="ALL">All categories</option>
+          <option v-for="c in availableCategories" :key="c" :value="c">{{ c }}</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
         <label>Could change?</label>
         <select v-model="couldChangeFilter">
           <option value="ALL">Any</option>
@@ -168,6 +175,7 @@ const error = ref('')
 
 const searchText = ref('')
 const languageFilter = ref('ALL')
+const categoryFilter = ref('ALL')
 const couldChangeFilter = ref('ALL')
 const page = ref(1)
 
@@ -186,10 +194,56 @@ const importResult = ref(null)
 const showStats = ref(false)
 const stats = ref([])
 
+// Category is free text, not a managed lookup table, so the same category can
+// carry different casing/whitespace across questions (e.g. "Geography" vs
+// "GEOGRAPHY ") - same reasoning as QuestionService's server-side dedupe for
+// the picker in QuestionFormModal. Options here are grouped the same way -
+// case/whitespace-insensitively, keeping whichever exact spelling the most
+// matching questions use - so the dropdown doesn't show duplicates, and only
+// lists categories that actually exist for the currently-selected language.
+const availableCategories = computed(() => {
+  const pool = languageFilter.value === 'ALL'
+    ? questions.value
+    : questions.value.filter(q => q.language === languageFilter.value)
+
+  const variantsByKey = new Map() // lowercase-trimmed -> Map(exact spelling -> count)
+  for (const q of pool) {
+    const raw = (q.category || '').trim()
+    if (!raw) continue
+    const key = raw.toLowerCase()
+    const variants = variantsByKey.get(key) || new Map()
+    variants.set(raw, (variants.get(raw) || 0) + 1)
+    variantsByKey.set(key, variants)
+  }
+
+  const result = []
+  for (const variants of variantsByKey.values()) {
+    let best = null
+    for (const [spelling, count] of variants) {
+      if (!best || count > best.count || (count === best.count && spelling < best.spelling)) {
+        best = { spelling, count }
+      }
+    }
+    result.push(best.spelling)
+  }
+  return result.sort((a, b) => a.localeCompare(b))
+})
+
+// If the language filter narrows the list and the chosen category no longer
+// exists under it, fall back to "All categories" instead of leaving the
+// select pointed at a value with no matching <option>.
+watch(availableCategories, (cats) => {
+  if (categoryFilter.value !== 'ALL' && !cats.includes(categoryFilter.value)) {
+    categoryFilter.value = 'ALL'
+  }
+})
+
 const filteredQuestions = computed(() => {
   const term = searchText.value.trim().toLowerCase()
+  const category = categoryFilter.value.trim().toLowerCase()
   return questions.value.filter(q => {
     if (languageFilter.value !== 'ALL' && q.language !== languageFilter.value) return false
+    if (categoryFilter.value !== 'ALL' && (q.category || '').trim().toLowerCase() !== category) return false
     if (couldChangeFilter.value === 'YES' && !q.couldChange) return false
     if (couldChangeFilter.value === 'NO' && q.couldChange) return false
     if (term) {
@@ -222,7 +276,7 @@ const pagedQuestions = computed(() => {
 })
 
 // jump back to a valid page whenever the filtered set shrinks (new filter, deletion, etc.)
-watch([searchText, languageFilter, couldChangeFilter], () => { page.value = 1 })
+watch([searchText, languageFilter, categoryFilter, couldChangeFilter], () => { page.value = 1 })
 watch(totalPages, (newTotal) => { if (page.value > newTotal) page.value = newTotal })
 
 onMounted(() => {

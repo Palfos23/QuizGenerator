@@ -23,9 +23,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     @Query("SELECT DISTINCT q FROM Question q LEFT JOIN FETCH q.labels")
     List<Question> findAllWithLabels();
 
-    @Query("SELECT DISTINCT q.category FROM Question q ORDER BY q.category")
-    List<String> findAllDistinctCategories();
-
     /**
      * Filters at the database level instead of loading every question in a language
      * into memory first - matters once the bank is large, since this runs on every

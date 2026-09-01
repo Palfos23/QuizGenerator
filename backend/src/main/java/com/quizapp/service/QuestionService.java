@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class QuestionService {
@@ -42,15 +43,39 @@ public class QuestionService {
 
     @Transactional(readOnly = true)
     public List<String> findAllCategories() {
-        return questionRepository.findAllDistinctCategories();
+        return dedupeCategoriesIgnoringCase(questionRepository.findAll().stream().map(Question::getCategory));
     }
 
     @Transactional(readOnly = true)
     public List<String> findCategoriesForLanguage(com.quizapp.model.Language language) {
-        return questionRepository.findByLanguage(language).stream()
-                .map(Question::getCategory)
-                .distinct()
-                .sorted()
+        return dedupeCategoriesIgnoringCase(
+                questionRepository.findByLanguage(language).stream().map(Question::getCategory));
+    }
+
+    /**
+     * Category is free text on each question, not a managed lookup table (unlike
+     * Grid/Tension categories), so the same category can end up saved under different
+     * casing or with stray whitespace over time - e.g. "Geography", "geography ",
+     * "GEOGRAPHY". A plain distinct() would show those as separate entries in the
+     * category picker, so this groups case- and whitespace-insensitively and keeps one
+     * representative spelling per group: whichever exact spelling the most questions
+     * actually use, ties broken alphabetically so the pick is deterministic. Mirrors
+     * QuestionRepository.findCandidates, which already matches categories via
+     * LOWER(q.category) = LOWER(:category) for the same reason.
+     */
+    private static List<String> dedupeCategoriesIgnoringCase(Stream<String> categories) {
+        Map<String, Map<String, Long>> byLowercase = categories
+                .filter(c -> c != null && !c.isBlank())
+                .map(String::trim)
+                .collect(Collectors.groupingBy(String::toLowerCase, Collectors.groupingBy(c -> c, Collectors.counting())));
+
+        return byLowercase.values().stream()
+                .map(variants -> variants.entrySet().stream()
+                        .min(Comparator.<Map.Entry<String, Long>>comparingLong(e -> -e.getValue())
+                                .thenComparing(Map.Entry::getKey))
+                        .map(Map.Entry::getKey)
+                        .orElseThrow())
+                .sorted(String.CASE_INSENSITIVE_ORDER)
                 .collect(Collectors.toList());
     }
 
