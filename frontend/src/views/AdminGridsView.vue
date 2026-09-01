@@ -94,10 +94,22 @@
         <div style="flex:1; min-width:180px;">
           <label>Week start date</label>
           <input type="date" v-model="form.weekStartDate" />
+          <p v-if="weekConflict" style="margin:6px 0 0; color:var(--coral); font-size:0.82rem;">
+            ⚠ '{{ weekConflict.title }}' already uses this week.
+          </p>
         </div>
         <div style="flex:1; min-width:140px;">
           <label>Max strikes</label>
           <input type="number" min="1" max="20" v-model.number="form.maxStrikes" />
+        </div>
+      </div>
+
+      <div v-if="takenWeeks.length" class="field">
+        <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">
+          Already scheduled ({{ takenWeeks.length }})
+        </label>
+        <div class="chip-group">
+          <span v-for="w in takenWeeks" :key="w.date" class="chip" :title="w.title">{{ w.date }}</span>
         </div>
       </div>
 
@@ -372,6 +384,25 @@ const {
 })
 
 const editingGridId = ref(null)
+
+// The date picker itself can't show which weeks are taken - the browser
+// owns that popup entirely - so this surfaces the same info as a plain list
+// right underneath it instead, sorted soonest-first. Excludes whichever
+// grid is currently being edited, so editing a grid doesn't flag its own
+// existing date as a conflict with itself.
+const takenWeeks = computed(() =>
+  grids.value
+    .filter(g => g.id !== editingGridId.value)
+    .map(g => ({ date: g.weekStartDate, title: g.title }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+)
+// Mirrors GridAdminService.validateDateNotTaken so the conflict shows up
+// the moment it's picked, instead of only after "Save grid" round-trips to
+// the server and back with an error.
+const weekConflict = computed(() =>
+  takenWeeks.value.find(w => w.date === form.weekStartDate) || null
+)
+
 const form = reactive({
   title: '',
   theme: '',

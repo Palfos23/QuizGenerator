@@ -84,10 +84,22 @@
         <div style="flex:1; min-width:160px;">
           <label>Week start date</label>
           <input type="date" v-model="form.weekStartDate" />
+          <p v-if="weekConflict" style="margin:6px 0 0; color:var(--coral); font-size:0.82rem;">
+            ⚠ '{{ weekConflict.title }}' already uses this week.
+          </p>
         </div>
         <div style="flex:1; min-width:140px;">
           <label>Max strikes</label>
           <input type="number" min="1" max="20" v-model.number="form.maxStrikes" />
+        </div>
+      </div>
+
+      <div v-if="takenWeeks.length" class="field">
+        <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">
+          Already scheduled ({{ takenWeeks.length }})
+        </label>
+        <div class="chip-group">
+          <span v-for="w in takenWeeks" :key="w.date" class="chip" :title="w.title">{{ w.date }}</span>
         </div>
       </div>
 
@@ -367,6 +379,23 @@ const saving = ref(false)
 const pendingDelete = ref(null)
 const editingAthleteForModal = ref(null)
 const editingLineupId = ref(null)
+
+// Same reasoning as AdminGridsView's takenWeeks/weekConflict - the native
+// date picker can't show which weeks are already spoken for, so this
+// surfaces the same info as a plain list underneath it instead. Only one
+// Starting XI board is allowed per week now (see
+// LineupAdminService.validateDateNotTaken), so this also catches the
+// conflict immediately instead of only after "Save board" round-trips.
+const takenWeeks = computed(() =>
+  lineups.value
+    .filter(l => l.id !== editingLineupId.value)
+    .map(l => ({ date: l.weekStartDate, title: l.title }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+)
+const weekConflict = computed(() =>
+  takenWeeks.value.find(w => w.date === form.weekStartDate) || null
+)
+
 const showPreview = ref(false)
 
 const form = reactive({

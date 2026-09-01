@@ -16,6 +16,7 @@ import com.quizapp.repository.LineupRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,7 @@ public class LineupAdminService {
 
     @Transactional
     public LineupAdminDetailDto create(LineupRequest request) {
+        validateDateNotTaken(request.getWeekStartDate(), null);
         Lineup lineup = new Lineup();
         applyRequest(lineup, request);
         return toDetailDto(lineupRepository.save(lineup));
@@ -73,10 +75,23 @@ public class LineupAdminService {
 
     @Transactional
     public LineupAdminDetailDto update(Long id, LineupRequest request) {
+        validateDateNotTaken(request.getWeekStartDate(), id);
         Lineup lineup = lineupRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No Starting XI board found with id " + id));
         applyRequest(lineup, request);
         return toDetailDto(lineupRepository.save(lineup));
+    }
+
+    // excludeLineupId lets an edit keep its own existing date without flagging
+    // itself as a conflict - mirrors GridAdminService.validateDateNotTaken.
+    // Only one Starting XI board can be live for a given week, same rule as
+    // Grid, so the solo Weekly XI page always has exactly one obvious board.
+    private void validateDateNotTaken(LocalDate weekStartDate, Long excludeLineupId) {
+        boolean taken = lineupRepository.findByWeekStartDate(weekStartDate).stream()
+                .anyMatch(l -> !l.getId().equals(excludeLineupId));
+        if (taken) {
+            throw new IllegalStateException("Another Starting XI board already uses the week of " + weekStartDate + ".");
+        }
     }
 
     @Transactional

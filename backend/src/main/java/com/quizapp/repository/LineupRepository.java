@@ -14,6 +14,10 @@ public interface LineupRepository extends JpaRepository<Lineup, Long> {
     // "visible" convention as Grid.findByWeekStartDateLessThanEqualOrderByWeekStartDateDesc.
     List<Lineup> findByWeekStartDateLessThanEqualOrderByWeekStartDateDescIdDesc(LocalDate date);
 
+    // For enforcing exactly one Starting XI board per week - mirrors
+    // GridRepository.findByWeekStartDate.
+    List<Lineup> findByWeekStartDate(LocalDate weekStartDate);
+
     // Lightweight projection version of the above, plus the battle-eligible
     // pool/round-choice picker - Lineup.entries and LineupEntry.athlete are
     // both FetchType.EAGER, so hydrating full Lineup entities via the entity
