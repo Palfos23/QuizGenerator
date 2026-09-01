@@ -94,15 +94,6 @@
         </div>
       </div>
 
-      <div v-if="takenWeeks.length" class="field">
-        <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">
-          Already scheduled ({{ takenWeeks.length }})
-        </label>
-        <div class="chip-group">
-          <span v-for="w in takenWeeks" :key="w.date" class="chip" :title="w.title">{{ w.date }}</span>
-        </div>
-      </div>
-
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
           <label>Team (the XI being guessed)</label>
@@ -380,20 +371,15 @@ const pendingDelete = ref(null)
 const editingAthleteForModal = ref(null)
 const editingLineupId = ref(null)
 
-// Same reasoning as AdminGridsView's takenWeeks/weekConflict - the native
-// date picker can't show which weeks are already spoken for, so this
-// surfaces the same info as a plain list underneath it instead. Only one
-// Starting XI board is allowed per week now (see
-// LineupAdminService.validateDateNotTaken), so this also catches the
-// conflict immediately instead of only after "Save board" round-trips.
-const takenWeeks = computed(() =>
-  lineups.value
-    .filter(l => l.id !== editingLineupId.value)
-    .map(l => ({ date: l.weekStartDate, title: l.title }))
-    .sort((a, b) => a.date.localeCompare(b.date))
-)
+// Same reasoning as AdminGridsView's weekConflict - the native date picker
+// can't show which weeks are already spoken for, so this flags a collision
+// as soon as one is picked instead of only after "Save board" round-trips to
+// the server and back with an error. Only one Starting XI board is allowed
+// per week now (see LineupAdminService.validateDateNotTaken). Excludes
+// whichever board is currently being edited, so editing one doesn't flag its
+// own existing date as a conflict with itself.
 const weekConflict = computed(() =>
-  takenWeeks.value.find(w => w.date === form.weekStartDate) || null
+  lineups.value.find(l => l.id !== editingLineupId.value && l.weekStartDate === form.weekStartDate) || null
 )
 
 const showPreview = ref(false)
