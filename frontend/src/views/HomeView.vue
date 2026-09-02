@@ -43,7 +43,7 @@
           </div>
         </div>
       </div>
-      <div v-show="!loggingIn" ref="buttonEl"></div>
+      <div v-show="!loggingIn && !loadingScript && clientIdConfigured" class="google-btn-slot" ref="buttonEl"></div>
 
       <p v-if="!clientIdConfigured" style="color:var(--text-dim); font-size:0.85rem; margin-top:20px;">
         Google sign-in isn't configured yet - set <code>VITE_GOOGLE_CLIENT_ID</code> in the frontend's

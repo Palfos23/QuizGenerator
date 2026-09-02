@@ -2028,6 +2028,20 @@ table.scoreboard-table {
   margin-top: 8px;
 }
 
+/* Google's button lives outside our control - for a returning, already-signed-in
+   visitor Chrome swaps our configured dark pill for its own native "Continue as ..."
+   card, which always renders on a light background no matter what theme we pass to
+   renderButton (our filled_black option only reaches the plain, first-time-visitor
+   button). Giving it a light, padded slot to sit in makes either variant read as a
+   deliberate widget instead of a stray white patch against the dark card behind it. */
+.google-btn-slot {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  background: #fff;
+  border-radius: var(--radius-lg);
+}
+
 .login-progress {
   display: flex;
   align-items: center;
