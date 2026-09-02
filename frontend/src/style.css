@@ -2037,17 +2037,20 @@ table.scoreboard-table {
    behind it just enlarges the white area instead of framing it (tried that). Instead,
    a soft radial glow that fades to fully transparent before it reaches the card's
    edges - it reads as a deliberate spotlight around the button rather than a second,
-   mismatched box stacked behind Google's own. Capped to roughly the button's own
-   width (it's configured at 320px in HomeView.vue) so the glow stays tied to the
-   button instead of stretching across the whole card.  */
+   mismatched box stacked behind Google's own.
+   First attempt at this used max-width:340px + padding:20px 10px + low opacity
+   (0.16/0.06) - on the actual personalized button (wider than the 320px we configure
+   for the plain button, since Google auto-sizes it to fit the avatar/name/email) that
+   left only a few px of horizontal bleed room at a barely-visible opacity, so no glow
+   showed at all. Dropped the max-width so the button always has real breathing room
+   inside .landing-login's own width, and pushed the opacity and padding up so the
+   glow reads clearly instead of disappearing into rounding/compression. */
 .google-btn-slot {
   display: flex;
   justify-content: center;
-  max-width: 340px;
-  margin: 0 auto;
-  padding: 20px 10px;
+  padding: 30px 32px;
   border-radius: var(--radius-lg);
-  background: radial-gradient(ellipse at center, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 78%);
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.13) 45%, rgba(255,255,255,0) 80%);
 }
 
 .login-progress {
