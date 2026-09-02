@@ -2030,16 +2030,24 @@ table.scoreboard-table {
 
 /* Google's button lives outside our control - for a returning, already-signed-in
    visitor Chrome swaps our configured dark pill for its own native "Continue as ..."
-   card, which always renders on a light background no matter what theme we pass to
-   renderButton (our filled_black option only reaches the plain, first-time-visitor
-   button). Giving it a light, padded slot to sit in makes either variant read as a
-   deliberate widget instead of a stray white patch against the dark card behind it. */
+   card, which always renders on a light, self-contained pill no matter what theme we
+   pass to renderButton (our filled_black option only reaches the plain, first-time-
+   visitor button). A flat wrapping background doesn't fix that - Google's pill is
+   already opaque white with its own rounded corners, so filling in more solid white
+   behind it just enlarges the white area instead of framing it (tried that). Instead,
+   a soft radial glow that fades to fully transparent before it reaches the card's
+   edges - it reads as a deliberate spotlight around the button rather than a second,
+   mismatched box stacked behind Google's own. Capped to roughly the button's own
+   width (it's configured at 320px in HomeView.vue) so the glow stays tied to the
+   button instead of stretching across the whole card.  */
 .google-btn-slot {
   display: flex;
   justify-content: center;
-  padding: 12px;
-  background: #fff;
+  max-width: 340px;
+  margin: 0 auto;
+  padding: 20px 10px;
   border-radius: var(--radius-lg);
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 78%);
 }
 
 .login-progress {
