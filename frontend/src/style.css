@@ -2024,7 +2024,7 @@ table.scoreboard-table {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.02));
-  max-width: 420px;
+  max-width: 500px; /* widened from 420px - see .google-btn-slot below for why */
   margin-top: 8px;
 }
 
@@ -2034,23 +2034,42 @@ table.scoreboard-table {
    pass to renderButton (our filled_black option only reaches the plain, first-time-
    visitor button). A flat wrapping background doesn't fix that - Google's pill is
    already opaque white with its own rounded corners, so filling in more solid white
-   behind it just enlarges the white area instead of framing it (tried that). Instead,
-   a soft radial glow that fades to fully transparent before it reaches the card's
-   edges - it reads as a deliberate spotlight around the button rather than a second,
-   mismatched box stacked behind Google's own.
-   First attempt at this used max-width:340px + padding:20px 10px + low opacity
-   (0.16/0.06) - on the actual personalized button (wider than the 320px we configure
-   for the plain button, since Google auto-sizes it to fit the avatar/name/email) that
-   left only a few px of horizontal bleed room at a barely-visible opacity, so no glow
-   showed at all. Dropped the max-width so the button always has real breathing room
-   inside .landing-login's own width, and pushed the opacity and padding up so the
-   glow reads clearly instead of disappearing into rounding/compression. */
+   behind it just enlarges the white area instead of framing it (tried that). A soft
+   radial glow that fades to transparent before the card's edges reads as a deliberate
+   spotlight instead.
+   Two earlier attempts (padding-based glow on this flex container) rendered nothing
+   visible in production: DevTools showed Google's iframe is fixed at 340px wide, but
+   .landing-login's old max-width:420px (minus its own 28px padding) only left 364px
+   of content width - 340px button + even 10px of side padding already exceeded that,
+   so the button's own fixed-size box overflowed straight over the padding area meant
+   for the glow, covering it entirely regardless of how strong the gradient was.
+   Fixed properly this time: widened .landing-login above so there's real width to
+   work with, and moved the glow onto an absolutely-positioned ::before sized on its
+   own terms - it isn't part of the flex layout math, so it can't get squeezed out by
+   the button's fixed 340px box the way a background+padding on this element did. */
 .google-btn-slot {
+  position: relative;
   display: flex;
   justify-content: center;
-  padding: 30px 32px;
-  border-radius: var(--radius-lg);
+  padding: 20px 0;
+}
+
+.google-btn-slot::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 140px;
   background: radial-gradient(ellipse at center, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.13) 45%, rgba(255,255,255,0) 80%);
+  pointer-events: none;
+}
+
+/* Stack whatever Google injects above the glow layer, not behind it. */
+.google-btn-slot > * {
+  position: relative;
+  z-index: 1;
 }
 
 .login-progress {
