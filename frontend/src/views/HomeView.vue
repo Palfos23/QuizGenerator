@@ -106,7 +106,13 @@ onMounted(async () => {
     await waitForGoogleIdentity()
     window.google.accounts.id.initialize({
       client_id: clientId,
-      callback: handleCredentialResponse
+      callback: handleCredentialResponse,
+      // Without this, Chrome briefly renders our configured filled_black pill
+      // correctly, then swaps it out for its own native FedCM "Continue as ..."
+      // personalized card a moment later (confirmed live - the button visibly
+      // flips after load) - a fixed white card we can't restyle. This keeps the
+      // plain, always-themed button as the permanent state instead.
+      use_fedcm_for_button: false
     })
     window.google.accounts.id.renderButton(buttonEl.value, {
       theme: 'filled_black',
