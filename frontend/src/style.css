@@ -2044,7 +2044,7 @@ table.scoreboard-table {
   position: relative;
   width: 320px;
   max-width: 100%;
-  height: 44px;
+  height: 48px;
   margin: 0 auto;
 }
 
@@ -2054,23 +2054,64 @@ table.scoreboard-table {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
   background: #000;
   color: #fff;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 999px;
   font-family: var(--font-body);
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+/* The real overlay above intercepts every pointer event (that's the point - see
+   below), so .google-fake-btn itself never receives :hover/:active directly.
+   These fire on the ancestor instead - :hover/:active still match a container
+   whenever the pointer/press is anywhere inside it, even over a covering child -
+   giving normal-feeling press feedback despite the button being purely visual.
+   A background-color swap rather than filter:brightness() - brightness() only
+   scales existing channel values, and 0 (pure black) times anything is still 0,
+   so it was a no-op here (checked via computed styles - the rule matched, the
+   visual result just never changed). */
+.google-btn-slot:hover .google-fake-btn {
+  background: #1c1c1c;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.45);
+}
+
+/* Same brightness()-on-black issue as :hover above - a "darken on press" filter
+   is just as much a no-op starting from pure black. Pressed feedback comes from
+   the scale-down + flattened shadow instead (a real color shift back toward
+   black would have nowhere to go anyway, since the resting state already is
+   black). */
+.google-btn-slot:active .google-fake-btn {
+  background: #000;
+  transform: scale(0.99);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+}
+
+/* Same idea for the keyboard: focus lands on the real (invisible) button, not
+   this one, but :focus-within still matches an ancestor of whatever's focused -
+   including a focused <iframe> element itself - so a visible ring still shows
+   up around the button a keyboard user is actually about to activate. */
+.google-btn-slot:focus-within .google-fake-btn {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
 }
 
 .google-fake-btn-icon {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
   background: #fff;
-  border-radius: 2px;
-  padding: 2px;
+  border-radius: 50%;
+  padding: 5px;
 }
 
 /* Sits on top of the fake button (later in the DOM = higher paint order within
