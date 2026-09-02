@@ -2056,9 +2056,9 @@ table.scoreboard-table {
   justify-content: center;
   gap: 12px;
   width: 100%;
-  background: #000;
+  background: var(--ink-raised);
   color: #fff;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--border);
   border-radius: 999px;
   font-family: var(--font-body);
   font-size: 0.95rem;
@@ -2074,21 +2074,17 @@ table.scoreboard-table {
    whenever the pointer/press is anywhere inside it, even over a covering child -
    giving normal-feeling press feedback despite the button being purely visual.
    A background-color swap rather than filter:brightness() - brightness() only
-   scales existing channel values, and 0 (pure black) times anything is still 0,
-   so it was a no-op here (checked via computed styles - the rule matched, the
-   visual result just never changed). */
+   scales existing channel values, which broke on the button's old pure-black
+   background (0 x anything is still 0, checked via computed styles - the rule
+   matched, the visual result just never changed). Explicit colors sidestep that
+   regardless of what the resting background is. */
 .google-btn-slot:hover .google-fake-btn {
-  background: #1c1c1c;
+  background: #262a3a;
   box-shadow: 0 6px 22px rgba(0,0,0,0.45);
 }
 
-/* Same brightness()-on-black issue as :hover above - a "darken on press" filter
-   is just as much a no-op starting from pure black. Pressed feedback comes from
-   the scale-down + flattened shadow instead (a real color shift back toward
-   black would have nowhere to go anyway, since the resting state already is
-   black). */
 .google-btn-slot:active .google-fake-btn {
-  background: #000;
+  background: #14151f;
   transform: scale(0.99);
   box-shadow: 0 2px 10px rgba(0,0,0,0.35);
 }
