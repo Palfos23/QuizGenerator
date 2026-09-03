@@ -271,6 +271,7 @@ function startGame(id) {
 const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] - a[1]))
 
 function onGameOver(scores) {
+  api.recordGamePlayed('PENALTY_SHOOTOUT')
   passAndPlayState.clear('penalty-shootout')
   savedPassAndPlay.value = null
   finalScores.value = scores

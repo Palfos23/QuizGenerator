@@ -10,9 +10,9 @@ import java.util.EnumMap;
 import java.util.Map;
 
 // Records and tallies completed battle games (Grid Battle, Starting XI
-// Battle, Imposter, 501, Bullseye) for the admin Statistics page. See
-// GamePlayEvent for why this exists as its own permanent table rather than
-// counting GameRoom rows or something derived from existing state.
+// Battle, Imposter, 501, Bullseye, Penalty Shootout) for the admin Statistics
+// page. See GamePlayEvent for why this exists as its own permanent table
+// rather than counting GameRoom rows or something derived from existing state.
 @Service
 public class GamePlayEventService {
 

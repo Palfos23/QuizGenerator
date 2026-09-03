@@ -73,6 +73,7 @@ public class PlayAccessService {
             case IMPOSTER -> requireImposterAccess(authentication);
             case STARTING_XI_BATTLE -> requireStartingXiBattleAccess(authentication);
             case BULLSEYE -> requireBullseyeAccess(authentication);
+            case PENALTY_SHOOTOUT -> requirePenaltyShootoutAccess(authentication);
         }
     }
 

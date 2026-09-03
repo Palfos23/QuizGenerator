@@ -17,6 +17,7 @@ import com.quizapp.repository.GridCategoryRepository;
 import com.quizapp.repository.GridRepository;
 import com.quizapp.repository.ImposterGridRepository;
 import com.quizapp.repository.LineupRepository;
+import com.quizapp.repository.PenaltyShootoutRepository;
 import com.quizapp.repository.TensionQuestionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +51,7 @@ public class StatisticsService {
     private final BullseyeQuestionRepository bullseyeQuestionRepository;
     private final FiveOhOneCategoryRepository fiveOhOneCategoryRepository;
     private final TensionQuestionRepository tensionQuestionRepository;
+    private final PenaltyShootoutRepository penaltyShootoutRepository;
     private final GamePlayEventService gamePlayEventService;
 
     public StatisticsService(AppUserRepository appUserRepository,
@@ -62,6 +64,7 @@ public class StatisticsService {
                              BullseyeQuestionRepository bullseyeQuestionRepository,
                              FiveOhOneCategoryRepository fiveOhOneCategoryRepository,
                              TensionQuestionRepository tensionQuestionRepository,
+                             PenaltyShootoutRepository penaltyShootoutRepository,
                              GamePlayEventService gamePlayEventService) {
         this.appUserRepository = appUserRepository;
         this.athleteRepository = athleteRepository;
@@ -73,6 +76,7 @@ public class StatisticsService {
         this.bullseyeQuestionRepository = bullseyeQuestionRepository;
         this.fiveOhOneCategoryRepository = fiveOhOneCategoryRepository;
         this.tensionQuestionRepository = tensionQuestionRepository;
+        this.penaltyShootoutRepository = penaltyShootoutRepository;
         this.gamePlayEventService = gamePlayEventService;
     }
 
@@ -126,6 +130,7 @@ public class StatisticsService {
         out.add(new CountEntry("501", fiveOhOneCategoryRepository.count()));
         out.add(new CountEntry("Imposter", imposterGridRepository.count()));
         out.add(new CountEntry("Bullseye", bullseyeQuestionRepository.count()));
+        out.add(new CountEntry("Penalty Shootout", penaltyShootoutRepository.count()));
         return out;
     }
 
@@ -141,6 +146,7 @@ public class StatisticsService {
         out.add(new CountEntry("XI Battle", counts.get(BattleGameType.STARTING_XI_BATTLE)));
         out.add(new CountEntry("Imposter", counts.get(BattleGameType.IMPOSTER)));
         out.add(new CountEntry("Bullseye", counts.get(BattleGameType.BULLSEYE)));
+        out.add(new CountEntry("Penalty Shootout", counts.get(BattleGameType.PENALTY_SHOOTOUT)));
         return out;
     }
 
