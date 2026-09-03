@@ -4,26 +4,27 @@
       <h1>Quizzes, party games, and trivia - all in one place</h1>
       <p class="page-subtitle landing-lede">
         Build a custom quiz from a shared question bank, play a themed weekly guessing
-        grid, battle friends head-to-head, or run a pass-the-device party game together.
-        Sign in with Google to get started.
+        grid, or run a pass-the-device party game with friends. Sign in with Google to get started.
       </p>
     </section>
 
-    <!-- Every card is a real route, not just descriptive text - clicking one while
-         signed out bounces through the login guard (which remembers it via
-         ?redirect=, see router/index.js and the watcher below) and lands there
-         the moment sign-in succeeds, instead of just dumping the visitor on
-         the generic dashboard. -->
     <section class="landing-features">
-      <router-link
-        v-for="f in features"
-        :key="f.to"
-        :to="f.to"
-        class="feature-card"
-      >
-        <h3>{{ f.title }}</h3>
-        <p>{{ f.description }}</p>
-      </router-link>
+      <div class="feature-card">
+        <h3>Create a quiz</h3>
+        <p>Mix categories, set a difficulty, then reorder, search in specific questions, or swap out anything before you print it.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Weekly grid</h3>
+        <p>Guess every answer that fits the week's theme before you run out of strikes.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Tension</h3>
+        <p>A pass-the-device party quiz - push for a high-value guess, or play it safe.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Suggest a question</h3>
+        <p>Add to the shared bank yourself - admin-reviewed, and usable in your own quizzes either way.</p>
+      </div>
     </section>
 
     <section class="landing-login">
@@ -74,11 +75,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '../services/api'
 import auth from '../services/auth'
-import { safeRedirectTarget } from '../router'
 
 const route = useRoute()
 const router = useRouter()
@@ -89,47 +89,6 @@ const loggingIn = ref(false)
 const slowLogin = ref(false)
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 const clientIdConfigured = !!clientId
-
-// The full current game roster, kept here rather than hand-copied per card in
-// the template - this list drifted badly out of date before (missing Starting
-// XI, 501, Imposter, Grid Battle, XI Battle and Bullseye entirely, added well
-// after these four were first written), and a plain array is much harder to
-// forget to update than markup is.
-const features = [
-  { to: '/generate', title: 'Create a quiz', description: 'Mix categories, set a difficulty, then reorder, search in specific questions, or swap out anything before you print it.' },
-  { to: '/weekly-grid', title: 'Weekly grid', description: "Guess every answer that fits the week's theme before you run out of strikes." },
-  { to: '/starting-xi', title: 'Starting XI', description: "Guess a full lineup, position by position, before the week's board runs out of lives." },
-  { to: '/tension', title: 'Tension', description: 'A pass-the-device party quiz - push for a high-value guess, or play it safe.' },
-  { to: '/501', title: '501', description: 'A darts-style countdown from 501 - checkout between 0 and -10 to win.' },
-  { to: '/imposter', title: 'Imposter', description: "One player doesn't get the answer - find out who by asking around the table." },
-  { to: '/grid-battle', title: 'Grid Battle', description: 'A pass-the-device or online multiplayer version of Weekly grid - take turns, or lose a life trying.' },
-  { to: '/starting-xi-battle', title: 'XI Battle', description: 'Same idea as Grid Battle, for a Starting XI board - take turns naming the lineup.' },
-  { to: '/bullseye', title: 'Bullseye', description: 'Everyone answers, lowest score is eliminated each round, until one player is left.' },
-  { to: '/penalty-shootout', title: 'Penalty Shootout', description: 'Guess who took each penalty, in real order - solo, or pass the device around and take turns.' },
-  { to: '/suggest-question', title: 'Suggest a question', description: 'Add to the shared bank yourself - admin-reviewed, and usable in your own quizzes either way.' }
-]
-
-// Every card above is a real route, so clicking one while signed out is
-// already captured by the login guard as ?redirect= (see router/index.js) -
-// but since that guard bounces back to this same page, nothing would
-// otherwise look like it happened without this. Bring the actual next step
-// (the sign-in button below) into view instead of leaving the click looking
-// dead. Reacts to the query itself rather than a @click on the cards - tried
-// that first, but RouterLink handles navigation via its own internal
-// listener, and a plain @click alongside it never actually fired in testing
-// (confirmed: the navigation itself worked, the handler didn't run). Covers
-// two cases: the query changing while already sitting on this page (a card
-// click - see the watch below) and landing here already carrying ?redirect=
-// on first mount (a bookmarked/shared deep link the guard bounced from a
-// route this browser was never on - see the call in onMounted below).
-function scrollToLoginIfRedirected() {
-  if (route.query.redirect && !auth.isAuthenticated.value) {
-    requestAnimationFrame(() => {
-      document.querySelector('.landing-login')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
-  }
-}
-watch(() => route.query.redirect, scrollToLoginIfRedirected)
 
 // The <script> tag in index.html loads Google's Identity Services library
 // asynchronously - it may not have finished (or even started) by the time this
@@ -153,13 +112,12 @@ function waitForGoogleIdentity(timeoutMs = 10000) {
 
 onMounted(async () => {
   if (auth.isAuthenticated.value) {
-    router.push(auth.isAdmin.value ? '/admin/questions' : safeRedirectTarget(route, '/dashboard'))
+    router.push(auth.isAdmin.value ? '/admin/questions' : '/dashboard')
     return
   }
   if (route.query.sessionExpired) {
     error.value = 'Your session expired - please sign in again.'
   }
-  scrollToLoginIfRedirected()
   if (!clientIdConfigured) {
     loadingScript.value = false
     return
@@ -201,7 +159,7 @@ async function handleCredentialResponse(response) {
   try {
     const result = await api.loginWithGoogle(response.credential)
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
-    router.push(safeRedirectTarget(route, '/dashboard'))
+    router.push('/dashboard')
   } catch (e) {
     error.value = e.response?.data?.message || 'Sign-in failed. Please try again.'
     loggingIn.value = false

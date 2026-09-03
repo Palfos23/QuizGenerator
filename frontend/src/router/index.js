@@ -89,16 +89,17 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  // Both bounces carry the originally-requested path along as ?redirect= - see
-  // safeRedirectTarget() below, used by HomeView/AdminLoginView once sign-in
-  // actually succeeds, so a shared link (a specific weekly grid, a bookmarked
-  // admin sub-page) lands where it was actually pointing instead of always
-  // dumping the visitor on the generic dashboard/question-bank.
+  // Admin bounces carry the originally-requested path along as ?redirect= -
+  // see safeRedirectTarget() below, used by AdminLoginView once sign-in
+  // actually succeeds, so a bookmarked admin sub-page lands where it was
+  // actually pointing instead of always dumping the visitor on the question
+  // bank. The regular (requiresAuth) bounce below deliberately doesn't do
+  // this - it always lands on the plain sign-in page.
   if (to.meta.requiresAdmin && !auth.isAdmin.value) {
     return { name: 'admin-login', query: { redirect: to.fullPath } }
   }
   if (to.meta.requiresAuth && !auth.isAuthenticated.value) {
-    return { name: 'home', query: { redirect: to.fullPath } }
+    return { name: 'home' }
   }
   return true
 })

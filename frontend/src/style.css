@@ -2036,33 +2036,16 @@ table.scoreboard-table {
 
 .landing-features {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
   margin: 32px 0 48px;
 }
 
-/* Real <router-link>s now (were plain unlinked <div>s - the whole roster was
-   just descriptive text, not something a click ever did anything with), so
-   this resets the anchor defaults and adds hover/focus feedback like any
-   other clickable card in the app. */
 .feature-card {
-  display: block;
   padding: 18px 20px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: rgba(255,255,255,0.02);
-  color: inherit;
-  text-decoration: none;
-  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
-}
-.feature-card:hover {
-  border-color: var(--gold);
-  background: rgba(242,183,5,0.06);
-  transform: translateY(-2px);
-}
-.feature-card:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 2px;
 }
 
 .feature-card h3 {
@@ -2260,15 +2243,6 @@ table.scoreboard-table {
 
 .bottom-nav {
   display: none;
-}
-
-/* Tablet-width step down from the desktop 3-column game roster - 3 columns
-   gets cramped once each card's title+description no longer has real desktop
-   width to breathe in. The mobile block further down (max-width: 760px, same
-   selector, appearing later in the file so it wins at narrower widths too)
-   drops this to a single column. */
-@media (max-width: 1000px) {
-  .landing-features { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 760px) {
