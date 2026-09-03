@@ -113,6 +113,16 @@
               <div class="score-square-number">{{ p.total }}</div>
             </div>
           </div>
+
+          <template v-if="recapKicks.length && recapFoundCount < recapKicks.length">
+            <div class="grid-recap-label">
+              {{ recapFoundCount }} / {{ recapKicks.length }} found — <span style="color:var(--coral);">red</span> kicks went unfound
+            </div>
+            <div class="pen-kick-recap">
+              <PenaltyShootoutBoard :kicks="recapKicks" :show-scoreline="false" />
+            </div>
+          </template>
+
           <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="finish">
             {{ players.length > 1 ? 'See final result' : 'Done' }}
           </button>
@@ -192,6 +202,13 @@ const leaderboard = computed(() =>
     .map(p => ({ name: p.name, total: scores.value[p.name] || 0 }))
     .sort((a, b) => b.total - a.total)
 )
+
+// The board at the buzzer for the results modal - every kick with its real
+// answer (revealRemaining() has merged the unfound ones in by the time the
+// game is over), so the modal can show which ones nobody actually guessed
+// rather than the player having to dismiss it and scroll down to the board.
+const recapKicks = computed(() => shootout.value?.kicks || [])
+const recapFoundCount = computed(() => recapKicks.value.filter(k => k.guessedByUser).length)
 
 onMounted(loadShootout)
 
