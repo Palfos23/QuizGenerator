@@ -82,28 +82,34 @@
 
           <template v-else>
             <h3 style="text-align:center; margin-top:0;">Answers</h3>
-            <table class="table scoreboard-table">
-              <thead>
-                <tr>
-                  <th style="width:10%;">#</th>
-                  <th style="width:45%;">Answer</th>
-                  <th style="width:25%;">Player</th>
-                  <th style="width:20%;">Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="(ans, idx) in allAnswersList"
-                  :key="ans.text"
-                  :class="{ 'tension-row-revealed': revealIndex > idx, 'tension-row-trap': revealIndex > idx && ans.tension }"
-                >
-                  <td>{{ ans.rank }}</td>
-                  <td>{{ revealIndex > idx ? ans.text : '???' }}</td>
-                  <td>{{ revealIndex > idx ? guessedByFor(ans) : '' }}</td>
-                  <td>{{ revealIndex > idx ? guessedScoreFor(ans) : '' }}</td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="tension-reveal-list">
+              <div
+                v-for="(ans, idx) in allAnswersList"
+                :key="ans.text"
+                class="tension-reveal-row"
+                :class="{ 'is-revealed': revealIndex > idx, 'is-trap': revealIndex > idx && ans.tension }"
+              >
+                <div class="tension-reveal-rank">{{ revealIndex > idx ? ans.rank : '?' }}</div>
+                <div class="tension-reveal-main">
+                  <div class="tension-reveal-answer">{{ revealIndex > idx ? ans.text : 'Hidden until revealed' }}</div>
+                  <div v-if="revealIndex > idx" class="tension-reveal-tag" :class="ans.tension ? 'trap' : 'safe'">
+                    {{ ans.tension ? '⚠ Tension answer' : 'Safe answer' }}
+                  </div>
+                </div>
+                <div v-if="revealIndex > idx" class="tension-reveal-guessers">
+                  <span v-if="!guessersFor(ans).length" class="tension-reveal-nobody">Nobody guessed this</span>
+                  <span
+                    v-for="g in guessersFor(ans)"
+                    :key="g.name"
+                    class="tension-reveal-chip"
+                    :style="{ borderColor: colorOf(g.name) }"
+                  >
+                    {{ g.name }}
+                    <span class="tension-round-score" :class="{ positive: g.score > 0, negative: g.score < 0 }">{{ formatScore(g.score) }}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
             <button
               v-if="revealIndex < allAnswersList.length"
               class="btn btn-secondary"
@@ -177,18 +183,21 @@ const allAnswersList = computed(() => {
   ]
 })
 
-function guessedByFor(ans) {
+// One chip per player who landed on this exact answer, each with their own
+// round score - a trap answer can still be guessed by more than one player.
+function guessersFor(ans) {
   return (state.value?.roundResults || [])
     .filter(r => r.answerText.toLowerCase() === ans.text.toLowerCase())
-    .map(r => r.name)
-    .join(', ')
+    .map(r => ({ name: r.name, score: r.score }))
 }
 
-function guessedScoreFor(ans) {
-  return (state.value?.roundResults || [])
-    .filter(r => r.answerText.toLowerCase() === ans.text.toLowerCase())
-    .map(r => (r.score > 0 ? '+' + r.score : r.score))
-    .join(', ')
+function colorOf(name) {
+  return state.value?.players.find(p => p.name === name)?.color || 'var(--border)'
+}
+
+function formatScore(score) {
+  if (score === undefined || score === null) return ''
+  return score > 0 ? `+${score}` : String(score)
 }
 
 async function poll() {

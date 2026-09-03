@@ -58,24 +58,34 @@
 
       <div class="tension-answers-panel">
         <h3 style="text-align:center; margin-top:0;">Answers</h3>
-        <table class="table">
-          <thead>
-            <tr>
-              <th style="width:10%;">#</th>
-              <th style="width:45%;">Answer</th>
-              <th style="width:25%;">Player</th>
-              <th style="width:20%;">Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(ans, idx) in allAnswersList" :key="ans.text" :class="{ 'tension-row-revealed': revealIndex > idx, 'tension-row-trap': revealIndex > idx && ans.tension }">
-              <td>{{ ans.rank }}</td>
-              <td>{{ revealIndex > idx ? ans.text : '???' }}</td>
-              <td>{{ revealIndex > idx ? guessedByFor(ans).join(', ') : '' }}</td>
-              <td>{{ revealIndex > idx ? guessedScoresFor(ans) : '' }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="tension-reveal-list">
+          <div
+            v-for="(ans, idx) in allAnswersList"
+            :key="ans.text"
+            class="tension-reveal-row"
+            :class="{ 'is-revealed': revealIndex > idx, 'is-trap': revealIndex > idx && ans.tension }"
+          >
+            <div class="tension-reveal-rank">{{ revealIndex > idx ? ans.rank : '?' }}</div>
+            <div class="tension-reveal-main">
+              <div class="tension-reveal-answer">{{ revealIndex > idx ? ans.text : 'Hidden until revealed' }}</div>
+              <div v-if="revealIndex > idx" class="tension-reveal-tag" :class="ans.tension ? 'trap' : 'safe'">
+                {{ ans.tension ? '⚠ Tension answer' : 'Safe answer' }}
+              </div>
+            </div>
+            <div v-if="revealIndex > idx" class="tension-reveal-guessers">
+              <span v-if="!guessersFor(ans).length" class="tension-reveal-nobody">Nobody guessed this</span>
+              <span
+                v-for="g in guessersFor(ans)"
+                :key="g.name"
+                class="tension-reveal-chip"
+                :style="{ borderColor: colorOf(g.name) }"
+              >
+                {{ g.name }}
+                <span class="tension-round-score" :class="{ positive: g.score > 0, negative: g.score < 0 }">{{ formatScore(g.score) }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -230,14 +240,12 @@ function formatScore(score) {
   if (score === undefined) return ''
   return score > 0 ? `+${score}` : String(score)
 }
-function guessedByFor(ans) {
-  return roundAnswers.value.filter(a => a.answer.toLowerCase() === ans.text.toLowerCase()).map(a => a.player)
-}
-function guessedScoresFor(ans) {
-  return guessedByFor(ans)
-    .map(name => roundAnswers.value.find(a => a.player === name))
-    .map(a => formatScore(a?.score))
-    .join(', ')
+// One chip per player who landed on this exact answer, each with their own
+// round score - a trap answer can still be guessed by more than one player.
+function guessersFor(ans) {
+  return roundAnswers.value
+    .filter(a => a.answer.toLowerCase() === ans.text.toLowerCase())
+    .map(a => ({ name: a.player, score: a.score }))
 }
 
 function submitAnswer(answerText) {

@@ -1395,8 +1395,111 @@ mark {
   overflow-wrap: break-word;
 }
 
-.tension-row-revealed td { background: rgba(61, 220, 151, 0.08); }
+/* Still used by AdminAthletesView's CSV-import preview table to flag invalid
+   rows - the reveal table it originally styled is gone, replaced below by
+   .tension-reveal-row. */
 .tension-row-trap td { background: rgba(255, 77, 109, 0.1); }
+
+/* Tension's own reveal "ladder" (used by both the pass-and-play and online
+   room variants) - a sibling of Bullseye's .bullseye-reveal-row below, same
+   rank-badge-plus-card shape, but built for Tension's own data: each row is
+   an ANSWER (not a player), with zero or more player chips showing who
+   landed on it and their round score - there's no single "how close" number
+   to bar-chart the way Bullseye's distance is, and the reveal order here
+   stays exactly as authored (safe answers first, then tension answers),
+   not closest-to-worst. */
+.tension-reveal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tension-reveal-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  opacity: 0.5;
+  transform: scale(0.98);
+  transition: opacity 0.4s cubic-bezier(0.22,1,0.36,1), transform 0.4s cubic-bezier(0.22,1,0.36,1), background 0.3s ease, border-color 0.3s ease;
+}
+.tension-reveal-row.is-revealed {
+  opacity: 1;
+  transform: scale(1);
+  background: rgba(61, 220, 151, 0.05);
+  border-color: rgba(61, 220, 151, 0.2);
+}
+.tension-reveal-row.is-trap {
+  background: rgba(255, 77, 109, 0.08);
+  border-color: rgba(255, 77, 109, 0.3);
+}
+.tension-reveal-rank {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.82rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tension-reveal-main {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+.tension-reveal-answer {
+  font-weight: 700;
+}
+.tension-reveal-tag {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+.tension-reveal-tag.safe {
+  color: var(--teal);
+  background: rgba(61, 220, 151, 0.12);
+}
+.tension-reveal-tag.trap {
+  color: var(--coral);
+  background: rgba(255, 77, 109, 0.14);
+}
+.tension-reveal-guessers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  max-width: 45%;
+}
+.tension-reveal-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+.tension-reveal-nobody {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tension-reveal-row { transition: none; }
+}
 
 /* The reveal "ladder" - a stack of cards that fills in as each answer is
    revealed, replacing a plain table with something that reads at a glance:
@@ -2521,17 +2624,15 @@ table.scoreboard-table {
   .tension-player-col { width: 100%; flex-direction: row; flex-wrap: wrap; }
   .tension-player-card { flex: 1; min-width: 140px; }
   .tension-answers-panel { min-width: 0; max-width: 100%; padding: 14px; }
-  .tension-answers-panel .table { font-size: 0.82rem; }
-  .tension-answers-panel th:first-child,
-  .tension-answers-panel td:first-child { display: none; } /* rank column - least essential, drop it first */
-  .tension-answers-panel th:nth-child(2) { width: 50% !important; }
-  .tension-answers-panel th:nth-child(3) { width: 28% !important; }
-  .tension-answers-panel th:nth-child(4) { width: 22% !important; }
 
   .bullseye-reveal-row { flex-wrap: wrap; row-gap: 6px; }
   .bullseye-reveal-main { min-width: 55%; }
   .bullseye-reveal-stats { width: 100%; justify-content: flex-end; padding-left: 44px; }
   .bullseye-reveal-bar { width: 48px; }
+
+  .tension-reveal-row { flex-wrap: wrap; row-gap: 6px; }
+  .tension-reveal-main { min-width: 55%; }
+  .tension-reveal-guessers { width: 100%; max-width: 100%; align-items: flex-start; padding-left: 44px; }
 
   .modal-backdrop {
     align-items: flex-end;
