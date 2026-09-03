@@ -38,7 +38,7 @@
           v-for="p in activePlayers"
           :key="p.name"
           class="mp-player-card"
-          :class="{ 'active-turn': p.name === currentTurnPlayerName && !revealed, 'bullseye-just-eliminated': justEliminatedName === p.name }"
+          :class="{ 'active-turn': p.name === currentTurnPlayerName && !allAnswered, 'bullseye-just-eliminated': justEliminatedName === p.name }"
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
@@ -48,7 +48,7 @@
 
       <div v-if="!revealed" style="text-align:center; margin:8px 0 0;">
         <div v-if="countdown !== null" style="font-size:1.4rem; font-weight:700;">
-          Revealing in {{ countdown }}…
+          Everyone's locked in! Revealing in {{ countdown }}…
         </div>
         <p v-else style="color:var(--gold); font-weight:600;">
           {{ currentTurnPlayerName }}'s turn - pick a name
@@ -58,10 +58,39 @@
       <div v-if="revealed" class="tension-answers-panel" style="margin:16px auto 0;">
         <h3 style="text-align:center; margin-top:0;">Answers</h3>
 
-        <div v-if="bullseyeAnswers.length" class="bullseye-truth-callout">
+        <div v-if="drumrolling" class="bullseye-drumroll">
+          <div class="bullseye-drumroll-icon">🥁</div>
+          <div>Down to the final two…</div>
+        </div>
+
+        <div v-if="eliminating" class="bullseye-elimination-banner">
+          ❌ {{ justEliminatedName }} is eliminated!
+        </div>
+
+        <div
+          v-if="spotlightEntry && !drumrolling"
+          :key="spotlightEntry.player"
+          class="bullseye-spotlight"
+          :class="{ 'bullseye-spotlight-out': eliminating }"
+        >
+          <div class="bullseye-spotlight-label">{{ spotlightLabel }}</div>
+          <div class="bullseye-spotlight-name">{{ spotlightEntry.player }}</div>
+          <div class="bullseye-spotlight-answer">
+            {{ spotlightEntry.name }} · {{ formatNumber(spotlightEntry.statValue) }} ({{ formatNumber(spotlightEntry.distance) }} away)
+          </div>
+        </div>
+
+        <div v-if="showTruth && bullseyeAnswers.length" class="bullseye-truth-callout">
           <div class="bullseye-truth-label">{{ bullseyeAnswers[0].distance === 0 ? '🎯 Bullseye' : 'Closest possible answer' }}</div>
-          <div class="bullseye-truth-names">
-            {{ bullseyeAnswers.map(e => `${e.athleteName} (${formatNumber(e.statValue)})`).join(', ') }}
+          <div class="bullseye-truth-list">
+            <span
+              v-for="e in bullseyeAnswersWithFoundState"
+              :key="e.athleteId ?? e.athleteName"
+              class="bullseye-truth-name"
+              :class="e.foundBy ? 'found' : 'not-found'"
+            >
+              {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ formatNumber(e.statValue) }})<template v-if="e.foundBy"> — found by {{ e.foundBy }}</template>
+            </span>
           </div>
         </div>
 
@@ -149,6 +178,10 @@ const countdown = ref(null)
 const eliminationOrder = ref([]) // player names, in elimination order across the whole game
 const justEliminatedName = ref(null)
 const readyForNextRound = ref(false)
+const drumrolling = ref(false) // true only during the "final two" suspense beat
+const eliminating = ref(false) // true only while the elimination flourish is playing
+const justSafeName = ref(null) // the closer of the final two, once revealed
+const showTruth = ref(false) // gates the "🎯 Bullseye" answer-key callout until the whole reveal sequence has played out
 
 const rotatedActivePlayers = computed(() => {
   const shift = roundIndex.value % activePlayers.value.length
@@ -202,6 +235,37 @@ const bullseyeAnswers = computed(() => {
   return withDistance.filter(e => e.distance === minDistance)
 })
 
+// Same list, annotated with who (if anyone) actually guessed each real
+// answer this round - the Bullseye equivalent of Grid/XI Battle's "unfound
+// tiles" recap, since there's no fixed board here, just a target value.
+const bullseyeAnswersWithFoundState = computed(() =>
+  bullseyeAnswers.value.map(e => ({
+    ...e,
+    foundBy: roundAnswers.value.find(a => a.name.trim().toLowerCase() === e.athleteName.toLowerCase())?.player || null
+  }))
+)
+
+function ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = n % 100
+  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`
+}
+
+// The entry most recently revealed, and how to caption it - drives the big
+// "spotlight" card during the reveal sequence.
+const spotlightEntry = computed(() => {
+  if (!revealIndex.value) return null
+  return rankedAnswers.value[revealIndex.value - 1] || null
+})
+const spotlightLabel = computed(() => {
+  const total = rankedAnswers.value.length
+  const rank = revealIndex.value
+  if (!rank) return ''
+  if (rank === total) return '❌ Eliminated'
+  if (rank === total - 1) return '✅ Safe!'
+  return `${ordinal(rank)} closest`
+})
+
 let countdownTimer = null
 watch([roundAnswers, revealed], () => {
   if (allAnswered.value && !revealed.value) {
@@ -222,34 +286,83 @@ watch([roundAnswers, revealed], () => {
 function reveal() {
   revealed.value = true
   revealIndex.value = 0
+  drumrolling.value = false
+  eliminating.value = false
+  justSafeName.value = null
+  showTruth.value = false
   scheduleReveal()
 }
+
+// Reveal pacing: closest-first, one at a time, same order the user asked for
+// ("reveal the one that is closest... then the next closest, and so on").
+// The last two get special treatment - a drumroll beat, then the "safe"
+// player, then the elimination itself, held long enough for the
+// .bullseye-just-eliminated card animation to play out before moving on.
+const REVEAL_STEP_MS = 1700
+const DRUMROLL_MS = 2200
+const SAFE_BEAT_MS = 1300
+const ELIMINATION_HOLD_MS = 1800
 
 let revealTimer = null
 function scheduleReveal() {
   clearTimeout(revealTimer)
-  if (revealIndex.value < rankedAnswers.value.length) {
+  const total = rankedAnswers.value.length
+  const remaining = total - revealIndex.value
+
+  if (remaining <= 0) {
+    finishReveal()
+    return
+  }
+
+  if (remaining >= 3) {
     revealTimer = setTimeout(() => {
       revealIndex.value += 1
-      if (revealIndex.value >= rankedAnswers.value.length) {
-        finishReveal()
-      } else {
-        scheduleReveal()
-      }
-    }, 1300)
-  } else {
-    finishReveal()
+      scheduleReveal()
+    }, REVEAL_STEP_MS)
+    return
   }
+
+  if (remaining === 2) {
+    drumrolling.value = true
+    revealTimer = setTimeout(() => {
+      drumrolling.value = false
+      revealIndex.value += 1
+      justSafeName.value = rankedAnswers.value[revealIndex.value - 1]?.player || null
+      revealTimer = setTimeout(() => {
+        eliminating.value = true
+        justEliminatedName.value = eliminatedThisRound.value?.player || null
+        revealIndex.value += 1
+        revealTimer = setTimeout(() => {
+          eliminating.value = false
+          finishReveal()
+        }, ELIMINATION_HOLD_MS)
+      }, SAFE_BEAT_MS)
+    }, DRUMROLL_MS)
+    return
+  }
+
+  // Defensive fallback - not reachable in practice, since every round has at
+  // least 2 active players and the branch above always consumes the last two
+  // together.
+  revealTimer = setTimeout(() => {
+    justEliminatedName.value = eliminatedThisRound.value?.player || null
+    revealIndex.value += 1
+    finishReveal()
+  }, REVEAL_STEP_MS)
 }
 
 function skipReveal() {
   clearTimeout(revealTimer)
   revealIndex.value = rankedAnswers.value.length
+  drumrolling.value = false
+  eliminating.value = false
+  justSafeName.value = rankedAnswers.value.length >= 2 ? rankedAnswers.value[rankedAnswers.value.length - 2]?.player : null
+  justEliminatedName.value = eliminatedThisRound.value?.player || null
   finishReveal()
 }
 
 function finishReveal() {
-  justEliminatedName.value = eliminatedThisRound.value?.player || null
+  showTruth.value = true
   readyForNextRound.value = true
 }
 
@@ -268,6 +381,8 @@ function nextRound() {
     activePlayers.value = activePlayers.value.filter(p => p.name !== eliminatedName)
   }
   justEliminatedName.value = null
+  justSafeName.value = null
+  showTruth.value = false
 
   if (activePlayers.value.length <= 1) {
     emit('gameOver', buildFinalScores())
