@@ -16,7 +16,6 @@ public class PenaltyShootoutAdminDetailDto {
     private Integer teamPensScored;
     private Integer opponentPensScored;
     private int maxStrikes;
-    private List<AthleteDto> candidates;
     private List<KickDetail> kicks;
 
     public Long getId() { return id; }
@@ -41,8 +40,6 @@ public class PenaltyShootoutAdminDetailDto {
     public void setOpponentPensScored(Integer opponentPensScored) { this.opponentPensScored = opponentPensScored; }
     public int getMaxStrikes() { return maxStrikes; }
     public void setMaxStrikes(int maxStrikes) { this.maxStrikes = maxStrikes; }
-    public List<AthleteDto> getCandidates() { return candidates; }
-    public void setCandidates(List<AthleteDto> candidates) { this.candidates = candidates; }
     public List<KickDetail> getKicks() { return kicks; }
     public void setKicks(List<KickDetail> kicks) { this.kicks = kicks; }
 

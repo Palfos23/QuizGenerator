@@ -6,7 +6,6 @@ import com.quizapp.dto.PenaltyShootoutRequest;
 import com.quizapp.dto.PenaltyShootoutSummaryDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
-import com.quizapp.model.PenaltyCandidate;
 import com.quizapp.model.PenaltyKick;
 import com.quizapp.model.PenaltyShootout;
 import com.quizapp.repository.AthleteRepository;
@@ -107,44 +106,31 @@ public class PenaltyShootoutAdminService {
         shootout.setOpponentPensScored(request.getOpponentPensScored());
         shootout.setMaxStrikes(request.getMaxStrikes());
 
-        List<Long> candidateAthleteIds = request.getCandidateAthleteIds().stream()
-                .distinct().collect(Collectors.toList());
-        List<Athlete> foundAthletes = athleteRepository.findAllById(candidateAthleteIds);
-        Map<Long, Athlete> athleteById = foundAthletes.stream()
+        // No candidate pool to validate/build here - unlike Lineup/Grid, every
+        // shootout is football, always, so the guessable pool is simply every
+        // Athlete in that one category, queried live (see
+        // PenaltyShootoutPlayService.searchCandidates). Each kick just needs a
+        // real athlete id.
+        List<Long> athleteIds = request.getKicks().stream()
+                .map(PenaltyKickInputDto::getAthleteId).distinct().collect(Collectors.toList());
+        Map<Long, Athlete> athleteById = athleteRepository.findAllById(athleteIds).stream()
                 .collect(Collectors.toMap(Athlete::getId, a -> a));
-        if (athleteById.size() != candidateAthleteIds.size()) {
-            List<Long> missing = candidateAthleteIds.stream()
+        if (athleteById.size() != athleteIds.size()) {
+            List<Long> missing = athleteIds.stream()
                     .filter(aid -> !athleteById.containsKey(aid))
                     .collect(Collectors.toList());
             throw new IllegalArgumentException("No athlete found with id(s) " + missing);
         }
 
-        // Reuse existing candidate/kick rows for the same athlete rather than
-        // deleting and recreating every save - same reasoning as
-        // LineupAdminService.applyRequest.
-        Map<Long, PenaltyCandidate> existingCandidateByAthleteId = shootout.getCandidates().stream()
-                .collect(Collectors.toMap(c -> c.getAthlete().getId(), c -> c, (a, b) -> a));
-        Set<PenaltyCandidate> candidates = candidateAthleteIds.stream()
-                .map(athleteId -> {
-                    PenaltyCandidate c = existingCandidateByAthleteId.getOrDefault(athleteId, new PenaltyCandidate());
-                    c.setAthlete(athleteById.get(athleteId));
-                    return c;
-                })
-                .collect(Collectors.toSet());
-        shootout.setCandidates(candidates);
-
+        // Reuse existing kick rows for the same kick order rather than deleting
+        // and recreating every save - same reasoning as LineupAdminService.applyRequest.
         Map<Integer, PenaltyKick> existingByKickOrder = shootout.getKicks().stream()
                 .collect(Collectors.toMap(PenaltyKick::getKickOrder, k -> k, (a, b) -> a));
 
         Set<PenaltyKick> kicks = new HashSet<>();
         for (PenaltyKickInputDto input : request.getKicks()) {
-            Athlete athlete = athleteById.get(input.getAthleteId());
-            if (athlete == null) {
-                athlete = athleteRepository.findById(input.getAthleteId())
-                        .orElseThrow(() -> new IllegalArgumentException("No athlete found with id " + input.getAthleteId()));
-            }
             PenaltyKick kick = existingByKickOrder.getOrDefault(input.getKickOrder(), new PenaltyKick());
-            kick.setAthlete(athlete);
+            kick.setAthlete(athleteById.get(input.getAthleteId()));
             kick.setKickOrder(input.getKickOrder());
             kick.setForTeam(input.isForTeam());
             kick.setScored(input.isScored());
@@ -174,15 +160,11 @@ public class PenaltyShootoutAdminService {
         dto.setMaxStrikes(shootout.getMaxStrikes());
 
         Set<Athlete> distinctAthletes = new java.util.LinkedHashSet<>();
-        shootout.getCandidates().forEach(c -> distinctAthletes.add(c.getAthlete()));
         shootout.getKicks().forEach(k -> distinctAthletes.add(k.getAthlete()));
         Map<Long, com.quizapp.dto.AthleteDto> athleteDtoById =
                 athleteService.toDtosWithPhotos(new java.util.ArrayList<>(distinctAthletes)).stream()
                         .collect(Collectors.toMap(com.quizapp.dto.AthleteDto::getId, a -> a));
 
-        dto.setCandidates(shootout.getCandidates().stream()
-                .map(c -> athleteDtoById.get(c.getAthlete().getId()))
-                .collect(Collectors.toList()));
         dto.setKicks(shootout.getKicks().stream()
                 .sorted(java.util.Comparator.comparingInt(PenaltyKick::getKickOrder))
                 .map(k -> new PenaltyShootoutAdminDetailDto.KickDetail(

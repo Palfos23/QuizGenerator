@@ -33,11 +33,9 @@ public class PenaltyShootoutRequest {
     @NotNull
     private Integer maxStrikes;
 
-    // Full searchable pool (kickers + decoys).
-    @NotEmpty
-    private List<Long> candidateAthleteIds;
-
-    // The kicks themselves, in real shootout order.
+    // The kicks themselves, in real shootout order. No separate candidate pool
+    // to send - every shootout is football, always, so the guessable pool is
+    // simply every Athlete in that category (see PenaltyShootoutPlayService).
     @NotEmpty
     @Valid
     private List<PenaltyKickInputDto> kicks;
@@ -62,8 +60,6 @@ public class PenaltyShootoutRequest {
     public void setOpponentPensScored(Integer opponentPensScored) { this.opponentPensScored = opponentPensScored; }
     public Integer getMaxStrikes() { return maxStrikes; }
     public void setMaxStrikes(Integer maxStrikes) { this.maxStrikes = maxStrikes; }
-    public List<Long> getCandidateAthleteIds() { return candidateAthleteIds; }
-    public void setCandidateAthleteIds(List<Long> candidateAthleteIds) { this.candidateAthleteIds = candidateAthleteIds; }
     public List<PenaltyKickInputDto> getKicks() { return kicks; }
     public void setKicks(List<PenaltyKickInputDto> kicks) { this.kicks = kicks; }
 }

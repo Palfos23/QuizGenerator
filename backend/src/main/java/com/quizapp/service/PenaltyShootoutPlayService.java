@@ -8,7 +8,6 @@ import com.quizapp.dto.PenaltyShootoutPlayStateDto;
 import com.quizapp.dto.PenaltyShootoutSummaryDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
-import com.quizapp.model.PenaltyCandidate;
 import com.quizapp.model.PenaltyKick;
 import com.quizapp.model.PenaltyShootout;
 import com.quizapp.repository.AthleteRepository;
@@ -77,17 +76,23 @@ public class PenaltyShootoutPlayService {
     }
 
     /**
-     * Search within just this board's candidate pool - same reasoning as
-     * LineupPlayService.searchCandidates, minus the "entire category" mode
-     * (every Penalty Shootout board has an explicit candidate list).
+     * Unlike Lineup/Grid, there's no per-board candidate pool at all here - every
+     * shootout is football, always (there's no other sport a shootout could even
+     * be), so the searchable pool is simply every Athlete in that one category,
+     * live, the same way LineupPlayService.searchCandidates works when a board
+     * has entireCategoryPool switched on. That's not an option here, it's the
+     * only mode - it's also exactly what makes a good decoy pool: any footballer
+     * is a plausible (wrong) guess for "who took this kick", not just whoever's
+     * explicitly listed on this one board.
      */
     @Transactional(readOnly = true)
     public List<AthleteDto> searchCandidates(Long shootoutId, String nameContains) {
-        PenaltyShootout shootout = findShootout(shootoutId);
+        findShootout(shootoutId); // 404s if the id is bad, same as every other endpoint here
         String term = nameContains == null ? "" : nameContains.trim().toLowerCase();
-        List<Athlete> pool = shootout.getCandidates().stream().map(PenaltyCandidate::getAthlete).collect(Collectors.toList());
+        List<Athlete> pool = term.isEmpty()
+                ? athleteRepository.findBySport(PenaltyShootout.CATEGORY)
+                : athleteRepository.findBySportAndNameContainingIgnoreCase(PenaltyShootout.CATEGORY, term);
         return pool.stream()
-                .filter(a -> term.isEmpty() || a.getName().toLowerCase().contains(term))
                 .sorted(term.isEmpty() ? Comparator.comparing(Athlete::getName)
                         : Comparator.<Athlete>comparingInt(a -> matchRank(a.getName(), term))
                                 .thenComparing(Athlete::getName))

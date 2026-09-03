@@ -74,11 +74,11 @@ public class PenaltyShootout {
         this.updatedAt = updatedAt;
     }
 
-    // The full searchable pool for the guess box - every kicker plus any
-    // decoys (e.g. a player who was subbed off before the shootout). Mirrors
-    // LineupCandidate/Lineup.candidates exactly.
-    @OneToMany(mappedBy = "shootout", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<PenaltyCandidate> candidates = new HashSet<>();
+    // No candidate pool field here, unlike Lineup/Grid - the guessable pool for
+    // the search box is simply every Athlete tagged CATEGORY, queried live (see
+    // PenaltyShootoutPlayService.searchCandidates), since a shootout is always
+    // football and any footballer is a plausible decoy - there's no other sport
+    // it'd ever need to be scoped away from.
 
     // The actual kicks, in shootout order.
     @OneToMany(mappedBy = "shootout", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -172,20 +172,6 @@ public class PenaltyShootout {
         this.maxStrikes = maxStrikes;
     }
 
-    public Set<PenaltyCandidate> getCandidates() {
-        return candidates;
-    }
-
-    public void setCandidates(Set<PenaltyCandidate> candidates) {
-        Set<PenaltyCandidate> incoming = candidates != null ? candidates : new HashSet<>();
-        this.candidates.removeIf(existing -> !incoming.contains(existing));
-        for (PenaltyCandidate c : incoming) {
-            if (!this.candidates.contains(c)) {
-                c.setShootout(this);
-                this.candidates.add(c);
-            }
-        }
-    }
 
     public Set<PenaltyKick> getKicks() {
         return kicks;

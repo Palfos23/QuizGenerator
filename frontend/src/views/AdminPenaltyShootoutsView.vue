@@ -117,61 +117,48 @@
       </div>
 
       <div class="field">
-        <label>Candidate pool <span class="picker-hint">everyone guessable on this board - kickers and decoys</span></label>
+        <label>Kicks <span class="picker-hint">in real shootout order - search adds to the end, reorder with the arrows</span></label>
 
-        <input type="text" v-model="athleteSearchTerm" placeholder="Search football subjects by name…" style="width:100%; margin-bottom:10px;" />
+        <input type="text" v-model="kickSearchTerm" placeholder="Search for who took a kick…" style="width:100%; margin-bottom:10px;" />
 
-        <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
-          <button v-for="a in athleteSearchResults" :key="a.id" class="guess-result-row" @click="addCandidate(a)">
+        <div v-if="kickSearchResults.length" class="guess-results" style="margin-bottom:10px;">
+          <button v-for="a in kickSearchResults" :key="a.id" class="guess-result-row" @click="addKick(a)">
             {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
           </button>
         </div>
 
-        <div v-if="!candidates.length" class="empty-state" style="padding:20px;">
-          No subjects added yet - search above.
+        <div v-if="!kicks.length" class="empty-state" style="padding:20px;">
+          No kicks added yet - search above for the first kicker.
         </div>
 
         <div v-else>
-          <input
-            type="text"
-            v-model="candidateFilterTerm"
-            placeholder="Find someone already added…"
-            class="search-input"
-            style="margin-bottom:12px;"
-          />
-
-          <div v-if="!filteredCandidates.length" class="empty-state" style="padding:20px;">
-            Nobody added yet matches "{{ candidateFilterTerm }}".
-          </div>
-
-          <template v-else>
-          <div v-for="c in pagedCandidates" :key="c.athleteId" class="candidate-row">
-            <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600; margin:0;">
-              <input type="checkbox" v-model="c.tookKick" style="width:auto;" @change="onTookKickToggle(c)" />
-              {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
-            </label>
-            <div v-if="c.tookKick" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-              <input type="number" v-model.number="c.kickOrder" placeholder="Kick #" style="width:80px;" min="1" />
+          <div v-for="(k, i) in kicks" :key="i" class="candidate-row">
+            <div style="display:flex; align-items:center; gap:8px; font-weight:600;">
+              <span class="tag" style="background:rgba(255,255,255,0.06); color:var(--text-dim);">{{ i + 1 }}</span>
+              {{ k.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ k.team }}</span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <div class="language-row" style="gap:6px;">
-                <button type="button" class="language-btn" :class="{ active: c.forTeam }" @click="c.forTeam = true">{{ form.teamName || 'Team' }}</button>
-                <button type="button" class="language-btn" :class="{ active: !c.forTeam }" @click="c.forTeam = false">{{ form.opponentName || 'Opponent' }}</button>
+                <button type="button" class="language-btn" :class="{ active: k.forTeam }" @click="k.forTeam = true">{{ form.teamName || 'Team' }}</button>
+                <button type="button" class="language-btn" :class="{ active: !k.forTeam }" @click="k.forTeam = false">{{ form.opponentName || 'Opponent' }}</button>
               </div>
               <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400; font-size:0.82rem; color:var(--text-dim); margin:0;">
-                <input type="checkbox" v-model="c.scored" style="width:auto;" />
+                <input type="checkbox" v-model="k.scored" style="width:auto;" />
                 Scored
               </label>
             </div>
-            <button class="btn btn-danger btn-sm" @click="removeCandidate(c)">✕</button>
+            <div style="display:flex; gap:4px;">
+              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === 0" @click="moveKick(i, -1)" aria-label="Move up">↑</button>
+              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === kicks.length - 1" @click="moveKick(i, 1)" aria-label="Move down">↓</button>
+              <button class="btn btn-danger btn-sm" @click="kicks.splice(i, 1)">✕</button>
+            </div>
           </div>
-
-          <Pagination v-model:page="candidatePage" :page-size="CANDIDATE_PAGE_SIZE" :total-items="filteredCandidates.length" />
-          </template>
         </div>
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-secondary" :disabled="kicksFilledCount === 0" @click="showPreview = true">
-          Preview ({{ kicksFilledCount }} kick{{ kicksFilledCount === 1 ? '' : 's' }})
+        <button class="btn btn-secondary" :disabled="!kicks.length" @click="showPreview = true">
+          Preview ({{ kicks.length }} kick{{ kicks.length === 1 ? '' : 's' }})
         </button>
         <button v-if="editingShootoutId" class="btn btn-secondary" @click="duplicateAsNewVersion">
           ⧉ Duplicate as new version
@@ -249,45 +236,26 @@ const form = reactive({
   teamName: '', teamCrestUrl: '', opponentName: '', opponentCrestUrl: '',
   teamPensScored: null, opponentPensScored: null, maxStrikes: 5
 })
-const candidates = ref([])
-const athleteSearchTerm = ref('')
-const athleteSearchResults = ref([])
+// Order in this array *is* the kick order (index + 1) - no separate candidate
+// pool to build first and no manual kick-number field, unlike the first pass
+// at this screen. Every shootout is football, always, so there's nothing to
+// scope a candidate pool to in the first place - search below always draws
+// from every football subject (see api.adminSearchAthletes), and the
+// guessable pool at play time is that same full category, live (see
+// PenaltyShootoutPlayService.searchCandidates) - not tied to what's picked
+// here at all. Duplicates (the same athlete taking two kicks) are allowed,
+// not deduped - real shootouts can cycle back to earlier takers once every
+// outfield player's had a turn.
+const kicks = ref([])
+const kickSearchTerm = ref('')
+const kickSearchResults = ref([])
 
-const CANDIDATE_PAGE_SIZE = 25
-const candidatePage = ref(1)
-const candidateFilterTerm = ref('')
-const filteredCandidates = computed(() => {
-  const term = candidateFilterTerm.value.trim().toLowerCase()
-  if (!term) return candidateDisplayOrder.value
-  return candidateDisplayOrder.value.filter(c => c.name.toLowerCase().includes(term))
-})
-watch(candidateFilterTerm, () => { candidatePage.value = 1 })
-const pagedCandidates = computed(() => {
-  const start = (candidatePage.value - 1) * CANDIDATE_PAGE_SIZE
-  return filteredCandidates.value.slice(start, start + CANDIDATE_PAGE_SIZE)
-})
-
-// Kick-takers first, then everyone else - same reasoning and same frozen-
-// snapshot-not-live-computed approach as AdminLineupsView's
-// candidateDisplayOrder (so a row doesn't jump the moment its own "took a
-// kick" box gets checked).
-const candidateDisplayOrder = ref([])
-function rebuildCandidateDisplayOrder() {
-  const kickers = candidates.value.filter(c => c.tookKick)
-  const rest = candidates.value.filter(c => !c.tookKick)
-  candidateDisplayOrder.value = [...kickers, ...rest]
-}
-
-const kicksFilledCount = computed(() => candidates.value.filter(c => c.tookKick && c.kickOrder != null).length)
-
-const previewKicks = computed(() => {
-  return candidates.value
-    .filter(c => c.tookKick && c.kickOrder != null)
-    .map(c => ({
-      id: c.athleteId, kickOrder: c.kickOrder, forTeam: c.forTeam, scored: c.scored,
-      solved: true, athleteName: c.name, athletePhotoUrl: c.photoUrl
-    }))
-})
+const previewKicks = computed(() =>
+  kicks.value.map((k, i) => ({
+    id: i, kickOrder: i + 1, forTeam: k.forTeam, scored: k.scored,
+    solved: true, athleteName: k.name, athletePhotoUrl: k.photoUrl
+  }))
+)
 
 onMounted(loadShootouts)
 
@@ -304,48 +272,39 @@ async function loadShootouts() {
 }
 
 let searchDebounce = null
-watch(athleteSearchTerm, (val) => {
+watch(kickSearchTerm, (val) => {
   clearTimeout(searchDebounce)
   if (!val || val.trim().length < 2) {
-    athleteSearchResults.value = []
+    kickSearchResults.value = []
     return
   }
   searchDebounce = setTimeout(async () => {
     try {
-      athleteSearchResults.value = await api.adminSearchAthletes({ sport: FOOTBALL_CATEGORY, name: val })
+      kickSearchResults.value = await api.adminSearchAthletes({ sport: FOOTBALL_CATEGORY, name: val })
     } catch (e) {
       // non-critical - the search box just stays empty
     }
   }, 250)
 })
 
-function addCandidate(athlete) {
-  if (candidates.value.some(c => c.athleteId === athlete.id)) return
-  candidates.value.push({
+// Appends to the end - real shootout order, so the next kick added is
+// whatever's about to happen next. Reorder afterward with the ↑/↓ buttons if
+// something needs fixing, rather than typing kick numbers by hand.
+function addKick(athlete) {
+  kicks.value.push({
     athleteId: athlete.id, name: athlete.name, team: athlete.team, photoUrl: athlete.photoUrl,
-    tookKick: false, kickOrder: null, forTeam: true, scored: true
+    forTeam: true, scored: true
   })
-  athleteSearchTerm.value = ''
-  athleteSearchResults.value = []
-  rebuildCandidateDisplayOrder()
+  kickSearchTerm.value = ''
+  kickSearchResults.value = []
 }
 
-function removeCandidate(c) {
-  candidates.value = candidates.value.filter(x => x !== c)
-  const maxPage = Math.max(1, Math.ceil(candidates.value.length / CANDIDATE_PAGE_SIZE))
-  if (candidatePage.value > maxPage) candidatePage.value = maxPage
-  rebuildCandidateDisplayOrder()
-}
-
-// Unchecking "took a kick" drops this candidate back to decoy-only - clear
-// the kick fields so they don't silently linger, same reasoning as
-// AdminLineupsView's onCorrectToggle.
-function onTookKickToggle(c) {
-  if (!c.tookKick) {
-    c.kickOrder = null
-    c.forTeam = true
-    c.scored = true
-  }
+function moveKick(idx, direction) {
+  const target = idx + direction
+  if (target < 0 || target >= kicks.value.length) return
+  const list = kicks.value
+  const [moved] = list.splice(idx, 1)
+  list.splice(target, 0, moved)
 }
 
 function resetForm() {
@@ -359,12 +318,9 @@ function resetForm() {
   form.teamPensScored = null
   form.opponentPensScored = null
   form.maxStrikes = 5
-  candidates.value = []
-  candidatePage.value = 1
-  candidateFilterTerm.value = ''
-  athleteSearchTerm.value = ''
-  athleteSearchResults.value = []
-  rebuildCandidateDisplayOrder()
+  kicks.value = []
+  kickSearchTerm.value = ''
+  kickSearchResults.value = []
 }
 
 function openCreate() {
@@ -388,23 +344,18 @@ async function openEdit(id) {
     form.opponentPensScored = detail.opponentPensScored
     form.maxStrikes = detail.maxStrikes
 
-    const kickByAthleteId = new Map(detail.kicks.map(k => [k.athlete.id, k]))
-    candidates.value = detail.candidates.map(a => {
-      const kick = kickByAthleteId.get(a.id)
-      return {
-        athleteId: a.id, name: a.name, team: a.team, photoUrl: a.photoUrl,
-        tookKick: !!kick,
-        kickOrder: kick?.kickOrder ?? null,
-        forTeam: kick?.forTeam ?? true,
-        scored: kick?.scored ?? true
-      }
-    })
-    candidatePage.value = 1
-    candidateFilterTerm.value = ''
+    // detail.kicks already comes back sorted by kickOrder (see
+    // PenaltyShootoutAdminService.toDetailDto) - that array order is what
+    // this screen treats as the kick order, so no re-sort needed here.
+    kicks.value = detail.kicks.map(k => ({
+      athleteId: k.athlete.id, name: k.athlete.name, team: k.athlete.team, photoUrl: k.athlete.photoUrl,
+      forTeam: k.forTeam, scored: k.scored
+    }))
+    kickSearchTerm.value = ''
+    kickSearchResults.value = []
 
     editingShootoutId.value = id
     view.value = 'builder'
-    rebuildCandidateDisplayOrder()
   } catch (e) {
     error.value = 'Could not load that shootout.'
   }
@@ -432,23 +383,8 @@ async function saveShootout() {
     error.value = 'Team and opponent are both required.'
     return
   }
-  const kicks = candidates.value.filter(c => c.tookKick)
-  if (!kicks.length) {
+  if (!kicks.value.length) {
     error.value = 'Add at least one kick.'
-    return
-  }
-  if (kicks.some(c => c.kickOrder == null)) {
-    error.value = 'Every kick needs a kick number.'
-    return
-  }
-  const orders = kicks.map(c => c.kickOrder).sort((a, b) => a - b)
-  const isCleanSequence = orders.every((n, i) => n === i + 1)
-  if (!isCleanSequence) {
-    error.value = `Kick order must run 1..${orders.length} with no gaps or repeats.`
-    return
-  }
-  if (!candidates.value.length) {
-    error.value = 'Add at least one candidate.'
     return
   }
 
@@ -463,9 +399,10 @@ async function saveShootout() {
     teamPensScored: form.teamPensScored,
     opponentPensScored: form.opponentPensScored,
     maxStrikes: form.maxStrikes,
-    candidateAthleteIds: candidates.value.map(c => c.athleteId),
-    kicks: kicks.map(c => ({
-      athleteId: c.athleteId, kickOrder: c.kickOrder, forTeam: c.forTeam, scored: c.scored
+    // Array position is the kick order (1-based) - see the `kicks` ref's own
+    // comment for why there's no manual kick-number field to read instead.
+    kicks: kicks.value.map((k, i) => ({
+      athleteId: k.athleteId, kickOrder: i + 1, forTeam: k.forTeam, scored: k.scored
     }))
   }
 
