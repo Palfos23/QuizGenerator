@@ -1398,15 +1398,137 @@ mark {
 .tension-row-revealed td { background: rgba(61, 220, 151, 0.08); }
 .tension-row-trap td { background: rgba(255, 77, 109, 0.1); }
 
-.bullseye-row-revealed td { background: rgba(61, 220, 151, 0.08); }
-.bullseye-row-eliminated td { background: rgba(255, 77, 109, 0.12); font-weight: 700; }
+/* The reveal "ladder" - a stack of cards that fills in as each answer is
+   revealed, replacing a plain table with something that reads at a glance:
+   a rank badge, the guess, and a relative distance bar (closest = short/teal,
+   farthest = long/coral) instead of a bare number. */
+.bullseye-reveal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.bullseye-reveal-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  opacity: 0.5;
+  transform: scale(0.98);
+  transition: opacity 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1), background 0.3s ease, border-color 0.3s ease;
+}
+.bullseye-reveal-row.is-revealed {
+  opacity: 1;
+  transform: scale(1);
+  background: rgba(61, 220, 151, 0.05);
+  border-color: rgba(61, 220, 151, 0.2);
+}
+.bullseye-reveal-row.is-safe {
+  background: rgba(242, 183, 5, 0.06);
+  border-color: rgba(242, 183, 5, 0.25);
+}
+.bullseye-reveal-row.is-eliminated {
+  background: rgba(255, 77, 109, 0.08);
+  border-color: rgba(255, 77, 109, 0.3);
+}
+.bullseye-reveal-rank {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.82rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.bullseye-reveal-main {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+.bullseye-reveal-player {
+  font-weight: 700;
+}
+.bullseye-reveal-guess {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bullseye-reveal-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.bullseye-reveal-value {
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-width: 30px;
+  text-align: right;
+}
+.bullseye-reveal-bar {
+  width: 64px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.bullseye-reveal-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--violet);
+  transition: width 0.7s ease;
+}
+.bullseye-reveal-row:first-child .bullseye-reveal-bar-fill { background: var(--teal); }
+.bullseye-reveal-row.is-safe .bullseye-reveal-bar-fill { background: var(--gold); }
+.bullseye-reveal-row.is-eliminated .bullseye-reveal-bar-fill { background: var(--coral); }
+.bullseye-reveal-distance {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  min-width: 54px;
+  text-align: right;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bullseye-reveal-row { transition: none; }
+}
+
+/* A clear seam between "who did what this round" (above) and "what the real
+   answer was" (below) - the two used to sit right on top of each other in
+   near-identical translucent boxes and read as one blurred block. */
+.bullseye-reveal-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 22px 0 14px;
+}
+.bullseye-reveal-divider::before,
+.bullseye-reveal-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
 
 .bullseye-truth-callout {
   text-align: center;
-  border: 1px solid rgba(242, 183, 5, 0.35);
-  background: rgba(242, 183, 5, 0.08);
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
+  border: 1px solid rgba(242, 183, 5, 0.5);
+  background: linear-gradient(135deg, rgba(242, 183, 5, 0.22), rgba(242, 183, 5, 0.05));
+  box-shadow: 0 4px 24px rgba(242, 183, 5, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
   margin-bottom: 16px;
 }
 .bullseye-truth-label {
@@ -1462,29 +1584,37 @@ mark {
 
 .bullseye-elimination-banner {
   text-align: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--coral);
-  background: rgba(255, 77, 109, 0.12);
-  border: 1px solid rgba(255, 77, 109, 0.35);
-  border-radius: var(--radius-md);
-  padding: 10px 16px;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: #fff;
+  background: linear-gradient(135deg, rgba(255, 77, 109, 0.45), rgba(255, 77, 109, 0.15));
+  border: 1px solid rgba(255, 77, 109, 0.6);
+  box-shadow: 0 4px 24px rgba(255, 77, 109, 0.28);
+  border-radius: var(--radius-lg);
+  padding: 12px 18px;
   margin-bottom: 16px;
   animation: bullseye-banner-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Gold when spotlighting an ordinary/safe reveal, switched to a distinctly
+   different coral gradient (.bullseye-spotlight-out) for the elimination -
+   low-opacity flat tints on a dark page read as the same muted box
+   regardless of hue, so both get a real gradient + glow to actually look
+   like two different colors, not just "a slightly lighter panel". */
 .bullseye-spotlight {
   text-align: center;
-  border: 1px solid rgba(242, 183, 5, 0.35);
-  background: rgba(242, 183, 5, 0.08);
-  border-radius: var(--radius-md);
+  border: 1px solid rgba(242, 183, 5, 0.4);
+  background: linear-gradient(135deg, rgba(242, 183, 5, 0.18), rgba(242, 183, 5, 0.04));
+  box-shadow: 0 4px 20px rgba(242, 183, 5, 0.14);
+  border-radius: var(--radius-lg);
   padding: 14px 16px;
   margin-bottom: 16px;
   animation: bullseye-banner-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .bullseye-spotlight-out {
-  border-color: rgba(255, 77, 109, 0.4);
-  background: rgba(255, 77, 109, 0.1);
+  border-color: rgba(255, 77, 109, 0.55);
+  background: linear-gradient(135deg, rgba(255, 77, 109, 0.22), rgba(255, 77, 109, 0.06));
+  box-shadow: 0 4px 20px rgba(255, 77, 109, 0.18);
 }
 .bullseye-spotlight-label {
   text-transform: uppercase;
@@ -2397,6 +2527,11 @@ table.scoreboard-table {
   .tension-answers-panel th:nth-child(2) { width: 50% !important; }
   .tension-answers-panel th:nth-child(3) { width: 28% !important; }
   .tension-answers-panel th:nth-child(4) { width: 22% !important; }
+
+  .bullseye-reveal-row { flex-wrap: wrap; row-gap: 6px; }
+  .bullseye-reveal-main { min-width: 55%; }
+  .bullseye-reveal-stats { width: 100%; justify-content: flex-end; padding-left: 44px; }
+  .bullseye-reveal-bar { width: 48px; }
 
   .modal-backdrop {
     align-items: flex-end;

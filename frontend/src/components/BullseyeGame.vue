@@ -71,7 +71,7 @@
           v-if="spotlightEntry && !drumrolling"
           :key="spotlightEntry.player"
           class="bullseye-spotlight"
-          :class="{ 'bullseye-spotlight-out': eliminating }"
+          :class="{ 'bullseye-spotlight-out': spotlightLabel === '❌ Eliminated' }"
         >
           <div class="bullseye-spotlight-label">{{ spotlightLabel }}</div>
           <div class="bullseye-spotlight-name">{{ spotlightEntry.player }}</div>
@@ -79,6 +79,34 @@
             {{ spotlightEntry.name }} · {{ formatNumber(spotlightEntry.statValue) }} ({{ formatNumber(spotlightEntry.distance) }} away)
           </div>
         </div>
+
+        <div class="bullseye-reveal-list">
+          <div
+            v-for="(a, idx) in rankedAnswers"
+            :key="a.player"
+            class="bullseye-reveal-row"
+            :class="{
+              'is-revealed': revealIndex > idx,
+              'is-safe': revealIndex > idx && idx === rankedAnswers.length - 2,
+              'is-eliminated': revealIndex > idx && a.player === eliminatedThisRound?.player
+            }"
+          >
+            <div class="bullseye-reveal-rank">{{ revealIndex > idx ? idx + 1 : '?' }}</div>
+            <div class="bullseye-reveal-main">
+              <div class="bullseye-reveal-player">{{ revealIndex > idx ? a.player : '???' }}</div>
+              <div class="bullseye-reveal-guess">{{ revealIndex > idx ? a.name : 'Hidden until revealed' }}</div>
+            </div>
+            <div v-if="revealIndex > idx" class="bullseye-reveal-stats">
+              <div class="bullseye-reveal-value">{{ formatNumber(a.statValue) }}</div>
+              <div class="bullseye-reveal-bar">
+                <div class="bullseye-reveal-bar-fill" :style="{ width: distancePct(a.distance) + '%' }"></div>
+              </div>
+              <div class="bullseye-reveal-distance">{{ formatNumber(a.distance) }} away</div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="showTruth && bullseyeAnswers.length" class="bullseye-reveal-divider">The real answer</div>
 
         <div v-if="showTruth && bullseyeAnswers.length" class="bullseye-truth-callout">
           <div class="bullseye-truth-label">{{ bullseyeAnswers[0].distance === 0 ? '🎯 Bullseye' : 'Closest possible answer' }}</div>
@@ -93,34 +121,6 @@
             </span>
           </div>
         </div>
-
-        <table class="table scoreboard-table">
-          <thead>
-            <tr>
-              <th style="width:8%;">#</th>
-              <th style="width:27%;">Player</th>
-              <th style="width:30%;">Answer</th>
-              <th style="width:15%;">Value</th>
-              <th style="width:20%;">Distance</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(a, idx) in rankedAnswers"
-              :key="a.player"
-              :class="{
-                'bullseye-row-revealed': revealIndex > idx,
-                'bullseye-row-eliminated': revealIndex > idx && a.player === eliminatedThisRound?.player
-              }"
-            >
-              <td>{{ idx + 1 }}</td>
-              <td>{{ revealIndex > idx ? a.player : '???' }}</td>
-              <td>{{ revealIndex > idx ? a.name : '???' }}</td>
-              <td>{{ revealIndex > idx ? formatNumber(a.statValue) : '' }}</td>
-              <td>{{ revealIndex > idx ? formatNumber(a.distance) : '' }}</td>
-            </tr>
-          </tbody>
-        </table>
 
         <div style="text-align:center; margin-top:16px;">
           <button v-if="revealIndex < rankedAnswers.length" class="btn btn-secondary" @click="skipReveal">
@@ -215,6 +215,14 @@ const rankedAnswers = computed(() => {
   }).sort((x, y) => x.distance - y.distance || x.submissionIndex - y.submissionIndex)
 })
 
+// Scales each row's distance bar relative to the worst distance this round,
+// so the bars read as a relative comparison ("who's closest") rather than an
+// absolute, hard-to-judge number - a dead-on guess renders as an empty bar.
+const maxDistance = computed(() => Math.max(1, ...rankedAnswers.value.map(a => a.distance)))
+function distancePct(distance) {
+  return Math.min(100, Math.round((distance / maxDistance.value) * 100))
+}
+
 // Farthest off is eliminated; ties broken by whoever answered earliest this
 // round - keeps exactly one elimination per round.
 const eliminatedThisRound = computed(() => {
@@ -298,10 +306,10 @@ function reveal() {
 // The last two get special treatment - a drumroll beat, then the "safe"
 // player, then the elimination itself, held long enough for the
 // .bullseye-just-eliminated card animation to play out before moving on.
-const REVEAL_STEP_MS = 1700
-const DRUMROLL_MS = 2200
-const SAFE_BEAT_MS = 1300
-const ELIMINATION_HOLD_MS = 1800
+const REVEAL_STEP_MS = 2400
+const DRUMROLL_MS = 2600
+const SAFE_BEAT_MS = 1800
+const ELIMINATION_HOLD_MS = 2200
 
 let revealTimer = null
 function scheduleReveal() {
