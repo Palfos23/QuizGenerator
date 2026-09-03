@@ -1995,6 +1995,8 @@ table.scoreboard-table {
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text);
+  text-decoration: none; /* also used as a <router-link> now (XI Battle's Penalty
+                             Shootout card), not just a <button> */
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 .mode-choice-card:hover {

@@ -4,6 +4,33 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-else-if="shootout">
+      <!-- Match info first (everything the admin can set for it - title,
+           context, teams/crests/score, match date - mirrors how
+           StartingXiPlayView shows a Lineup board's own title+competition+
+           scoreline), then lives, then the guess box. See
+           PenaltyShootoutBoard's showScoreline prop, switched off below so
+           it doesn't render this same header a second time above the kicks. -->
+      <div v-if="shootout.title || shootout.teamName || shootout.opponentName" style="text-align:center; margin-bottom:4px;">
+        <h1 v-if="shootout.title" style="margin:0 0 6px;">{{ shootout.title }}</h1>
+        <p v-if="shootout.competition" class="page-subtitle" style="margin:0;">{{ shootout.competition }}</p>
+        <p v-if="matchDateLabel" class="page-subtitle" style="margin-top:2px; font-size:0.82rem;">{{ matchDateLabel }}</p>
+      </div>
+
+      <div class="pitch-scoreline" v-if="shootout.teamName || shootout.opponentName">
+        <div class="pitch-scoreline-team">
+          <img v-if="shootout.teamCrestUrl" :src="shootout.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
+          <span>{{ shootout.teamName }}</span>
+        </div>
+        <div v-if="shootout.teamPensScored != null && shootout.opponentPensScored != null" class="pitch-scoreline-score">
+          <span>{{ shootout.teamPensScored }}</span><span class="dash">-</span><span>{{ shootout.opponentPensScored }}</span>
+        </div>
+        <div v-else class="pitch-scoreline-vs">vs</div>
+        <div class="pitch-scoreline-team away">
+          <img v-if="shootout.opponentCrestUrl" :src="shootout.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
+          <span>{{ shootout.opponentName }}</span>
+        </div>
+      </div>
+
       <!-- Solo play (1 player) skips the player row entirely - there's no one
            else to distinguish "whose turn" from, so the badge/highlight
            treatment would just be visual noise. Pass-and-play (2+) gets the
@@ -72,14 +99,9 @@
       />
 
       <PenaltyShootoutBoard
-        :team-name="shootout.teamName"
-        :team-crest-url="shootout.teamCrestUrl"
-        :opponent-name="shootout.opponentName"
-        :opponent-crest-url="shootout.opponentCrestUrl"
-        :team-pens-scored="shootout.teamPensScored"
-        :opponent-pens-scored="shootout.opponentPensScored"
         :kicks="shootout.kicks"
         :just-solved-id="justSolvedId"
+        :show-scoreline="false"
       />
 
       <div v-if="shootoutComplete" class="modal-backdrop">
@@ -155,6 +177,16 @@ function showResultOverlay(correct) {
 }
 
 const currentPlayerName = computed(() => props.players[currentPlayerIdx.value]?.name)
+
+// No existing date formatter fits here (formatLastUpdated in constants.js is
+// "X hours ago" style, for a board's own updatedAt - matchDate is the
+// historical date the real shootout happened, e.g. "9 July 2006") - not
+// shown anywhere in Lineup's equivalent screens today, but the request here
+// was specifically "all of the match info", so it's included.
+const matchDateLabel = computed(() => {
+  if (!shootout.value?.matchDate) return ''
+  return new Date(shootout.value.matchDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
+})
 const leaderboard = computed(() =>
   [...props.players]
     .map(p => ({ name: p.name, total: scores.value[p.name] || 0 }))

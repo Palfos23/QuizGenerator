@@ -29,7 +29,6 @@
         <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/starting-xi-battle" class="nav-link" @click="onNavClick('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/bullseye" class="nav-link" @click="onNavClick('/bullseye', 'bullseye')">Bullseye</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/penalty-shootout" class="nav-link" @click="onNavClick('/penalty-shootout', 'penaltyShootout')">Penalty Shootout</router-link>
         <template v-if="auth.isAdmin.value">
           <div v-for="menu in ADMIN_MENUS" :key="menu.label" class="top-nav-dropdown">
             <div v-if="openAdminMenu === menu.label" class="top-nav-dropdown-backdrop" @click="closeAdminMenu"></div>
@@ -101,7 +100,6 @@
           <router-link to="/grid-battle" role="menuitem" @click="closeGamesMenu('/grid-battle', 'gridBattle')">Grid Battle</router-link>
           <router-link to="/starting-xi-battle" role="menuitem" @click="closeGamesMenu('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
           <router-link to="/bullseye" role="menuitem" @click="closeGamesMenu('/bullseye', 'bullseye')">Bullseye</router-link>
-          <router-link to="/penalty-shootout" role="menuitem" @click="closeGamesMenu('/penalty-shootout', 'penaltyShootout')">Penalty Shootout</router-link>
         </div>
       </div>
       <template v-if="auth.isAdmin.value">
@@ -161,7 +159,11 @@ import { useEscapeKey } from './composables/useEscapeKey'
 
 const router = useRouter()
 
-const GAME_PATHS = ['/tension', '/501', '/imposter', '/grid-battle', '/starting-xi-battle', '/bullseye', '/penalty-shootout']
+// /penalty-shootout deliberately not listed - it's not a navbar destination
+// of its own, reached only via the XI Battle page's mode choice instead (see
+// StartingXiBattleView.vue), so there's no "Games ▾" nav item that should
+// read as active while on it.
+const GAME_PATHS = ['/tension', '/501', '/imposter', '/grid-battle', '/starting-xi-battle', '/bullseye']
 const isGameRoute = computed(() => GAME_PATHS.includes(router.currentRoute.value.path))
 
 // Single "which player dropdown is open" ref (null | 'weekly' | 'games'),

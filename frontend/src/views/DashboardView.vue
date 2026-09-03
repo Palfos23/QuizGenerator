@@ -47,10 +47,8 @@
         <h3>Bullseye</h3>
         <p>Everyone answers, lowest score is eliminated each round, until one player is left.</p>
       </router-link>
-      <router-link to="/penalty-shootout" class="dashboard-feature-card">
-        <h3>Penalty Shootout</h3>
-        <p>Guess who took each penalty, in real order - solo, or pass the device around and take turns.</p>
-      </router-link>
+      <!-- No standalone card for Penalty Shootout - it's reached from the XI
+           Battle card above instead, not as its own destination. -->
       <router-link to="/my-quizzes" class="dashboard-feature-card">
         <h3>My quizzes</h3>
         <p>Revisit, edit or re-download anything you've saved.</p>

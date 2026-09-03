@@ -1,6 +1,6 @@
 <template>
   <div class="pen-shootout-board">
-    <div class="pitch-scoreline" v-if="teamName || opponentName">
+    <div class="pitch-scoreline" v-if="showScoreline && (teamName || opponentName)">
       <div class="pitch-scoreline-team">
         <img v-if="teamCrestUrl" :src="teamCrestUrl" alt="" class="pitch-scoreline-crest" />
         <span>{{ teamName }}</span>
@@ -56,7 +56,12 @@ const props = defineProps({
   opponentPensScored: { type: Number, default: null },
   // [{ id, kickOrder, forTeam, scored, solved, guessedByUser, athleteName, athletePhotoUrl }]
   kicks: { type: Array, default: () => [] },
-  justSolvedId: { type: [Number, String], default: null }
+  justSolvedId: { type: [Number, String], default: null },
+  // Off when the match info is shown elsewhere on the page instead (see
+  // PenaltyShootoutGame.vue, which puts it at the very top rather than here
+  // above the kicks) - true by default for the admin preview and any other
+  // one-off usage, which just wants team/score + kicks together in one block.
+  showScoreline: { type: Boolean, default: true }
 })
 
 const sortedKicks = computed(() => [...props.kicks].sort((a, b) => a.kickOrder - b.kickOrder))
