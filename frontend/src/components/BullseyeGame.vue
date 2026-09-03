@@ -6,7 +6,7 @@
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
         Round {{ roundIndex + 1 }} / {{ totalRounds }}
       </div>
-      <h2 style="margin:0 0 24px;">{{ rotatedActivePlayers[0]?.name }}, choose a question</h2>
+      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ rotatedActivePlayers[0]?.name }}</strong>, choose a question</h2>
       <div class="tension-choice-grid">
         <button v-for="q in roundChoices" :key="q.id" class="tension-choice-card" @click="chooseQuestion(q)">
           <strong>{{ formatNumber(q.targetValue) }} {{ q.statLabel }}</strong>

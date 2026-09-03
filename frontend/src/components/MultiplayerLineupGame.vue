@@ -6,7 +6,7 @@
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
         Board {{ currentLineupIndex + 1 }} / {{ totalLineups }}
       </div>
-      <h2 style="margin:0 0 24px;">{{ pickerName }}, choose a board</h2>
+      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ pickerName }}</strong>, choose a board</h2>
       <div class="tension-choice-grid">
         <button v-for="l in roundChoices" :key="l.id" class="tension-choice-card" @click="chooseLineup(l)">
           <strong>{{ l.title }}</strong>
@@ -57,7 +57,15 @@
 
       <div v-if="!lineupComplete" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
-          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayerName }}'s turn</p>
+          <div class="guess-box-header">
+            <p style="margin:0; color:var(--gold); font-weight:600;">{{ currentPlayerName }}'s turn</p>
+            <button
+              type="button"
+              class="btn btn-danger btn-sm no-print"
+              :disabled="guessing"
+              @click="showSkipConfirm = true"
+            >Pass turn</button>
+          </div>
           <input
             type="text"
             v-model="searchTerm"
@@ -136,14 +144,6 @@
             <div class="pitch-slot-name">{{ slot.solved ? slot.athleteName : '?' }}</div>
           </div>
         </div>
-      </div>
-
-      <div v-if="!lineupComplete" class="pass-turn-zone no-print">
-        <button
-          class="btn btn-danger btn-sm"
-          :disabled="guessing"
-          @click="showSkipConfirm = true"
-        >Pass turn (costs a life)</button>
       </div>
     </template>
 

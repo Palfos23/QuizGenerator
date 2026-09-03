@@ -34,7 +34,7 @@
           </div>
         </template>
         <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
-          Waiting for {{ pickerName }} to choose a board…
+          Waiting for <strong style="color:var(--gold);">{{ pickerName }}</strong> to choose a board…
         </div>
       </div>
 

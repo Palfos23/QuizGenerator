@@ -46,7 +46,7 @@
           </div>
         </template>
         <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
-          Waiting for {{ pickerName }} to choose a board…
+          Waiting for <strong style="color:var(--gold);">{{ pickerName }}</strong> to choose a board…
         </div>
       </div>
 
@@ -67,7 +67,15 @@
 
       <div v-if="!state.lineupComplete && isYourTurn" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
-          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">Your turn</p>
+          <div class="guess-box-header">
+            <p style="margin:0; color:var(--gold); font-weight:600;">Your turn</p>
+            <button
+              type="button"
+              class="btn btn-danger btn-sm no-print"
+              :disabled="guessing"
+              @click="showSkipConfirm = true"
+            >Pass turn</button>
+          </div>
           <input
             type="text"
             v-model="searchTerm"
@@ -150,14 +158,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <div v-if="!state.lineupComplete && isYourTurn" class="pass-turn-zone no-print">
-        <button
-          class="btn btn-danger btn-sm"
-          :disabled="guessing"
-          @click="showSkipConfirm = true"
-        >Pass turn (costs a life)</button>
       </div>
       </template>
     </template>

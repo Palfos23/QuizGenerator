@@ -8,7 +8,7 @@
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
         Board {{ currentGridIndex + 1 }} / {{ totalBoards }}
       </div>
-      <h2 style="margin:0 0 24px;">{{ pickerName }}, choose a board</h2>
+      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ pickerName }}</strong>, choose a board</h2>
       <div class="tension-choice-grid">
         <button v-for="g in roundChoices" :key="g.id" class="tension-choice-card" @click="chooseBoard(g)">
           <strong>{{ g.title }}</strong>

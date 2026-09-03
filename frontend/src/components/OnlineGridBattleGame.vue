@@ -30,7 +30,7 @@
           </div>
         </template>
         <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
-          Waiting for {{ pickerName }} to choose a grid…
+          Waiting for <strong style="color:var(--gold);">{{ pickerName }}</strong> to choose a grid…
         </div>
       </div>
 
@@ -51,7 +51,15 @@
 
       <div v-if="!state.gridComplete && isYourTurn" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
-          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">Your turn</p>
+          <div class="guess-box-header">
+            <p style="margin:0; color:var(--gold); font-weight:600;">Your turn</p>
+            <button
+              type="button"
+              class="btn btn-danger btn-sm no-print"
+              :disabled="guessing"
+              @click="showSkipConfirm = true"
+            >Pass turn</button>
+          </div>
           <input
             type="text"
             v-model="searchTerm"
@@ -170,14 +178,6 @@
           >{{ e.hintValue != null ? formatHint(e.hintLabel, e.hintValue) : e.hintLabel }}</div>
           <div class="grid-tile-name">{{ e.athleteName || '?' }}</div>
         </div>
-      </div>
-
-      <div v-if="!state.gridComplete && isYourTurn" class="pass-turn-zone no-print">
-        <button
-          class="btn btn-danger btn-sm"
-          :disabled="guessing"
-          @click="showSkipConfirm = true"
-        >Pass turn (costs a life)</button>
       </div>
       </template>
     </template>

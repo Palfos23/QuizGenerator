@@ -1191,17 +1191,23 @@ mark {
   width: 100%;
   position: relative;
 }
-/* Deliberately placed at the very bottom of the board/pitch (see the
-   components using this class), not right under the search box/results list
-   it used to sit under - a life-costing action shouldn't share the same
-   thumb-reach zone as the input someone's actively typing and tapping
-   results in every turn. Reaching this now takes a deliberate scroll past
-   the whole board. Still gated by a ConfirmModal before it actually fires,
-   as the other half of that guard. */
-.pass-turn-zone {
+/* Pass turn's home went through two earlier tries: directly under the search
+   box shared the exact thumb-reach zone as the results list someone's
+   actively tapping every turn (too easy to hit by accident); the very bottom
+   of the board/pitch fixed that but made it a deliberate scroll away right
+   when someone actually wants it (too hard to reach). This splits the
+   difference - same row as "Your turn"/"X's turn", above the input rather
+   than below the results, so it's nowhere near the repeated tap-a-result
+   flow, but it's still part of the always-visible sticky box, no scrolling
+   needed. Still gated by a ConfirmModal before it actually fires, as the
+   other half of that guard. */
+.guess-box-header {
   display: flex;
-  justify-content: center;
-  margin: 28px 0 4px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 8px;
 }
 /* Same pill + magnifying-glass treatment as .search-input (admin/list search
    boxes) for one consistent "this is a search field" language across the

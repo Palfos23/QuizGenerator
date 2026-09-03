@@ -6,7 +6,7 @@
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
         Grid {{ currentGridIndex + 1 }} / {{ totalGrids }}
       </div>
-      <h2 style="margin:0 0 24px;">{{ pickerName }}, choose a grid</h2>
+      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ pickerName }}</strong>, choose a grid</h2>
       <div class="tension-choice-grid">
         <button v-for="g in roundChoices" :key="g.id" class="tension-choice-card" @click="chooseGrid(g)">
           <strong>{{ g.title }}</strong>
@@ -41,7 +41,15 @@
 
       <div v-if="!gridComplete" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
-          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayerName }}'s turn</p>
+          <div class="guess-box-header">
+            <p style="margin:0; color:var(--gold); font-weight:600;">{{ currentPlayerName }}'s turn</p>
+            <button
+              type="button"
+              class="btn btn-danger btn-sm no-print"
+              :disabled="guessing"
+              @click="showSkipConfirm = true"
+            >Pass turn</button>
+          </div>
           <input
             type="text"
             v-model="searchTerm"
@@ -155,14 +163,6 @@
           >{{ e.hintValue != null ? formatHint(e.hintLabel, e.hintValue) : e.hintLabel }}</div>
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>
-      </div>
-
-      <div v-if="!gridComplete" class="pass-turn-zone no-print">
-        <button
-          class="btn btn-danger btn-sm"
-          :disabled="guessing"
-          @click="showSkipConfirm = true"
-        >Pass turn (costs a life)</button>
       </div>
     </template>
 
