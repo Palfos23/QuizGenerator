@@ -101,7 +101,7 @@
         <button class="btn btn-secondary btn-sm" style="margin-left:8px;" @click="giveUp">Reveal the rest</button>
       </div>
 
-      <div v-if="canStillGuess" class="guess-box-wrap no-print" :class="{ 'hide-on-scroll': hideSearchBox }">
+      <div v-if="canStillGuess" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <input
             type="text"
@@ -158,14 +158,12 @@ import { displayRowsFor } from '../services/formations'
 import { readableTextColor, formatLastUpdated } from '../constants'
 import PitchMarkings from '../components/PitchMarkings.vue'
 import LivesHearts from '../components/LivesHearts.vue'
-import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'
 
 const route = useRoute()
 const lineupId = computed(() => Number(route.params.id))
-const { hidden: hideSearchBox } = useHideOnScroll()
 
 const state = ref(null)
 const loading = ref(true)

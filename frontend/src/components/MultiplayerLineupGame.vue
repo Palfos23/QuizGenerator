@@ -55,7 +55,7 @@
         </div>
       </div>
 
-      <div v-if="!lineupComplete" class="guess-box-wrap no-print" :class="{ 'hide-on-scroll': hideSearchBox }">
+      <div v-if="!lineupComplete" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayerName }}'s turn</p>
           <input
@@ -75,11 +75,6 @@
             </button>
           </div>
         </div>
-        <button
-          class="btn btn-danger pass-turn-btn"
-          :disabled="guessing"
-          @click="showSkipConfirm = true"
-        >Pass turn (costs a life)</button>
       </div>
 
       <ConfirmModal
@@ -142,6 +137,14 @@
           </div>
         </div>
       </div>
+
+      <div v-if="!lineupComplete" class="pass-turn-zone no-print">
+        <button
+          class="btn btn-danger btn-sm"
+          :disabled="guessing"
+          @click="showSkipConfirm = true"
+        >Pass turn (costs a life)</button>
+      </div>
     </template>
 
     <div v-else class="empty-state">
@@ -168,7 +171,6 @@ import PitchRecap from './PitchRecap.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
-import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'
@@ -180,7 +182,6 @@ const props = defineProps({
   players: { type: Array, required: true } // [{ name, color }]
 })
 const emit = defineEmits(['gameOver'])
-const { hidden: hideSearchBox } = useHideOnScroll()
 
 const totalLineups = computed(() => props.mode === 'random' ? props.numLineups : props.lineups.length)
 // This round's starting player rotates by seat, same convention as Tension's

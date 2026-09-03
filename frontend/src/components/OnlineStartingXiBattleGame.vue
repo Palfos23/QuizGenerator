@@ -65,7 +65,7 @@
         </div>
       </div>
 
-      <div v-if="!state.lineupComplete && isYourTurn" class="guess-box-wrap no-print" :class="{ 'hide-on-scroll': hideSearchBox }">
+      <div v-if="!state.lineupComplete && isYourTurn" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">Your turn</p>
           <input
@@ -85,11 +85,6 @@
             </button>
           </div>
         </div>
-        <button
-          class="btn btn-danger pass-turn-btn"
-          :disabled="guessing"
-          @click="showSkipConfirm = true"
-        >Pass turn (costs a life)</button>
       </div>
 
       <ConfirmModal
@@ -156,6 +151,14 @@
           </div>
         </div>
       </div>
+
+      <div v-if="!state.lineupComplete && isYourTurn" class="pass-turn-zone no-print">
+        <button
+          class="btn btn-danger btn-sm"
+          :disabled="guessing"
+          @click="showSkipConfirm = true"
+        >Pass turn (costs a life)</button>
+      </div>
       </template>
     </template>
 
@@ -180,7 +183,6 @@ import PitchRecap from './PitchRecap.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
-import { useHideOnScroll } from '../composables/useHideOnScroll'
 import { usePolling } from '../composables/usePolling'
 
 const DEFAULT_KIT_COLOR = '#d92332'
@@ -192,7 +194,6 @@ const props = defineProps({
   isHost: { type: Boolean, default: false }
 })
 const emit = defineEmits(['gameOver', 'leave'])
-const { hidden: hideSearchBox } = useHideOnScroll()
 
 const state = ref(null)
 const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.lineupUpdatedAt))

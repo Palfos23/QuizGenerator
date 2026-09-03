@@ -39,7 +39,7 @@
         </div>
       </div>
 
-      <div v-if="!gridComplete" class="guess-box-wrap no-print" :class="{ 'hide-on-scroll': hideSearchBox }">
+      <div v-if="!gridComplete" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayerName }}'s turn</p>
           <input
@@ -65,11 +65,6 @@
             </button>
           </div>
         </div>
-        <button
-          class="btn btn-danger pass-turn-btn"
-          :disabled="guessing"
-          @click="showSkipConfirm = true"
-        >Pass turn (costs a life)</button>
       </div>
 
       <ConfirmModal
@@ -161,6 +156,14 @@
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>
       </div>
+
+      <div v-if="!gridComplete" class="pass-turn-zone no-print">
+        <button
+          class="btn btn-danger btn-sm"
+          :disabled="guessing"
+          @click="showSkipConfirm = true"
+        >Pass turn (costs a life)</button>
+      </div>
     </template>
 
     <div v-else class="empty-state">
@@ -184,7 +187,6 @@ import { readableTextColor, formatHint, sportLabel, formatLastUpdated } from '..
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
-import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const props = defineProps({
   mode: { type: String, default: 'manual' }, // 'manual' | 'random'
@@ -193,7 +195,6 @@ const props = defineProps({
   players: { type: Array, required: true } // [{ name, color }]
 })
 const emit = defineEmits(['gameOver'])
-const { hidden: hideSearchBox } = useHideOnScroll()
 
 const totalGrids = computed(() => props.mode === 'random' ? props.numGrids : props.grids.length)
 // This round's starting player rotates by seat, same convention as Tension's

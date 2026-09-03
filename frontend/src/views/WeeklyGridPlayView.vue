@@ -90,7 +90,7 @@
         <div><strong>Game over - out of strikes.</strong> You found {{ guessedCount }} / {{ state.entries.length }}. Reveal the rest, or keep going in Overtime just for fun.</div>
       </div>
 
-      <div v-if="canStillGuess" class="guess-box-wrap no-print" :class="{ 'hide-on-scroll': hideSearchBox }">
+      <div v-if="canStillGuess" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <input
             type="text"
@@ -214,10 +214,8 @@ import toast from '../services/toast'
 import { readableTextColor, formatHint, formatLastUpdated } from '../constants'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import LivesHearts from '../components/LivesHearts.vue'
-import { useHideOnScroll } from '../composables/useHideOnScroll'
 
 const route = useRoute()
-const { hidden: hideSearchBox } = useHideOnScroll()
 const gridId = route.params.id
 
 const state = ref(null)

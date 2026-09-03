@@ -49,7 +49,7 @@
         </div>
       </div>
 
-      <div v-if="!state.gridComplete && isYourTurn" class="guess-box-wrap no-print" :class="{ 'hide-on-scroll': hideSearchBox }">
+      <div v-if="!state.gridComplete && isYourTurn" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">Your turn</p>
           <input
@@ -75,11 +75,6 @@
             </button>
           </div>
         </div>
-        <button
-          class="btn btn-danger pass-turn-btn"
-          :disabled="guessing"
-          @click="showSkipConfirm = true"
-        >Pass turn (costs a life)</button>
       </div>
 
       <ConfirmModal
@@ -176,6 +171,14 @@
           <div class="grid-tile-name">{{ e.athleteName || '?' }}</div>
         </div>
       </div>
+
+      <div v-if="!state.gridComplete && isYourTurn" class="pass-turn-zone no-print">
+        <button
+          class="btn btn-danger btn-sm"
+          :disabled="guessing"
+          @click="showSkipConfirm = true"
+        >Pass turn (costs a life)</button>
+      </div>
       </template>
     </template>
 
@@ -197,7 +200,6 @@ import { readableTextColor, formatHint, sportLabel, formatLastUpdated } from '..
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
-import { useHideOnScroll } from '../composables/useHideOnScroll'
 import { usePolling } from '../composables/usePolling'
 
 const props = defineProps({
@@ -206,7 +208,6 @@ const props = defineProps({
   isHost: { type: Boolean, default: false }
 })
 const emit = defineEmits(['gameOver', 'leave'])
-const { hidden: hideSearchBox } = useHideOnScroll()
 
 const state = ref(null)
 const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.gridUpdatedAt))

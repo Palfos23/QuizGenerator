@@ -1163,7 +1163,14 @@ mark {
      which can drift a few px depending on font metrics/breakpoint - rather
      than risk a gap where the pitch flashes through while scrolling, tuck
      this a little further under the (opaque, higher z-index) nav so any
-     mismatch is a harmless hidden overlap instead of a visible seam. */
+     mismatch is a harmless hidden overlap instead of a visible seam.
+     Deliberately always visible - this used to also slide off-screen while
+     scrolling down a tall board (via useHideOnScroll/.hide-on-scroll, since
+     removed), but that hid it mid-interaction too: scrolling while the
+     results dropdown was open (or the on-screen keyboard nudging the page)
+     made the input vanish while someone was actively trying to type into it
+     or tap a result. Staying put above the board at all times, permanently,
+     was the actual ask - not a smarter hide/reveal heuristic. */
   top: calc(var(--nav-height) - 10px);
   z-index: 25;
   background: var(--ink);
@@ -1178,34 +1185,23 @@ mark {
                               centered underneath the search box, instead of
                               wedged beside it */
   align-items: center;
-  transition: transform 0.25s ease, opacity 0.2s ease;
-}
-/* Applied via useHideOnScroll while scrolling down a tall board/pitch - slides
-   the box off the top of the screen instead of leaving it permanently
-   camped over the content. A transform (not display/visibility) so its
-   sticky positioning and layout space are untouched; it just slides straight
-   back on the next upward scroll. */
-.guess-box-wrap.hide-on-scroll {
-  transform: translateY(-140%);
-  opacity: 0;
-  pointer-events: none;
 }
 .guess-box {
   max-width: 480px;
   width: 100%;
   position: relative;
 }
-/* Deliberately separate from .guess-box (rather than its last child) with a
-   real gap above it - this sits right under a search input players are
-   actively tapping/typing into, and it costs a life, so it needs to read as
-   a distinct, deliberate action rather than "the next row in the list" a
-   thumb might land on by accident. Confirmed via ConfirmModal before it
-   actually fires (see the components using this class) as the other half of
-   that same guard. */
-.pass-turn-btn {
-  max-width: 480px;
-  width: 100%;
-  margin-top: 24px;
+/* Deliberately placed at the very bottom of the board/pitch (see the
+   components using this class), not right under the search box/results list
+   it used to sit under - a life-costing action shouldn't share the same
+   thumb-reach zone as the input someone's actively typing and tapping
+   results in every turn. Reaching this now takes a deliberate scroll past
+   the whole board. Still gated by a ConfirmModal before it actually fires,
+   as the other half of that guard. */
+.pass-turn-zone {
+  display: flex;
+  justify-content: center;
+  margin: 28px 0 4px;
 }
 /* Same pill + magnifying-glass treatment as .search-input (admin/list search
    boxes) for one consistent "this is a search field" language across the
