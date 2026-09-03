@@ -268,6 +268,46 @@ export default {
     return client.post(`/rooms/${code}/lineup-battle/next-lineup`).then(r => r.data)
   },
 
+  // --- Penalty Shootout: pool + local pass-and-play/solo (stateless - no persisted attempt) ---
+  fetchPenaltyShootouts() {
+    return client.get('/penalty-shootouts').then(r => r.data)
+  },
+  fetchPenaltyShootoutRoundChoices(count, excludeIds) {
+    const params = new URLSearchParams({ count: String(count) })
+    ;(excludeIds || []).forEach(id => params.append('excludeIds', String(id)))
+    return client.get(`/penalty-shootouts/round-choices?${params.toString()}`).then(r => r.data)
+  },
+  getPenaltyShootoutStart(id) {
+    return client.get(`/penalty-shootouts/${id}/start`).then(r => r.data)
+  },
+  searchPenaltyShootoutCandidates(id, search) {
+    const query = search ? `?search=${encodeURIComponent(search)}` : ''
+    return client.get(`/penalty-shootouts/${id}/candidates${query}`).then(r => r.data)
+  },
+  submitPenaltyShootoutGuess(id, athleteId, revealedKickIds) {
+    return client.post(`/penalty-shootouts/${id}/guess`, { athleteId, revealedKickIds }).then(r => r.data)
+  },
+  revealAllPenaltyShootoutKicks(id) {
+    return client.get(`/penalty-shootouts/${id}/reveal-all`).then(r => r.data)
+  },
+
+  // --- Penalty Shootout: admin ---
+  adminListPenaltyShootouts() {
+    return client.get('/admin/penalty-shootouts').then(r => r.data)
+  },
+  adminGetPenaltyShootout(id) {
+    return client.get(`/admin/penalty-shootouts/${id}`).then(r => r.data)
+  },
+  adminCreatePenaltyShootout(payload) {
+    return client.post('/admin/penalty-shootouts', payload).then(r => r.data)
+  },
+  adminUpdatePenaltyShootout(id, payload) {
+    return client.put(`/admin/penalty-shootouts/${id}`, payload).then(r => r.data)
+  },
+  adminDeletePenaltyShootout(id) {
+    return client.delete(`/admin/penalty-shootouts/${id}`)
+  },
+
   // --- Athlete pools: admin ---
   adminListAthletePools() {
     return client.get('/admin/athlete-pools').then(r => r.data)

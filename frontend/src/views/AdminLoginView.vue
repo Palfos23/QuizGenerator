@@ -28,10 +28,12 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import api from '../services/api'
 import auth from '../services/auth'
+import { safeRedirectTarget } from '../router'
 
+const route = useRoute()
 const router = useRouter()
 const username = ref('')
 const password = ref('')
@@ -40,7 +42,7 @@ const error = ref('')
 
 onMounted(() => {
   if (auth.isAdmin.value) {
-    router.push('/admin/questions')
+    router.push(safeRedirectTarget(route, '/admin/questions'))
   }
 })
 
@@ -50,7 +52,7 @@ async function submit() {
   try {
     const result = await api.loginAsAdmin(username.value, password.value)
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
-    router.push('/admin/questions')
+    router.push(safeRedirectTarget(route, '/admin/questions'))
   } catch (e) {
     error.value = e.response?.data?.message || 'Invalid admin credentials.'
   } finally {

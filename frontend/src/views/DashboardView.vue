@@ -19,9 +19,17 @@
         <h3>Weekly grid</h3>
         <p>Guess every answer that fits this week's theme before you run out of strikes.</p>
       </router-link>
+      <router-link to="/starting-xi" class="dashboard-feature-card">
+        <h3>Starting XI</h3>
+        <p>Guess a full lineup, position by position, before the week's board runs out of lives.</p>
+      </router-link>
       <router-link to="/grid-battle" class="dashboard-feature-card">
         <h3>Grid Battle</h3>
         <p>A pass-the-device multiplayer version of Weekly Grid - take turns, or lose a life trying.</p>
+      </router-link>
+      <router-link to="/starting-xi-battle" class="dashboard-feature-card">
+        <h3>XI Battle</h3>
+        <p>Same idea as Grid Battle, for a Starting XI board - take turns naming the lineup.</p>
       </router-link>
       <router-link to="/tension" class="dashboard-feature-card">
         <h3>Tension</h3>
@@ -30,6 +38,18 @@
       <router-link to="/501" class="dashboard-feature-card">
         <h3>501</h3>
         <p>A darts-style countdown from 501 - 1v1, checkout between 0 and -10 to win.</p>
+      </router-link>
+      <router-link to="/imposter" class="dashboard-feature-card">
+        <h3>Imposter</h3>
+        <p>One player doesn't get the answer - find out who by asking around the table.</p>
+      </router-link>
+      <router-link to="/bullseye" class="dashboard-feature-card">
+        <h3>Bullseye</h3>
+        <p>Everyone answers, lowest score is eliminated each round, until one player is left.</p>
+      </router-link>
+      <router-link to="/penalty-shootout" class="dashboard-feature-card">
+        <h3>Penalty Shootout</h3>
+        <p>Guess who took each penalty, in real order - solo, or pass the device around and take turns.</p>
       </router-link>
       <router-link to="/my-quizzes" class="dashboard-feature-card">
         <h3>My quizzes</h3>

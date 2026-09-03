@@ -47,6 +47,10 @@ public class PlayAccessService {
         require(authentication, "Bullseye", AppUser::isCanPlayBullseye);
     }
 
+    public void requirePenaltyShootoutAccess(Authentication authentication) {
+        require(authentication, "Penalty Shootout", AppUser::isCanPlayPenaltyShootout);
+    }
+
     // For RoomController.create/join, where the game being started is only known at runtime.
     public void requireAccessForGameType(Authentication authentication, RoomGameType type) {
         switch (type) {
@@ -83,6 +87,7 @@ public class PlayAccessService {
             case "imposter" -> requireImposterAccess(authentication);
             case "starting-xi-battle" -> requireStartingXiBattleAccess(authentication);
             case "bullseye" -> requireBullseyeAccess(authentication);
+            case "penalty-shootout" -> requirePenaltyShootoutAccess(authentication);
             default -> throw new IllegalArgumentException("Unknown game: " + gameKey);
         }
     }

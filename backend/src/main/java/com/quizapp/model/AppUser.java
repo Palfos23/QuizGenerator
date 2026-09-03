@@ -49,6 +49,9 @@ public class AppUser {
     @Column(name = "can_play_bullseye", nullable = false, columnDefinition = "boolean default true")
     private boolean canPlayBullseye = true;
 
+    @Column(name = "can_play_penalty_shootout", nullable = false, columnDefinition = "boolean default true")
+    private boolean canPlayPenaltyShootout = true;
+
     public boolean isCanPlayTension() {
         return canPlayTension;
     }
@@ -95,6 +98,14 @@ public class AppUser {
 
     public void setCanPlayBullseye(boolean canPlayBullseye) {
         this.canPlayBullseye = canPlayBullseye;
+    }
+
+    public boolean isCanPlayPenaltyShootout() {
+        return canPlayPenaltyShootout;
+    }
+
+    public void setCanPlayPenaltyShootout(boolean canPlayPenaltyShootout) {
+        this.canPlayPenaltyShootout = canPlayPenaltyShootout;
     }
 
     public Long getId() {

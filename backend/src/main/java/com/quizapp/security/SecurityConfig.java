@@ -54,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/rooms/**").authenticated()
                         .requestMatchers("/api/501/**").authenticated()
                         .requestMatchers("/api/bullseye/**").authenticated()
+                        .requestMatchers("/api/penalty-shootouts/**").authenticated()
                         .requestMatchers("/api/play-access/**").authenticated()
                         .anyRequest().authenticated())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // needed for the H2 console

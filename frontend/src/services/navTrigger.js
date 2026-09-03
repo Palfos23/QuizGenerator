@@ -8,7 +8,8 @@ const state = reactive({
   myQuizzes: 0,
   generate: 0,
   startingXiBattle: 0,
-  bullseye: 0
+  bullseye: 0,
+  penaltyShootout: 0
 })
 
 export default {

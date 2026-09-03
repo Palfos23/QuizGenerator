@@ -29,6 +29,7 @@
         <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/starting-xi-battle" class="nav-link" @click="onNavClick('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
         <router-link v-if="!auth.isAdmin.value" to="/bullseye" class="nav-link" @click="onNavClick('/bullseye', 'bullseye')">Bullseye</router-link>
+        <router-link v-if="!auth.isAdmin.value" to="/penalty-shootout" class="nav-link" @click="onNavClick('/penalty-shootout', 'penaltyShootout')">Penalty Shootout</router-link>
         <template v-if="auth.isAdmin.value">
           <div v-for="menu in ADMIN_MENUS" :key="menu.label" class="top-nav-dropdown">
             <div v-if="openAdminMenu === menu.label" class="top-nav-dropdown-backdrop" @click="closeAdminMenu"></div>
@@ -100,6 +101,7 @@
           <router-link to="/grid-battle" role="menuitem" @click="closeGamesMenu('/grid-battle', 'gridBattle')">Grid Battle</router-link>
           <router-link to="/starting-xi-battle" role="menuitem" @click="closeGamesMenu('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
           <router-link to="/bullseye" role="menuitem" @click="closeGamesMenu('/bullseye', 'bullseye')">Bullseye</router-link>
+          <router-link to="/penalty-shootout" role="menuitem" @click="closeGamesMenu('/penalty-shootout', 'penaltyShootout')">Penalty Shootout</router-link>
         </div>
       </div>
       <template v-if="auth.isAdmin.value">
@@ -159,7 +161,7 @@ import { useEscapeKey } from './composables/useEscapeKey'
 
 const router = useRouter()
 
-const GAME_PATHS = ['/tension', '/501', '/imposter', '/grid-battle', '/starting-xi-battle', '/bullseye']
+const GAME_PATHS = ['/tension', '/501', '/imposter', '/grid-battle', '/starting-xi-battle', '/bullseye', '/penalty-shootout']
 const isGameRoute = computed(() => GAME_PATHS.includes(router.currentRoute.value.path))
 
 // Single "which player dropdown is open" ref (null | 'weekly' | 'games'),
@@ -222,7 +224,8 @@ const ADMIN_MENUS = [
       { to: '/admin/tension-questions', label: 'Tension' },
       { to: '/admin/501', label: '501' },
       { to: '/admin/imposter', label: 'Imposter' },
-      { to: '/admin/bullseye', label: 'Bullseye' }
+      { to: '/admin/bullseye', label: 'Bullseye' },
+      { to: '/admin/penalty-shootouts', label: 'Penalty Shootout' }
     ]
   },
   {

@@ -33,6 +33,8 @@ import AdminReportsView from '../views/AdminReportsView.vue'
 import AdminStatisticsView from '../views/AdminStatisticsView.vue'
 import BullseyeView from '../views/BullseyeView.vue'
 import AdminBullseyeView from '../views/AdminBullseyeView.vue'
+import PenaltyShootoutView from '../views/PenaltyShootoutView.vue'
+import AdminPenaltyShootoutsView from '../views/AdminPenaltyShootoutsView.vue'
 import auth from '../services/auth'
 
 const routes = [
@@ -69,6 +71,8 @@ const routes = [
   { path: '/admin/imposter', name: 'admin-imposter', component: AdminImposterView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/bullseye', name: 'bullseye', component: BullseyeView, meta: { requiresAuth: true } },
   { path: '/admin/bullseye', name: 'admin-bullseye', component: AdminBullseyeView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/penalty-shootout', name: 'penalty-shootout', component: PenaltyShootoutView, meta: { requiresAuth: true } },
+  { path: '/admin/penalty-shootouts', name: 'admin-penalty-shootouts', component: AdminPenaltyShootoutsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/tension-questions', name: 'admin-tension-questions', component: AdminTensionQuestionsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/tension-categories', name: 'admin-tension-categories', component: AdminTensionCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/suggest-question', name: 'suggest-question', component: SuggestQuestionView, meta: { requiresAuth: true } },
@@ -85,13 +89,32 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  // Both bounces carry the originally-requested path along as ?redirect= - see
+  // safeRedirectTarget() below, used by HomeView/AdminLoginView once sign-in
+  // actually succeeds, so a shared link (a specific weekly grid, a bookmarked
+  // admin sub-page) lands where it was actually pointing instead of always
+  // dumping the visitor on the generic dashboard/question-bank.
   if (to.meta.requiresAdmin && !auth.isAdmin.value) {
-    return { name: 'admin-login' }
+    return { name: 'admin-login', query: { redirect: to.fullPath } }
   }
   if (to.meta.requiresAuth && !auth.isAuthenticated.value) {
-    return { name: 'home' }
+    return { name: 'home', query: { redirect: to.fullPath } }
   }
   return true
 })
+
+// route.query.redirect is attacker-controllable (anyone can craft/share a link
+// with it set to anything), so only an in-app path is honored - exactly one
+// leading slash. Without the !startsWith('//') check, a crafted `//evil.com`
+// redirect param would be accepted by <RouterLink>/router.push() as a
+// protocol-relative URL and send a freshly-authenticated session straight off
+// the site.
+export function safeRedirectTarget(route, fallback) {
+  const target = route.query.redirect
+  if (typeof target === 'string' && target.startsWith('/') && !target.startsWith('//')) {
+    return target
+  }
+  return fallback
+}
 
 export default router
