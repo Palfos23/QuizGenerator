@@ -47,6 +47,20 @@ function msUntilTokenExpiry() {
   }
 }
 
+// Swaps in a freshly-issued token from /auth/refresh without the rest of a full
+// login (no navigation, no "welcome back" side effects) - role/displayName are
+// included in the refresh response too and reapplied here mostly for safety
+// (they aren't expected to actually change mid-session), same fields login()
+// already persists to localStorage.
+function updateToken({ token, displayName, role }) {
+  state.token = token
+  state.displayName = displayName
+  state.role = role
+  localStorage.setItem('quiz_token', token)
+  localStorage.setItem('quiz_display_name', displayName || '')
+  localStorage.setItem('quiz_role', role)
+}
+
 function logout() {
   state.token = null
   state.displayName = null
@@ -62,6 +76,7 @@ const isAdmin = computed(() => state.role === 'ADMIN')
 export default {
   state,
   login,
+  updateToken,
   logout,
   isAuthenticated,
   isAdmin,

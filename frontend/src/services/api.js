@@ -32,6 +32,12 @@ export default {
   loginAsAdmin(username, password) {
     return client.post('/auth/admin/login', { username, password }).then(r => r.data)
   },
+  // Silently swaps the current (still-valid) token for a fresh one - see
+  // App.vue's checkSessionTimers, which calls this well before the token
+  // would actually expire so an active tab never hits that wall.
+  refreshToken() {
+    return client.post('/auth/refresh').then(r => r.data)
+  },
 
   // --- Public quiz endpoints (require a logged-in user) ---
   generateQuiz(payload) {

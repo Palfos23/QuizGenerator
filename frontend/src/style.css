@@ -1662,9 +1662,47 @@ mark {
   background: rgba(255,255,255,0.02);
   transition: all 0.2s ease;
 }
+/* Shared by every turn-based multiplayer game (Grid/XI Battle, Bullseye,
+   Imposter, 501 - pass-and-play and online alike), so strengthening it here
+   makes whose-turn-it-is more obvious everywhere at once. A thin 1px ring +
+   10% tint read as "slightly highlighted" rather than "this is the active
+   player" at a glance, especially glancing quickly on a phone - a solid gold
+   border, a floating "TURN" badge (a text/shape cue, not just color, so it
+   still reads for colorblind players) and a pulsing glow push it from subtle
+   to unmistakable.
+   border-color needs !important - every card also carries an inline
+   :style="{ borderColor: p.color }" for that player's own seat color, and an
+   inline style otherwise always wins over a class selector regardless of
+   what's written here (checked via computed styles - without it, this line
+   was silently never actually applying). */
 .mp-player-card.active-turn {
-  background: rgba(242, 183, 5, 0.1);
-  box-shadow: 0 0 0 1px var(--gold);
+  position: relative;
+  background: rgba(242, 183, 5, 0.16);
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 2px rgba(242, 183, 5, 0.35);
+  animation: active-turn-pulse 1.6s ease-in-out infinite;
+}
+.mp-player-card.active-turn::before {
+  content: '▶ TURN';
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gold);
+  color: #241c00;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+@keyframes active-turn-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(242, 183, 5, 0.35); }
+  50% { box-shadow: 0 0 0 4px rgba(242, 183, 5, 0.55), 0 0 18px rgba(242, 183, 5, 0.35); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp-player-card.active-turn { animation: none; }
 }
 .mp-player-card.eliminated {
   opacity: 0.4;

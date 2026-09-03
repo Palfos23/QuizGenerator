@@ -47,4 +47,36 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
+    /** token + the role/displayName it carries, so a caller building a response
+     *  DTO (AuthController#refresh) doesn't need to re-parse the fresh token
+     *  right back apart again just to read those two fields off it. */
+    public record RefreshResult(String token, String role, String displayName) {}
+
+    /**
+     * Silently renews a still-valid token with a fresh full-length expiry, carrying
+     * over the same subject/role/uid/name - the sliding-session half of fixing
+     * "logged out too often": an actively-used tab keeps renewing itself well before
+     * its token would actually expire (see AuthController#refresh, called from
+     * App.vue's checkSessionTimers), so expirationMinutes effectively only matters
+     * for a session that's genuinely gone unused. The separate, much shorter
+     * inactivity timeout in App.vue still logs out a truly abandoned/shared-device
+     * tab regardless of this.
+     * parseClaims() throws (JwtException) for an already-expired or tampered token -
+     * deliberately left uncaught here, since refreshing an expired token would
+     * defeat the point of it expiring at all.
+     */
+    public RefreshResult refresh(String oldToken) {
+        Claims claims = parseClaims(oldToken);
+        String role = claims.get("role", String.class);
+        String name = claims.get("name", String.class);
+        // Read as Number rather than claims.get("uid", Long.class) - JJWT/Jackson
+        // deserializes a JSON integer as Integer, not Long, unless the value is
+        // actually outside Integer's range, so a direct Long.class cast can throw
+        // ClassCastException even though the claim was written as a Long.
+        Object uidClaim = claims.get("uid");
+        Long uid = uidClaim == null ? null : ((Number) uidClaim).longValue();
+        String fresh = generateToken(claims.getSubject(), role, uid, name);
+        return new RefreshResult(fresh, role, name);
+    }
 }

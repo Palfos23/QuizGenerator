@@ -34,6 +34,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body(HttpStatus.BAD_REQUEST, ex.getMessage()));
     }
 
+    // Thrown by JwtService#parseClaims (via AuthController#refresh) for a token
+    // that's expired, tampered with, or otherwise unparseable - a real 401, not a
+    // 500. Generic message rather than ex.getMessage(): a raw JWT parser error
+    // ("JWT expired 3m ago") isn't something a caller needs, and isn't guaranteed
+    // not to leak internals.
+    @ExceptionHandler(io.jsonwebtoken.JwtException.class)
+    public ResponseEntity<Map<String, Object>> handleJwtException(io.jsonwebtoken.JwtException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(body(HttpStatus.UNAUTHORIZED, "Session expired - please sign in again."));
+    }
+
     // Used for routine "not allowed right now" rejections (wrong turn, host-only
     // action, game already finished) - a real, expected outcome of normal play,
     // not a server error, so this stays a 409 rather than falling through to 500.

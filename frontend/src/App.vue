@@ -151,6 +151,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import auth from './services/auth'
+import api from './services/api'
 import { useRouter } from 'vue-router'
 import navTrigger from './services/navTrigger'
 import ToastHost from './components/ToastHost.vue'
@@ -274,14 +275,26 @@ function logout() {
 
 // Logs out after a period of no interaction, separate from the JWT's own
 // (much longer) expiry - the JWT expiring handles "closed the laptop for a
-// week", this handles "left a tab open and walked away for a while".
-const INACTIVITY_LIMIT_MS = 60 * 60 * 1000 // 60 minutes
+// week", this handles "left a tab open and walked away for a while". Was 60
+// minutes, which turned out to be the main source of "logged out too often"
+// complaints - a slow party-game round, or someone quietly building a quiz
+// between distractions, routinely clears an hour of zero clicks/scrolls. 4
+// hours still protects a forgotten tab on a shared/borrowed device within
+// the same day, without punishing normal unhurried use.
+const INACTIVITY_LIMIT_MS = 4 * 60 * 60 * 1000 // 4 hours
 // How long before either cutoff to show a heads-up, so a hard logout never
 // just appears out of nowhere mid-game.
 const INACTIVITY_WARNING_MS = 60 * 1000
 const EXPIRY_WARNING_MS = 2 * 60 * 1000
+// The other half of the "logged out too often" fix: silently swap in a fresh
+// token (see attemptSilentRefresh below) once this little runway remains on
+// the current one, rather than just watching the clock run out. 30 minutes
+// gives an active tab several retries if the first attempt hits a network
+// blip, well before EXPIRY_WARNING_MS would ever need to show.
+const REFRESH_BEFORE_EXPIRY_MS = 30 * 60 * 1000
 let lastActivity = Date.now()
 let inactivityTimer = null
+let refreshInFlight = false
 
 const showInactivityWarning = ref(false)
 const inactivityWarningSecondsLeft = ref(0)
@@ -343,12 +356,37 @@ function checkSessionTimers() {
     return // don't stack the token-expiry warning on top of this one
   }
 
-  // The token's own absolute expiry can't be postponed by activity (no
-  // refresh token exists) - this is purely a "wrap up soon" heads-up, not
-  // something staySignedIn() can defer.
+  // The token's own absolute expiry - silently swap in a fresh one well ahead
+  // of it while the tab's still open and activity hasn't tripped the
+  // inactivity cutoff above, so this normally never gets anywhere near
+  // EXPIRY_WARNING_MS. That warning stays as the fallback for whenever the
+  // swap itself can't happen (offline, server hiccup, ...).
   const tokenRemaining = auth.msUntilTokenExpiry()
+  if (tokenRemaining !== null && tokenRemaining > 0 && tokenRemaining <= REFRESH_BEFORE_EXPIRY_MS && !refreshInFlight) {
+    attemptSilentRefresh()
+  }
   if (!expiryWarningDismissed && tokenRemaining !== null && tokenRemaining > 0 && tokenRemaining <= EXPIRY_WARNING_MS) {
     showExpiryWarning.value = true
+  }
+}
+
+async function attemptSilentRefresh() {
+  refreshInFlight = true
+  try {
+    const result = await api.refreshToken()
+    auth.updateToken(result)
+    // A previously-dismissed/shown warning was tied to the token that just
+    // got replaced - clear it so a fresh one only shows if the new token
+    // itself somehow ends up close to expiry too.
+    showExpiryWarning.value = false
+    expiryWarningDismissed = false
+  } catch (e) {
+    // Couldn't refresh (offline, the token already invalid, a server hiccup) -
+    // the expiry warning above and api.js's response-interceptor logout are
+    // both still there as fallbacks, so this fails quietly rather than
+    // interrupting whatever the user's doing right now.
+  } finally {
+    refreshInFlight = false
   }
 }
 
