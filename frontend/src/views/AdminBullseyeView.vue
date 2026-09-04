@@ -148,23 +148,53 @@
           <button class="btn btn-secondary btn-sm" :disabled="!form.sport || importingCsv" @click="triggerCsvUpload">
             {{ importingCsv ? 'Importing…' : '+ Import from CSV' }}
           </button>
+          <button class="btn btn-secondary btn-sm" :disabled="!form.sport || loadingFiveOhOneCategories" @click="toggleFiveOhOnePicker">
+            {{ loadingFiveOhOneCategories ? 'Loading…' : '+ Import from 501 quiz' }}
+          </button>
           <input ref="csvInput" type="file" accept=".csv,text/csv" style="display:none;" @change="handleCsvFile" />
         </div>
         <p class="page-subtitle" style="margin-top:-4px;">
-          CSV format: one row per answer, <code>name,value</code> - e.g. <code>Erling Haaland,27</code>.
-          Names are matched against existing subjects in "{{ form.sport || '…' }}"; anything unmatched is skipped
-          so you can add that subject first and re-import. Every row here still needs a value filled in before saving.
+          CSV format: one row per answer, <code>name,value</code> - e.g. <code>Erling Haaland,27</code>. A
+          501 quiz's subjects and values import the same way. Names are matched against existing subjects
+          in "{{ form.sport || '…' }}"; anything unmatched is skipped so you can add that subject first and
+          re-import. Every row here still needs a value filled in before saving.
         </p>
+
+        <div
+          v-if="showFiveOhOnePicker"
+          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:12px 14px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.02);"
+        >
+          <span v-if="loadingFiveOhOneCategories" style="color:var(--text-dim);">Loading 501 quizzes…</span>
+          <span v-else-if="!fiveOhOneCategories.length" style="color:var(--text-dim);">No 501 quizzes exist yet.</span>
+          <template v-else>
+            <div class="field" style="margin-bottom:0; flex:1; min-width:200px;">
+              <select v-model.number="selectedFiveOhOneCategoryId">
+                <option :value="null" disabled>Choose a 501 quiz…</option>
+                <option v-for="c in fiveOhOneCategories" :key="c.id" :value="c.id">
+                  {{ c.title }} ({{ c.entryCount }} subject{{ c.entryCount === 1 ? '' : 's' }})
+                </option>
+              </select>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              :disabled="!selectedFiveOhOneCategoryId || importingFiveOhOne"
+              @click="importFromFiveOhOne"
+            >
+              {{ importingFiveOhOne ? 'Importing…' : 'Import' }}
+            </button>
+          </template>
+          <button class="btn btn-secondary btn-sm" @click="showFiveOhOnePicker = false">Cancel</button>
+        </div>
 
         <div v-if="csvUnmatchedNames.length" style="background:rgba(242,183,5,0.1); border:1px solid rgba(242,183,5,0.3); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:10px;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
             <strong style="color:var(--gold);">
-              {{ csvUnmatchedNames.length }} name{{ csvUnmatchedNames.length > 1 ? 's' : '' }} from the CSV weren't found in "{{ form.sport }}"
+              {{ csvUnmatchedNames.length }} name{{ csvUnmatchedNames.length > 1 ? 's' : '' }} weren't found in "{{ form.sport }}"
             </strong>
             <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">Dismiss</button>
           </div>
           <p class="page-subtitle" style="margin:6px 0 10px;">
-            Add these as subjects first (or fix a typo in the CSV), then re-import.
+            Add these as subjects first (or fix a typo in the source), then re-import.
           </p>
           <ul style="margin:0; padding-left:20px; max-height:200px; overflow-y:auto; line-height:1.8;">
             <li v-for="name in csvUnmatchedNames" :key="name">{{ name }}</li>
@@ -389,10 +419,45 @@ function triggerCsvUpload() {
   csvInput.value?.click()
 }
 
-// Matches each CSV row's name against subjects already in this category (same
-// pool importAllInCategory draws from) - deliberately doesn't create new
-// Athlete records on the fly, since a typo in the CSV would otherwise silently
-// create a junk duplicate subject instead of surfacing as a skipped row.
+// Shared by CSV import and the "import from 501 quiz" picker below - both
+// just produce a list of {name, value} rows, matched against subjects
+// already in this category (same pool importAllInCategory draws from).
+// Deliberately doesn't create new Athlete records on the fly, since a typo
+// in the source would otherwise silently create a junk duplicate subject
+// instead of surfacing as a skipped row.
+async function importRows(rows, sourceLabel) {
+  const pool = await api.adminSearchAthletes({ sport: form.sport })
+  const athleteByName = new Map(pool.map(a => [a.name.trim().toLowerCase(), a]))
+
+  let added = 0
+  let updated = 0
+  const unmatched = []
+  for (const row of rows) {
+    const athlete = athleteByName.get(row.name.trim().toLowerCase())
+    if (!athlete) {
+      unmatched.push(row.name)
+      continue
+    }
+    const existing = entries.value.find(e => e.athleteId === athlete.id)
+    if (existing) {
+      existing.statValue = row.value
+      updated++
+    } else {
+      entries.value.push({ athleteId: athlete.id, name: athlete.name, team: athlete.team, statValue: row.value })
+      added++
+    }
+  }
+  entryPage.value = 1
+  entryFilterTerm.value = ''
+  csvUnmatchedNames.value = unmatched
+
+  let message = `${sourceLabel}: ${added} answer(s) added, ${updated} updated.`
+  if (unmatched.length) {
+    message += ` ${unmatched.length} name(s) weren't found - see the list below.`
+  }
+  toast.show(message, unmatched.length ? 'error' : 'success')
+}
+
 async function handleCsvFile(event) {
   const file = event.target.files?.[0]
   event.target.value = '' // lets the same file be re-selected after fixing it
@@ -407,41 +472,56 @@ async function handleCsvFile(event) {
       toast.show('That CSV had no valid "name,value" rows to import.', 'error')
       return
     }
-
-    const pool = await api.adminSearchAthletes({ sport: form.sport })
-    const athleteByName = new Map(pool.map(a => [a.name.trim().toLowerCase(), a]))
-
-    let added = 0
-    let updated = 0
-    const unmatched = []
-    for (const row of rows) {
-      const athlete = athleteByName.get(row.name.trim().toLowerCase())
-      if (!athlete) {
-        unmatched.push(row.name)
-        continue
-      }
-      const existing = entries.value.find(e => e.athleteId === athlete.id)
-      if (existing) {
-        existing.statValue = row.value
-        updated++
-      } else {
-        entries.value.push({ athleteId: athlete.id, name: athlete.name, team: athlete.team, statValue: row.value })
-        added++
-      }
-    }
-    entryPage.value = 1
-    entryFilterTerm.value = ''
-    csvUnmatchedNames.value = unmatched
-
-    let message = `CSV import: ${added} answer(s) added, ${updated} updated.`
-    if (unmatched.length) {
-      message += ` ${unmatched.length} name(s) weren't found - see the list below.`
-    }
-    toast.show(message, unmatched.length ? 'error' : 'success')
+    await importRows(rows, 'CSV import')
   } catch (e) {
     error.value = 'Could not read that CSV file.'
   } finally {
     importingCsv.value = false
+  }
+}
+
+// "Copy a 501 quiz into Bullseye" - a 501 category is already just a list of
+// {name, value} rows (the darts-checkout number each subject throws for), the
+// exact same shape a CSV row is - so this reuses importRows rather than
+// needing its own matching logic.
+const fiveOhOneCategories = ref([])
+const loadingFiveOhOneCategories = ref(false)
+const showFiveOhOnePicker = ref(false)
+const selectedFiveOhOneCategoryId = ref(null)
+const importingFiveOhOne = ref(false)
+
+async function toggleFiveOhOnePicker() {
+  showFiveOhOnePicker.value = !showFiveOhOnePicker.value
+  if (showFiveOhOnePicker.value && !fiveOhOneCategories.value.length) {
+    loadingFiveOhOneCategories.value = true
+    try {
+      fiveOhOneCategories.value = await api.adminListFiveOhOneCategories()
+    } catch (e) {
+      error.value = 'Could not load 501 quizzes.'
+    } finally {
+      loadingFiveOhOneCategories.value = false
+    }
+  }
+}
+
+async function importFromFiveOhOne() {
+  if (!selectedFiveOhOneCategoryId.value || !form.sport) return
+  error.value = ''
+  csvUnmatchedNames.value = []
+  importingFiveOhOne.value = true
+  try {
+    const category = await api.adminGetFiveOhOneCategory(selectedFiveOhOneCategoryId.value)
+    const rows = category.entries.map(e => ({ name: e.name, value: e.value }))
+    if (!rows.length) {
+      toast.show(`"${category.title}" has no subjects to import.`, 'error')
+      return
+    }
+    await importRows(rows, `Imported from "${category.title}"`)
+    showFiveOhOnePicker.value = false
+  } catch (e) {
+    error.value = 'Could not import from that 501 quiz.'
+  } finally {
+    importingFiveOhOne.value = false
   }
 }
 
@@ -482,6 +562,8 @@ function resetForm() {
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
   csvUnmatchedNames.value = []
+  showFiveOhOnePicker.value = false
+  selectedFiveOhOneCategoryId.value = null
 }
 
 function openCreate() {
@@ -493,6 +575,8 @@ function openCreate() {
 async function openEdit(id) {
   error.value = ''
   csvUnmatchedNames.value = []
+  showFiveOhOnePicker.value = false
+  selectedFiveOhOneCategoryId.value = null
   try {
     const detail = await api.adminGetBullseyeQuestion(id)
     form.title = detail.title
