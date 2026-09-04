@@ -1201,13 +1201,33 @@ mark {
    flow, but it's still part of the always-visible sticky box, no scrolling
    needed. Still gated by a ConfirmModal before it actually fires, as the
    other half of that guard. */
+/* The "Pass turn" button is taken out of flex flow (absolutely positioned)
+   so justify-content: center has only the title left to center - a plain
+   flex row with space-between just pins the title to the left edge instead
+   of centering it in the whole header, which is what "X's turn" wants. */
 .guess-box-header {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  justify-content: center;
   width: 100%;
+  min-height: 32px;
   margin-bottom: 8px;
+}
+.guess-box-header > p {
+  margin: 0;
+  text-align: center;
+}
+/* Reserves space so a longer name doesn't run under the button - only when
+   one is actually present (solo Penalty Shootout has none). */
+.guess-box-header:has(> .btn) > p {
+  padding-right: 84px;
+}
+.guess-box-header > .btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 /* Same pill + magnifying-glass treatment as .search-input (admin/list search
    boxes) for one consistent "this is a search field" language across the

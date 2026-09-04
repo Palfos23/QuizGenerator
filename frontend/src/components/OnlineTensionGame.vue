@@ -48,7 +48,7 @@
             <template v-if="isYourTurn">
               <h3 style="text-align:center; margin-top:0;">Your turn</h3>
               <form @submit.prevent="submit">
-                <div class="field" style="margin-bottom:0;">
+                <div class="guess-box" style="margin:0 auto;">
                   <input
                     type="text"
                     v-model="value"
@@ -58,7 +58,6 @@
                     autocorrect="off"
                     autocapitalize="off"
                     spellcheck="false"
-                    style="text-align:center;"
                   />
                 </div>
                 <div v-if="showDropdown" class="guess-results" style="margin-top:6px; max-height:220px; overflow-y:auto;">

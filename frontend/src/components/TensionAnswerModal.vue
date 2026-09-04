@@ -21,7 +21,7 @@
         </div>
 
         <form @submit.prevent="submit" style="position:relative;">
-          <div class="field" style="margin-bottom:0;">
+          <div class="guess-box" style="margin:0 auto;">
             <input
               type="text"
               v-model="value"
@@ -31,7 +31,6 @@
               autocorrect="off"
               autocapitalize="off"
               spellcheck="false"
-              style="text-align:center;"
             />
           </div>
 
