@@ -52,6 +52,9 @@ public class AppUser {
     @Column(name = "can_play_penalty_shootout", nullable = false, columnDefinition = "boolean default true")
     private boolean canPlayPenaltyShootout = true;
 
+    @Column(name = "can_play_flashback", nullable = false, columnDefinition = "boolean default true")
+    private boolean canPlayFlashback = true;
+
     public boolean isCanPlayTension() {
         return canPlayTension;
     }
@@ -106,6 +109,14 @@ public class AppUser {
 
     public void setCanPlayPenaltyShootout(boolean canPlayPenaltyShootout) {
         this.canPlayPenaltyShootout = canPlayPenaltyShootout;
+    }
+
+    public boolean isCanPlayFlashback() {
+        return canPlayFlashback;
+    }
+
+    public void setCanPlayFlashback(boolean canPlayFlashback) {
+        this.canPlayFlashback = canPlayFlashback;
     }
 
     public Long getId() {

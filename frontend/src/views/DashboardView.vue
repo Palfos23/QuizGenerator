@@ -47,6 +47,10 @@
         <h3>Bullseye</h3>
         <p>Everyone answers, lowest score is eliminated each round, until one player is left.</p>
       </router-link>
+      <router-link to="/flashback" class="dashboard-feature-card">
+        <h3>Flashback</h3>
+        <p>Guess the exact year from a clue - it gets easier each round, but the points don't wait.</p>
+      </router-link>
       <!-- No standalone card for Penalty Shootout - it's reached from the XI
            Battle card above instead, not as its own destination. -->
       <router-link to="/my-quizzes" class="dashboard-feature-card">

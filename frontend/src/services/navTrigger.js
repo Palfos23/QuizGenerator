@@ -9,7 +9,8 @@ const state = reactive({
   generate: 0,
   startingXiBattle: 0,
   bullseye: 0,
-  penaltyShootout: 0
+  penaltyShootout: 0,
+  flashback: 0
 })
 
 export default {

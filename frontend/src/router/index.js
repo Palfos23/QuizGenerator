@@ -35,6 +35,8 @@ import BullseyeView from '../views/BullseyeView.vue'
 import AdminBullseyeView from '../views/AdminBullseyeView.vue'
 import PenaltyShootoutView from '../views/PenaltyShootoutView.vue'
 import AdminPenaltyShootoutsView from '../views/AdminPenaltyShootoutsView.vue'
+import FlashbackView from '../views/FlashbackView.vue'
+import AdminFlashbackView from '../views/AdminFlashbackView.vue'
 import auth from '../services/auth'
 
 const routes = [
@@ -73,6 +75,8 @@ const routes = [
   { path: '/admin/bullseye', name: 'admin-bullseye', component: AdminBullseyeView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/penalty-shootout', name: 'penalty-shootout', component: PenaltyShootoutView, meta: { requiresAuth: true } },
   { path: '/admin/penalty-shootouts', name: 'admin-penalty-shootouts', component: AdminPenaltyShootoutsView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/flashback', name: 'flashback', component: FlashbackView, meta: { requiresAuth: true } },
+  { path: '/admin/flashback', name: 'admin-flashback', component: AdminFlashbackView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/tension-questions', name: 'admin-tension-questions', component: AdminTensionQuestionsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/tension-categories', name: 'admin-tension-categories', component: AdminTensionCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/suggest-question', name: 'suggest-question', component: SuggestQuestionView, meta: { requiresAuth: true } },

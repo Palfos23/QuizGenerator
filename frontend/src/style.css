@@ -1517,6 +1517,14 @@ mark {
   color: var(--text-dim);
   font-style: italic;
 }
+/* Flashback's round-complete recap reuses the row/chip shapes above -
+   this just marks whichever guess(es) actually scored the round's point. */
+.flashback-chip-winner {
+  color: var(--gold);
+  background: rgba(242, 183, 5, 0.12);
+  border-color: rgba(242, 183, 5, 0.4) !important;
+  font-weight: 700;
+}
 @media (prefers-reduced-motion: reduce) {
   .tension-reveal-row { transition: none; }
 }

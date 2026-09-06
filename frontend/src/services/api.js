@@ -308,6 +308,35 @@ export default {
     return client.delete(`/admin/penalty-shootouts/${id}`)
   },
 
+  // --- Flashback: local pass-and-play (stateless - no persisted attempt) ---
+  fetchFlashbackRoundChoices(count, category, excludeCategories, excludeIds) {
+    const params = new URLSearchParams({ count: String(count) })
+    if (category) params.append('category', category)
+    ;(excludeCategories || []).forEach(c => params.append('excludeCategories', c))
+    ;(excludeIds || []).forEach(id => params.append('excludeIds', String(id)))
+    return client.get(`/flashback/round-choices?${params.toString()}`).then(r => r.data)
+  },
+  fetchFlashbackCategories() {
+    return client.get('/flashback/categories').then(r => r.data)
+  },
+
+  // --- Flashback: admin ---
+  adminListFlashbackYears() {
+    return client.get('/admin/flashback').then(r => r.data)
+  },
+  adminGetFlashbackYear(id) {
+    return client.get(`/admin/flashback/${id}`).then(r => r.data)
+  },
+  adminCreateFlashbackYear(payload) {
+    return client.post('/admin/flashback', payload).then(r => r.data)
+  },
+  adminUpdateFlashbackYear(id, payload) {
+    return client.put(`/admin/flashback/${id}`, payload).then(r => r.data)
+  },
+  adminDeleteFlashbackYear(id) {
+    return client.delete(`/admin/flashback/${id}`)
+  },
+
   // --- Athlete pools: admin ---
   adminListAthletePools() {
     return client.get('/admin/athlete-pools').then(r => r.data)

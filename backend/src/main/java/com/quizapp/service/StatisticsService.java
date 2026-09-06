@@ -12,6 +12,7 @@ import com.quizapp.repository.AppUserRepository;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.BullseyeQuestionRepository;
 import com.quizapp.repository.FiveOhOneCategoryRepository;
+import com.quizapp.repository.FlashbackYearRepository;
 import com.quizapp.repository.GridAttemptRepository;
 import com.quizapp.repository.GridCategoryRepository;
 import com.quizapp.repository.GridRepository;
@@ -52,6 +53,7 @@ public class StatisticsService {
     private final FiveOhOneCategoryRepository fiveOhOneCategoryRepository;
     private final TensionQuestionRepository tensionQuestionRepository;
     private final PenaltyShootoutRepository penaltyShootoutRepository;
+    private final FlashbackYearRepository flashbackYearRepository;
     private final GamePlayEventService gamePlayEventService;
 
     public StatisticsService(AppUserRepository appUserRepository,
@@ -65,6 +67,7 @@ public class StatisticsService {
                              FiveOhOneCategoryRepository fiveOhOneCategoryRepository,
                              TensionQuestionRepository tensionQuestionRepository,
                              PenaltyShootoutRepository penaltyShootoutRepository,
+                             FlashbackYearRepository flashbackYearRepository,
                              GamePlayEventService gamePlayEventService) {
         this.appUserRepository = appUserRepository;
         this.athleteRepository = athleteRepository;
@@ -77,6 +80,7 @@ public class StatisticsService {
         this.fiveOhOneCategoryRepository = fiveOhOneCategoryRepository;
         this.tensionQuestionRepository = tensionQuestionRepository;
         this.penaltyShootoutRepository = penaltyShootoutRepository;
+        this.flashbackYearRepository = flashbackYearRepository;
         this.gamePlayEventService = gamePlayEventService;
     }
 
@@ -131,6 +135,7 @@ public class StatisticsService {
         out.add(new CountEntry("Imposter", imposterGridRepository.count()));
         out.add(new CountEntry("Bullseye", bullseyeQuestionRepository.count()));
         out.add(new CountEntry("Penalty Shootout", penaltyShootoutRepository.count()));
+        out.add(new CountEntry("Flashback", flashbackYearRepository.count()));
         return out;
     }
 
@@ -147,6 +152,7 @@ public class StatisticsService {
         out.add(new CountEntry("Imposter", counts.get(BattleGameType.IMPOSTER)));
         out.add(new CountEntry("Bullseye", counts.get(BattleGameType.BULLSEYE)));
         out.add(new CountEntry("Penalty Shootout", counts.get(BattleGameType.PENALTY_SHOOTOUT)));
+        out.add(new CountEntry("Flashback", counts.get(BattleGameType.FLASHBACK)));
         return out;
     }
 
