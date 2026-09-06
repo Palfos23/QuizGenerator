@@ -28,7 +28,7 @@
         :sorts="yearSorts"
         :total-count="years.length"
         :filtered-count="filteredYears.length"
-        placeholder="Search years by title, category or year…"
+        placeholder="Search years by title or year…"
       />
 
       <div v-if="!filteredYears.length" class="empty-state">No years match your search.</div>
@@ -41,7 +41,7 @@
               <span v-if="y.excludedFromFlashback" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Flashback</span>
             </div>
             <div class="saved-quiz-meta">
-              {{ y.category || 'Uncategorized' }} · {{ y.year }} · {{ y.hintCount }} hint{{ y.hintCount === 1 ? '' : 's' }}
+              {{ y.year }} · {{ y.hintCount }} hint{{ y.hintCount === 1 ? '' : 's' }}
             </div>
           </div>
           <div style="display:flex; gap:8px;">
@@ -70,15 +70,9 @@
         <input type="text" v-model="form.title" placeholder="e.g. Moon landing" />
       </div>
 
-      <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
-        <div style="flex:1; min-width:200px;">
-          <label>Category <span class="picker-hint">optional - used to filter which years a game draws from</span></label>
-          <input type="text" v-model="form.category" placeholder="e.g. History" />
-        </div>
-        <div style="flex:1; min-width:140px;">
-          <label>Year <span class="picker-hint">what players are guessing</span></label>
-          <input type="number" v-model.number="form.year" placeholder="1969" />
-        </div>
+      <div class="field" style="max-width:200px;">
+        <label>Year <span class="picker-hint">what players are guessing</span></label>
+        <input type="number" v-model.number="form.year" placeholder="1969" />
       </div>
 
       <div class="field">
@@ -161,10 +155,9 @@ const {
   filtered: filteredYears, paged: pagedYears, sorts: yearSorts
 } = useBoardList(years, {
   pageSize: 10,
-  searchFields: [y => y.title, y => y.category, y => String(y.year)],
+  searchFields: [y => y.title, y => String(y.year)],
   sorts: [
     { key: 'title', label: 'Title', accessor: y => y.title },
-    { key: 'category', label: 'Category', accessor: y => y.category },
     { key: 'year', label: 'Year', accessor: y => y.year, dir: 'desc' },
     { key: 'hints', label: 'Hints', accessor: y => y.hintCount, dir: 'desc' }
   ]
@@ -176,7 +169,6 @@ const editingYearId = ref(null)
 
 const form = reactive({
   title: '',
-  category: '',
   year: null,
   excludedFromFlashback: false,
   hints: ['']
@@ -206,7 +198,6 @@ function moveHint(idx, direction) {
 
 function resetForm() {
   form.title = ''
-  form.category = ''
   form.year = null
   form.excludedFromFlashback = false
   form.hints = ['']
@@ -223,7 +214,6 @@ async function openEdit(id) {
   try {
     const detail = await api.adminGetFlashbackYear(id)
     form.title = detail.title
-    form.category = detail.category || ''
     form.year = detail.year
     form.excludedFromFlashback = detail.excludedFromFlashback
     form.hints = detail.hints.length ? [...detail.hints] : ['']
@@ -271,7 +261,6 @@ async function saveYear() {
 
   const payload = {
     title: form.title,
-    category: form.category || null,
     year: form.year,
     excludedFromFlashback: form.excludedFromFlashback,
     hints

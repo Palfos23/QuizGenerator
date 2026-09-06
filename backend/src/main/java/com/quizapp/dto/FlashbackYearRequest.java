@@ -11,8 +11,6 @@ public class FlashbackYearRequest {
     @NotBlank
     private String title;
 
-    private String category;
-
     @NotNull
     private Integer year;
 
@@ -27,14 +25,6 @@ public class FlashbackYearRequest {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     public Integer getYear() {

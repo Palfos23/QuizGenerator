@@ -1,36 +1,18 @@
 <template>
   <div>
-    <LoadingState v-if="loadingChoices" message="Loading question choices…" full />
-
-    <div v-else-if="roundChoices.length" class="tension-choice-overlay">
-      <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
-        Round {{ roundIndex + 1 }} / {{ totalRounds }}
-      </div>
-      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ rotatedActivePlayers[0]?.name }}</strong>, choose a year</h2>
-      <div class="tension-choice-grid">
-        <button v-for="q in roundChoices" :key="q.id" class="tension-choice-card" @click="chooseQuestion(q)">
-          <strong>{{ q.title }}</strong>
-          <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">
-            {{ q.category || 'Uncategorized' }} · {{ q.hints.length }} hint{{ q.hints.length === 1 ? '' : 's' }}
-          </div>
-        </button>
-      </div>
-    </div>
-
-    <LoadingState v-else-if="loading" message="Loading the round…" full />
+    <LoadingState v-if="loading" message="Loading the round…" full />
 
     <div v-else-if="!roundState" class="empty-state">
       <p>Couldn't load this round.</p>
-      <button class="btn btn-primary" @click="loadRoundChoices">Try again</button>
+      <button class="btn btn-primary" @click="startRound">Try again</button>
     </div>
 
     <template v-else>
       <div class="grid-status-bar">
         <div class="grid-progress" style="text-align:center; width:100%;">Round {{ roundIndex + 1 }} / {{ totalRounds }}</div>
-        <div style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ roundState.category || 'Uncategorized' }}</div>
       </div>
 
-      <h1 style="text-align:center; margin:6px 0 20px;">{{ roundState.title }}</h1>
+      <h1 style="text-align:center; margin:6px 0 20px;">Round {{ roundIndex + 1 }}</h1>
 
       <div class="mp-player-row">
         <div
@@ -117,10 +99,6 @@
         </div>
       </div>
     </template>
-
-    <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
-      <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct!' : 'Not quite' }}</div>
-    </div>
   </div>
 </template>
 
@@ -132,8 +110,6 @@ import passAndPlayState from '../services/passAndPlayState'
 import LoadingState from './LoadingState.vue'
 
 const props = defineProps({
-  category: { type: String, default: '' },
-  excludeCategories: { type: Array, default: () => [] },
   roundCount: { type: Number, required: true },
   players: { type: Array, required: true } // [{ name, color }]
 })
@@ -141,11 +117,9 @@ const emit = defineEmits(['gameOver'])
 
 const roundIndex = ref(0)
 const totalRounds = computed(() => props.roundCount)
-const chosenQuestions = ref([]) // years actually played so far, index-aligned with roundIndex
-const roundChoices = ref([])
-const loadingChoices = ref(false)
+const chosenQuestions = ref([]) // years actually played so far, index-aligned with roundIndex - excluded from future picks
 const loading = ref(false)
-const roundState = ref(null) // the currently-playing year: { id, title, category, year, hints }
+const roundState = ref(null) // the currently-playing year: { id, title, year, hints } - title is admin-only, never shown (see template)
 
 const activePlayers = ref([...props.players]) // no elimination in this game - just here for the shared .mp-player-row markup
 const scores = ref(Object.fromEntries(props.players.map(p => [p.name, 0])))
@@ -160,17 +134,6 @@ const roundWinners = ref([]) // player name(s) who scored this round's point - c
 const guessValue = ref(null)
 const duplicateGuessError = ref(false)
 const shakeGuessBox = ref(false)
-
-const resultOverlay = ref(null)
-let resultOverlayTimeout = null
-function showResultOverlay(correct) {
-  clearTimeout(resultOverlayTimeout)
-  resultOverlay.value = null
-  requestAnimationFrame(() => {
-    resultOverlay.value = { correct }
-    resultOverlayTimeout = setTimeout(() => { resultOverlay.value = null }, 1200)
-  })
-}
 
 // Who starts guessing rotates by round, same convention as Tension/Bullseye.
 const rotatedActivePlayers = computed(() => {
@@ -214,6 +177,12 @@ const leaderboardForRound = computed(() =>
 // everyone's had their turn on THIS hint, nothing's proven wrong yet (see
 // advanceTurn), so two players independently guessing the same still-live
 // year is a legitimate tie in the making, not a wasted repeat.
+//
+// Deliberately gives no feedback at all on whether THIS guess was right -
+// only advanceTurn(), once everyone's answered, reveals anything. Otherwise
+// the first correct guess would tip off every other player still waiting
+// their turn on this same hint, which is exactly the outcome the "does
+// everyone get a fair shot at this hint" design is trying to avoid.
 function submitCurrentGuess() {
   if (guessValue.value === null || guessValue.value === '') return
   const year = Math.trunc(guessValue.value)
@@ -225,10 +194,8 @@ function submitCurrentGuess() {
   }
 
   const player = currentTurnPlayerName.value
-  const correct = year === roundState.value.year
   roundGuesses.value.push({ player, year, hintIndex: hintIndex.value })
   guessValue.value = ''
-  showResultOverlay(correct)
   advanceTurn()
 }
 
@@ -266,38 +233,40 @@ function advanceTurn() {
   revealed.value = true
 }
 
-async function loadRoundChoices() {
-  loadingChoices.value = true
+// Always a random pick, never a player choice - one fetch gets both "is
+// there a year left to play" and the year itself in one round-trip, mirroring
+// GamePlayEventController's "count" param but always asking for exactly 1.
+async function startRound() {
+  loading.value = true
+  roundState.value = null
   try {
-    roundChoices.value = await api.fetchFlashbackRoundChoices(
-      3, props.category, props.excludeCategories, chosenQuestions.value.map(q => q.id)
-    )
+    const picks = await api.fetchFlashbackRoundChoices(1, chosenQuestions.value.map(q => q.id))
+    if (!picks.length) {
+      toast.show('No more years left to play - ask an admin to add more.', 'error')
+      return
+    }
+    const q = picks[0]
+    chosenQuestions.value = [...chosenQuestions.value, q]
+    roundState.value = q
+    roundGuesses.value = []
+    hintIndex.value = 0
+    currentTurnIdx.value = 0
+    revealed.value = false
+    wasExactMatch.value = false
+    roundWinners.value = []
+    guessValue.value = null
+    duplicateGuessError.value = false
   } catch (e) {
     toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
   } finally {
-    loadingChoices.value = false
+    loading.value = false
   }
-}
-
-function chooseQuestion(q) {
-  chosenQuestions.value = [...chosenQuestions.value, q]
-  roundChoices.value = []
-  roundState.value = q
-  roundGuesses.value = []
-  hintIndex.value = 0
-  currentTurnIdx.value = 0
-  revealed.value = false
-  wasExactMatch.value = false
-  roundWinners.value = []
-  guessValue.value = null
-  duplicateGuessError.value = false
 }
 
 function nextRound() {
   if (roundIndex.value + 1 < props.roundCount) {
     roundIndex.value += 1
-    roundState.value = null
-    loadRoundChoices()
+    startRound()
   } else {
     emit('gameOver', props.players.map(p => [p.name, scores.value[p.name] || 0]))
   }
@@ -305,8 +274,6 @@ function nextRound() {
 
 function progressIdentity() {
   return {
-    category: props.category,
-    excludeCategories: props.excludeCategories,
     roundCount: props.roundCount,
     playerNames: props.players.map(p => p.name)
   }
@@ -314,9 +281,7 @@ function progressIdentity() {
 
 function identityMatches(saved) {
   const current = progressIdentity()
-  return saved.category === current.category
-      && JSON.stringify(saved.excludeCategories || []) === JSON.stringify(current.excludeCategories)
-      && saved.roundCount === current.roundCount
+  return saved.roundCount === current.roundCount
       && JSON.stringify(saved.playerNames) === JSON.stringify(current.playerNames)
 }
 
@@ -331,7 +296,7 @@ function saveProgress() {
 
 function initGame() {
   // Resuming mid-round isn't reconstructed - who's guessed what so far is
-  // dropped and the current round just restarts with a fresh choice-of-3,
+  // dropped and the current round just restarts with a fresh random year,
   // same simplification Tension/Bullseye already make for the same reason.
   // Everything from every round before this one - scores, and which years
   // were already used - carries over exactly.
@@ -341,7 +306,7 @@ function initGame() {
     scores.value = saved.scores
     chosenQuestions.value = (saved.chosenQuestionIds || []).map(id => ({ id }))
   }
-  loadRoundChoices()
+  startRound()
 }
 
 watch([roundIndex, scores, chosenQuestions], saveProgress, { deep: true })

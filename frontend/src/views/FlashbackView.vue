@@ -31,30 +31,6 @@
             <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
           </select>
         </div>
-        <div style="flex:1; min-width:160px;">
-          <label>Category</label>
-          <select v-model="category">
-            <option value="">All categories</option>
-            <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
-          </select>
-        </div>
-      </div>
-
-      <div v-if="!category && categories.length" class="field">
-        <label style="text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.85rem;">
-          Exclude any categories you'd rather not get years from
-          <span class="picker-hint" v-if="excludeCategories.length">{{ excludeCategories.length }} excluded</span>
-        </label>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
-          <button
-            v-for="c in categories"
-            :key="c"
-            type="button"
-            class="team-chip"
-            :class="{ active: excludeCategories.includes(c) }"
-            @click="toggleExcludeCategory(c)"
-          >{{ c }}</button>
-        </div>
       </div>
 
       <button class="btn btn-primary" @click="goToSetup">Create game</button>
@@ -96,8 +72,6 @@
 
     <FlashbackGame
       v-else-if="stage === 'game'"
-      :category="category"
-      :exclude-categories="excludeCategories"
       :round-count="numRounds"
       :players="setupPlayers"
       @game-over="onGameOver"
@@ -155,26 +129,9 @@ const stage = ref('landing')
 const error = ref('')
 const numPlayers = ref(2)
 const numRounds = ref(5)
-const category = ref('')
-const excludeCategories = ref([])
-const categories = ref([])
-
-function toggleExcludeCategory(name) {
-  const idx = excludeCategories.value.indexOf(name)
-  if (idx === -1) excludeCategories.value.push(name)
-  else excludeCategories.value.splice(idx, 1)
-}
 
 const setupPlayers = reactive([])
 const finalScores = ref([])
-
-onMounted(async () => {
-  try {
-    categories.value = await api.fetchFlashbackCategories()
-  } catch (e) {
-    // category list is a nice-to-have for the dropdown - fail quietly
-  }
-})
 
 function rebuildSetupPlayers() {
   setupPlayers.length = 0
@@ -197,8 +154,6 @@ const duplicateNames = computed(() => {
 
 function startGame() {
   passAndPlayState.save('flashback', {
-    category: category.value,
-    excludeCategories: excludeCategories.value,
     roundCount: numRounds.value,
     players: [...setupPlayers]
   })
@@ -232,8 +187,6 @@ onMounted(() => {
 
 function resumePassAndPlay() {
   const saved = savedPassAndPlay.value
-  category.value = saved.category
-  excludeCategories.value = saved.excludeCategories || []
   numRounds.value = saved.roundCount
   setupPlayers.length = 0
   saved.players.forEach(p => setupPlayers.push(p))

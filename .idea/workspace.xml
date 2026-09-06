@@ -4,22 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/model/AppUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/model/AppUser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/model/BattleGameType.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/model/BattleGameType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/security/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/service/PlayAccessService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/service/PlayAccessService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/service/StatisticsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/service/StatisticsService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-CFbPjkUb.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-jXGyYa8J.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/dist/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/router/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/services/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/api.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/services/navTrigger.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/navTrigger.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/DashboardView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/DashboardView.vue" afterDir="false" />
-    </list>
+    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

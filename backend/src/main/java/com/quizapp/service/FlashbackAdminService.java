@@ -28,7 +28,7 @@ public class FlashbackAdminService {
     public List<FlashbackYearSummaryDto> findAll() {
         return flashbackYearRepository.findAllSummaries().stream()
                 .sorted((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()))
-                .map(row -> new FlashbackYearSummaryDto(row.getId(), row.getTitle(), row.getCategory(),
+                .map(row -> new FlashbackYearSummaryDto(row.getId(), row.getTitle(),
                         row.getYear(), row.getHintCount().intValue(), row.getExcludedFromFlashback(),
                         row.getUpdatedAt()))
                 .collect(Collectors.toList());
@@ -74,7 +74,6 @@ public class FlashbackAdminService {
         }
 
         year.setTitle(request.getTitle());
-        year.setCategory(request.getCategory());
         year.setYear(request.getYear());
         year.setHints(hints);
         year.setExcludedFromFlashback(request.isExcludedFromFlashback());
@@ -90,7 +89,6 @@ public class FlashbackAdminService {
         FlashbackYearDto dto = new FlashbackYearDto();
         dto.setId(year.getId());
         dto.setTitle(year.getTitle());
-        dto.setCategory(year.getCategory());
         dto.setYear(year.getYear());
         dto.setHints(List.copyOf(year.getHints()));
         dto.setExcludedFromFlashback(year.isExcludedFromFlashback());

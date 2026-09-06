@@ -25,18 +25,9 @@ public class FlashbackController {
     @GetMapping("/round-choices")
     public List<FlashbackYearDto> roundChoices(
             @RequestParam(defaultValue = "3") int count,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) List<String> excludeCategories,
             @RequestParam(required = false) List<Long> excludeIds,
             Authentication authentication) {
         playAccessService.requireFlashbackAccess(authentication);
-        return flashbackPlayService.getRoundChoices(count, category,
-                excludeCategories == null ? Collections.emptyList() : excludeCategories,
-                excludeIds == null ? Collections.emptyList() : excludeIds);
-    }
-
-    @GetMapping("/categories")
-    public List<String> categories() {
-        return flashbackPlayService.getDistinctCategories();
+        return flashbackPlayService.getRoundChoices(count, excludeIds == null ? Collections.emptyList() : excludeIds);
     }
 }

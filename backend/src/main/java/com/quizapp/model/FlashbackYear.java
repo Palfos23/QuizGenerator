@@ -27,13 +27,6 @@ public class FlashbackYear {
     @Column(nullable = false)
     private String title;
 
-    // Free text, e.g. "Sport", "Music" - used to filter which years a game
-    // draws from. Deliberately not GridCategory-backed (unlike Bullseye's
-    // "sport") - a year isn't tied to an Athlete/Subject at all, so this
-    // mirrors TensionQuestion.mainCategory instead.
-    @Column(name = "category")
-    private String category;
-
     // The answer players are trying to guess exactly - never sent to players
     // until a round starts (see class comment on why that's fine).
     // Explicit column name - "year" is an H2 reserved word (same class of
@@ -77,14 +70,6 @@ public class FlashbackYear {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     public Integer getYear() {
