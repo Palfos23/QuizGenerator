@@ -6,8 +6,10 @@ import com.quizapp.dto.ForgotPasswordRequest;
 import com.quizapp.dto.GoogleLoginRequest;
 import com.quizapp.dto.GuestLoginRequest;
 import com.quizapp.dto.RegisterRequest;
+import com.quizapp.dto.ResendVerificationRequest;
 import com.quizapp.dto.ResetPasswordRequest;
 import com.quizapp.dto.UserLoginRequest;
+import com.quizapp.dto.VerifyEmailRequest;
 import com.quizapp.security.JwtService;
 import com.quizapp.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,10 +40,15 @@ public class AuthController {
         return authService.loginWithGoogle(request.getIdToken());
     }
 
-    /** Regular users: create an account with an email + password, for anyone who'd rather not use Google. */
+    /**
+     * Regular users: create an account with an email + password, for anyone who'd
+     * rather not use Google. Doesn't log the caller in - see AuthService#registerWithPassword.
+     * A 204 rather than an AuthResponse, since there's no session to hand back yet.
+     */
     @PostMapping("/register")
-    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
-        return authService.registerWithPassword(request.getEmail(), request.getPassword(), request.getName());
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void register(@Valid @RequestBody RegisterRequest request) {
+        authService.registerWithPassword(request.getEmail(), request.getPassword(), request.getName());
     }
 
     /** Regular users: sign in with a previously-registered email + password. Rate-limited per IP. */
@@ -57,14 +64,27 @@ public class AuthController {
      */
     @PostMapping("/forgot-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        authService.requestPasswordReset(request.getEmail());
+    public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest request, HttpServletRequest httpRequest) {
+        authService.requestPasswordReset(request.getEmail(), clientKey(httpRequest));
     }
 
     @PostMapping("/reset-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request.getToken(), request.getNewPassword());
+    }
+
+    /** Confirms a registered email is actually reachable by whoever clicked the link, then logs them in. */
+    @PostMapping("/verify-email")
+    public AuthResponse verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        return authService.verifyEmail(request.getToken());
+    }
+
+    /** Same generic-response shape as forgot-password - see AuthService#resendVerification. */
+    @PostMapping("/resend-verification")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resendVerification(@Valid @RequestBody ResendVerificationRequest request, HttpServletRequest httpRequest) {
+        authService.resendVerification(request.getEmail(), clientKey(httpRequest));
     }
 
     /**

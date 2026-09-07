@@ -93,6 +93,12 @@
               {{ passwordBusy ? 'Signing in…' : 'Sign in' }}
             </button>
           </form>
+          <p v-if="needsVerification && !resendSent" style="text-align:center; margin-top:10px; font-size:0.9rem;">
+            <a href="#" @click.prevent="submitResendVerification">Resend verification email</a>
+          </p>
+          <p v-else-if="resendSent" class="page-subtitle" style="text-align:center; margin-top:10px;">
+            If that email needs verifying, we've sent a fresh link.
+          </p>
           <p style="text-align:center; margin-top:10px; font-size:0.9rem;">
             <a href="#" @click.prevent="passwordStage = 'forgot'">Forgot password?</a>
             &nbsp;·&nbsp;
@@ -101,25 +107,30 @@
         </template>
 
         <template v-else-if="passwordStage === 'register'">
-          <form @submit.prevent="submitRegister">
-            <div class="field">
-              <label>Name</label>
-              <input type="text" v-model="registerName" placeholder="Your name" />
-            </div>
-            <div class="field">
-              <label>Email</label>
-              <input type="email" v-model="registerEmail" autocomplete="email" placeholder="you@example.com" />
-            </div>
-            <div class="field">
-              <label>Password</label>
-              <input type="password" v-model="registerPassword" autocomplete="new-password" placeholder="At least 8 characters" />
-            </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="passwordBusy">
-              {{ passwordBusy ? 'Creating account…' : 'Create account' }}
-            </button>
-          </form>
+          <template v-if="!registerSent">
+            <form @submit.prevent="submitRegister">
+              <div class="field">
+                <label>Name</label>
+                <input type="text" v-model="registerName" placeholder="Your name" />
+              </div>
+              <div class="field">
+                <label>Email</label>
+                <input type="email" v-model="registerEmail" autocomplete="email" placeholder="you@example.com" />
+              </div>
+              <div class="field">
+                <label>Password</label>
+                <input type="password" v-model="registerPassword" autocomplete="new-password" placeholder="At least 8 characters" />
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="passwordBusy">
+                {{ passwordBusy ? 'Creating account…' : 'Create account' }}
+              </button>
+            </form>
+          </template>
+          <p v-else class="page-subtitle" style="margin-top:0;">
+            Almost there - check your email for a verification link (it works for 30 minutes) before signing in.
+          </p>
           <p style="text-align:center; margin-top:10px; font-size:0.9rem;">
-            <a href="#" @click.prevent="passwordStage = 'signin'">Already have an account? Sign in</a>
+            <a href="#" @click.prevent="passwordStage = 'signin'">{{ registerSent ? 'Back to sign in' : 'Already have an account? Sign in' }}</a>
           </p>
         </template>
 
@@ -255,9 +266,18 @@ const loginPassword = ref('')
 const registerName = ref('')
 const registerEmail = ref('')
 const registerPassword = ref('')
+const registerSent = ref(false)
 
 const forgotEmail = ref('')
 const forgotSent = ref(false)
+
+// Set when loginWithPassword fails specifically because the account exists,
+// the password's right, but the email hasn't been clicked-to-verify yet (see
+// AuthService#loginWithPassword) - offers a resend right where the person's
+// already stuck, instead of making them go find "forgot password" for a
+// problem that isn't actually about their password.
+const needsVerification = ref(false)
+const resendSent = ref(false)
 
 function switchToRegister() {
   registerEmail.value = loginEmail.value
@@ -266,13 +286,30 @@ function switchToRegister() {
 
 async function submitPasswordLogin() {
   error.value = ''
+  needsVerification.value = false
+  resendSent.value = false
   passwordBusy.value = true
   try {
     const result = await api.loginWithPassword(loginEmail.value.trim(), loginPassword.value)
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
     router.push('/dashboard')
   } catch (e) {
-    error.value = e.response?.data?.message || 'Sign-in failed. Please try again.'
+    const message = e.response?.data?.message || 'Sign-in failed. Please try again.'
+    error.value = message
+    needsVerification.value = message.toLowerCase().includes('verify your email')
+  } finally {
+    passwordBusy.value = false
+  }
+}
+
+async function submitResendVerification() {
+  error.value = ''
+  passwordBusy.value = true
+  try {
+    await api.resendVerification(loginEmail.value.trim())
+    resendSent.value = true
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Something went wrong - please try again.'
   } finally {
     passwordBusy.value = false
   }
@@ -282,9 +319,8 @@ async function submitRegister() {
   error.value = ''
   passwordBusy.value = true
   try {
-    const result = await api.register(registerEmail.value.trim(), registerPassword.value, registerName.value.trim())
-    auth.login({ token: result.token, displayName: result.displayName, role: result.role })
-    router.push('/dashboard')
+    await api.register(registerEmail.value.trim(), registerPassword.value, registerName.value.trim())
+    registerSent.value = true
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not create your account. Please try again.'
   } finally {

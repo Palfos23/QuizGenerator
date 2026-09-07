@@ -38,6 +38,22 @@ public class AppUser {
     @Column(name = "reset_token_expires_at")
     private Instant resetTokenExpiresAt;
 
+    // True for a Google account (Google already verified the email during
+    // OAuth) and, at the DB level, for every pre-existing row when this column
+    // was added - same "default true, an ALTER TABLE backfill" trick as the
+    // canPlayX flags below, so nobody who already had a working account got
+    // logged out by this. Only a freshly password-registered account starts
+    // false (see AuthService#registerWithPassword) and has to prove it owns
+    // the email before loginWithPassword will let it in.
+    @Column(name = "email_verified", nullable = false, columnDefinition = "boolean default true")
+    private boolean emailVerified = true;
+
+    @Column(name = "verification_token_hash")
+    private String verificationTokenHash;
+
+    @Column(name = "verification_token_expires_at")
+    private Instant verificationTokenExpiresAt;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -190,6 +206,30 @@ public class AppUser {
 
     public void setResetTokenExpiresAt(Instant resetTokenExpiresAt) {
         this.resetTokenExpiresAt = resetTokenExpiresAt;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public String getVerificationTokenHash() {
+        return verificationTokenHash;
+    }
+
+    public void setVerificationTokenHash(String verificationTokenHash) {
+        this.verificationTokenHash = verificationTokenHash;
+    }
+
+    public Instant getVerificationTokenExpiresAt() {
+        return verificationTokenExpiresAt;
+    }
+
+    public void setVerificationTokenExpiresAt(Instant verificationTokenExpiresAt) {
+        this.verificationTokenExpiresAt = verificationTokenExpiresAt;
     }
 
     public Instant getCreatedAt() {

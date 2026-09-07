@@ -34,6 +34,8 @@ export default {
   },
   // Regular users who'd rather not use Google - a second, independent sign-in
   // method on the same AppUser table (see AuthService#registerWithPassword).
+  // Doesn't log the caller in - the account starts unverified, so there's no
+  // token to hand back yet (see verifyEmail below).
   register(email, password, name) {
     return client.post('/auth/register', { email, password, name }).then(r => r.data)
   },
@@ -48,6 +50,14 @@ export default {
   },
   resetPassword(token, newPassword) {
     return client.post('/auth/reset-password', { token, newPassword }).then(r => r.data)
+  },
+  // Confirms the token from a "verify your email" link and logs the caller in.
+  verifyEmail(token) {
+    return client.post('/auth/verify-email', { token }).then(r => r.data)
+  },
+  // Same "always resolves" shape as requestPasswordReset - see its comment.
+  resendVerification(email) {
+    return client.post('/auth/resend-verification', { email }).then(r => r.data)
   },
   // No account created - just a JWT good for joining one room (see
   // AuthService#loginAsGuest and RoomController's guest-vs-host rules).

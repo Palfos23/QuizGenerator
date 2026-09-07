@@ -26,6 +26,7 @@ import java.util.UUID;
 public class AuthService {
 
     private static final Duration RESET_TOKEN_TTL = Duration.ofMinutes(30);
+    private static final Duration VERIFICATION_TOKEN_TTL = Duration.ofMinutes(30);
 
     private final AppUserRepository appUserRepository;
     private final AdminUserRepository adminUserRepository;
@@ -95,9 +96,12 @@ public class AuthService {
      * Regular users who don't have (or don't want to use) a Google account. Lives
      * alongside loginWithGoogle rather than replacing it - either method works for
      * an AppUser row that ends up with both a googleSubject and a passwordHash set.
+     * Doesn't log the caller in - the account starts unverified (see AppUser#emailVerified)
+     * and loginWithPassword refuses it until the verification email's link is clicked,
+     * so nothing here can be used to claim someone else's inbox as your own account.
      */
     @Transactional
-    public AuthResponse registerWithPassword(String rawEmail, String rawPassword, String name) {
+    public void registerWithPassword(String rawEmail, String rawPassword, String name) {
         String email = normalizeEmail(rawEmail);
         AppUser existing = appUserRepository.findByEmail(email).orElse(null);
         if (existing != null) {
@@ -112,10 +116,11 @@ public class AuthService {
         user.setEmail(email);
         user.setName(name.trim());
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
+        user.setEmailVerified(false);
+        String rawToken = applyFreshVerificationToken(user);
         appUserRepository.save(user);
 
-        String token = jwtService.generateToken(user.getEmail(), "USER", user.getId(), user.getName());
-        return new AuthResponse(token, user.getName(), "USER");
+        mailService.sendVerificationEmail(user.getEmail(), frontendBaseUrl + "/verify-email?token=" + rawToken);
     }
 
     /** clientKey identifies the caller for rate-limiting purposes - the request's IP address. */
@@ -137,6 +142,11 @@ public class AuthService {
             loginRateLimiter.recordFailure(key);
             throw new IllegalArgumentException("Invalid email or password.");
         }
+        if (!user.isEmailVerified()) {
+            loginRateLimiter.recordFailure(key);
+            throw new IllegalArgumentException(
+                    "Please verify your email first - check your inbox for the link, or request a new one.");
+        }
 
         loginRateLimiter.recordSuccess(key);
         String token = jwtService.generateToken(user.getEmail(), "USER", user.getId(), user.getName());
@@ -148,25 +158,70 @@ public class AuthService {
      * whether the email belongs to an account, a Google-only account, or nothing at
      * all - otherwise this endpoint could be used to check which emails are
      * registered. The actual email only goes out for a real password-having account.
+     * Rate-limited per IP like the logins above - this sends real email, so it's a
+     * spam vector otherwise.
      */
     @Transactional
-    public void requestPasswordReset(String rawEmail) {
+    public void requestPasswordReset(String rawEmail, String clientKey) {
+        String rateLimitKey = "forgot-password:" + clientKey;
+        loginRateLimiter.checkAllowed(rateLimitKey);
+        // There's no real "success" vs "failure" here (the response looks the same
+        // either way) - recordFailure is just this limiter's only counter-increment
+        // method, reused to mean "one more request", capping how many times this
+        // endpoint can be hit per IP rather than how many times it's been wrong.
+        loginRateLimiter.recordFailure(rateLimitKey);
         String email = normalizeEmail(rawEmail);
         AppUser user = appUserRepository.findByEmail(email).orElse(null);
         if (user == null || user.getPasswordHash() == null) {
             return;
         }
 
-        byte[] rawTokenBytes = new byte[32];
-        secureRandom.nextBytes(rawTokenBytes);
-        String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(rawTokenBytes);
-
+        String rawToken = generateRawToken();
         user.setResetTokenHash(sha256Hex(rawToken));
         user.setResetTokenExpiresAt(Instant.now().plus(RESET_TOKEN_TTL));
         appUserRepository.save(user);
 
         String resetLink = frontendBaseUrl + "/reset-password?token=" + rawToken;
         mailService.sendPasswordResetEmail(user.getEmail(), resetLink);
+    }
+
+    /**
+     * Same "always looks like it succeeded" shape as requestPasswordReset - see its
+     * comment. A no-op (not an error) if the account is already verified, or is a
+     * Google-only account with no verification concept to begin with.
+     */
+    @Transactional
+    public void resendVerification(String rawEmail, String clientKey) {
+        String rateLimitKey = "resend-verification:" + clientKey;
+        loginRateLimiter.checkAllowed(rateLimitKey);
+        loginRateLimiter.recordFailure(rateLimitKey); // see requestPasswordReset's comment on this reused call
+        String email = normalizeEmail(rawEmail);
+        AppUser user = appUserRepository.findByEmail(email).orElse(null);
+        if (user == null || user.getPasswordHash() == null || user.isEmailVerified()) {
+            return;
+        }
+
+        String rawToken = applyFreshVerificationToken(user);
+        appUserRepository.save(user);
+        mailService.sendVerificationEmail(user.getEmail(), frontendBaseUrl + "/verify-email?token=" + rawToken);
+    }
+
+    /** Marks the account verified and logs it straight in - one less step after clicking the link. */
+    @Transactional
+    public AuthResponse verifyEmail(String rawToken) {
+        AppUser user = appUserRepository.findByVerificationTokenHash(sha256Hex(rawToken)).orElse(null);
+        if (user == null || user.getVerificationTokenExpiresAt() == null
+                || Instant.now().isAfter(user.getVerificationTokenExpiresAt())) {
+            throw new IllegalArgumentException("This verification link is invalid or has expired - request a new one.");
+        }
+
+        user.setEmailVerified(true);
+        user.setVerificationTokenHash(null);
+        user.setVerificationTokenExpiresAt(null);
+        appUserRepository.save(user);
+
+        String token = jwtService.generateToken(user.getEmail(), "USER", user.getId(), user.getName());
+        return new AuthResponse(token, user.getName(), "USER");
     }
 
     @Transactional
@@ -199,6 +254,21 @@ public class AuthService {
 
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase();
+    }
+
+    /** Generates a fresh raw token, stores its hash + expiry on the user, and returns the raw token to email out. */
+    private String applyFreshVerificationToken(AppUser user) {
+        String rawToken = generateRawToken();
+        user.setVerificationTokenHash(sha256Hex(rawToken));
+        user.setVerificationTokenExpiresAt(Instant.now().plus(VERIFICATION_TOKEN_TTL));
+        return rawToken;
+    }
+
+    /** A high-entropy, URL-safe single-use token - see requestPasswordReset/applyFreshVerificationToken. */
+    private String generateRawToken() {
+        byte[] rawTokenBytes = new byte[32];
+        secureRandom.nextBytes(rawTokenBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(rawTokenBytes);
     }
 
     private String sha256Hex(String value) {
