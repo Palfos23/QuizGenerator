@@ -633,6 +633,28 @@ export default {
     return client.post(`/rooms/${code}/tension/next-question`).then(r => r.data)
   },
 
+  // --- Online Bullseye ---
+  getBullseyeOnlineState(code) {
+    return client.get(`/rooms/${code}/bullseye/state`).then(r => r.data)
+  },
+  submitBullseyeOnlineAnswer(code, guessedName) {
+    return client.post(`/rooms/${code}/bullseye/answer`, { guessedName }).then(r => r.data)
+  },
+  advanceBullseyeOnlineRound(code) {
+    return client.post(`/rooms/${code}/bullseye/next-round`).then(r => r.data)
+  },
+
+  // --- Online Flashback ---
+  getFlashbackOnlineState(code) {
+    return client.get(`/rooms/${code}/flashback/state`).then(r => r.data)
+  },
+  submitFlashbackOnlineGuess(code, year) {
+    return client.post(`/rooms/${code}/flashback/guess`, { year }).then(r => r.data)
+  },
+  advanceFlashbackOnlineRound(code) {
+    return client.post(`/rooms/${code}/flashback/next-round`).then(r => r.data)
+  },
+
   // --- 501: user-facing ---
   listFiveOhOneCategories() {
     return client.get('/501/categories').then(r => r.data)

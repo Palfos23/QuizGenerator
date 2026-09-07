@@ -63,6 +63,8 @@ public class PlayAccessService {
             case FIVE_O_ONE -> requireFiveOhOneAccess(authentication);
             case IMPOSTER -> requireImposterAccess(authentication);
             case STARTING_XI_BATTLE -> requireStartingXiBattleAccess(authentication);
+            case BULLSEYE -> requireBullseyeAccess(authentication);
+            case FLASHBACK -> requireFlashbackAccess(authentication);
         }
     }
 

@@ -65,7 +65,9 @@ const ROUTE_BY_GAME_TYPE = {
   TENSION: '/tension',
   IMPOSTER: '/imposter',
   FIVE_O_ONE: '/501',
-  STARTING_XI_BATTLE: '/starting-xi-battle'
+  STARTING_XI_BATTLE: '/starting-xi-battle',
+  BULLSEYE: '/bullseye',
+  FLASHBACK: '/flashback'
 }
 
 onMounted(() => {

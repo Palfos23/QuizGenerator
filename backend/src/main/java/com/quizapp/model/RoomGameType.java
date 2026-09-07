@@ -5,5 +5,7 @@ public enum RoomGameType {
     TENSION,
     IMPOSTER,
     FIVE_O_ONE,
-    STARTING_XI_BATTLE
+    STARTING_XI_BATTLE,
+    BULLSEYE,
+    FLASHBACK
 }

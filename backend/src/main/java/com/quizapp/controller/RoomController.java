@@ -5,6 +5,8 @@ import com.quizapp.dto.JoinRoomRequest;
 import com.quizapp.dto.RoomDto;
 import com.quizapp.model.GameRoom;
 import com.quizapp.model.RoomGameType;
+import com.quizapp.service.BullseyeOnlineService;
+import com.quizapp.service.FlashbackOnlineService;
 import com.quizapp.service.GridBattleOnlineService;
 import com.quizapp.service.FiveOhOneOnlineService;
 import com.quizapp.service.ImposterOnlineService;
@@ -28,12 +30,16 @@ public class RoomController {
     private final ImposterOnlineService imposterOnlineService;
     private final FiveOhOneOnlineService fiveOhOneOnlineService;
     private final LineupBattleOnlineService lineupBattleOnlineService;
+    private final BullseyeOnlineService bullseyeOnlineService;
+    private final FlashbackOnlineService flashbackOnlineService;
     private final PlayAccessService playAccessService;
 
     public RoomController(RoomService roomService, GridBattleOnlineService gridBattleOnlineService,
                            TensionOnlineService tensionOnlineService, ImposterOnlineService imposterOnlineService,
                            FiveOhOneOnlineService fiveOhOneOnlineService,
                            LineupBattleOnlineService lineupBattleOnlineService,
+                           BullseyeOnlineService bullseyeOnlineService,
+                           FlashbackOnlineService flashbackOnlineService,
                            PlayAccessService playAccessService) {
         this.roomService = roomService;
         this.gridBattleOnlineService = gridBattleOnlineService;
@@ -41,6 +47,8 @@ public class RoomController {
         this.imposterOnlineService = imposterOnlineService;
         this.fiveOhOneOnlineService = fiveOhOneOnlineService;
         this.lineupBattleOnlineService = lineupBattleOnlineService;
+        this.bullseyeOnlineService = bullseyeOnlineService;
+        this.flashbackOnlineService = flashbackOnlineService;
         this.playAccessService = playAccessService;
     }
 
@@ -62,7 +70,11 @@ public class RoomController {
             fiveOhOneOnlineService.initializeCategory(room, request.getFiveOhOneCategoryId());
         } else if (request.getGameType() == RoomGameType.STARTING_XI_BATTLE) {
             lineupBattleOnlineService.initializeLineupSequence(room, request.getLineupIds(), request.getRandomLineupCount());
+        } else if (request.getGameType() == RoomGameType.FLASHBACK) {
+            flashbackOnlineService.initializeYearSequence(room, request.getFlashbackNumRounds());
         }
+        // BULLSEYE deliberately has no case here - its round count depends on the
+        // final headcount, not known until start() below (see BullseyeOnlineService).
 
         return ResponseEntity.status(HttpStatus.CREATED).body(roomService.toDto(room, email));
     }
@@ -99,6 +111,10 @@ public class RoomController {
             fiveOhOneOnlineService.startGame(room, email);
         } else if (room.getGameType() == RoomGameType.STARTING_XI_BATTLE) {
             lineupBattleOnlineService.startGame(room, email);
+        } else if (room.getGameType() == RoomGameType.BULLSEYE) {
+            bullseyeOnlineService.startGame(room, email);
+        } else if (room.getGameType() == RoomGameType.FLASHBACK) {
+            flashbackOnlineService.startGame(room, email);
         } else {
             tensionOnlineService.startGame(room, email);
         }

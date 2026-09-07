@@ -30,6 +30,16 @@ public class CreateRoomRequest {
     private List<Long> lineupIds;
     private Integer randomLineupCount;
 
+    // Flashback only - the round sequence is picked once, right here at create
+    // time, same as Tension's tensionNumQuestions. Bullseye needs no equivalent
+    // field: its round count is derived from the final headcount at start time
+    // instead (one elimination per round, game ends at 1 player left), which
+    // isn't known yet when the room is first created - see BullseyeOnlineService.
+    private Integer flashbackNumRounds;
+
+    public Integer getFlashbackNumRounds() { return flashbackNumRounds; }
+    public void setFlashbackNumRounds(Integer flashbackNumRounds) { this.flashbackNumRounds = flashbackNumRounds; }
+
     public List<Long> getLineupIds() { return lineupIds; }
     public void setLineupIds(List<Long> lineupIds) { this.lineupIds = lineupIds; }
     public Integer getRandomLineupCount() { return randomLineupCount; }
