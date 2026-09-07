@@ -2253,20 +2253,45 @@ table.scoreboard-table {
   max-width: 1040px;
 }
 
-/* Sign-in on the left, everything else (what the app is, what you can play)
-   on the right - named grid areas so the mobile breakpoint can just redefine
-   the area order (hero, then login, then features) instead of juggling a
-   separate `order` property per element. */
+/* What the app is + what you can play on the left, sign-in on the right -
+   named grid areas so the mobile breakpoint can just redefine the area order
+   (hero, then login, then features) instead of juggling a separate `order`
+   property per element. "login" is named in both rows of its column, which
+   is what makes it one item spanning both rows (plain CSS Grid behavior, not
+   a hack) - align-self below then centers that spanned item vertically
+   against the taller hero+features column beside it. */
 .landing-row {
   display: grid;
-  grid-template-columns: 400px 1fr;
+  grid-template-columns: 1fr 400px;
   grid-template-areas:
-    "login hero"
-    "login features";
+    "hero login"
+    "features login";
   column-gap: 56px;
   row-gap: 12px;
   align-items: start;
   padding: 40px 0;
+}
+
+/* Every grid item defaults to min-width:auto, which refuses to shrink below
+   its own content's intrinsic width - harmless at this width, but the reason
+   this whole row silently forced the page wider than the viewport (and had
+   to be scrolled horizontally to read) once the same grid collapsed to a
+   single 1fr column on a narrow phone. This is the standard, well-known fix. */
+.landing-row > * {
+  min-width: 0;
+}
+
+/* A long unbroken identifier like VITE_GOOGLE_CLIENT_ID has no natural break
+   point (no spaces/hyphens for the browser to wrap at) - on a narrow enough
+   phone that alone can force its line wider than the viewport regardless of
+   the min-width fix above, since that fix only stops the *grid track* from
+   over-growing, not an inline run of unbroken text within it. */
+.landing-login code {
+  overflow-wrap: anywhere;
+}
+
+.landing-login {
+  align-self: center;
 }
 
 .dashboard-hero {
