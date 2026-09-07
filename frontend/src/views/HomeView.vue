@@ -1,13 +1,6 @@
 <template>
   <div class="landing">
-    <section class="landing-hero">
-      <h1>Quizzes, party games, and trivia - all in one place</h1>
-      <p class="page-subtitle landing-lede">
-        Build a custom quiz from a shared question bank, play a themed weekly guessing
-        grid, or run a pass-the-device party game with friends.
-      </p>
-    </section>
-
+    <div class="landing-row">
     <section class="landing-login">
       <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -153,6 +146,14 @@
       </template>
     </section>
 
+    <section class="landing-hero">
+      <h1>Quizzes, party games, and trivia - all in one place</h1>
+      <p class="page-subtitle landing-lede">
+        Build a custom quiz from a shared question bank, play a themed weekly guessing
+        grid, or run a pass-the-device party game with friends.
+      </p>
+    </section>
+
     <section class="landing-features">
       <div class="feature-card">
         <h3>Create a quiz</h3>
@@ -171,6 +172,7 @@
         <p>Add to the shared bank yourself - admin-reviewed, and usable in your own quizzes either way.</p>
       </div>
     </section>
+    </div>
   </div>
 </template>
 

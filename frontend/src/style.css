@@ -2249,15 +2249,24 @@ table.scoreboard-table {
 
 /* ---------- Landing page ---------- */
 
-/* .main-content is already centered at 980px (see its own rule) - this page's
-   content stayed pinned to the left inside that centered column instead of
-   being centered itself, which is what left a huge dead zone on the right on
-   any wide screen. A narrower, genuinely centered column here reads as a
-   deliberate, focused sign-in moment instead of a stray leftover block. */
 .landing {
-  max-width: 600px;
-  margin: 0 auto;
-  text-align: center;
+  max-width: 1040px;
+}
+
+/* Sign-in on the left, everything else (what the app is, what you can play)
+   on the right - named grid areas so the mobile breakpoint can just redefine
+   the area order (hero, then login, then features) instead of juggling a
+   separate `order` property per element. */
+.landing-row {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  grid-template-areas:
+    "login hero"
+    "login features";
+  column-gap: 56px;
+  row-gap: 12px;
+  align-items: start;
+  padding: 40px 0;
 }
 
 .dashboard-hero {
@@ -2384,26 +2393,26 @@ table.scoreboard-table {
 .mode-choice-card p { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
 
 .landing-hero {
-  padding: 56px 0 4px;
+  grid-area: hero;
 }
 
 .landing-hero h1 {
-  font-size: 2.5rem;
+  font-size: 2.3rem;
   line-height: 1.15;
 }
 
 .landing-lede {
-  font-size: 1.08rem;
-  margin: 0 auto;
-  max-width: 460px;
+  font-size: 1.05rem;
+  max-width: 480px;
 }
 
 .landing-features {
+  grid-area: features;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
-  margin: 40px 0 8px;
-  text-align: left;
+  margin-top: 12px;
+  align-self: start;
 }
 
 .feature-card {
@@ -2425,12 +2434,12 @@ table.scoreboard-table {
 }
 
 .landing-login {
-  padding: 32px;
+  grid-area: login;
+  padding: 28px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.02));
-  max-width: 440px;
-  margin: 32px auto 40px;
+  text-align: center;
 }
 
 /* The card centers itself and its buttons, but a form's own labels/inputs
@@ -2478,6 +2487,22 @@ table.scoreboard-table {
   flex: 1;
   height: 1px;
   background: var(--border);
+}
+
+/* Below this, the fixed 400px login column has no room left next to a real
+   right-hand column - stack instead, one area per row. Redefining the areas
+   (rather than a separate `order` per element) keeps hero -> login -> features
+   as the single source of truth for stacking order at any width. */
+@media (max-width: 900px) {
+  .landing-row {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "hero"
+      "login"
+      "features";
+    row-gap: 28px;
+    padding: 24px 0;
+  }
 }
 
 /* Three fixes were tried directly on Google's own rendered button (a light frame, a
