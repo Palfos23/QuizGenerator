@@ -129,7 +129,8 @@ const hintIndex = ref(0) // how many hints are visible so far, minus 1
 const currentTurnIdx = ref(0) // continuous across the whole round - does NOT reset when a new hint reveals
 const revealed = ref(false)
 const wasExactMatch = ref(false) // true if roundWinners scored by guessing exactly, false if by closest-guess fallback
-const roundWinners = ref([]) // player name(s) who scored this round's point - can be more than one on a tie
+const roundWinners = ref([]) // player name(s) who scored this round - can be more than one on a tie
+const roundPoints = ref(0) // points each winner gets this round - see advanceTurn for the formula
 
 const guessValue = ref(null)
 const duplicateGuessError = ref(false)
@@ -167,7 +168,7 @@ const leaderboardForRound = computed(() =>
     .map(p => ({
       name: p.name,
       total: scores.value[p.name] || 0,
-      roundDelta: roundWinners.value.includes(p.name) ? 1 : 0
+      roundDelta: roundWinners.value.includes(p.name) ? roundPoints.value : 0
     }))
     .sort((a, b) => b.total - a.total)
 )
@@ -226,9 +227,16 @@ function advanceTurn() {
   }
 
   // Either someone nailed it, or the last hint's just been exhausted with
-  // nobody exact - either way the round ends here, split among any tie.
-  winners.forEach(name => { scores.value[name] = (scores.value[name] || 0) + 1 })
+  // nobody exact - either way the round ends here. Earlier clues are worth
+  // more: guessing right on clue 1 of N is worth N points, clue 2 is worth
+  // N-1, ... down to 1 point on the last clue. The closest-guess fallback
+  // only ever fires on the last hint, which is already the 1-point tier, so
+  // it needs no special-casing - same formula, same code path either way.
+  // A tie means every tied player gets the full point value, not a split.
+  const points = roundState.value.hints.length - hintIndex.value
+  winners.forEach(name => { scores.value[name] = (scores.value[name] || 0) + points })
   roundWinners.value = winners
+  roundPoints.value = points
   wasExactMatch.value = minDistance === 0
   revealed.value = true
 }
@@ -254,6 +262,7 @@ async function startRound() {
     revealed.value = false
     wasExactMatch.value = false
     roundWinners.value = []
+    roundPoints.value = 0
     guessValue.value = null
     duplicateGuessError.value = false
   } catch (e) {

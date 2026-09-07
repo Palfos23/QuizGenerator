@@ -41,11 +41,13 @@
           <p style="margin-top:0;">
             Each round hides a real year behind up to 5 clues, shown one at a time - hardest first,
             easiest last. After the first clue, players take turns guessing a year each. You have
-            to hit it <strong>exactly</strong> to score.
+            to hit it <strong>exactly</strong> to score - and the earlier you nail it, the more
+            it's worth: with 4 clues, guessing right on clue 1 is worth 4 points, clue 2 is worth
+            3, and so on down to 1 point on the last clue.
           </p>
           <ul style="margin:0 0 14px; padding-left:20px; line-height:1.7;">
             <li>Nobody right? The next clue reveals, and guessing continues - already-tried years stay visible to everyone.</li>
-            <li>Still nobody by the last clue? Whoever's <strong>closest on that final round of guesses</strong> scores the point instead - a tie means everyone tied scores.</li>
+            <li>Still nobody by the last clue? Whoever's <strong>closest on that final round of guesses</strong> scores the last clue's point instead - a tie means everyone tied scores in full.</li>
           </ul>
           <p style="margin-bottom:0;">
             Highest total across every round wins the game.
