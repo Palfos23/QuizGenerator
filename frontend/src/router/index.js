@@ -37,11 +37,19 @@ import PenaltyShootoutView from '../views/PenaltyShootoutView.vue'
 import AdminPenaltyShootoutsView from '../views/AdminPenaltyShootoutsView.vue'
 import FlashbackView from '../views/FlashbackView.vue'
 import AdminFlashbackView from '../views/AdminFlashbackView.vue'
+import JoinGuestView from '../views/JoinGuestView.vue'
+import ResetPasswordView from '../views/ResetPasswordView.vue'
 import auth from '../services/auth'
 
 const routes = [
   // Public landing page: explains the app and hosts the Google sign-in button.
   { path: '/', name: 'home', component: HomeView },
+  // No requiresAuth on either - both are entry points for someone who isn't
+  // signed in yet (a guest joining a room by code, or someone following a
+  // password-reset email link).
+  { path: '/join', name: 'join-guest', component: JoinGuestView },
+  { path: '/join/:code', name: 'join-guest-code', component: JoinGuestView },
+  { path: '/reset-password', name: 'reset-password', component: ResetPasswordView },
 
   { path: '/generate', name: 'generate', component: QuizGeneratorView, meta: { requiresAuth: true } },
   { path: '/dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true } },

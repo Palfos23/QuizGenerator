@@ -2,12 +2,19 @@ package com.quizapp.controller;
 
 import com.quizapp.dto.AdminLoginRequest;
 import com.quizapp.dto.AuthResponse;
+import com.quizapp.dto.ForgotPasswordRequest;
 import com.quizapp.dto.GoogleLoginRequest;
+import com.quizapp.dto.GuestLoginRequest;
+import com.quizapp.dto.RegisterRequest;
+import com.quizapp.dto.ResetPasswordRequest;
+import com.quizapp.dto.UserLoginRequest;
 import com.quizapp.security.JwtService;
 import com.quizapp.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +36,46 @@ public class AuthController {
     @PostMapping("/google")
     public AuthResponse googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
         return authService.loginWithGoogle(request.getIdToken());
+    }
+
+    /** Regular users: create an account with an email + password, for anyone who'd rather not use Google. */
+    @PostMapping("/register")
+    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
+        return authService.registerWithPassword(request.getEmail(), request.getPassword(), request.getName());
+    }
+
+    /** Regular users: sign in with a previously-registered email + password. Rate-limited per IP. */
+    @PostMapping("/login")
+    public AuthResponse login(@Valid @RequestBody UserLoginRequest request, HttpServletRequest httpRequest) {
+        return authService.loginWithPassword(request.getEmail(), request.getPassword(), clientKey(httpRequest));
+    }
+
+    /**
+     * Always responds the same way whether or not the email is registered - see
+     * AuthService#requestPasswordReset. A 204 either way so the frontend can show
+     * one generic "check your email" message without distinguishing the two cases.
+     */
+    @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.requestPasswordReset(request.getEmail());
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.getToken(), request.getNewPassword());
+    }
+
+    /**
+     * No account, no password - just a display name, good only for joining an
+     * existing room (see PlayAccessService and RoomController for what a GUEST-role
+     * token can and can't do). Sits under /api/auth/**, so it's permitAll like the
+     * logins above - nothing sensitive is exposed by letting anyone mint one.
+     */
+    @PostMapping("/guest")
+    public AuthResponse guestLogin(@Valid @RequestBody GuestLoginRequest request) {
+        return authService.loginAsGuest(request.getDisplayName());
     }
 
     /** Admins: username/password login - a completely separate credential store from AppUser. Rate-limited per IP. */

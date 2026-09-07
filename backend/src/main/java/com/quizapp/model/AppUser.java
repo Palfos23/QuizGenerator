@@ -21,6 +21,23 @@ public class AppUser {
     @Column(name = "google_subject", unique = true)
     private String googleSubject;
 
+    // Null for a Google-only account. Set for an account created via email+password,
+    // or a Google account that's since added a password too - either sign-in method
+    // works once both are present, same as most apps that support multiple providers.
+    @Column(name = "password_hash")
+    private String passwordHash;
+
+    // Forgot-password support: a SHA-256 hex digest of a single-use random token
+    // (not the token itself - see AuthService#requestPasswordReset), plus its
+    // expiry. Both null when no reset is pending. A fast deterministic hash
+    // (not BCrypt) is used here on purpose, since it needs to be looked up by
+    // exact match rather than verified one row at a time.
+    @Column(name = "reset_token_hash")
+    private String resetTokenHash;
+
+    @Column(name = "reset_token_expires_at")
+    private Instant resetTokenExpiresAt;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -149,6 +166,30 @@ public class AppUser {
 
     public void setGoogleSubject(String googleSubject) {
         this.googleSubject = googleSubject;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public String getResetTokenHash() {
+        return resetTokenHash;
+    }
+
+    public void setResetTokenHash(String resetTokenHash) {
+        this.resetTokenHash = resetTokenHash;
+    }
+
+    public Instant getResetTokenExpiresAt() {
+        return resetTokenExpiresAt;
+    }
+
+    public void setResetTokenExpiresAt(Instant resetTokenExpiresAt) {
+        this.resetTokenExpiresAt = resetTokenExpiresAt;
     }
 
     public Instant getCreatedAt() {

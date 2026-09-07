@@ -72,6 +72,11 @@ function logout() {
 
 const isAuthenticated = computed(() => !!state.token)
 const isAdmin = computed(() => state.role === 'ADMIN')
+// No account, no password - just a display name good for joining one room
+// (see AuthService#loginAsGuest on the backend). Kept separate from isAdmin's
+// pattern since most of the app's nav/UI needs to hide itself for a guest
+// rather than just skip admin-only bits.
+const isGuest = computed(() => state.role === 'GUEST')
 
 export default {
   state,
@@ -80,6 +85,7 @@ export default {
   logout,
   isAuthenticated,
   isAdmin,
+  isGuest,
   isTokenExpired,
   msUntilTokenExpiry
 }

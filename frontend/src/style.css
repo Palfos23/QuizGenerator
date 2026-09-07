@@ -2425,6 +2425,23 @@ table.scoreboard-table {
   margin-top: 8px;
 }
 
+.landing-login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.landing-login-divider::before,
+.landing-login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
 /* Three fixes were tried directly on Google's own rendered button (a light frame, a
    glow behind it, a config flag to stop it re-theming itself) and none of them stuck,
    because Google/Chrome controls that element's appearance, not us - it repaints

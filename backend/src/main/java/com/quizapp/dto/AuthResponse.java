@@ -4,7 +4,7 @@ public class AuthResponse {
 
     private String token;
     private String displayName;
-    private String role; // USER or ADMIN
+    private String role; // USER, ADMIN, or GUEST
 
     public AuthResponse(String token, String displayName, String role) {
         this.token = token;

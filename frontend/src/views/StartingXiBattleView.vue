@@ -309,6 +309,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '../services/api'
 import auth from '../services/auth'
 import activeRoom from '../services/activeRoom'
@@ -628,8 +629,16 @@ function onOnlineGameOver(scores) {
 
 const savedRoomCode = ref('')
 const rejoining = ref(false)
+const route = useRoute()
 
 onMounted(() => {
+  // Arrived via /join?code=... (JoinGuestView.vue) - go straight into that
+  // room instead of making them retype the code they already entered once.
+  if (route.query.code) {
+    stage.value = 'onlineJoin'
+    joinOnlineRoom(String(route.query.code))
+    return
+  }
   savedRoomCode.value = activeRoom.get('STARTING_XI_BATTLE') || ''
 })
 

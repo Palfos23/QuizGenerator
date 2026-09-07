@@ -4,9 +4,9 @@
       <router-link to="/" class="nav-brand">Quizzes</router-link>
 
       <template v-if="auth.isAuthenticated.value">
-        <router-link v-if="!auth.isAdmin.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Create a quiz</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
-        <div v-if="!auth.isAdmin.value" class="top-nav-dropdown">
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Create a quiz</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
+        <div v-if="!auth.isAdmin.value && !auth.isGuest.value" class="top-nav-dropdown">
           <div v-if="openPlayerMenu === 'weekly'" class="top-nav-dropdown-backdrop" @click="closePlayerMenu"></div>
           <button
             type="button"
@@ -23,13 +23,13 @@
             <router-link to="/starting-xi" class="nav-link" role="menuitem" @click="closePlayerMenu">Starting XI</router-link>
           </div>
         </div>
-        <router-link v-if="!auth.isAdmin.value" to="/tension" class="nav-link" @click="onNavClick('/tension', 'tension')">Tension</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/501" class="nav-link" @click="onNavClick('/501', 'fiveOhOne')">501</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/imposter" class="nav-link" @click="onNavClick('/imposter', 'imposter')">Imposter</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/starting-xi-battle" class="nav-link" @click="onNavClick('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/bullseye" class="nav-link" @click="onNavClick('/bullseye', 'bullseye')">Bullseye</router-link>
-        <router-link v-if="!auth.isAdmin.value" to="/flashback" class="nav-link" @click="onNavClick('/flashback', 'flashback')">Flashback</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/tension" class="nav-link" @click="onNavClick('/tension', 'tension')">Tension</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/501" class="nav-link" @click="onNavClick('/501', 'fiveOhOne')">501</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/imposter" class="nav-link" @click="onNavClick('/imposter', 'imposter')">Imposter</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/grid-battle" class="nav-link" @click="onNavClick('/grid-battle', 'gridBattle')">Grid Battle</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/starting-xi-battle" class="nav-link" @click="onNavClick('/starting-xi-battle', 'startingXiBattle')">XI Battle</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/bullseye" class="nav-link" @click="onNavClick('/bullseye', 'bullseye')">Bullseye</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/flashback" class="nav-link" @click="onNavClick('/flashback', 'flashback')">Flashback</router-link>
         <template v-if="auth.isAdmin.value">
           <div v-for="menu in ADMIN_MENUS" :key="menu.label" class="top-nav-dropdown">
             <div v-if="openAdminMenu === menu.label" class="top-nav-dropdown-backdrop" @click="closeAdminMenu"></div>
@@ -57,8 +57,8 @@
         </template>
 
         <div class="top-nav-spacer"></div>
-        <span class="top-nav-user">{{ auth.state.displayName }}</span>
-        <button class="btn btn-secondary btn-sm" @click="logout">Log out</button>
+        <span class="top-nav-user">{{ auth.state.displayName }}<template v-if="auth.isGuest.value"> (guest)</template></span>
+        <button class="btn btn-secondary btn-sm" @click="logout">{{ auth.isGuest.value ? 'Leave' : 'Log out' }}</button>
       </template>
       <template v-else>
         <div class="top-nav-spacer"></div>
@@ -71,9 +71,9 @@
 
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
-      <router-link v-if="!auth.isAdmin.value" to="/generate" @click="onNavClick('/generate', 'generate')">Create</router-link>
-      <router-link v-if="!auth.isAdmin.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
-      <div v-if="!auth.isAdmin.value" style="position:relative; flex:1; display:flex;">
+      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" @click="onNavClick('/generate', 'generate')">Create</router-link>
+      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
+      <div v-if="!auth.isAdmin.value && !auth.isGuest.value" style="position:relative; flex:1; display:flex;">
         <div v-if="openPlayerMenu === 'weekly'" class="bottom-nav-backdrop" @click="closePlayerMenu"></div>
         <button
           aria-haspopup="true"
@@ -86,7 +86,7 @@
           <router-link to="/starting-xi" role="menuitem" @click="closePlayerMenu">Starting XI</router-link>
         </div>
       </div>
-      <div v-if="!auth.isAdmin.value" style="position:relative; flex:1; display:flex;">
+      <div v-if="!auth.isAdmin.value && !auth.isGuest.value" style="position:relative; flex:1; display:flex;">
         <div v-if="openPlayerMenu === 'games'" class="bottom-nav-backdrop" @click="closePlayerMenu"></div>
         <button
           aria-haspopup="true"
@@ -124,7 +124,7 @@
           </div>
         </div>
       </template>
-      <button @click="logout">Log out</button>
+      <button @click="logout">{{ auth.isGuest.value ? 'Leave' : 'Log out' }}</button>
     </nav>
 
     <ToastHost />

@@ -40,24 +40,29 @@ public class SecurityConfig {
                         .requestMatchers("/api/quiz/categories").permitAll()
                         // admin question-bank management: ADMIN role only
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // generating/exporting quizzes: any logged-in user (USER or ADMIN)
-                        .requestMatchers("/api/quiz/**").authenticated()
-                        // browsing/playing weekly grids: any logged-in user (USER or ADMIN)
-                        .requestMatchers("/api/grids/**").authenticated()
-                        // browsing/playing Starting XI boards: any logged-in user (USER or ADMIN)
-                        .requestMatchers("/api/lineups/**").authenticated()
-                        // fetching tension questions/autocomplete: any logged-in user (USER or ADMIN)
-                        .requestMatchers("/api/tension/**").authenticated()
-                        // browsing/copying admin-published quiz templates: any logged-in user
-                        .requestMatchers("/api/quiz-templates/**").authenticated()
-                        // online multiplayer rooms (Grid Battle, and Tension later): any logged-in user
+                        // online multiplayer rooms (create/join/play): USER, ADMIN, or a
+                        // no-account GUEST token from POST /api/auth/guest - GUEST is
+                        // deliberately scoped to just this one path prefix (see
+                        // RoomController's own guest-vs-host rules for the finer-grained
+                        // "guests may join but never host" split within it) - every other
+                        // route below requires a real account, GUEST included nowhere else.
                         .requestMatchers("/api/rooms/**").authenticated()
-                        .requestMatchers("/api/501/**").authenticated()
-                        .requestMatchers("/api/bullseye/**").authenticated()
-                        .requestMatchers("/api/penalty-shootouts/**").authenticated()
-                        .requestMatchers("/api/flashback/**").authenticated()
-                        .requestMatchers("/api/play-access/**").authenticated()
-                        .anyRequest().authenticated())
+                        // generating/exporting quizzes: any logged-in user (USER or ADMIN)
+                        .requestMatchers("/api/quiz/**").hasAnyRole("USER", "ADMIN")
+                        // browsing/playing weekly grids: any logged-in user (USER or ADMIN)
+                        .requestMatchers("/api/grids/**").hasAnyRole("USER", "ADMIN")
+                        // browsing/playing Starting XI boards: any logged-in user (USER or ADMIN)
+                        .requestMatchers("/api/lineups/**").hasAnyRole("USER", "ADMIN")
+                        // fetching tension questions/autocomplete: any logged-in user (USER or ADMIN)
+                        .requestMatchers("/api/tension/**").hasAnyRole("USER", "ADMIN")
+                        // browsing/copying admin-published quiz templates: any logged-in user
+                        .requestMatchers("/api/quiz-templates/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/501/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/bullseye/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/penalty-shootouts/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/flashback/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/play-access/**").hasAnyRole("USER", "ADMIN")
+                        .anyRequest().hasAnyRole("USER", "ADMIN"))
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // needed for the H2 console
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
 

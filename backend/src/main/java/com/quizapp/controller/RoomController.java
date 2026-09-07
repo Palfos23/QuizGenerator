@@ -46,6 +46,7 @@ public class RoomController {
 
     @PostMapping
     public ResponseEntity<RoomDto> create(@Valid @RequestBody CreateRoomRequest request, Authentication authentication) {
+        requireNotGuest(authentication);
         playAccessService.requireAccessForGameType(authentication, request.getGameType());
         String email = authentication.getName();
         GameRoom room = roomService.createRoomShell(request.getGameType(), email, request.getDisplayName(), request.getColor());
@@ -69,7 +70,12 @@ public class RoomController {
     @PostMapping("/{code}/join")
     public RoomDto join(@PathVariable String code, @RequestBody JoinRoomRequest request, Authentication authentication) {
         GameRoom existing = roomService.findByCode(code);
-        playAccessService.requireAccessForGameType(authentication, existing.getGameType());
+        // A guest has no AppUser row to check canPlayX flags against - the host
+        // already passed that check when creating the room, so a guest joining it
+        // is covered by that, not a separate check of their own (see isGuest).
+        if (!isGuest(authentication)) {
+            playAccessService.requireAccessForGameType(authentication, existing.getGameType());
+        }
         String email = authentication.getName();
         GameRoom room = roomService.join(code, email, request.getDisplayName(), request.getColor());
         return roomService.toDto(room, email);
@@ -97,5 +103,17 @@ public class RoomController {
             tensionOnlineService.startGame(room, email);
         }
         return roomService.toDto(roomService.findByCode(code), email);
+    }
+
+    private boolean isGuest(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_GUEST"));
+    }
+
+    /** Only a real (Google or email/password) account can host - guests may only join. */
+    private void requireNotGuest(Authentication authentication) {
+        if (isGuest(authentication)) {
+            throw new IllegalStateException("Guests can't host a game - sign in to create a room, or ask the host for a room code to join.");
+        }
     }
 }

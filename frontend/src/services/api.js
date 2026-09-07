@@ -32,6 +32,28 @@ export default {
   loginAsAdmin(username, password) {
     return client.post('/auth/admin/login', { username, password }).then(r => r.data)
   },
+  // Regular users who'd rather not use Google - a second, independent sign-in
+  // method on the same AppUser table (see AuthService#registerWithPassword).
+  register(email, password, name) {
+    return client.post('/auth/register', { email, password, name }).then(r => r.data)
+  },
+  loginWithPassword(email, password) {
+    return client.post('/auth/login', { email, password }).then(r => r.data)
+  },
+  // Always resolves (no error path to handle) - the backend responds the same
+  // way whether or not the email is registered, on purpose. See
+  // AuthService#requestPasswordReset.
+  requestPasswordReset(email) {
+    return client.post('/auth/forgot-password', { email }).then(r => r.data)
+  },
+  resetPassword(token, newPassword) {
+    return client.post('/auth/reset-password', { token, newPassword }).then(r => r.data)
+  },
+  // No account created - just a JWT good for joining one room (see
+  // AuthService#loginAsGuest and RoomController's guest-vs-host rules).
+  loginAsGuest(displayName) {
+    return client.post('/auth/guest', { displayName }).then(r => r.data)
+  },
   // Silently swaps the current (still-valid) token for a fresh one - see
   // App.vue's checkSessionTimers, which calls this well before the token
   // would actually expire so an active tab never hits that wall.
