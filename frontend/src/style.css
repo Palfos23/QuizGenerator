@@ -2250,7 +2250,7 @@ table.scoreboard-table {
 /* ---------- Landing page ---------- */
 
 .landing {
-  max-width: 1100px;
+  max-width: 760px;
 }
 
 .dashboard-hero {
@@ -2376,34 +2376,45 @@ table.scoreboard-table {
 .mode-choice-card:hover h3::after { transform: translateX(0); opacity: 1; }
 .mode-choice-card p { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
 
-/* Hero + sign-in card sit side by side up top, so the sign-in card no longer
-   pushes the whole page down below a full row of feature cards - it did, back
-   when email/password, guest-join, and verify/reset all stacked into one tall
-   box below them (see the 2026-09 redesign note in HomeView.vue). The feature
-   grid moves below, spanning the full width, as supporting content rather
-   than something you have to scroll past to reach the actual sign-in. */
-.landing-top {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 40px;
-  align-items: center;
-  padding: 24px 0 12px;
+.landing-hero {
+  padding: 8px 0 4px;
+  position: relative;
+}
+
+/* A quiet echo of .game-preview's decorative glow, just soft enough to give
+   the very first thing a visitor sees some depth instead of flat black -
+   purely decorative, sits behind the text, never affects layout. */
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: -80px;
+  width: 420px;
+  height: 320px;
+  background: radial-gradient(closest-side, rgba(242, 183, 5, 0.10), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .landing-hero h1 {
-  font-size: 2.4rem;
+  position: relative;
+  font-size: 2.6rem;
+  line-height: 1.15;
+  max-width: 560px;
 }
 
 .landing-lede {
-  font-size: 1.05rem;
+  position: relative;
+  font-size: 1.08rem;
+  max-width: 520px;
   margin-bottom: 0;
 }
 
 .landing-features {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
-  margin: 40px 0 48px;
+  margin: 36px 0 8px;
 }
 
 .feature-card {
@@ -2425,39 +2436,32 @@ table.scoreboard-table {
 }
 
 .landing-login {
-  padding: 24px 26px;
+  padding: 28px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.02));
+  max-width: 400px;
+  margin: 28px 0 40px;
 }
 
-.landing-login h2 {
-  margin-bottom: 16px;
-}
-
-/* The "Sign in with email instead" link that keeps the card collapsed to just
-   the Google button until someone actually wants the email/password path. */
-.landing-login-toggle {
-  display: block;
+/* Every option (Google, email, guest) is styled the same size and weight as
+   a real, tappable button - none of them reads as fine print, and the row of
+   three with dividers between gives the card a clear, repeatable rhythm
+   instead of one form with a link buried under it. */
+.landing-login-option {
   width: 100%;
-  margin-top: 14px;
-  padding: 8px 0;
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 0.9rem;
-  text-decoration: underline;
-  text-align: center;
-  cursor: pointer;
+  justify-content: center;
+  gap: 8px;
 }
-.landing-login-toggle:hover { color: var(--text); }
+.landing-login-option-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
 
-.landing-login-guest {
-  margin: 16px 0 0;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
+.landing-login-guest-hint {
+  margin: 8px 0 0;
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-dim);
 }
 
@@ -2465,7 +2469,7 @@ table.scoreboard-table {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 20px 0;
+  margin: 18px 0;
   color: var(--text-dim);
   font-size: 0.85rem;
 }
@@ -2476,21 +2480,6 @@ table.scoreboard-table {
   flex: 1;
   height: 1px;
   background: var(--border);
-}
-
-/* Below this, the hero+login side-by-side row no longer has room for its fixed
-   400px sign-in column - stack them instead, sign-in first (it's the actual
-   call to action), features grid drops from 4 columns to 2. The final
-   single-column squeeze for phones is further down, in the shared
-   @media (max-width: 760px) block. */
-@media (max-width: 920px) {
-  .landing-top {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  .landing-hero { order: 2; }
-  .landing-login { order: 1; }
-  .landing-features { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* Three fixes were tried directly on Google's own rendered button (a light frame, a
