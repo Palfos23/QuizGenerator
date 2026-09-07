@@ -27,6 +27,8 @@
         </div>
       </div>
 
+      <FlashbackPreview />
+
       <div class="mode-choice-row">
         <button class="mode-choice-card" @click="stage = 'landing'">
           <h3>Same device</h3>
@@ -244,6 +246,7 @@ import navTrigger from '../services/navTrigger'
 import FlashbackGame from '../components/FlashbackGame.vue'
 import OnlineFlashbackGame from '../components/OnlineFlashbackGame.vue'
 import GameAccessGate from '../components/GameAccessGate.vue'
+import FlashbackPreview from '../components/previews/FlashbackPreview.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },
