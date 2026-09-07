@@ -2249,8 +2249,15 @@ table.scoreboard-table {
 
 /* ---------- Landing page ---------- */
 
+/* .main-content is already centered at 980px (see its own rule) - this page's
+   content stayed pinned to the left inside that centered column instead of
+   being centered itself, which is what left a huge dead zone on the right on
+   any wide screen. A narrower, genuinely centered column here reads as a
+   deliberate, focused sign-in moment instead of a stray leftover block. */
 .landing {
-  max-width: 760px;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .dashboard-hero {
@@ -2377,44 +2384,26 @@ table.scoreboard-table {
 .mode-choice-card p { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
 
 .landing-hero {
-  padding: 8px 0 4px;
-  position: relative;
-}
-
-/* A quiet echo of .game-preview's decorative glow, just soft enough to give
-   the very first thing a visitor sees some depth instead of flat black -
-   purely decorative, sits behind the text, never affects layout. */
-.landing-hero::before {
-  content: '';
-  position: absolute;
-  top: -60px;
-  left: -80px;
-  width: 420px;
-  height: 320px;
-  background: radial-gradient(closest-side, rgba(242, 183, 5, 0.10), transparent 70%);
-  pointer-events: none;
-  z-index: -1;
+  padding: 56px 0 4px;
 }
 
 .landing-hero h1 {
-  position: relative;
-  font-size: 2.6rem;
+  font-size: 2.5rem;
   line-height: 1.15;
-  max-width: 560px;
 }
 
 .landing-lede {
-  position: relative;
   font-size: 1.08rem;
-  max-width: 520px;
-  margin-bottom: 0;
+  margin: 0 auto;
+  max-width: 460px;
 }
 
 .landing-features {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
-  margin: 36px 0 8px;
+  margin: 40px 0 8px;
+  text-align: left;
 }
 
 .feature-card {
@@ -2436,31 +2425,40 @@ table.scoreboard-table {
 }
 
 .landing-login {
-  padding: 28px;
+  padding: 32px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.02));
-  max-width: 400px;
-  margin: 28px 0 40px;
+  max-width: 440px;
+  margin: 32px auto 40px;
 }
 
-/* Every option (Google, email, guest) is styled the same size and weight as
-   a real, tappable button - none of them reads as fine print, and the row of
-   three with dividers between gives the card a clear, repeatable rhythm
-   instead of one form with a link buried under it. */
-.landing-login-option {
-  width: 100%;
-  justify-content: center;
-  gap: 8px;
+/* The card centers itself and its buttons, but a form's own labels/inputs
+   should stay left-aligned like every other form in the app - text-align is
+   inherited, so without this the email/password fields would center their
+   labels and typed text too. */
+.landing-login .field {
+  text-align: left;
 }
-.landing-login-option-icon {
-  font-size: 1.05rem;
-  line-height: 1;
+
+/* Matches .google-fake-btn's exact box model (320px pill, 48px tall, centered)
+   so Google/email/guest read as one consistent family of three buttons rather
+   than one rounded pill next to two plain rectangles - see the design note in
+   HomeView.vue on why these are real buttons, not links, in the first place. */
+.landing-login-option {
+  display: flex;
+  width: 320px;
+  max-width: 100%;
+  height: 48px;
+  margin: 0 auto;
+  border-radius: 999px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
 }
 
 .landing-login-guest-hint {
-  margin: 8px 0 0;
-  text-align: center;
+  margin: 10px 0 0;
   font-size: 0.8rem;
   color: var(--text-dim);
 }
@@ -2748,6 +2746,7 @@ table.scoreboard-table {
 
   .filter-bar { flex-direction: column; gap: 12px; }
 
+  .landing-hero { padding: 28px 0 4px; }
   .landing-hero h1 { font-size: 1.8rem; }
   .landing-features { grid-template-columns: 1fr; }
   .landing-login { padding: 20px; }

@@ -61,7 +61,7 @@
         <template v-if="!emailFormOpen">
           <div class="landing-login-divider"><span>or</span></div>
           <button type="button" class="btn btn-secondary landing-login-option" @click="emailFormOpen = true">
-            <span class="landing-login-option-icon">✉️</span> Continue with email
+            Continue with email
           </button>
         </template>
 
@@ -147,7 +147,7 @@
 
         <div class="landing-login-divider"><span>or</span></div>
         <router-link to="/join" class="btn btn-secondary landing-login-option">
-          <span class="landing-login-option-icon">🎟️</span> Join as a guest
+          Join as a guest
         </router-link>
         <p class="landing-login-guest-hint">Got a room code from someone hosting a game? No account needed.</p>
       </template>
