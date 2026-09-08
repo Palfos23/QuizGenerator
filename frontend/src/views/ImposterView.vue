@@ -296,6 +296,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
+import { createRoomChannel } from '../composables/useRoomChannel'
 import auth from '../services/auth'
 import activeRoom from '../services/activeRoom'
 import passAndPlayState from '../services/passAndPlayState'
@@ -430,7 +431,7 @@ const onlineRoom = ref(null)
 const creatingRoom = ref(false)
 const joiningRoom = ref(false)
 const startingRoom = ref(false)
-let lobbyPollTimer = null
+let lobbyChannel = null
 
 const isHost = computed(() => !!onlineRoom.value?.host)
 
@@ -476,7 +477,7 @@ async function createOnlineRoom() {
     onlineRoom.value = await api.createRoom(payload)
     activeRoom.save(onlineRoom.value.roomCode, 'IMPOSTER')
     stage.value = 'onlineLobby'
-    startLobbyPolling()
+    startLobbyChannel()
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not create the room.'
   } finally {
@@ -505,7 +506,7 @@ async function joinOnlineRoom(codeOverride) {
       stage.value = 'onlineGame'
     } else {
       stage.value = 'onlineLobby'
-      startLobbyPolling()
+      startLobbyChannel()
     }
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not join that room - check the code and try again.'
@@ -516,21 +517,45 @@ async function joinOnlineRoom(codeOverride) {
   }
 }
 
-function startLobbyPolling() {
-  clearInterval(lobbyPollTimer)
-  lobbyPollTimer = setInterval(async () => {
-    if (!onlineRoom.value) return
-    try {
-      const updated = await api.getRoom(onlineRoom.value.roomCode)
-      onlineRoom.value = updated
-      if (updated.status === 'IN_PROGRESS') {
-        clearInterval(lobbyPollTimer)
-        stage.value = 'onlineGame'
-      }
-    } catch (e) {
-      // a transient poll failure isn't worth surfacing - it'll succeed next tick
-    }
-  }, 2000)
+// Applies a lobby update from either a push or a poll - shared so both do
+// exactly the same thing (see createRoomChannel).
+// A lobby broadcast is personalized (host/yourParticipantId) from whoever
+// triggered it - joining as a guest broadcasts a DTO where isHost is false,
+// which would be wrong applied blindly to the host's own tab. Every OTHER
+// field (participants, status) is genuinely shared, so only those two need
+// preserving from what this tab already knows about itself.
+function applyLobbyUpdate(updated) {
+  const mine = onlineRoom.value
+  onlineRoom.value = mine
+    ? { ...updated, host: mine.host, yourParticipantId: mine.yourParticipantId }
+    : updated
+  if (updated.status === 'IN_PROGRESS') {
+    stopLobbyChannel()
+    stage.value = 'onlineGame'
+  }
+}
+
+async function pollLobby() {
+  if (!onlineRoom.value) return
+  try {
+    const updated = await api.getRoom(onlineRoom.value.roomCode)
+    applyLobbyUpdate(updated)
+  } catch (e) {
+    // a transient poll failure isn't worth surfacing - it'll succeed next tick
+  }
+}
+
+function startLobbyChannel() {
+  stopLobbyChannel()
+  lobbyChannel = createRoomChannel(`/topic/rooms/${onlineRoom.value.roomCode}/lobby`, { poll: pollLobby, onMessage: applyLobbyUpdate })
+  lobbyChannel.start()
+}
+
+function stopLobbyChannel() {
+  if (lobbyChannel) {
+    lobbyChannel.stop()
+    lobbyChannel = null
+  }
 }
 
 async function startOnlineRoom() {
@@ -538,7 +563,7 @@ async function startOnlineRoom() {
   startingRoom.value = true
   try {
     await api.startRoom(onlineRoom.value.roomCode)
-    clearInterval(lobbyPollTimer)
+    stopLobbyChannel()
     stage.value = 'onlineGame'
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not start the game.'
@@ -548,7 +573,7 @@ async function startOnlineRoom() {
 }
 
 function leaveLobby() {
-  clearInterval(lobbyPollTimer)
+  stopLobbyChannel()
   activeRoom.clear()
   resetOnline()
   stage.value = 'modeChoice'
@@ -595,7 +620,7 @@ onMounted(() => {
 // the very first screen - mid-game state (pass-and-play or online) is simply
 // left behind, same as if the tab had been closed and reopened.
 watch(() => navTrigger.state.imposter, () => {
-  clearInterval(lobbyPollTimer)
+  stopLobbyChannel()
   stage.value = 'modeChoice'
 })
 

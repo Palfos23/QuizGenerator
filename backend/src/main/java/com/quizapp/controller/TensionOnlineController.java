@@ -3,6 +3,7 @@ package com.quizapp.controller;
 import com.quizapp.dto.TensionOnlineAnswerRequest;
 import com.quizapp.dto.TensionOnlineStateDto;
 import com.quizapp.model.GameRoom;
+import com.quizapp.service.RoomBroadcastService;
 import com.quizapp.service.RoomService;
 import com.quizapp.service.TensionOnlineService;
 import jakarta.validation.Valid;
@@ -15,13 +16,17 @@ public class TensionOnlineController {
 
     private final RoomService roomService;
     private final TensionOnlineService tensionOnlineService;
+    private final RoomBroadcastService roomBroadcastService;
 
-    public TensionOnlineController(RoomService roomService, TensionOnlineService tensionOnlineService) {
+    public TensionOnlineController(RoomService roomService, TensionOnlineService tensionOnlineService,
+                                    RoomBroadcastService roomBroadcastService) {
         this.roomService = roomService;
         this.tensionOnlineService = tensionOnlineService;
+        this.roomBroadcastService = roomBroadcastService;
     }
 
-    /** Polled repeatedly by every participant's client. */
+    /** Still exposed for the initial fetch on mount, and as this room's poll-based
+     *  fallback if the WebSocket push below can't connect - see useRoomChannel.js. */
     @GetMapping("/state")
     public TensionOnlineStateDto state(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);
@@ -32,12 +37,16 @@ public class TensionOnlineController {
     public TensionOnlineStateDto answer(@PathVariable String code, @Valid @RequestBody TensionOnlineAnswerRequest request,
                                          Authentication authentication) {
         GameRoom room = roomService.findByCode(code);
-        return tensionOnlineService.submitAnswer(room, authentication.getName(), request.getAnswerText());
+        TensionOnlineStateDto result = tensionOnlineService.submitAnswer(room, authentication.getName(), request.getAnswerText());
+        roomBroadcastService.broadcastState(code, result);
+        return result;
     }
 
     @PostMapping("/next-question")
     public TensionOnlineStateDto nextQuestion(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);
-        return tensionOnlineService.nextQuestion(room, authentication.getName());
+        TensionOnlineStateDto result = tensionOnlineService.nextQuestion(room, authentication.getName());
+        roomBroadcastService.broadcastState(code, result);
+        return result;
     }
 }

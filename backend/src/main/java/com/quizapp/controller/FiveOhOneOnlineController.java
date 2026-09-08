@@ -4,6 +4,7 @@ import com.quizapp.dto.FiveOhOneOnlineStateDto;
 import com.quizapp.dto.FiveOhOneThrowRequest;
 import com.quizapp.model.GameRoom;
 import com.quizapp.service.FiveOhOneOnlineService;
+import com.quizapp.service.RoomBroadcastService;
 import com.quizapp.service.RoomService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -15,13 +16,17 @@ public class FiveOhOneOnlineController {
 
     private final RoomService roomService;
     private final FiveOhOneOnlineService fiveOhOneOnlineService;
+    private final RoomBroadcastService roomBroadcastService;
 
-    public FiveOhOneOnlineController(RoomService roomService, FiveOhOneOnlineService fiveOhOneOnlineService) {
+    public FiveOhOneOnlineController(RoomService roomService, FiveOhOneOnlineService fiveOhOneOnlineService,
+                                      RoomBroadcastService roomBroadcastService) {
         this.roomService = roomService;
         this.fiveOhOneOnlineService = fiveOhOneOnlineService;
+        this.roomBroadcastService = roomBroadcastService;
     }
 
-    /** Polled repeatedly by every participant's client - this is how state stays in sync. */
+    /** Still exposed for the initial fetch on mount, and as this room's poll-based
+     *  fallback if the WebSocket push below can't connect - see useRoomChannel.js. */
     @GetMapping("/state")
     public FiveOhOneOnlineStateDto state(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);
@@ -32,6 +37,8 @@ public class FiveOhOneOnlineController {
     public FiveOhOneOnlineStateDto throwEntry(@PathVariable String code, @Valid @RequestBody FiveOhOneThrowRequest request,
                                                Authentication authentication) {
         GameRoom room = roomService.findByCode(code);
-        return fiveOhOneOnlineService.throwEntry(room, authentication.getName(), request.getEntryId());
+        FiveOhOneOnlineStateDto result = fiveOhOneOnlineService.throwEntry(room, authentication.getName(), request.getEntryId());
+        roomBroadcastService.broadcastState(code, result);
+        return result;
     }
 }

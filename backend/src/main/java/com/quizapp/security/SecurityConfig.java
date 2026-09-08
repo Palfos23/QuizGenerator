@@ -36,6 +36,10 @@ public class SecurityConfig {
                         // login endpoints, and dev-only H2 console, are open
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+                        // room-state push channel - no STOMP-level auth (see WebSocketConfig's
+                        // own comment on why that's fine); SockJS's handshake/polling fallback
+                        // endpoints live under this same path and need to be reachable too.
+                        .requestMatchers("/ws/**").permitAll()
                         // anyone can see which categories exist before logging in (nice for a landing page)
                         .requestMatchers("/api/quiz/categories").permitAll()
                         // admin question-bank management: ADMIN role only
@@ -74,6 +78,22 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(allowedOrigins));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        // sockjs-client's XHR-based fallback transports (used by /ws, see
+        // WebSocketConfig) set withCredentials=true unconditionally on every
+        // cross-origin request they make - a sockjs-client default, not
+        // something server-side controls. A credentialed request needs
+        // Access-Control-Allow-Credentials: true in the response or the browser
+        // rejects the whole handshake outright (net::ERR_FAILED on /ws/info). A
+        // path-specific CORS config just for /ws/** would be the more
+        // conservative fix, but registerCorsConfiguration's pattern matching
+        // didn't actually prefer it over this blanket one in testing - simplest
+        // to just allow it here. Safe to do for the whole API: allowedOrigins
+        // above is a specific, small allowlist (CORS requires that - not "*" -
+        // for allowCredentials to mean anything anyway), and this app has no
+        // cookie-based session to expose either way (everything's JWT-bearer,
+        // attached explicitly by our own JS, never sent automatically by the
+        // browser the way a cookie would be) - there's nothing new to leak.
+        config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

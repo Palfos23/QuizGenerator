@@ -183,7 +183,7 @@ import PitchRecap from './PitchRecap.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
-import { usePolling } from '../composables/usePolling'
+import { useRoomChannel } from '../composables/useRoomChannel'
 
 const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'
@@ -290,7 +290,7 @@ function applyState(fresh) {
   }
 }
 
-const { stop: stopPolling } = usePolling(poll, 1200)
+const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/state`, { poll, onMessage: applyState })
 
 let searchDebounce = null
 watch(searchTerm, (val) => {

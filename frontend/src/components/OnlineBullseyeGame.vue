@@ -124,7 +124,7 @@ import { computed, onUnmounted, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
 import BullseyeAnswerModal from './BullseyeAnswerModal.vue'
-import { usePolling } from '../composables/usePolling'
+import { useRoomChannel } from '../composables/useRoomChannel'
 import { formatNumber } from '../constants'
 
 const props = defineProps({
@@ -202,7 +202,7 @@ function skipReveal() {
   eliminatedName.value = state.value?.roundResults?.find(r => r.eliminatedThisRound)?.name || null
 }
 
-const { stop: stopPolling } = usePolling(poll, 2000)
+const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/state`, { poll, onMessage: applyState })
 
 onUnmounted(() => clearTimeout(revealTimer))
 

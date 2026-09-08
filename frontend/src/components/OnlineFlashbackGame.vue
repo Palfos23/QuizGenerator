@@ -111,7 +111,7 @@
 import { computed, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
-import { usePolling } from '../composables/usePolling'
+import { useRoomChannel } from '../composables/useRoomChannel'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -184,7 +184,7 @@ function applyState(fresh) {
   }
 }
 
-const { stop: stopPolling } = usePolling(poll, 2000)
+const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/state`, { poll, onMessage: applyState })
 
 async function submitGuess() {
   if (guessValue.value === null || guessValue.value === '' || submitting.value) return

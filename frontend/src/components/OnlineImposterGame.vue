@@ -132,7 +132,7 @@
 import { computed, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
-import { usePolling } from '../composables/usePolling'
+import { useRoomChannel } from '../composables/useRoomChannel'
 import { formatLastUpdated } from '../constants'
 
 const props = defineProps({
@@ -221,7 +221,7 @@ function applyState(fresh) {
   }
 }
 
-const { stop: stopPolling } = usePolling(poll, 1200)
+const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/state`, { poll, onMessage: applyState })
 
 async function chooseGrid(g) {
   choosing.value = true

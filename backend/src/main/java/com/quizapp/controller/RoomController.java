@@ -12,6 +12,7 @@ import com.quizapp.service.FiveOhOneOnlineService;
 import com.quizapp.service.ImposterOnlineService;
 import com.quizapp.service.LineupBattleOnlineService;
 import com.quizapp.service.PlayAccessService;
+import com.quizapp.service.RoomBroadcastService;
 import com.quizapp.service.RoomService;
 import com.quizapp.service.TensionOnlineService;
 import jakarta.validation.Valid;
@@ -33,6 +34,7 @@ public class RoomController {
     private final BullseyeOnlineService bullseyeOnlineService;
     private final FlashbackOnlineService flashbackOnlineService;
     private final PlayAccessService playAccessService;
+    private final RoomBroadcastService roomBroadcastService;
 
     public RoomController(RoomService roomService, GridBattleOnlineService gridBattleOnlineService,
                            TensionOnlineService tensionOnlineService, ImposterOnlineService imposterOnlineService,
@@ -40,7 +42,8 @@ public class RoomController {
                            LineupBattleOnlineService lineupBattleOnlineService,
                            BullseyeOnlineService bullseyeOnlineService,
                            FlashbackOnlineService flashbackOnlineService,
-                           PlayAccessService playAccessService) {
+                           PlayAccessService playAccessService,
+                           RoomBroadcastService roomBroadcastService) {
         this.roomService = roomService;
         this.gridBattleOnlineService = gridBattleOnlineService;
         this.tensionOnlineService = tensionOnlineService;
@@ -50,6 +53,7 @@ public class RoomController {
         this.bullseyeOnlineService = bullseyeOnlineService;
         this.flashbackOnlineService = flashbackOnlineService;
         this.playAccessService = playAccessService;
+        this.roomBroadcastService = roomBroadcastService;
     }
 
     @PostMapping
@@ -90,7 +94,9 @@ public class RoomController {
         }
         String email = authentication.getName();
         GameRoom room = roomService.join(code, email, request.getDisplayName(), request.getColor());
-        return roomService.toDto(room, email);
+        RoomDto dto = roomService.toDto(room, email);
+        roomBroadcastService.broadcastLobby(code, dto);
+        return dto;
     }
 
     @GetMapping("/{code}")
@@ -118,7 +124,13 @@ public class RoomController {
         } else {
             tensionOnlineService.startGame(room, email);
         }
-        return roomService.toDto(roomService.findByCode(code), email);
+        RoomDto dto = roomService.toDto(roomService.findByCode(code), email);
+        // Lets every waiting lobby screen jump straight to the game the instant
+        // the host starts it, instead of catching up on its next poll - each
+        // client still fetches its own personalized starting state itself once
+        // it mounts the game component, same as it always has.
+        roomBroadcastService.broadcastLobby(code, dto);
+        return dto;
     }
 
     private boolean isGuest(Authentication authentication) {

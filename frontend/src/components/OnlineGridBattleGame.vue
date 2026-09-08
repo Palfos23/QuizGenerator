@@ -200,7 +200,7 @@ import { readableTextColor, formatHint, sportLabel, formatLastUpdated } from '..
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
-import { usePolling } from '../composables/usePolling'
+import { useRoomChannel } from '../composables/useRoomChannel'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -306,7 +306,7 @@ function applyState(fresh) {
   }
 }
 
-const { stop: stopPolling } = usePolling(poll, 1200)
+const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/state`, { poll, onMessage: applyState })
 
 let searchDebounce = null
 watch(searchTerm, (val) => {
