@@ -579,6 +579,14 @@ export default {
   startRoom(code) {
     return client.post(`/rooms/${code}/start`).then(r => r.data)
   },
+  // Keeps this participant's "connected" status fresh while the room's push
+  // channel is doing the real work - see useRoomChannel.js.
+  sendRoomHeartbeat(code) {
+    return client.post(`/rooms/${code}/heartbeat`).catch(() => {
+      // best-effort - a missed heartbeat just means one stale "disconnected"
+      // read until the next one succeeds, not worth surfacing to the player
+    })
+  },
 
   // --- Online Grid Battle ---
   getGridBattleState(code) {

@@ -99,6 +99,21 @@ public class RoomController {
         return dto;
     }
 
+    /**
+     * "Still here" ping - keeps GameRoomParticipant.lastSeenAt fresh (see
+     * RoomService#isConnected) for a client that's now sitting on the
+     * WebSocket push instead of polling GET /state, which used to be the only
+     * thing that called RoomService#touch. Deliberately its own lightweight
+     * endpoint rather than piggybacking on the state fetch: called on an
+     * interval regardless of whether the socket or the fallback poll is
+     * currently active, from useRoomChannel.js.
+     */
+    @PostMapping("/{code}/heartbeat")
+    public void heartbeat(@PathVariable String code, Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        roomService.touch(roomService.requireParticipant(room, authentication.getName()));
+    }
+
     @GetMapping("/{code}")
     public RoomDto get(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);

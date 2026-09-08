@@ -1,6 +1,7 @@
 import { onMounted, onUnmounted } from 'vue'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
+import api from '../services/api'
 
 // The backend serves the WS handshake at /ws, a sibling of /api, not under it -
 // same origin as VITE_API_BASE_URL, just without the /api suffix.
@@ -12,6 +13,10 @@ const WS_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 // the game looking frozen for long.
 const CONNECT_TIMEOUT_MS = 4000
 const FALLBACK_POLL_MS = 2000
+
+// Comfortably under RoomService.DISCONNECT_THRESHOLD (20s server-side) - see
+// the heartbeat comment in start() below for why this runs at all.
+const HEARTBEAT_MS = 10000
 
 /**
  * The actual push-with-polling-fallback machinery, as a plain start()/stop()
@@ -36,10 +41,16 @@ const FALLBACK_POLL_MS = 2000
  * degrades to the old behavior instead of leaving a player's screen stuck.
  */
 export function createRoomChannel(topicPath, { poll, onMessage }) {
+  // Every topic this app has is /topic/rooms/{code}/(state|lobby) - pulling
+  // the code back out here, rather than threading a separate parameter
+  // through all 14 call sites, since it's already right there.
+  const roomCode = topicPath.match(/\/rooms\/([^/]+)\//)?.[1]
+
   let stompClient = null
   let subscription = null
   let pollTimer = null
   let connectTimeoutTimer = null
+  let heartbeatTimer = null
 
   function startFallbackPolling() {
     if (pollTimer) return
@@ -53,6 +64,16 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
 
   function start() {
     poll()
+    // GameRoomParticipant.lastSeenAt (RoomService#isConnected) used to get
+    // refreshed as a side effect of every poll - now that a healthy
+    // connection barely polls at all, nothing else keeps it fresh, so this
+    // runs unconditionally alongside the socket/fallback-poll rather than
+    // only while one specific transport is active (simpler, and harmless
+    // when the fallback poll's own GET already happens to do the same thing).
+    if (roomCode) {
+      clearInterval(heartbeatTimer)
+      heartbeatTimer = setInterval(() => api.sendRoomHeartbeat(roomCode), HEARTBEAT_MS)
+    }
     stompClient = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
       reconnectDelay: 4000,
@@ -78,6 +99,7 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
 
   function stop() {
     clearTimeout(connectTimeoutTimer)
+    clearInterval(heartbeatTimer)
     stopFallbackPolling()
     if (subscription) subscription.unsubscribe()
     if (stompClient) stompClient.deactivate()
