@@ -197,7 +197,7 @@
               {{ p.displayName }}
             </div>
           </div>
-          <span v-if="p.connected === false" class="tag offline">Disconnected</span>
+          <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">Disconnected</span>
             <span v-else class="tag" :style="{ background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }">In room</span>
         </div>
       </div>

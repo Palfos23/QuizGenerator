@@ -40,11 +40,11 @@
           v-for="p in state.players"
           :key="p.participantId"
           class="mp-player-card"
-          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.gridComplete, eliminated: p.eliminatedThisGrid, disconnected: p.connected === false }"
+          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.gridComplete, eliminated: p.eliminatedThisGrid, disconnected: p.connected === false && p.participantId !== props.yourParticipantId }"
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <span v-if="p.connected === false" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
           <LivesHearts :max="state.maxStrikes" :used="p.livesUsed" style="margin-top:4px;" />
           <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ p.totalScore }}</div>
         </div>

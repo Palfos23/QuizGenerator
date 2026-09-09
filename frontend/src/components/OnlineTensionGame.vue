@@ -23,12 +23,12 @@
             v-for="p in state.players"
             :key="p.participantId"
             class="tension-player-card"
-            :class="{ disconnected: p.connected === false }"
+            :class="{ disconnected: p.connected === false && p.participantId !== props.yourParticipantId }"
             :style="{ borderColor: p.color }"
           >
             <div>
               <strong>{{ p.name }}</strong>
-              <span v-if="p.connected === false" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
+              <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
               <div class="tension-player-answer">{{ p.answered ? '✓ answered' : '— waiting —' }}</div>
             </div>
             <div style="text-align:right; font-size:0.8rem; color:var(--text-dim);">Total: {{ p.totalScore }}</div>

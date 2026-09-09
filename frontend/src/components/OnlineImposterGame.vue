@@ -44,11 +44,11 @@
           v-for="p in state.players"
           :key="p.participantId"
           class="mp-player-card"
-          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.boardComplete, disconnected: p.connected === false }"
+          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.boardComplete, disconnected: p.connected === false && p.participantId !== props.yourParticipantId }"
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <span v-if="p.connected === false" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
           <div style="font-size:1.8rem; font-weight:700; margin-top:4px;" :style="{ color: p.totalScore === 0 ? 'var(--teal)' : 'var(--text)' }">
             {{ p.totalScore }}
           </div>

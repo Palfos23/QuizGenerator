@@ -16,10 +16,10 @@
           :key="p.participantId"
           class="mp-player-card"
           :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.roundRevealed, 'bullseye-just-eliminated': p.eliminated && p.eliminatedAtRound === state.currentQuestionIndex + 1 }"
-          :style="{ borderColor: p.color, opacity: p.eliminated ? 0.5 : (p.connected === false ? 0.55 : 1) }"
+          :style="{ borderColor: p.color, opacity: p.eliminated ? 0.5 : (p.connected === false && p.participantId !== props.yourParticipantId ? 0.55 : 1) }"
         >
           <strong>{{ p.name }}<template v-if="p.eliminated"> ❌</template></strong>
-          <span v-if="p.connected === false" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
           <div class="tension-player-answer">{{ p.answered ? '✓ answered' : (p.eliminated ? 'eliminated' : '— waiting —') }}</div>
         </div>
       </div>

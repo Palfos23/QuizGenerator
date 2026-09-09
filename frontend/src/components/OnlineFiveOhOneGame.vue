@@ -17,10 +17,10 @@
           v-for="p in state.players"
           :key="p.participantId"
           class="mp-player-card"
-          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId, 'you-row': p.participantId === state.windowReacherParticipantId, disconnected: p.connected === false }"
+          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId, 'you-row': p.participantId === state.windowReacherParticipantId, disconnected: p.connected === false && p.participantId !== props.yourParticipantId }"
         >
           <strong>{{ p.name }}</strong>
-          <span v-if="p.connected === false" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
           <div style="font-size:1.8rem; font-weight:700; margin-top:4px;" :style="{ color: p.total <= 0 && p.total >= -10 ? 'var(--teal)' : 'var(--text)' }">
             {{ p.total }}
           </div>
