@@ -4,6 +4,7 @@ import com.quizapp.dto.RoomDto;
 import com.quizapp.dto.RoomParticipantDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.*;
+import com.quizapp.repository.GameRoomParticipantRepository;
 import com.quizapp.repository.GameRoomRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +24,11 @@ public class RoomService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final GameRoomRepository gameRoomRepository;
+    private final GameRoomParticipantRepository gameRoomParticipantRepository;
 
-    public RoomService(GameRoomRepository gameRoomRepository) {
+    public RoomService(GameRoomRepository gameRoomRepository, GameRoomParticipantRepository gameRoomParticipantRepository) {
         this.gameRoomRepository = gameRoomRepository;
+        this.gameRoomParticipantRepository = gameRoomParticipantRepository;
     }
 
     @Transactional
@@ -85,10 +88,33 @@ public class RoomService {
                 .orElseThrow(() -> new ResourceNotFoundException("No room found with code " + roomCode));
     }
 
-    /** Called on every poll from a participant - doubles as a heartbeat, no separate endpoint needed. */
+    /**
+     * Refreshes lastSeenAt for a participant - called from the heartbeat
+     * endpoint and from every online game's getState().
+     *
+     * Deliberately re-fetches a managed reference by ID instead of trusting
+     * the passed-in `participant` object. Every call site loads its GameRoom
+     * (and this participant along with it) via a separate, already-committed
+     * roomService.findByCode() call in the controller - by the time that
+     * object reaches here it's detached from any persistence context, so
+     * setting a field on it directly is a no-op Hibernate never sees, unless
+     * something re-attaches it first. With Spring Boot's open-in-view left on
+     * its default (true) - the case for local dev, since nothing here
+     * overrides it - a single Hibernate session spans the whole request
+     * regardless of transaction boundaries, which happens to keep the entity
+     * attached and silently masks this. application-prod.properties turns
+     * open-in-view off on purpose (see its own comment), so this bit for
+     * real in production: every heartbeat and every poll's touch() were
+     * updating a detached object, lastSeenAt never actually moved past join
+     * time, and every participant looked disconnected within
+     * DISCONNECT_THRESHOLD of joining - no matter how active they were.
+     * getReferenceById avoids a real SELECT (a lazy proxy is all an
+     * UPDATE-only write needs) while guaranteeing the entity Hibernate
+     * flushes is the one this transaction actually manages.
+     */
     @Transactional
     public void touch(GameRoomParticipant participant) {
-        participant.setLastSeenAt(Instant.now());
+        gameRoomParticipantRepository.getReferenceById(participant.getId()).setLastSeenAt(Instant.now());
     }
 
     public boolean isConnected(GameRoomParticipant participant) {
