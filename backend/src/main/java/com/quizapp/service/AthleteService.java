@@ -63,10 +63,10 @@ public class AthleteService {
     // toDtosWithPhotos below instead, which batches the query.
     AthleteDto toDtoWithPhotos(Athlete a) {
         AthleteDto dto = toDto(a);
-        dto.setAdditionalPhotos(athletePhotoRepository.findByAthlete_Id(a.getId()).stream()
+        dto.setAdditionalPhotos(athletePhotoRepository.findByAthlete_IdOrderByIdAsc(a.getId()).stream()
                 .map(AthleteService::toPhotoDto)
                 .collect(Collectors.toList()));
-        dto.setAdditionalDescriptions(athleteDescriptionRepository.findByAthlete_Id(a.getId()).stream()
+        dto.setAdditionalDescriptions(athleteDescriptionRepository.findByAthlete_IdOrderByIdAsc(a.getId()).stream()
                 .map(AthleteService::toDescriptionDto)
                 .collect(Collectors.toList()));
         return dto;
@@ -79,11 +79,11 @@ public class AthleteService {
     // real damage at list scale.
     List<AthleteDto> toDtosWithPhotos(List<Athlete> athletes) {
         List<Long> ids = athletes.stream().map(Athlete::getId).collect(Collectors.toList());
-        Map<Long, List<AthletePhotoDto>> photosByAthleteId = athletePhotoRepository.findByAthlete_IdIn(ids).stream()
+        Map<Long, List<AthletePhotoDto>> photosByAthleteId = athletePhotoRepository.findByAthlete_IdInOrderByIdAsc(ids).stream()
                 .collect(Collectors.groupingBy(
                         p -> p.getAthlete().getId(),
                         Collectors.mapping(AthleteService::toPhotoDto, Collectors.toList())));
-        Map<Long, List<AthleteDescriptionDto>> descriptionsByAthleteId = athleteDescriptionRepository.findByAthlete_IdIn(ids).stream()
+        Map<Long, List<AthleteDescriptionDto>> descriptionsByAthleteId = athleteDescriptionRepository.findByAthlete_IdInOrderByIdAsc(ids).stream()
                 .collect(Collectors.groupingBy(
                         d -> d.getAthlete().getId(),
                         Collectors.mapping(AthleteService::toDescriptionDto, Collectors.toList())));
@@ -116,7 +116,7 @@ public class AthleteService {
     // new list gets deleted, anything without an id is newly created,
     // anything with a matching id and unchanged content is left alone.
     private void applyAdditionalPhotos(Athlete athlete, List<AthletePhotoDto> incoming) {
-        List<AthletePhoto> existing = athletePhotoRepository.findByAthlete_Id(athlete.getId());
+        List<AthletePhoto> existing = athletePhotoRepository.findByAthlete_IdOrderByIdAsc(athlete.getId());
         Set<Long> incomingIds = incoming == null ? new HashSet<>() : incoming.stream()
                 .map(AthletePhotoDto::getId).filter(java.util.Objects::nonNull).collect(Collectors.toSet());
         for (AthletePhoto existingPhoto : existing) {
@@ -144,7 +144,7 @@ public class AthleteService {
 
     // Same full-replacement approach as applyAdditionalPhotos above.
     private void applyAdditionalDescriptions(Athlete athlete, List<AthleteDescriptionDto> incoming) {
-        List<AthleteDescription> existing = athleteDescriptionRepository.findByAthlete_Id(athlete.getId());
+        List<AthleteDescription> existing = athleteDescriptionRepository.findByAthlete_IdOrderByIdAsc(athlete.getId());
         Set<Long> incomingIds = incoming == null ? new HashSet<>() : incoming.stream()
                 .map(AthleteDescriptionDto::getId).filter(java.util.Objects::nonNull).collect(Collectors.toSet());
         for (AthleteDescription existingDescription : existing) {

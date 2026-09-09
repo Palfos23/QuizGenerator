@@ -507,7 +507,7 @@ public class GridPlayService {
     private String resolvedDescription(GridEntry entry) {
         if (entry.getGrid().getRevealMode() != Grid.RevealMode.DESCRIPTION) return null;
         if (entry.getSelectedDescription() != null) return entry.getSelectedDescription().getText();
-        return athleteDescriptionRepository.findByAthlete_Id(entry.getAthlete().getId()).stream()
+        return athleteDescriptionRepository.findByAthlete_IdOrderByIdAsc(entry.getAthlete().getId()).stream()
                 .findFirst()
                 .map(com.quizapp.model.AthleteDescription::getText)
                 .orElse(null);

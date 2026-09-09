@@ -103,7 +103,7 @@ public class TensionOnlineService {
         dto.setSource(question.getSource());
         dto.setTensionAnswerCount(question.getTensionAnswers().size());
 
-        List<TensionRoundAnswer> roundAnswers = roundAnswerRepository.findByRoomState_Id(state.getId());
+        List<TensionRoundAnswer> roundAnswers = roundAnswerRepository.findByRoomState_IdOrderByIdAsc(state.getId());
         Set<Long> answeredIds = roundAnswers.stream().map(a -> a.getParticipant().getId()).collect(Collectors.toSet());
         dto.setPlayers(toPlayerDtos(participantStates, answeredIds));
         dto.setAnswersSoFar(roundAnswers.stream()

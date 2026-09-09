@@ -217,7 +217,8 @@ const ADMIN_MENUS = [
       { to: '/admin/athletes', label: 'Subjects' },
       { to: '/admin/athlete-pools', label: 'Pools' },
       { to: '/admin/grid-categories', label: 'Categories' },
-      { to: '/admin/clubs', label: 'Clubs' }
+      { to: '/admin/clubs', label: 'Clubs' },
+      { to: '/admin/tension-categories', label: 'Tension categories' }
     ]
   },
   {
