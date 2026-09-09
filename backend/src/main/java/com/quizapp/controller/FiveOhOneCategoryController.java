@@ -28,7 +28,20 @@ public class FiveOhOneCategoryController {
 
     @GetMapping("/{id}")
     public FiveOhOneCategoryDto getOne(@PathVariable Long id, Authentication authentication) {
-        playAccessService.requireFiveOhOneAccess(authentication);
+        // A guest has no AppUser row to check canPlayFiveOhOne against - same
+        // exemption RoomController applies for joining a room in the first
+        // place, since the host already passed this same check when creating
+        // it (see RoomController#isGuest). This lookup is that guest reading
+        // the category's own checkout rules mid-game in a room they're
+        // already validly sitting in, not a fresh attempt to open 501.
+        if (!isGuest(authentication)) {
+            playAccessService.requireFiveOhOneAccess(authentication);
+        }
         return categoryService.getOne(id);
+    }
+
+    private boolean isGuest(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_GUEST"));
     }
 }

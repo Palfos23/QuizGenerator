@@ -51,6 +51,19 @@ public class SecurityConfig {
                         // "guests may join but never host" split within it) - every other
                         // route below requires a real account, GUEST included nowhere else.
                         .requestMatchers("/api/rooms/**").authenticated()
+                        // Read-only lookups a GUEST also needs mid-game in an online room -
+                        // live-guess autocomplete, end-of-round reveals, and answer-option
+                        // lists - none of which expose anything beyond what that room's game
+                        // state already shows a guest. Deliberately narrow (just these
+                        // sub-paths, matched before the broader real-account-only rules
+                        // below) rather than opening all of /api/grids|lineups|tension|501/**
+                        // to guests, which still cover browsing/admin actions a guest has no
+                        // business reaching. Matched first since Spring Security uses
+                        // first-match-wins ordering across requestMatchers.
+                        .requestMatchers("/api/grids/*/candidates", "/api/grids/*/reveal-all").authenticated()
+                        .requestMatchers("/api/lineups/*/candidates", "/api/lineups/*/reveal-all").authenticated()
+                        .requestMatchers("/api/tension/categories/*/options").authenticated()
+                        .requestMatchers("/api/501/categories/*").authenticated()
                         // generating/exporting quizzes: any logged-in user (USER or ADMIN)
                         .requestMatchers("/api/quiz/**").hasAnyRole("USER", "ADMIN")
                         // browsing/playing weekly grids: any logged-in user (USER or ADMIN)
