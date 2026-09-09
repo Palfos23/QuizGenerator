@@ -40,10 +40,11 @@
           v-for="p in state.players"
           :key="p.participantId"
           class="mp-player-card"
-          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.gridComplete, eliminated: p.eliminatedThisGrid }"
+          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.gridComplete, eliminated: p.eliminatedThisGrid, disconnected: p.connected === false }"
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
+          <span v-if="p.connected === false" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
           <LivesHearts :max="state.maxStrikes" :used="p.livesUsed" style="margin-top:4px;" />
           <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ p.totalScore }}</div>
         </div>
@@ -201,6 +202,7 @@ import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
 import { useRoomChannel } from '../composables/useRoomChannel'
+import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -264,6 +266,7 @@ function showResultOverlay(correct) {
 }
 
 const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
+useTurnTitleAlert(isYourTurn)
 const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )

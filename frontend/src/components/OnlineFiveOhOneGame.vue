@@ -17,9 +17,10 @@
           v-for="p in state.players"
           :key="p.participantId"
           class="mp-player-card"
-          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId, 'you-row': p.participantId === state.windowReacherParticipantId }"
+          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId, 'you-row': p.participantId === state.windowReacherParticipantId, disconnected: p.connected === false }"
         >
           <strong>{{ p.name }}</strong>
+          <span v-if="p.connected === false" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
           <div style="font-size:1.8rem; font-weight:700; margin-top:4px;" :style="{ color: p.total <= 0 && p.total >= -10 ? 'var(--teal)' : 'var(--text)' }">
             {{ p.total }}
           </div>
@@ -118,6 +119,7 @@
 import { computed, ref } from 'vue'
 import api from '../services/api'
 import { useRoomChannel } from '../composables/useRoomChannel'
+import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatLastUpdated } from '../constants'
 
 const props = defineProps({
@@ -149,6 +151,7 @@ function showThrowOverlay(text, kind) {
 }
 
 const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
+useTurnTitleAlert(isYourTurn)
 const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )

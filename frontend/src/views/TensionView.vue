@@ -212,7 +212,8 @@
               {{ p.displayName }}
             </div>
           </div>
-          <span class="tag" :style="{ background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }">In room</span>
+          <span v-if="p.connected === false" class="tag offline">Disconnected</span>
+            <span v-else class="tag" :style="{ background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }">In room</span>
         </div>
       </div>
 
@@ -222,6 +223,7 @@
 
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="leaveLobby">← Leave</button>
+        <InviteLinkButton v-if="onlineRoom" :room-code="onlineRoom.roomCode" />
         <button
           v-if="isHost"
           class="btn btn-primary"
@@ -299,6 +301,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
 import { createRoomChannel } from '../composables/useRoomChannel'
+import InviteLinkButton from '../components/InviteLinkButton.vue'
 import auth from '../services/auth'
 import activeRoom from '../services/activeRoom'
 import passAndPlayState from '../services/passAndPlayState'

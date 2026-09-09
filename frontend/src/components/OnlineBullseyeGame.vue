@@ -16,9 +16,10 @@
           :key="p.participantId"
           class="mp-player-card"
           :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.roundRevealed, 'bullseye-just-eliminated': p.eliminated && p.eliminatedAtRound === state.currentQuestionIndex + 1 }"
-          :style="{ borderColor: p.color, opacity: p.eliminated ? 0.5 : 1 }"
+          :style="{ borderColor: p.color, opacity: p.eliminated ? 0.5 : (p.connected === false ? 0.55 : 1) }"
         >
           <strong>{{ p.name }}<template v-if="p.eliminated"> ❌</template></strong>
+          <span v-if="p.connected === false" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
           <div class="tension-player-answer">{{ p.answered ? '✓ answered' : (p.eliminated ? 'eliminated' : '— waiting —') }}</div>
         </div>
       </div>
@@ -125,6 +126,7 @@ import api from '../services/api'
 import LoadingState from './LoadingState.vue'
 import BullseyeAnswerModal from './BullseyeAnswerModal.vue'
 import { useRoomChannel } from '../composables/useRoomChannel'
+import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatNumber } from '../constants'
 
 const props = defineProps({
@@ -146,6 +148,7 @@ const revealIndex = ref(0)
 const eliminatedName = ref(null)
 
 const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
+useTurnTitleAlert(isYourTurn)
 const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )

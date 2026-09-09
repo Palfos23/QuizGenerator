@@ -2069,6 +2069,22 @@ mark {
   opacity: 0.4;
 }
 
+/* A participant whose heartbeat has gone stale (see useRoomChannel.js /
+   RoomService#isConnected) - still in the game (they might just be on a
+   flaky connection or a backgrounded phone tab), so dimmed rather than
+   struck out like .eliminated, plus the small .tag.offline badge below to
+   name what's actually going on rather than leaving it ambiguous. */
+.mp-player-card.disconnected {
+  opacity: 0.55;
+}
+.tension-player-card.disconnected {
+  opacity: 0.55;
+}
+.tag.offline {
+  background: rgba(255,77,109,0.15);
+  color: var(--coral);
+}
+
 /* Bullseye's "you're out" moment - a one-shot pop/shake that settles into the
    same dimmed .eliminated look above, rather than just fading straight there. */
 .mp-player-card.bullseye-just-eliminated {

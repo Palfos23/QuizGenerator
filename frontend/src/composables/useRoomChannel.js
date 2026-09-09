@@ -18,6 +18,19 @@ const FALLBACK_POLL_MS = 2000
 // the heartbeat comment in start() below for why this runs at all.
 const HEARTBEAT_MS = 10000
 
+// A participant going quiet isn't a broadcast-worthy event the way every
+// other bit of room state is (nobody calls RoomBroadcastService just because
+// time passed) - it's purely a side effect of RoomService#isConnected doing
+// its lastSeenAt-vs-now math whenever someone else's toDto() happens to run.
+// So a healthy WebSocket, which stops polling once connected, would never
+// actually learn that another participant went stale - the .connected flag
+// each player card/lobby row reads would just silently freeze at whatever it
+// last was. This is the one thing still worth a slow poll for even with a
+// perfectly healthy socket - much slower than FALLBACK_POLL_MS since it's
+// not covering for a broken connection, just refreshing a value that decays
+// on its own.
+const PRESENCE_POLL_MS = 15000
+
 /**
  * The actual push-with-polling-fallback machinery, as a plain start()/stop()
  * pair - no Vue lifecycle attached. Used directly by each View.vue's lobby
@@ -51,6 +64,7 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
   let pollTimer = null
   let connectTimeoutTimer = null
   let heartbeatTimer = null
+  let presencePollTimer = null
 
   function startFallbackPolling() {
     if (pollTimer) return
@@ -74,6 +88,8 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
       clearInterval(heartbeatTimer)
       heartbeatTimer = setInterval(() => api.sendRoomHeartbeat(roomCode), HEARTBEAT_MS)
     }
+    clearInterval(presencePollTimer)
+    presencePollTimer = setInterval(poll, PRESENCE_POLL_MS)
     stompClient = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
       reconnectDelay: 4000,
@@ -100,6 +116,7 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
   function stop() {
     clearTimeout(connectTimeoutTimer)
     clearInterval(heartbeatTimer)
+    clearInterval(presencePollTimer)
     stopFallbackPolling()
     if (subscription) subscription.unsubscribe()
     if (stompClient) stompClient.deactivate()

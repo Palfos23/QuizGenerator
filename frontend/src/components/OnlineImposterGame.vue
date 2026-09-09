@@ -44,10 +44,11 @@
           v-for="p in state.players"
           :key="p.participantId"
           class="mp-player-card"
-          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.boardComplete }"
+          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.boardComplete, disconnected: p.connected === false }"
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
+          <span v-if="p.connected === false" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
           <div style="font-size:1.8rem; font-weight:700; margin-top:4px;" :style="{ color: p.totalScore === 0 ? 'var(--teal)' : 'var(--text)' }">
             {{ p.totalScore }}
           </div>
@@ -133,6 +134,7 @@ import { computed, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
 import { useRoomChannel } from '../composables/useRoomChannel'
+import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatLastUpdated } from '../constants'
 
 const props = defineProps({
@@ -163,6 +165,7 @@ function showFlipOverlay(imposter) {
 }
 
 const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
+useTurnTitleAlert(isYourTurn)
 const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )
