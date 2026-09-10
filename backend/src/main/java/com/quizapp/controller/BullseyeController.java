@@ -22,9 +22,18 @@ public class BullseyeController {
     }
 
     @GetMapping("/battle-eligible")
-    public List<BullseyeQuestionSummaryDto> battleEligible(Authentication authentication) {
+    public List<BullseyeQuestionSummaryDto> battleEligible(
+            @RequestParam(required = false) List<String> excludeCategories,
+            Authentication authentication) {
         playAccessService.requireBullseyeAccess(authentication);
-        return bullseyePlayService.findEligible();
+        return bullseyePlayService.findEligible(excludeCategories);
+    }
+
+    /** For the round-start "exclude these categories" chip list. */
+    @GetMapping("/categories")
+    public List<String> categories(Authentication authentication) {
+        playAccessService.requireBullseyeAccess(authentication);
+        return bullseyePlayService.getDistinctCategories();
     }
 
     /** Random round-start "choose one of 3" picker - see BullseyePlayService.getBattleRoundChoices. */
@@ -32,9 +41,10 @@ public class BullseyeController {
     public List<BullseyeQuestionSummaryDto> battleRoundChoices(
             @RequestParam(defaultValue = "3") int count,
             @RequestParam(required = false) List<Long> excludeIds,
+            @RequestParam(required = false) List<String> excludeCategories,
             Authentication authentication) {
         playAccessService.requireBullseyeAccess(authentication);
-        return bullseyePlayService.getBattleRoundChoices(count, excludeIds);
+        return bullseyePlayService.getBattleRoundChoices(count, excludeIds, excludeCategories);
     }
 
     /** Starting state for a chosen round - includes the full answer key, no persisted attempt involved. */

@@ -13,10 +13,13 @@ import com.quizapp.repository.BullseyeQuestionSummaryProjection;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,36 +36,85 @@ public class BullseyePlayService {
     }
 
     // The pool a game draws from before it starts - used to check there's
-    // enough content for the chosen player count, and (via getBattleRoundChoices)
-    // for the round-start picker. Mirrors GridPlayService.findEligibleForGridBattle.
+    // enough content for the chosen player count (minus any excluded
+    // categories, so that check is honest about what the round-choice picker
+    // can actually offer), and (via getBattleRoundChoices) for the round-start
+    // picker itself. Mirrors GridPlayService.findEligibleForGridBattle.
     @Transactional(readOnly = true)
-    public List<BullseyeQuestionSummaryDto> findEligible() {
+    public List<BullseyeQuestionSummaryDto> findEligible(List<String> excludeCategories) {
+        Set<String> excludedLower = excludeCategories == null ? Set.of() : excludeCategories.stream()
+                .map(String::toLowerCase).collect(Collectors.toSet());
         return bullseyeQuestionRepository.findAllSummaries().stream()
                 .filter(row -> !row.getExcludedFromBullseye())
+                .filter(row -> !excludedLower.contains(row.getSport().toLowerCase()))
                 .sorted((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()))
                 .map(this::toSummaryDto)
                 .collect(Collectors.toList());
+    }
+
+    // For the round-start "exclude these categories" chip list.
+    @Transactional(readOnly = true)
+    public List<String> getDistinctCategories() {
+        return bullseyeQuestionRepository.findDistinctEligibleSports();
     }
 
     /**
      * For the "Random" round-start picker (mirrors GridPlayService
      * .getBattleRoundChoices / LineupPlayService.getBattleRoundChoices): a
      * small pool of candidate questions for the upcoming round, minus
-     * whatever's already been played this game so a repeat never gets offered.
+     * whatever's already been played this game so a repeat never gets offered,
+     * and minus any category the player asked to exclude entirely.
+     *
+     * Spreads the offered choices across different categories rather than
+     * sampling uniformly at random - a plain random sample of, say, 3 from a
+     * bank that's mostly football/geography would routinely offer "choose one
+     * of 3 football questions" instead of a real choice. One question per
+     * distinct category, in a random category order (and a random pick within
+     * each), until `count` is reached; only tops back up with a second
+     * question from an already-used category if there simply aren't enough
+     * distinct categories left to fill the request.
      */
     @Transactional(readOnly = true)
-    public List<BullseyeQuestionSummaryDto> getBattleRoundChoices(int count, List<Long> excludeIds) {
-        List<Long> ids = bullseyeQuestionRepository.findBattleEligibleIds().stream()
-                .filter(id -> excludeIds == null || !excludeIds.contains(id))
+    public List<BullseyeQuestionSummaryDto> getBattleRoundChoices(int count, List<Long> excludeIds, List<String> excludeCategories) {
+        Set<String> excludedLower = excludeCategories == null ? Set.of() : excludeCategories.stream()
+                .map(String::toLowerCase).collect(Collectors.toSet());
+
+        List<BullseyeQuestionSummaryProjection> eligible = bullseyeQuestionRepository.findAllSummaries().stream()
+                .filter(row -> !row.getExcludedFromBullseye())
+                .filter(row -> excludeIds == null || !excludeIds.contains(row.getId()))
+                .filter(row -> !excludedLower.contains(row.getSport().toLowerCase()))
                 .collect(Collectors.toList());
-        Collections.shuffle(ids);
-        List<Long> sampled = ids.stream().limit(count).collect(Collectors.toList());
-        if (sampled.isEmpty()) {
+        if (eligible.isEmpty()) {
             return Collections.emptyList();
         }
-        return bullseyeQuestionRepository.findSummariesByIdIn(sampled).stream()
-                .map(this::toSummaryDto)
-                .collect(Collectors.toList());
+
+        Map<String, List<BullseyeQuestionSummaryProjection>> byCategory = eligible.stream()
+                .collect(Collectors.groupingBy(BullseyeQuestionSummaryProjection::getSport));
+        List<String> categories = new ArrayList<>(byCategory.keySet());
+        Collections.shuffle(categories);
+        byCategory.values().forEach(Collections::shuffle);
+
+        List<BullseyeQuestionSummaryProjection> picked = new ArrayList<>();
+        Set<Long> pickedIds = new HashSet<>();
+        for (String category : categories) {
+            if (picked.size() >= count) break;
+            BullseyeQuestionSummaryProjection candidate = byCategory.get(category).get(0);
+            picked.add(candidate);
+            pickedIds.add(candidate.getId());
+        }
+        if (picked.size() < count) {
+            List<BullseyeQuestionSummaryProjection> rest = eligible.stream()
+                    .filter(row -> !pickedIds.contains(row.getId()))
+                    .collect(Collectors.toList());
+            Collections.shuffle(rest);
+            for (BullseyeQuestionSummaryProjection row : rest) {
+                if (picked.size() >= count) break;
+                picked.add(row);
+            }
+        }
+        Collections.shuffle(picked); // don't let the by-category build order leak into a fixed display order
+
+        return picked.stream().map(this::toSummaryDto).collect(Collectors.toList());
     }
 
     private BullseyeQuestionSummaryDto toSummaryDto(BullseyeQuestionSummaryProjection row) {

@@ -726,13 +726,19 @@ export default {
   },
 
   // --- Bullseye: user-facing (local pass-and-play - stateless, no persisted attempt) ---
-  getBattleEligibleBullseyeQuestions() {
-    return client.get('/bullseye/battle-eligible').then(r => r.data)
+  getBattleEligibleBullseyeQuestions(excludeCategories) {
+    const params = new URLSearchParams()
+    ;(excludeCategories || []).forEach(c => params.append('excludeCategories', c))
+    return client.get(`/bullseye/battle-eligible?${params.toString()}`).then(r => r.data)
   },
-  fetchBullseyeBattleRoundChoices(count, excludeIds) {
+  fetchBullseyeBattleRoundChoices(count, excludeIds, excludeCategories) {
     const params = new URLSearchParams({ count: String(count) })
     ;(excludeIds || []).forEach(id => params.append('excludeIds', String(id)))
+    ;(excludeCategories || []).forEach(c => params.append('excludeCategories', c))
     return client.get(`/bullseye/battle-round-choices?${params.toString()}`).then(r => r.data)
+  },
+  fetchBullseyeCategories() {
+    return client.get('/bullseye/categories').then(r => r.data)
   },
   getMultiplayerBullseyeStart(id) {
     return client.get(`/bullseye/${id}/multiplayer-start`).then(r => r.data)

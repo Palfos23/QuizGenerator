@@ -62,6 +62,31 @@
         {{ numPlayers }} players means {{ numPlayers - 1 }} round{{ numPlayers - 1 > 1 ? 's' : '' }} - one elimination per round.
       </p>
 
+      <div v-if="bullseyeCategories.length" class="field">
+        <label style="text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.85rem;">
+          Exclude any categories you'd rather not get questions from
+          <span class="picker-hint" v-if="excludeCategories.length">{{ excludeCategories.length }} excluded</span>
+        </label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+          <button
+            v-for="c in bullseyeCategories"
+            :key="c"
+            type="button"
+            class="team-chip"
+            :class="{ active: excludeCategories.includes(c) }"
+            @click="toggleExcludeCategory(excludeCategories, c)"
+          >{{ c }}</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>How should the questions be picked?</label>
+        <div class="language-row">
+          <button class="language-btn" :class="{ active: bullseyeMode === 'random' }" @click="bullseyeMode = 'random'">Random</button>
+          <button class="language-btn" :class="{ active: bullseyeMode === 'manual' }" @click="bullseyeMode = 'manual'">Pick my own</button>
+        </div>
+      </div>
+
       <button class="btn btn-secondary" @click="stage = 'modeChoice'">← Back</button>
       <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">Create game</button>
     </template>
@@ -172,16 +197,54 @@
 
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'landing'">← Back</button>
-        <button class="btn btn-primary" :disabled="!allNamed || duplicateNames || checkingPool" @click="goToGame">
+        <button class="btn btn-primary" :disabled="!allNamed || duplicateNames || checkingPool" @click="goToQuestionChoice">
           Next →
         </button>
       </div>
       <LoadingState v-if="checkingPool" full message="Shuffling your questions…" subtitle="First round starts in just a moment." />
     </template>
 
+    <template v-else-if="stage === 'pickQuestions'">
+      <h1>Choose {{ roundsNeeded }} question{{ roundsNeeded > 1 ? 's' : '' }}</h1>
+      <p class="page-subtitle">{{ chosenQuestions.length }} / {{ roundsNeeded }} selected</p>
+
+      <LoadingState v-if="loadingQuestions" full />
+      <div v-else-if="!availableQuestions.length" class="empty-state">No questions available yet.</div>
+
+      <div v-else class="saved-quiz-list">
+        <div v-for="q in availableQuestions" :key="q.id" class="saved-quiz-row">
+          <div class="saved-quiz-info">
+            <div class="saved-quiz-title">{{ q.title }}</div>
+            <div class="saved-quiz-meta">
+              {{ sportLabel(q.sport) }} · {{ q.entryCount }} answers · "{{ q.groupDigits === false ? q.targetValue : formatNumber(q.targetValue) }} {{ q.statLabel }}"
+            </div>
+          </div>
+          <button
+            class="btn btn-sm"
+            :class="isChosenQuestion(q) ? 'btn-primary' : 'btn-secondary'"
+            :disabled="!isChosenQuestion(q) && chosenQuestions.length >= roundsNeeded"
+            @click="toggleChosenQuestion(q)"
+          >{{ isChosenQuestion(q) ? 'Selected ✓' : '+ Select' }}</button>
+        </div>
+      </div>
+
+      <div class="board-picker-actions">
+        <button class="btn btn-secondary" @click="stage = 'setup'">← Back</button>
+        <button
+          class="btn btn-primary"
+          :class="{ 'btn-ready-pulse': chosenQuestions.length === roundsNeeded }"
+          :disabled="chosenQuestions.length !== roundsNeeded"
+          @click="startManualGame"
+        >{{ chosenQuestions.length === roundsNeeded ? `Start game ✓ (${chosenQuestions.length}/${roundsNeeded})` : `Start game (${chosenQuestions.length}/${roundsNeeded})` }}</button>
+      </div>
+    </template>
+
     <BullseyeGame
       v-else-if="stage === 'game'"
       :players="setupPlayers"
+      :exclude-categories="excludeCategories"
+      :mode="gameMode"
+      :questions="gameQuestions"
       @game-over="onGameOver"
     />
 
@@ -217,6 +280,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
+import { formatNumber, sportLabel } from '../constants'
 import { createRoomChannel } from '../composables/useRoomChannel'
 import InviteLinkButton from '../components/InviteLinkButton.vue'
 import auth from '../services/auth'
@@ -246,16 +310,35 @@ const numPlayers = ref(2)
 const setupPlayers = reactive([])
 const finalScores = ref([])
 const checkingPool = ref(false)
+const bullseyeCategories = ref([])
+const excludeCategories = ref([])
+const bullseyeMode = ref('random') // 'random' | 'manual'
+const availableQuestions = ref([])
+const loadingQuestions = ref(false)
+const chosenQuestions = ref([])
+const gameMode = ref('random')
+const gameQuestions = ref([])
+const roundsNeeded = computed(() => setupPlayers.length - 1)
+
+function toggleExcludeCategory(list, name) {
+  const idx = list.indexOf(name)
+  if (idx === -1) list.push(name)
+  else list.splice(idx, 1)
+}
 
 const savedPassAndPlay = ref(null)
 onMounted(() => {
   savedPassAndPlay.value = passAndPlayState.load('bullseye')
+  api.fetchBullseyeCategories().then(cats => { bullseyeCategories.value = cats }).catch(() => {})
 })
 
 function resumePassAndPlay() {
   const saved = savedPassAndPlay.value
   setupPlayers.length = 0
   saved.players.forEach(p => setupPlayers.push(p))
+  excludeCategories.value = saved.excludeCategories || []
+  gameMode.value = saved.mode || 'random'
+  gameQuestions.value = saved.gameQuestions || []
   stage.value = 'game'
 }
 
@@ -284,30 +367,76 @@ const duplicateNames = computed(() => {
   return names.some((n, i) => names.indexOf(n) !== i)
 })
 
-async function goToGame() {
+async function goToQuestionChoice() {
   error.value = ''
-  const roundsNeeded = setupPlayers.length - 1
-  let poolSize = 0
-  let accessError = ''
-  checkingPool.value = true
+  if (bullseyeMode.value === 'random') {
+    // Questions are picked one round at a time as the game is played (see
+    // BullseyeGame's own round-choice screen), not resolved up front - this
+    // just checks there's actually enough of a pool to draw from at all.
+    let poolSize = 0
+    let accessError = ''
+    checkingPool.value = true
+    try {
+      poolSize = (await api.getBattleEligibleBullseyeQuestions(excludeCategories.value)).length
+    } catch (e) {
+      accessError = e.response?.data?.message || ''
+    } finally {
+      checkingPool.value = false
+    }
+    if (accessError) {
+      error.value = accessError
+      stage.value = 'landing'
+      return
+    }
+    if (poolSize < roundsNeeded.value) {
+      const reason = excludeCategories.value.length
+        ? 'Try excluding fewer categories, or ask an admin to add more Bullseye questions.'
+        : 'Ask an admin to add more Bullseye questions.'
+      error.value = `Only found ${poolSize} question(s) - need at least ${roundsNeeded.value} for ${setupPlayers.length} players. ${reason}`
+      stage.value = 'landing'
+      return
+    }
+    gameMode.value = 'random'
+    gameQuestions.value = []
+    passAndPlayState.save('bullseye', { mode: 'random', players: [...setupPlayers], excludeCategories: [...excludeCategories.value] })
+    savedPassAndPlay.value = passAndPlayState.load('bullseye')
+    stage.value = 'game'
+  } else {
+    chosenQuestions.value = []
+    stage.value = 'pickQuestions'
+    await loadAvailableQuestions()
+  }
+}
+
+async function loadAvailableQuestions() {
+  loadingQuestions.value = true
   try {
-    poolSize = (await api.getBattleEligibleBullseyeQuestions()).length
+    availableQuestions.value = await api.getBattleEligibleBullseyeQuestions(excludeCategories.value)
   } catch (e) {
-    accessError = e.response?.data?.message || ''
+    error.value = e.response?.data?.message || 'Could not load questions.'
   } finally {
-    checkingPool.value = false
+    loadingQuestions.value = false
   }
-  if (accessError) {
-    error.value = accessError
-    stage.value = 'landing'
-    return
+}
+
+function isChosenQuestion(q) {
+  return chosenQuestions.value.some(c => c.id === q.id)
+}
+function toggleChosenQuestion(q) {
+  if (isChosenQuestion(q)) {
+    chosenQuestions.value = chosenQuestions.value.filter(c => c.id !== q.id)
+  } else if (chosenQuestions.value.length < roundsNeeded.value) {
+    chosenQuestions.value.push(q)
   }
-  if (poolSize < roundsNeeded) {
-    error.value = `Only found ${poolSize} question(s) - need at least ${roundsNeeded} for ${setupPlayers.length} players. Ask an admin to add more Bullseye questions.`
-    stage.value = 'landing'
-    return
-  }
-  passAndPlayState.save('bullseye', { players: [...setupPlayers] })
+}
+
+function startManualGame() {
+  gameMode.value = 'manual'
+  gameQuestions.value = chosenQuestions.value
+  passAndPlayState.save('bullseye', {
+    mode: 'manual', gameQuestions: gameQuestions.value,
+    players: [...setupPlayers], excludeCategories: [...excludeCategories.value]
+  })
   savedPassAndPlay.value = passAndPlayState.load('bullseye')
   stage.value = 'game'
 }

@@ -85,7 +85,7 @@ class BullseyePlayServiceTest {
 
     @Test
     void findEligibleExcludesRetiredQuestions() {
-        List<BullseyeQuestionSummaryDto> eligible = bullseyePlayService.findEligible();
+        List<BullseyeQuestionSummaryDto> eligible = bullseyePlayService.findEligible(null);
         List<Long> ids = eligible.stream().map(BullseyeQuestionSummaryDto::getId).collect(Collectors.toList());
 
         assertThat(ids).contains(eligibleQuestion.getId());
@@ -93,8 +93,15 @@ class BullseyePlayServiceTest {
     }
 
     @Test
+    void findEligibleRespectsExcludeCategories() {
+        List<BullseyeQuestionSummaryDto> eligible = bullseyePlayService.findEligible(List.of(sport));
+
+        assertThat(eligible).noneMatch(q -> q.getId().equals(eligibleQuestion.getId()));
+    }
+
+    @Test
     void battleRoundChoicesNeverReturnsExcludedOrOverCount() {
-        List<BullseyeQuestionSummaryDto> choices = bullseyePlayService.getBattleRoundChoices(3, null);
+        List<BullseyeQuestionSummaryDto> choices = bullseyePlayService.getBattleRoundChoices(3, null, null);
 
         assertThat(choices.size()).isLessThanOrEqualTo(3);
         assertThat(choices).noneMatch(c -> c.getId().equals(excludedQuestion.getId()));
@@ -103,15 +110,82 @@ class BullseyePlayServiceTest {
     @Test
     void battleRoundChoicesRespectsExcludeIds() {
         List<BullseyeQuestionSummaryDto> choices =
-                bullseyePlayService.getBattleRoundChoices(10, List.of(eligibleQuestion.getId()));
+                bullseyePlayService.getBattleRoundChoices(10, List.of(eligibleQuestion.getId()), null);
 
         assertThat(choices).noneMatch(c -> c.getId().equals(eligibleQuestion.getId()));
     }
 
     @Test
+    void battleRoundChoicesRespectsExcludeCategories() {
+        List<BullseyeQuestionSummaryDto> choices =
+                bullseyePlayService.getBattleRoundChoices(10, null, List.of(sport));
+
+        assertThat(choices).noneMatch(c -> c.getSport().equalsIgnoreCase(sport));
+    }
+
+    @Test
     void battleRoundChoicesDoesNotErrorWhenPoolIsSmallerThanCount() {
-        List<BullseyeQuestionSummaryDto> choices = bullseyePlayService.getBattleRoundChoices(1000, null);
+        List<BullseyeQuestionSummaryDto> choices = bullseyePlayService.getBattleRoundChoices(1000, null, null);
         assertThat(choices).isNotNull();
+    }
+
+    // The whole point of spreading choices across categories: a plain random
+    // sample of `count` from a bank with only a couple of well-stocked
+    // categories would routinely offer "choose one of 3 football questions"
+    // instead of a real choice. With at least `count` distinct categories
+    // available, none of the offered choices should repeat a category.
+    @Test
+    void battleRoundChoicesNeverOffersTwoQuestionsFromTheSameCategoryWhenEnoughCategoriesExist() {
+        // setUp() already contributed one eligible question in `sport` - two
+        // more distinct categories here makes three total for this test run,
+        // enough to fill a count-of-3 pick with no repeats.
+        String sportB = "Geography-" + System.nanoTime();
+        String sportC = "Movies-" + System.nanoTime();
+        saveEligibleQuestion(sportB);
+        saveEligibleQuestion(sportC);
+
+        List<BullseyeQuestionSummaryDto> choices = bullseyePlayService.getBattleRoundChoices(3, null, null);
+
+        assertThat(choices).hasSize(3);
+        List<String> sportsSeen = choices.stream().map(BullseyeQuestionSummaryDto::getSport).collect(Collectors.toList());
+        assertThat(sportsSeen).doesNotHaveDuplicates();
+    }
+
+    @Test
+    void getDistinctCategoriesIncludesAnEligibleCategoryButNotARetiredOnlyOne() {
+        String retiredOnlySport = "RetiredOnly-" + System.nanoTime();
+        Athlete a = athleteRepository.save(newAthleteInSport(retiredOnlySport));
+        Athlete b = athleteRepository.save(newAthleteInSport(retiredOnlySport));
+        bullseyeQuestionRepository.save(
+                newQuestionInSport(retiredOnlySport, "Retired only " + System.nanoTime(), true, a, 1, b, 2));
+
+        List<String> categories = bullseyePlayService.getDistinctCategories();
+
+        assertThat(categories).contains(sport);
+        assertThat(categories).doesNotContain(retiredOnlySport);
+    }
+
+    // Helper for the diversity test above - same shape as setUp()'s own
+    // eligibleQuestion, just parameterized to a different category.
+    private void saveEligibleQuestion(String questionSport) {
+        Athlete a = athleteRepository.save(newAthleteInSport(questionSport));
+        Athlete b = athleteRepository.save(newAthleteInSport(questionSport));
+        bullseyeQuestionRepository.save(
+                newQuestionInSport(questionSport, "Eligible " + System.nanoTime(), false, a, 27, b, 18));
+    }
+
+    private Athlete newAthleteInSport(String athleteSport) {
+        Athlete athlete = new Athlete();
+        athlete.setName("Player " + System.nanoTime());
+        athlete.setSport(athleteSport);
+        return athlete;
+    }
+
+    private BullseyeQuestion newQuestionInSport(String questionSport, String title, boolean excluded,
+                                                 Athlete a1, int v1, Athlete a2, int v2) {
+        BullseyeQuestion q = newQuestion(title, excluded, a1, v1, a2, v2);
+        q.setSport(questionSport);
+        return q;
     }
 
     @Test

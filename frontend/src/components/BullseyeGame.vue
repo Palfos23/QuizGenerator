@@ -158,7 +158,10 @@ import BullseyeAnswerModal from './BullseyeAnswerModal.vue'
 import LoadingState from './LoadingState.vue'
 
 const props = defineProps({
-  players: { type: Array, required: true } // [{ name, color }]
+  players: { type: Array, required: true }, // [{ name, color }]
+  excludeCategories: { type: Array, default: () => [] },
+  mode: { type: String, default: 'random' }, // 'random' | 'manual'
+  questions: { type: Array, default: () => [] } // pre-chosen, mode === 'manual' only - one per round, in order
 })
 const emit = defineEmits(['gameOver'])
 
@@ -420,13 +423,26 @@ function nextRound() {
   currentTurnIdx.value = 0
   readyForNextRound.value = false
   roundState.value = null
-  loadRoundChoices()
+  startRound()
+}
+
+// mode === 'manual': the whole question sequence was already chosen up front
+// (see BullseyeView.vue's pickQuestions stage) - no round-choice picker at
+// all, just load this round's pre-picked question directly. mode === 'random'
+// keeps the existing choose-one-of-3 flow unchanged.
+function startRound() {
+  if (props.mode === 'manual') {
+    const q = props.questions[roundIndex.value]
+    if (q) loadRoundState(q.id)
+  } else {
+    loadRoundChoices()
+  }
 }
 
 async function loadRoundChoices() {
   loadingChoices.value = true
   try {
-    roundChoices.value = await api.fetchBullseyeBattleRoundChoices(3, chosenQuestions.value.map(q => q.id))
+    roundChoices.value = await api.fetchBullseyeBattleRoundChoices(3, chosenQuestions.value.map(q => q.id), props.excludeCategories)
   } catch (e) {
     toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
   } finally {
@@ -471,8 +487,10 @@ function saveProgress() {
 
 function initGame() {
   // Resuming mid-round isn't reconstructed - who's answered what so far is
-  // dropped and the current round just restarts with a fresh choice-of-3,
-  // same simplification TensionGame already makes for the same reason.
+  // dropped and the current round just restarts (a fresh choice-of-3 in
+  // random mode, or the same pre-picked question again in manual mode -
+  // see startRound), same simplification TensionGame already makes for the
+  // same reason.
   // Everything from every round before this one - who's been eliminated,
   // and which questions were already used - carries over exactly.
   const saved = passAndPlayState.load('bullseye-progress')
@@ -482,7 +500,7 @@ function initGame() {
     eliminationOrder.value = saved.eliminationOrder || []
     chosenQuestions.value = (saved.chosenQuestionIds || []).map(id => ({ id }))
   }
-  loadRoundChoices()
+  startRound()
 }
 
 watch([roundIndex, activePlayers, eliminationOrder, chosenQuestions], saveProgress, { deep: true })

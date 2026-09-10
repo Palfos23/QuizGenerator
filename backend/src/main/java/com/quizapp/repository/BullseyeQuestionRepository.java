@@ -34,6 +34,13 @@ public interface BullseyeQuestionRepository extends JpaRepository<BullseyeQuesti
     @Query("SELECT q.id FROM BullseyeQuestion q WHERE q.excludedFromBullseye = false")
     List<Long> findBattleEligibleIds();
 
+    // For the round-start picker's "exclude these categories" chip list - only
+    // categories a real, playable question is actually in, same reasoning as
+    // TensionQuestionRepository.findDistinctMainCategories.
+    @Query("SELECT DISTINCT q.sport FROM BullseyeQuestion q " +
+           "WHERE q.excludedFromBullseye = false ORDER BY q.sport")
+    List<String> findDistinctEligibleSports();
+
     @Query("SELECT q.id as id, q.title as title, q.sport as sport, q.targetValue as targetValue, " +
            "q.statLabel as statLabel, (SELECT COUNT(e) FROM BullseyeEntry e WHERE e.question = q) as entryCount, " +
            "q.excludedFromBullseye as excludedFromBullseye, q.entireCategoryPool as entireCategoryPool, " +
