@@ -9,7 +9,7 @@
       <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ rotatedActivePlayers[0]?.name }}</strong>, choose a question</h2>
       <div class="tension-choice-grid">
         <button v-for="q in roundChoices" :key="q.id" class="tension-choice-card" @click="chooseQuestion(q)">
-          <strong>{{ formatNumber(q.targetValue) }} {{ q.statLabel }}</strong>
+          <strong>{{ formatQuestionTarget(q) }} {{ q.statLabel }}</strong>
           <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">
             {{ sportLabel(q.sport) }} · {{ q.entryCount }} possible answers
           </div>
@@ -30,7 +30,7 @@
         <div style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ sportLabel(roundState.sport) }}</div>
       </div>
 
-      <h1 style="text-align:center; margin:6px 0 20px;">{{ formatNumber(roundState.targetValue) }} {{ roundState.statLabel }}</h1>
+      <h1 style="text-align:center; margin:6px 0 20px;">{{ fmt(roundState.targetValue) }} {{ roundState.statLabel }}</h1>
       <p v-if="lastUpdatedLabel" style="color:var(--text-dim); font-size:0.75rem; text-align:center; margin:-14px 0 20px;">{{ lastUpdatedLabel }}</p>
 
       <div class="mp-player-row">
@@ -76,7 +76,7 @@
           <div class="bullseye-spotlight-label">{{ spotlightLabel }}</div>
           <div class="bullseye-spotlight-name">{{ spotlightEntry.player }}</div>
           <div class="bullseye-spotlight-answer">
-            {{ spotlightEntry.name }} · {{ formatNumber(spotlightEntry.statValue) }} ({{ formatNumber(spotlightEntry.distance) }} away)
+            {{ spotlightEntry.name }} · {{ fmt(spotlightEntry.statValue) }} ({{ fmt(spotlightEntry.distance) }} away)
           </div>
         </div>
 
@@ -97,11 +97,11 @@
               <div class="bullseye-reveal-guess">{{ revealIndex > idx ? a.name : 'Hidden until revealed' }}</div>
             </div>
             <div v-if="revealIndex > idx" class="bullseye-reveal-stats">
-              <div class="bullseye-reveal-value">{{ formatNumber(a.statValue) }}</div>
+              <div class="bullseye-reveal-value">{{ fmt(a.statValue) }}</div>
               <div class="bullseye-reveal-bar">
                 <div class="bullseye-reveal-bar-fill" :style="{ width: distancePct(a.distance) + '%' }"></div>
               </div>
-              <div class="bullseye-reveal-distance">{{ formatNumber(a.distance) }} away</div>
+              <div class="bullseye-reveal-distance">{{ fmt(a.distance) }} away</div>
             </div>
           </div>
         </div>
@@ -117,7 +117,7 @@
               class="bullseye-truth-name"
               :class="e.foundBy ? 'found' : 'not-found'"
             >
-              {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ formatNumber(e.statValue) }})<template v-if="e.foundBy"> — found by {{ e.foundBy }}</template>
+              {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ fmt(e.statValue) }})<template v-if="e.foundBy"> — found by {{ e.foundBy }}</template>
             </span>
           </div>
         </div>
@@ -138,6 +138,7 @@
       :current-player="currentTurnPlayerName"
       :target-value="roundState.targetValue"
       :stat-label="roundState.statLabel"
+      :group-digits="roundState.groupDigits !== false"
       :entries="roundState.entries"
       :answered-players="roundAnswers.map(a => a.player)"
       :all-players="rotatedActivePlayers.map(p => p.name)"
@@ -252,6 +253,21 @@ const bullseyeAnswersWithFoundState = computed(() =>
     foundBy: roundAnswers.value.find(a => a.name.trim().toLowerCase() === e.athleteName.toLowerCase())?.player || null
   }))
 )
+
+// A year (1798) digit-grouped into "1 798" reads as wrong, not just odd - see
+// BullseyeQuestion.groupDigits. roundState/each choice q carries its own flag
+// (a population question and a year question can both be in the same pool),
+// so every number shown for this round routes through here rather than
+// calling formatNumber directly. Falls back to grouped when the flag is
+// missing entirely (an older cached client, or a value genuinely absent)
+// rather than un-grouping by default, matching the DB column's own default.
+function fmt(n) {
+  if (n === null || n === undefined) return n
+  return roundState.value && roundState.value.groupDigits === false ? String(n) : formatNumber(n)
+}
+function formatQuestionTarget(q) {
+  return q.groupDigits === false ? String(q.targetValue) : formatNumber(q.targetValue)
+}
 
 function ordinal(n) {
   const s = ['th', 'st', 'nd', 'rd']

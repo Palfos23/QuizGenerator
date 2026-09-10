@@ -26,7 +26,8 @@ public interface BullseyeQuestionRepository extends JpaRepository<BullseyeQuesti
     // this session (see GridSummaryProjection).
     @Query("SELECT q.id as id, q.title as title, q.sport as sport, q.targetValue as targetValue, " +
            "q.statLabel as statLabel, (SELECT COUNT(e) FROM BullseyeEntry e WHERE e.question = q) as entryCount, " +
-           "q.excludedFromBullseye as excludedFromBullseye, q.entireCategoryPool as entireCategoryPool " +
+           "q.excludedFromBullseye as excludedFromBullseye, q.entireCategoryPool as entireCategoryPool, " +
+           "q.groupDigits as groupDigits " +
            "FROM BullseyeQuestion q")
     List<BullseyeQuestionSummaryProjection> findAllSummaries();
 
@@ -35,7 +36,8 @@ public interface BullseyeQuestionRepository extends JpaRepository<BullseyeQuesti
 
     @Query("SELECT q.id as id, q.title as title, q.sport as sport, q.targetValue as targetValue, " +
            "q.statLabel as statLabel, (SELECT COUNT(e) FROM BullseyeEntry e WHERE e.question = q) as entryCount, " +
-           "q.excludedFromBullseye as excludedFromBullseye, q.entireCategoryPool as entireCategoryPool " +
+           "q.excludedFromBullseye as excludedFromBullseye, q.entireCategoryPool as entireCategoryPool, " +
+           "q.groupDigits as groupDigits " +
            "FROM BullseyeQuestion q WHERE q.id IN :ids")
     List<BullseyeQuestionSummaryProjection> findSummariesByIdIn(List<Long> ids);
 }

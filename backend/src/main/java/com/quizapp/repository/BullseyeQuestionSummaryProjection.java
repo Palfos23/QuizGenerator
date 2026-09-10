@@ -9,4 +9,5 @@ public interface BullseyeQuestionSummaryProjection {
     Long getEntryCount();
     Boolean getExcludedFromBullseye();
     Boolean getEntireCategoryPool();
+    Boolean getGroupDigits();
 }

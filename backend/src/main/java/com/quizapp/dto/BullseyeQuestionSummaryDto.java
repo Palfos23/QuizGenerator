@@ -10,10 +10,11 @@ public class BullseyeQuestionSummaryDto {
     private int entryCount;
     private boolean excludedFromBullseye;
     private boolean entireCategoryPool;
+    private boolean groupDigits;
 
     public BullseyeQuestionSummaryDto(Long id, String title, String sport, Integer targetValue,
                                        String statLabel, int entryCount, boolean excludedFromBullseye,
-                                       boolean entireCategoryPool) {
+                                       boolean entireCategoryPool, boolean groupDigits) {
         this.id = id;
         this.title = title;
         this.sport = sport;
@@ -22,6 +23,7 @@ public class BullseyeQuestionSummaryDto {
         this.entryCount = entryCount;
         this.excludedFromBullseye = excludedFromBullseye;
         this.entireCategoryPool = entireCategoryPool;
+        this.groupDigits = groupDigits;
     }
 
     public Long getId() {
@@ -54,5 +56,9 @@ public class BullseyeQuestionSummaryDto {
 
     public boolean isEntireCategoryPool() {
         return entireCategoryPool;
+    }
+
+    public boolean isGroupDigits() {
+        return groupDigits;
     }
 }

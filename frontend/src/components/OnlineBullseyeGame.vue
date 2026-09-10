@@ -8,7 +8,7 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
-      <h1 style="text-align:center; margin:6px 0 20px;">{{ formatNumber(state.targetValue) }} {{ state.statLabel }}</h1>
+      <h1 style="text-align:center; margin:6px 0 20px;">{{ fmt(state.targetValue) }} {{ state.statLabel }}</h1>
 
       <div class="mp-player-row">
         <div
@@ -60,8 +60,8 @@
                 <div class="bullseye-reveal-guess">{{ revealIndex > idx ? a.guessedName : 'Hidden until revealed' }}</div>
               </div>
               <div v-if="revealIndex > idx" class="bullseye-reveal-stats">
-                <div class="bullseye-reveal-value">{{ formatNumber(a.statValue) }}</div>
-                <div class="bullseye-reveal-distance">{{ formatNumber(a.distance) }} away</div>
+                <div class="bullseye-reveal-value">{{ fmt(a.statValue) }}</div>
+                <div class="bullseye-reveal-distance">{{ fmt(a.distance) }} away</div>
               </div>
             </div>
           </div>
@@ -79,7 +79,7 @@
                   class="bullseye-truth-name"
                   :class="e.foundBy ? 'found' : 'not-found'"
                 >
-                  {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ formatNumber(e.statValue) }})<template v-if="e.foundBy"> — found by {{ e.foundBy }}</template>
+                  {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ fmt(e.statValue) }})<template v-if="e.foundBy"> — found by {{ e.foundBy }}</template>
                 </span>
               </div>
             </div>
@@ -106,6 +106,7 @@
       :current-player="currentTurnName"
       :target-value="state.targetValue"
       :stat-label="state.statLabel"
+      :group-digits="state.groupDigits !== false"
       :entries="state.entries"
       :answered-players="(state.answersSoFar || []).map(a => a.name)"
       :all-players="state.players.filter(p => !p.eliminated).map(p => p.name)"
@@ -137,6 +138,16 @@ const props = defineProps({
 const emit = defineEmits(['gameOver', 'leave'])
 
 const state = ref(null)
+
+// See BullseyeQuestion.groupDigits - false for a non-population stat (a
+// year, say), where "1 798" reads as wrong rather than just differently
+// formatted. Falls back to grouped when the flag is missing entirely,
+// matching the DB column's own default.
+function fmt(n) {
+  if (n === null || n === undefined) return n
+  return state.value && state.value.groupDigits === false ? String(n) : formatNumber(n)
+}
+
 const loading = ref(true)
 const error = ref('')
 const submitting = ref(false)

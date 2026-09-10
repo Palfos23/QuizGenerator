@@ -126,6 +126,7 @@ public class BullseyeOnlineService {
         dto.setSport(question.getSport());
         dto.setTargetValue(question.getTargetValue());
         dto.setStatLabel(question.getStatLabel());
+        dto.setGroupDigits(question.isGroupDigits());
         dto.setQuestionUpdatedAt(question.getUpdatedAt());
         dto.setEntries(question.getEntries());
 

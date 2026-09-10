@@ -11,6 +11,7 @@ public class BullseyeQuestionAdminDetailDto {
     private String statLabel;
     private boolean excludedFromBullseye;
     private boolean entireCategoryPool;
+    private boolean groupDigits;
     private List<EntryDetail> entries;
 
     public static class EntryDetail {
@@ -91,6 +92,14 @@ public class BullseyeQuestionAdminDetailDto {
 
     public void setEntireCategoryPool(boolean entireCategoryPool) {
         this.entireCategoryPool = entireCategoryPool;
+    }
+
+    public boolean isGroupDigits() {
+        return groupDigits;
+    }
+
+    public void setGroupDigits(boolean groupDigits) {
+        this.groupDigits = groupDigits;
     }
 
     public List<EntryDetail> getEntries() {

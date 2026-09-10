@@ -43,7 +43,7 @@
               <span v-if="q.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
             </div>
             <div class="saved-quiz-meta">
-              {{ sportLabel(q.sport) }} · {{ q.entryCount }} answers · "{{ formatNumber(q.targetValue) }} {{ q.statLabel }}"
+              {{ sportLabel(q.sport) }} · {{ q.entryCount }} answers · "{{ q.groupDigits === false ? q.targetValue : formatNumber(q.targetValue) }} {{ q.statLabel }}"
             </div>
           </div>
           <div style="display:flex; gap:8px;">
@@ -98,8 +98,19 @@
         </div>
       </div>
       <p class="page-subtitle" style="margin-top:-8px;">
-        Players will see: <strong>"{{ form.targetValue !== null ? formatNumber(form.targetValue) : '…' }} {{ form.statLabel || '…' }}"</strong>
+        Players will see: <strong>"{{ form.targetValue !== null ? (form.groupDigits ? formatNumber(form.targetValue) : form.targetValue) : '…' }} {{ form.statLabel || '…' }}"</strong>
       </p>
+
+      <div class="field">
+        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
+          <input type="checkbox" v-model="form.groupDigits" style="width:auto;" />
+          Group digits (1 450 000)
+        </label>
+        <p class="page-subtitle" style="margin-top:4px;">
+          Turn this off for a number that isn't a count - a year, for example, where
+          grouping ("1 798") would misread as a value in the thousands.
+        </p>
+      </div>
 
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
@@ -305,7 +316,8 @@ const form = reactive({
   targetValue: null,
   statLabel: '',
   excludedFromBullseye: false,
-  entireCategoryPool: false
+  entireCategoryPool: false,
+  groupDigits: true
 })
 // [{ athleteId, name, team, statValue }] - every row here is an answer with a
 // real, required value. Coverage for "everyone else in the category, no value
@@ -556,6 +568,7 @@ function resetForm() {
   form.statLabel = ''
   form.excludedFromBullseye = false
   form.entireCategoryPool = false
+  form.groupDigits = true
   entries.value = []
   entryPage.value = 1
   entryFilterTerm.value = ''
@@ -585,6 +598,7 @@ async function openEdit(id) {
     form.statLabel = detail.statLabel
     form.excludedFromBullseye = detail.excludedFromBullseye
     form.entireCategoryPool = detail.entireCategoryPool || false
+    form.groupDigits = detail.groupDigits !== false
 
     entries.value = detail.entries.map(e => ({
       athleteId: e.athlete.id, name: e.athlete.name, team: e.athlete.team, statValue: e.statValue
@@ -642,6 +656,7 @@ async function saveQuestion() {
     statLabel: form.statLabel,
     excludedFromBullseye: form.excludedFromBullseye,
     entireCategoryPool: form.entireCategoryPool,
+    groupDigits: form.groupDigits,
     entries: entries.value.map(e => ({ athleteId: e.athleteId, statValue: e.statValue }))
   }
 

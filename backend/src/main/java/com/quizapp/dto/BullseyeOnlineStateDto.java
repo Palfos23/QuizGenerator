@@ -14,6 +14,7 @@ public class BullseyeOnlineStateDto {
     private String sport;
     private Integer targetValue;
     private String statLabel;
+    private boolean groupDigits;
     private Instant questionUpdatedAt;
     // No secrecy to protect (same trust model as pass-and-play's BullseyeGame.vue
     // and BullseyePlayService.getMultiplayerStartState) - shipped once per round,
@@ -43,6 +44,8 @@ public class BullseyeOnlineStateDto {
     public void setTargetValue(Integer targetValue) { this.targetValue = targetValue; }
     public String getStatLabel() { return statLabel; }
     public void setStatLabel(String statLabel) { this.statLabel = statLabel; }
+    public boolean isGroupDigits() { return groupDigits; }
+    public void setGroupDigits(boolean groupDigits) { this.groupDigits = groupDigits; }
     public Instant getQuestionUpdatedAt() { return questionUpdatedAt; }
     public void setQuestionUpdatedAt(Instant questionUpdatedAt) { this.questionUpdatedAt = questionUpdatedAt; }
     public List<BullseyeEntryViewDto> getEntries() { return entries; }

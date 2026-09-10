@@ -25,6 +25,8 @@ public class BullseyeQuestionRequest {
 
     private boolean entireCategoryPool = false;
 
+    private boolean groupDigits = true;
+
     @NotEmpty
     @Valid
     private List<BullseyeEntryInputDto> entries;
@@ -75,6 +77,14 @@ public class BullseyeQuestionRequest {
 
     public void setEntireCategoryPool(boolean entireCategoryPool) {
         this.entireCategoryPool = entireCategoryPool;
+    }
+
+    public boolean isGroupDigits() {
+        return groupDigits;
+    }
+
+    public void setGroupDigits(boolean groupDigits) {
+        this.groupDigits = groupDigits;
     }
 
     public List<BullseyeEntryInputDto> getEntries() {

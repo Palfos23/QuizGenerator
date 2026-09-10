@@ -38,6 +38,27 @@ public class BullseyeQuestion {
     @Column(name = "stat_label", nullable = false)
     private String statLabel;
 
+    // Whether targetValue and every entry's statValue get digit-grouped for
+    // display (e.g. "1 450 000" for a population figure) or shown as plain
+    // digits (e.g. "1798" for a year, which digit-grouping would otherwise
+    // mangle into "1 798"). Defaults true since population/goals/points-style
+    // stats - not years - were this game's only use case until now.
+    // @ColumnDefault, not just the Java field default, matters here: this
+    // column was added to an already-populated table, and without it
+    // Hibernate's schema-update ALTER TABLE has no DEFAULT clause to satisfy
+    // NOT NULL for the existing rows.
+    @org.hibernate.annotations.ColumnDefault("true")
+    @Column(name = "group_digits", nullable = false)
+    private boolean groupDigits = true;
+
+    public boolean isGroupDigits() {
+        return groupDigits;
+    }
+
+    public void setGroupDigits(boolean groupDigits) {
+        this.groupDigits = groupDigits;
+    }
+
     // Same purpose as Grid.updatedAt - see that field for the full reasoning.
     @Column(name = "updated_at")
     private Instant updatedAt;

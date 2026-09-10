@@ -68,7 +68,7 @@ public class BullseyePlayService {
     private BullseyeQuestionSummaryDto toSummaryDto(BullseyeQuestionSummaryProjection row) {
         return new BullseyeQuestionSummaryDto(row.getId(), row.getTitle(), row.getSport(), row.getTargetValue(),
                 row.getStatLabel(), row.getEntryCount().intValue(), row.getExcludedFromBullseye(),
-                row.getEntireCategoryPool());
+                row.getEntireCategoryPool(), row.getGroupDigits());
     }
 
     /**
@@ -107,7 +107,7 @@ public class BullseyePlayService {
         }
 
         return new BullseyeRoundStateDto(question.getId(), question.getTitle(), question.getSport(),
-                question.getTargetValue(), question.getStatLabel(), question.getUpdatedAt(), entries);
+                question.getTargetValue(), question.getStatLabel(), question.isGroupDigits(), question.getUpdatedAt(), entries);
     }
 
     // Tie-broken by id - same reasoning as GridPlayService.entrySortOrder: a Set
