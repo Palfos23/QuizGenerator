@@ -118,7 +118,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import api from '../services/api'
-import { useRoomChannel } from '../composables/useRoomChannel'
+import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatLastUpdated } from '../constants'
 
@@ -173,10 +173,13 @@ const searchResults = computed(() => {
     .slice(0, 8)
 })
 
+const staleGuard = createStaleGuard()
+
 async function poll() {
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.getFiveOhOneOnlineState(props.roomCode)
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = 'Lost connection to the room - retrying…'
   } finally {
@@ -185,6 +188,7 @@ async function poll() {
 }
 
 async function applyState(fresh) {
+  staleGuard.markApplied()
   error.value = ''
   if (fresh.categoryId && fresh.categoryId !== loadedCategoryId) {
     loadedCategoryId = fresh.categoryId

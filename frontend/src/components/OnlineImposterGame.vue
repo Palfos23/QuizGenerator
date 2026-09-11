@@ -133,7 +133,7 @@
 import { computed, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
-import { useRoomChannel } from '../composables/useRoomChannel'
+import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatLastUpdated } from '../constants'
 
@@ -196,10 +196,13 @@ function tileClass(t) {
   return { correct: !t.imposter, 'revealed-only': t.imposter }
 }
 
+const staleGuard = createStaleGuard()
+
 async function poll() {
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.getImposterOnlineState(props.roomCode)
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = 'Lost connection to the room - retrying…'
   } finally {
@@ -208,6 +211,7 @@ async function poll() {
 }
 
 function applyState(fresh) {
+  staleGuard.markApplied()
   error.value = ''
   if (fresh.currentGridIndex !== lastGridIndexSeen) {
     lastGridIndexSeen = fresh.currentGridIndex

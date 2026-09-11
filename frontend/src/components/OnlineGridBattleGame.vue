@@ -201,7 +201,7 @@ import { readableTextColor, formatHint, sportLabel, formatLastUpdated } from '..
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
-import { useRoomChannel } from '../composables/useRoomChannel'
+import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 
 const props = defineProps({
@@ -280,10 +280,13 @@ function tileImage(e) {
   return e.athletePhotoUrl || e.logoUrl
 }
 
+const staleGuard = createStaleGuard()
+
 async function poll() {
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.getGridBattleState(props.roomCode)
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = 'Lost connection to the room - retrying…'
   } finally {
@@ -292,6 +295,7 @@ async function poll() {
 }
 
 function applyState(fresh) {
+  staleGuard.markApplied()
   error.value = ''
   if (fresh.currentGridIndex !== lastGridIndexSeen) {
     scoresAtGridStart.value = Object.fromEntries(fresh.players.map(p => [p.name, p.totalScore]))

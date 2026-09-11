@@ -227,7 +227,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
-import { createRoomChannel } from '../composables/useRoomChannel'
+import { createRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import InviteLinkButton from '../components/InviteLinkButton.vue'
 import auth from '../services/auth'
 import activeRoom from '../services/activeRoom'
@@ -394,7 +394,10 @@ async function joinOnlineRoom(codeOverride) {
 // which would be wrong applied blindly to the host's own tab. Every OTHER
 // field (participants, status) is genuinely shared, so only those two need
 // preserving from what this tab already knows about itself.
+const lobbyStaleGuard = createStaleGuard()
+
 function applyLobbyUpdate(updated) {
+  lobbyStaleGuard.markApplied()
   const mine = onlineRoom.value
   onlineRoom.value = mine
     ? { ...updated, host: mine.host, yourParticipantId: mine.yourParticipantId }
@@ -407,9 +410,10 @@ function applyLobbyUpdate(updated) {
 
 async function pollLobby() {
   if (!onlineRoom.value) return
+  const stillFresh = lobbyStaleGuard.begin()
   try {
     const updated = await api.getRoom(onlineRoom.value.roomCode)
-    applyLobbyUpdate(updated)
+    if (stillFresh()) applyLobbyUpdate(updated)
   } catch (e) {
     // a transient poll failure isn't worth surfacing - it'll succeed next tick
   }

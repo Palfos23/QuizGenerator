@@ -184,7 +184,7 @@ import PitchRecap from './PitchRecap.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
-import { useRoomChannel } from '../composables/useRoomChannel'
+import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 
 const DEFAULT_KIT_COLOR = '#d92332'
@@ -262,10 +262,13 @@ const recapRows = computed(() => {
 const recapSlots = computed(() => recapRows.value.flatMap(r => r.items))
 const recapFoundCount = computed(() => recapSlots.value.filter(s => s.wasFound).length)
 
+const staleGuard = createStaleGuard()
+
 async function poll() {
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.getLineupBattleState(props.roomCode)
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = 'Lost connection to the room - retrying…'
   } finally {
@@ -274,6 +277,7 @@ async function poll() {
 }
 
 function applyState(fresh) {
+  staleGuard.markApplied()
   error.value = ''
   if (fresh.currentLineupIndex !== lastLineupIndexSeen) {
     scoresAtLineupStart.value = Object.fromEntries((fresh.players || []).map(p => [p.name, p.totalScore]))

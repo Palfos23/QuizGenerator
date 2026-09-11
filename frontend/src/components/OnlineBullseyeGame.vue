@@ -126,7 +126,7 @@ import { computed, onUnmounted, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
 import BullseyeAnswerModal from './BullseyeAnswerModal.vue'
-import { useRoomChannel } from '../composables/useRoomChannel'
+import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatNumber } from '../constants'
 
@@ -164,10 +164,13 @@ const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )
 
+const staleGuard = createStaleGuard()
+
 async function poll() {
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.getBullseyeOnlineState(props.roomCode)
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = 'Lost connection to the room - retrying…'
   } finally {
@@ -176,6 +179,7 @@ async function poll() {
 }
 
 function applyState(fresh) {
+  staleGuard.markApplied()
   error.value = ''
   state.value = fresh
   if (fresh.roundRevealed && !wasRevealed) {

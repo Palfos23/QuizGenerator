@@ -143,7 +143,7 @@
 import { computed, onUnmounted, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
-import { useRoomChannel } from '../composables/useRoomChannel'
+import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatLastUpdated } from '../constants'
 
@@ -203,10 +203,13 @@ function formatScore(score) {
   return score > 0 ? `+${score}` : String(score)
 }
 
+const staleGuard = createStaleGuard()
+
 async function poll() {
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.getTensionOnlineState(props.roomCode)
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = 'Lost connection to the room - retrying…'
   } finally {
@@ -215,6 +218,7 @@ async function poll() {
 }
 
 function applyState(fresh) {
+  staleGuard.markApplied()
   error.value = ''
   state.value = fresh
   if (fresh.answersCategory && fresh.answersCategory !== lastCategory) {

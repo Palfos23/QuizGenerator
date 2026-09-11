@@ -32,6 +32,41 @@ const HEARTBEAT_MS = 10000
 const PRESENCE_POLL_MS = 15000
 
 /**
+ * Guards against exactly the race that caused turn order to visibly flicker
+ * for real players on real networks: with a healthy WebSocket AND a
+ * presence poll AND a fallback poll all capable of firing independently (see
+ * PRESENCE_POLL_MS above), nothing stopped an in-flight poll - kicked off
+ * against an older snapshot - from resolving *after* a newer WebSocket push
+ * (or after the player's own action response) had already landed, and
+ * silently overwriting the fresher state with stale data. On localhost, with
+ * near-zero latency, that race window is too narrow to hit; on a real
+ * multi-device game over real networks it's wide enough to hit often.
+ *
+ * One of these per online game screen. `markApplied()` is called from
+ * inside each screen's own `applyState`/`onMessage` function - the single
+ * place every source of truth (WS push, poll response, or the direct
+ * response to the player's own action) already funnels through - so every
+ * apply, regardless of source, invalidates any older poll still in flight,
+ * with no change needed at any of those individual call sites. `begin()` is
+ * called right before a poll's fetch starts; the function it returns tells
+ * that poll, once its response arrives, whether anything newer has already
+ * been applied in the meantime - if so, the poll's own (now-stale) result
+ * must be dropped instead of applied.
+ */
+export function createStaleGuard() {
+  let seq = 0
+  return {
+    begin() {
+      const startedAt = seq
+      return () => seq === startedAt
+    },
+    markApplied() {
+      seq += 1
+    }
+  }
+}
+
+/**
  * The actual push-with-polling-fallback machinery, as a plain start()/stop()
  * pair - no Vue lifecycle attached. Used directly by each View.vue's lobby
  * (started/stopped on room-create/join/start/leave, not on component
