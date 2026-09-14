@@ -16,4 +16,5 @@ public interface FiveOhOneParticipantStateRepository extends JpaRepository<FiveO
     List<FiveOhOneParticipantState> findByRoomState_Id(@Param("roomStateId") Long roomStateId);
 
     Optional<FiveOhOneParticipantState> findByRoomState_IdAndParticipant_Id(Long roomStateId, Long participantId);
+    void deleteByRoomState_Id(Long roomStateId);
 }

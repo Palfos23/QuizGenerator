@@ -71,6 +71,25 @@ public class FlashbackOnlineService {
         roomStateRepository.save(state);
     }
 
+    /** "Play again" (see RoomController#restart) - see
+     *  TensionOnlineService#restartForReplay, same reasoning. */
+    @Transactional
+    public void restartForReplay(GameRoom room) {
+        Integer previousCount = roomStateRepository.findByRoom_Id(room.getId())
+                .map(s -> s.getYearIds().size())
+                .orElse(null);
+        roomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+            roundGuessRepository.deleteByRoomState_Id(state.getId());
+            participantStateRepository.deleteByRoomState_Id(state.getId());
+            roomStateRepository.delete(state);
+        });
+        // See TensionOnlineService#restartForReplay's comment on why this
+        // flush isn't optional - without it the insert below (same room_id,
+        // unique-constrained) flushes before the delete above and fails.
+        roomStateRepository.flush();
+        initializeYearSequence(room, previousCount);
+    }
+
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {

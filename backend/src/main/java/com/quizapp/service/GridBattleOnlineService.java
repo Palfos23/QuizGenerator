@@ -67,6 +67,30 @@ public class GridBattleOnlineService {
         roomStateRepository.save(state);
     }
 
+    /**
+     * "Play again" (see RoomController#restart) - tears down the finished
+     * round's state and picks a fresh set of the same size, freshly
+     * randomized regardless of whether the original was a manual pick or
+     * already random (a rematch offering the exact same grids back isn't
+     * much of a rematch).
+     */
+    @Transactional
+    public void restartForReplay(GameRoom room) {
+        Integer previousCount = roomStateRepository.findByRoom_Id(room.getId())
+                .map(s -> s.getGridIds().isEmpty() ? s.getRandomTotalCount() : s.getGridIds().size())
+                .orElse(null);
+        roomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+            solvedEntryRepository.deleteByRoomState_Id(state.getId());
+            participantStateRepository.deleteByRoomState_Id(state.getId());
+            roomStateRepository.delete(state);
+        });
+        // See TensionOnlineService#restartForReplay's comment on why this
+        // flush isn't optional - without it the insert below (same room_id,
+        // unique-constrained) flushes before the delete above and fails.
+        roomStateRepository.flush();
+        initializeGridSequence(room, null, previousCount);
+    }
+
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {

@@ -5,6 +5,7 @@ import com.quizapp.dto.JoinRoomRequest;
 import com.quizapp.dto.RoomDto;
 import com.quizapp.model.GameRoom;
 import com.quizapp.model.RoomGameType;
+import com.quizapp.model.RoomStatus;
 import com.quizapp.service.BullseyeOnlineService;
 import com.quizapp.service.FlashbackOnlineService;
 import com.quizapp.service.GridBattleOnlineService;
@@ -144,6 +145,49 @@ public class RoomController {
         // the host starts it, instead of catching up on its next poll - each
         // client still fetches its own personalized starting state itself once
         // it mounts the game component, same as it always has.
+        roomBroadcastService.broadcastLobby(code, dto);
+        return dto;
+    }
+
+    /**
+     * "Play again" - lets the host reuse this same room code/lobby/participant
+     * list for another round instead of everyone leaving and re-sharing a
+     * brand new code. Only valid once the previous round has actually
+     * FINISHED (not mid-game, not still WAITING - see RoomStatus). Each
+     * game's own restartForReplay tears down the finished round's state and
+     * picks a fresh one of the same shape (round count, or - for 501 -  the
+     * same category); Bullseye alone has nothing to re-pick here, since its
+     * round count is only ever decided fresh once start() sees the final
+     * roster. Once that's done the room drops back to WAITING, exactly like
+     * right after create() - the host still has to hit "Start game" again
+     * from the lobby, same as the first time.
+     */
+    @PostMapping("/{code}/restart")
+    public RoomDto restart(@PathVariable String code, Authentication authentication) {
+        String email = authentication.getName();
+        GameRoom room = roomService.findByCode(code);
+        if (!room.getHostEmail().equals(email)) {
+            throw new IllegalStateException("Only the host can restart the game.");
+        }
+        if (room.getStatus() != RoomStatus.FINISHED) {
+            throw new IllegalStateException("This room hasn't finished yet.");
+        }
+        if (room.getGameType() == RoomGameType.GRID_BATTLE) {
+            gridBattleOnlineService.restartForReplay(room);
+        } else if (room.getGameType() == RoomGameType.IMPOSTER) {
+            imposterOnlineService.restartForReplay(room);
+        } else if (room.getGameType() == RoomGameType.FIVE_O_ONE) {
+            fiveOhOneOnlineService.restartForReplay(room);
+        } else if (room.getGameType() == RoomGameType.STARTING_XI_BATTLE) {
+            lineupBattleOnlineService.restartForReplay(room);
+        } else if (room.getGameType() == RoomGameType.BULLSEYE) {
+            bullseyeOnlineService.restartForReplay(room);
+        } else if (room.getGameType() == RoomGameType.FLASHBACK) {
+            flashbackOnlineService.restartForReplay(room);
+        } else {
+            tensionOnlineService.restartForReplay(room);
+        }
+        RoomDto dto = roomService.toDto(roomService.markWaitingForReplay(room), email);
         roomBroadcastService.broadcastLobby(code, dto);
         return dto;
     }

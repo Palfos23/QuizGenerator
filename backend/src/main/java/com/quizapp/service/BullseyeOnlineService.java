@@ -58,6 +58,23 @@ public class BullseyeOnlineService {
         this.gamePlayEventService = gamePlayEventService;
     }
 
+    /**
+     * "Play again" (see RoomController#restart) - just tears down the
+     * finished round's state; unlike every other online game, Bullseye has
+     * no separate initialize-at-create step to re-run (its round count is
+     * only known once the roster is final - see startGame's own comment), so
+     * the very next call to startGame() picks a fresh question sequence from
+     * scratch, same as it always does.
+     */
+    @Transactional
+    public void restartForReplay(GameRoom room) {
+        roomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+            roundAnswerRepository.deleteByRoomState_Id(state.getId());
+            participantStateRepository.deleteByRoomState_Id(state.getId());
+            roomStateRepository.delete(state);
+        });
+    }
+
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {

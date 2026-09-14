@@ -208,7 +208,9 @@
       v-else-if="stage === 'onlineGame'"
       :room-code="onlineRoom?.roomCode"
       :your-participant-id="onlineRoom?.yourParticipantId"
-      @game-over="onOnlineGameOver"
+      :is-host="isHost"
+      @finished="onOnlineFinished"
+      @restart="onOnlineRestart"
       @leave="leaveGame"
     />
 
@@ -405,6 +407,12 @@ function applyLobbyUpdate(updated) {
   if (updated.status === 'IN_PROGRESS') {
     stopLobbyChannel()
     stage.value = 'onlineGame'
+  } else if (updated.status === 'WAITING' && stage.value === 'onlineGame') {
+    // The host just restarted (see onOnlineRestart) - the other player,
+    // still sitting on OnlineFiveOhOneGame.vue's own "Winner" screen but now
+    // listening on this lobby channel too (see onOnlineFinished), gets
+    // dropped back into the lobby right along with them.
+    stage.value = 'onlineLobby'
   }
 }
 
@@ -465,11 +473,28 @@ function resetOnline() {
   joinCode.value = ''
 }
 
-function onOnlineGameOver() {
-  activeRoom.clear()
-  lastGameWasOnline.value = true
-  resetOnline()
-  resetToStart()
+// 501 has never had a separate "done" stage the way the other online games
+// do - the winner is already shown right inside OnlineFiveOhOneGame.vue's
+// own screen, "Play again"/"Leave" included, so there's nothing to route to
+// here. onOnlineFinished just starts listening for a restart (or someone
+// leaving) while that screen is still showing; onOnlineRestart reacts to it
+// (whether it's this tab's own host click, or a broadcast from the other
+// player's) by dropping everyone back into the lobby, same room code intact.
+function onOnlineFinished() {
+  startLobbyChannel()
+}
+
+async function onOnlineRestart() {
+  if (!onlineRoom.value) return
+  error.value = ''
+  try {
+    const dto = isHost.value
+      ? await api.restartRoom(onlineRoom.value.roomCode)
+      : await api.getRoom(onlineRoom.value.roomCode)
+    applyLobbyUpdate(dto)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not restart the game.'
+  }
 }
 
 const savedRoomCode = ref('')

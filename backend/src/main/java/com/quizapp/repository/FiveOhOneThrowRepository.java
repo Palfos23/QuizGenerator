@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface FiveOhOneThrowRepository extends JpaRepository<FiveOhOneThrow, Long> {
     List<FiveOhOneThrow> findByRoomState_IdOrderByIdAsc(Long roomStateId);
+    void deleteByRoomState_Id(Long roomStateId);
 }

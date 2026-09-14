@@ -164,4 +164,39 @@ class ImposterOnlineServiceTest {
         ImposterOnlineStateDto finalState = imposterOnlineService.advanceToNextBoard(room, HOST);
         assertThat(finalState.isFinished()).isTrue();
     }
+
+    // Regression test for a real bug caught live, not hypothetical - see
+    // GridBattleOnlineServiceTest#restartForReplayTearsDownAndReplacesFinishedStateWithoutThrowing.
+    @Test
+    void restartForReplayTearsDownAndReplacesFinishedStateWithoutThrowing() {
+        GameRoom room = setUpTwoPlayerRandomRoom(2);
+        Long hostParticipantId = imposterOnlineService.getState(room, HOST).getYourParticipantId();
+        Long guestParticipantId = imposterOnlineService.getState(room, GUEST).getYourParticipantId();
+
+        ImposterOnlineStateDto round1 = imposterOnlineService.getState(room, HOST);
+        Long g1 = round1.getGridChoices().get(0).getId();
+        imposterOnlineService.chooseGrid(room, HOST, g1);
+        Long t1 = imposterGridRepository.findById(g1).orElseThrow().getTiles().iterator().next().getId();
+        imposterOnlineService.flip(room, HOST, t1);
+        ImposterOnlineStateDto round2 = imposterOnlineService.advanceToNextBoard(room, HOST);
+        Long g2 = round2.getGridChoices().get(0).getId();
+        imposterOnlineService.chooseGrid(room, GUEST, g2);
+        Long t2 = imposterGridRepository.findById(g2).orElseThrow().getTiles().iterator().next().getId();
+        imposterOnlineService.flip(room, GUEST, t2);
+        imposterOnlineService.advanceToNextBoard(room, HOST);
+
+        room = roomService.findByCode(room.getRoomCode());
+        assertThat(room.getStatus()).isEqualTo(com.quizapp.model.RoomStatus.FINISHED);
+
+        // The actual regression check: this line alone used to throw.
+        imposterOnlineService.restartForReplay(room);
+
+        imposterOnlineService.startGame(room, HOST);
+        ImposterOnlineStateDto freshRound = imposterOnlineService.getState(room, HOST);
+        assertThat(freshRound.isAwaitingGridChoice()).isTrue();
+        assertThat(freshRound.getCurrentGridIndex()).isZero();
+        assertThat(freshRound.getTotalGrids()).isEqualTo(2);
+        assertThat(freshRound.getPickerParticipantId()).isEqualTo(hostParticipantId);
+        assertThat(imposterOnlineService.getState(room, GUEST).getYourParticipantId()).isEqualTo(guestParticipantId);
+    }
 }

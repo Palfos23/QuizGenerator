@@ -90,9 +90,10 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" style="margin-top:8px; min-width:220px;" @click="finish">
+      <button v-if="isHost" class="btn btn-primary" style="margin-top:8px; min-width:220px;" @click="finish">
         Play again
       </button>
+      <p v-else class="page-subtitle" style="margin-top:8px;">Waiting for the host to start a new round, or leave below.</p>
     </div>
 
     <details v-if="state" class="advanced-disclosure" style="margin-top:20px;">
@@ -124,9 +125,15 @@ import { formatLastUpdated } from '../constants'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
-  yourParticipantId: { type: [Number, String], required: true }
+  yourParticipantId: { type: [Number, String], required: true },
+  isHost: { type: Boolean, default: false }
 })
-const emit = defineEmits(['gameOver', 'leave'])
+// 'finished' fires once, the instant a winner is decided - see applyState -
+// so the parent can start listening for a restart (see FiveOhOneView.vue's
+// onOnlineFinished/onOnlineRestart) while this "Winner" screen is still
+// showing right here, rather than routing through a separate "done" stage
+// the way every other online game does (501 has never had one).
+const emit = defineEmits(['finished', 'restart', 'leave'])
 
 const state = ref(null)
 const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.categoryUpdatedAt))
@@ -202,9 +209,11 @@ async function applyState(fresh) {
   if (fresh.throwHistory && fresh.throwHistory.length) {
     lastThrow.value = fresh.throwHistory[fresh.throwHistory.length - 1]
   }
+  const justFinished = fresh.finished && !state.value?.finished
   state.value = fresh
   if (fresh.finished) {
     stopPolling()
+    if (justFinished) emit('finished')
   }
 }
 
@@ -237,7 +246,7 @@ async function submitThrow(entry) {
 }
 
 function finish() {
-  emit('gameOver')
+  emit('restart')
 }
 
 function leave() {

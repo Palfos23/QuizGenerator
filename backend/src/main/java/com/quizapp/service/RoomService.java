@@ -53,9 +53,9 @@ public class RoomService {
             }
             int maxPlayers = switch (room.getGameType()) {
                 case FIVE_O_ONE -> 2;
-                case GRID_BATTLE, IMPOSTER, STARTING_XI_BATTLE -> 5;
-                case BULLSEYE, FLASHBACK -> 6;
-                default -> 4; // TENSION
+                case GRID_BATTLE, IMPOSTER, STARTING_XI_BATTLE, FLASHBACK -> 8;
+                case BULLSEYE -> 10;
+                default -> 10; // TENSION
             };
             if (room.getParticipants().size() >= maxPlayers) {
                 throw new IllegalStateException("This room already has the maximum of " + maxPlayers + " players.");
@@ -80,6 +80,21 @@ public class RoomService {
         participant.setColor(color != null ? color : "#4f46e5");
         participant.setJoinOrder(room.getParticipants().size());
         room.getParticipants().add(participant);
+    }
+
+    /**
+     * "Play again" (see RoomController#restart): puts an already-FINISHED
+     * room's status back to WAITING so the same room code/lobby/participant
+     * list can be reused for another round, instead of everyone having to
+     * leave and re-share a brand new code. The game-specific round state
+     * itself is torn down and re-initialized separately, by each
+     * Xxx OnlineService#restartForReplay - this just flips the room's own
+     * status once that's done.
+     */
+    @Transactional
+    public GameRoom markWaitingForReplay(GameRoom room) {
+        room.setStatus(RoomStatus.WAITING);
+        return gameRoomRepository.save(room);
     }
 
     @Transactional(readOnly = true)

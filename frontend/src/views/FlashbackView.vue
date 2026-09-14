@@ -229,7 +229,18 @@
             </div>
           </div>
 
-          <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="resetGame">Play again</button>
+          <template v-if="lastGameWasOnline && onlineRoom">
+            <p class="page-subtitle" style="margin:16px 0 0;">
+              {{ isHost ? `Room ${onlineRoom.roomCode} is still open - play again with the same group, or leave.` : 'Waiting for the host to start a new round, or leave the room.' }}
+            </p>
+            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px;">
+              <button v-if="isHost" class="btn btn-primary" :disabled="restartingRoom" @click="restartOnlineRoom">
+                {{ restartingRoom ? 'Restarting…' : 'Play again' }}
+              </button>
+              <button class="btn btn-secondary" @click="leaveLobby">← Leave</button>
+            </div>
+          </template>
+          <button v-else class="btn btn-primary" style="margin-top:16px; width:100%;" @click="resetGame">Play again</button>
         </div>
       </div>
     </template>
@@ -302,7 +313,11 @@ function startGame() {
 
 const sortedScores = computed(() => [...finalScores.value].sort((a, b) => b[1] - a[1]))
 
+const lastGameWasOnline = ref(false)
+const restartingRoom = ref(false)
+
 function onGameOver(scores) {
+  lastGameWasOnline.value = false
   api.recordGamePlayed('FLASHBACK')
   passAndPlayState.clear('flashback')
   passAndPlayState.clear('flashback-progress')
@@ -427,6 +442,11 @@ function applyLobbyUpdate(updated) {
   if (updated.status === 'IN_PROGRESS') {
     stopLobbyChannel()
     stage.value = 'onlineGame'
+  } else if (updated.status === 'WAITING' && stage.value === 'done') {
+    // The host just restarted (see restartOnlineRoom) - every other player
+    // sitting on the "Game over" screen, still subscribed to this same
+    // lobby channel, gets dropped back into the lobby right along with them.
+    stage.value = 'onlineLobby'
   }
 }
 
@@ -490,10 +510,29 @@ function resetOnline() {
 // so unlike onGameOver above, this doesn't also call api.recordGamePlayed - that
 // would double-count it.
 function onOnlineGameOver(scores) {
+  lastGameWasOnline.value = true
   activeRoom.clear()
   finalScores.value = scores
-  resetOnline()
+  // Deliberately NOT resetOnline() here - the room stays around so "Play
+  // again" can reuse the same code/lobby/participants, and re-subscribing to
+  // the lobby channel is what lets every player (not just whoever clicks it)
+  // see a restart happen live - see applyLobbyUpdate.
+  startLobbyChannel()
   stage.value = 'done'
+}
+
+async function restartOnlineRoom() {
+  if (!onlineRoom.value) return
+  error.value = ''
+  restartingRoom.value = true
+  try {
+    const dto = await api.restartRoom(onlineRoom.value.roomCode)
+    applyLobbyUpdate(dto)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not restart the game.'
+  } finally {
+    restartingRoom.value = false
+  }
 }
 
 const savedRoomCode = ref('')

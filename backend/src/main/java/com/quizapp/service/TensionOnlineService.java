@@ -47,6 +47,39 @@ public class TensionOnlineService {
         roomStateRepository.save(state);
     }
 
+    /**
+     * "Play again" (see RoomController#restart) - tears down the finished
+     * round's state and immediately re-initializes a fresh one of the same
+     * size, so the room is ready to go straight back into the lobby without
+     * asking the host to re-answer "how many questions". Always freshly
+     * randomized across the whole pool, not the original category/
+     * exclude-category choice - that filter is never persisted anywhere past
+     * initializeQuestionSequence itself, so there's nothing left to replay it
+     * from.
+     *
+     * The explicit flush() between the two halves matters: Hibernate's
+     * default flush order is inserts-then-updates-then-deletes, regardless of
+     * what order the Java code actually called them in, so without forcing
+     * the delete of the old TensionRoomState to hit the database first,
+     * initializeQuestionSequence's insert of the new one (same room_id,
+     * unique-constrained) would be flushed at commit time *before* the
+     * delete and fail with a duplicate-key violation - confirmed live, not
+     * hypothetical.
+     */
+    @Transactional
+    public void restartForReplay(GameRoom room) {
+        Integer previousCount = roomStateRepository.findByRoom_Id(room.getId())
+                .map(s -> s.getQuestionIds().size())
+                .orElse(null);
+        roomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+            roundAnswerRepository.deleteByRoomState_Id(state.getId());
+            participantStateRepository.deleteByRoomState_Id(state.getId());
+            roomStateRepository.delete(state);
+        });
+        roomStateRepository.flush();
+        initializeQuestionSequence(room, previousCount, null, null);
+    }
+
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {

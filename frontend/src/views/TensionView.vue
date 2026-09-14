@@ -289,7 +289,18 @@
       </div>
 
       <div style="text-align:center; margin-top:20px;">
-        <button class="btn btn-primary" @click="resetGame">Play again</button>
+        <template v-if="lastGameWasOnline && onlineRoom">
+          <p class="page-subtitle" style="margin:0 0 12px;">
+            {{ isHost ? `Room ${onlineRoom.roomCode} is still open - play again with the same group, or leave.` : 'Waiting for the host to start a new round, or leave the room.' }}
+          </p>
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <button v-if="isHost" class="btn btn-primary" :disabled="restartingRoom" @click="restartOnlineRoom">
+              {{ restartingRoom ? 'Restarting…' : 'Play again' }}
+            </button>
+            <button class="btn btn-secondary" @click="leaveLobby">← Leave</button>
+          </div>
+        </template>
+        <button v-else class="btn btn-primary" @click="resetGame">Play again</button>
       </div>
     </template>
   </div>
@@ -513,6 +524,11 @@ function applyLobbyUpdate(updated) {
   if (updated.status === 'IN_PROGRESS') {
     stopLobbyChannel()
     stage.value = 'onlineGame'
+  } else if (updated.status === 'WAITING' && stage.value === 'done') {
+    // The host just restarted (see restartOnlineRoom) - every other player
+    // sitting on the "Game over" screen, still subscribed to this same
+    // lobby channel, gets dropped back into the lobby right along with them.
+    stage.value = 'onlineLobby'
   }
 }
 
@@ -576,8 +592,27 @@ function onOnlineGameOver(scores) {
   activeRoom.clear()
   lastGameWasOnline.value = true
   finalScores.value = scores
-  resetOnline()
+  // Deliberately NOT resetOnline() here - the room stays around so "Play
+  // again" can reuse the same code/lobby/participants, and re-subscribing to
+  // the lobby channel is what lets every player (not just whoever clicks it)
+  // see a restart happen live - see applyLobbyUpdate.
+  startLobbyChannel()
   stage.value = 'done'
+}
+
+const restartingRoom = ref(false)
+async function restartOnlineRoom() {
+  if (!onlineRoom.value) return
+  error.value = ''
+  restartingRoom.value = true
+  try {
+    const dto = await api.restartRoom(onlineRoom.value.roomCode)
+    applyLobbyUpdate(dto)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not restart the game.'
+  } finally {
+    restartingRoom.value = false
+  }
 }
 
 const savedRoomCode = ref('')

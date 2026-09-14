@@ -13,4 +13,6 @@ public interface BullseyeParticipantStateRepository extends JpaRepository<Bullse
      *  same fix, same reason. */
     @Query("SELECT s FROM BullseyeParticipantState s WHERE s.roomState.id = :roomStateId ORDER BY s.participant.joinOrder ASC")
     List<BullseyeParticipantState> findByRoomState_Id(@Param("roomStateId") Long roomStateId);
+
+    void deleteByRoomState_Id(Long roomStateId);
 }

@@ -53,6 +53,31 @@ public class FiveOhOneOnlineService {
         roomStateRepository.save(state);
     }
 
+    /**
+     * "Play again" (see RoomController#restart) - tears down the finished
+     * round's state and re-initializes with the same category (there's no
+     * "count" to replay here the way the multi-round games have - 501 is one
+     * continuous countdown per category, so reusing the same one is the
+     * closest thing to a rematch, not a random re-roll of something the
+     * player explicitly chose).
+     */
+    @Transactional
+    public void restartForReplay(GameRoom room) {
+        Long previousCategoryId = roomStateRepository.findByRoom_Id(room.getId())
+                .map(FiveOhOneRoomState::getCategoryId)
+                .orElse(null);
+        roomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+            throwRepository.deleteByRoomState_Id(state.getId());
+            participantStateRepository.deleteByRoomState_Id(state.getId());
+            roomStateRepository.delete(state);
+        });
+        // See TensionOnlineService#restartForReplay's comment on why this
+        // flush isn't optional - without it the insert below (same room_id,
+        // unique-constrained) flushes before the delete above and fails.
+        roomStateRepository.flush();
+        initializeCategory(room, previousCategoryId);
+    }
+
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {

@@ -172,6 +172,39 @@ class LineupBattleOnlineServiceTest {
         assertThat(finalState.isFinished()).isTrue();
     }
 
+    // Regression test for a real bug caught live, not hypothetical - see
+    // GridBattleOnlineServiceTest#restartForReplayTearsDownAndReplacesFinishedStateWithoutThrowing.
+    @Test
+    void restartForReplayTearsDownAndReplacesFinishedStateWithoutThrowing() {
+        GameRoom room = setUpTwoPlayerRandomRoom(2);
+        Long hostParticipantId = lineupBattleOnlineService.getState(room, HOST).getYourParticipantId();
+        Long guestParticipantId = lineupBattleOnlineService.getState(room, GUEST).getYourParticipantId();
+
+        LineupBattleStateDto round1 = lineupBattleOnlineService.getState(room, HOST);
+        Long l1 = round1.getLineupChoices().get(0).getId();
+        lineupBattleOnlineService.chooseLineup(room, HOST, l1);
+        guessEveryEntry(room, l1);
+        LineupBattleStateDto round2 = lineupBattleOnlineService.advanceToNextLineup(room, HOST);
+        Long l2 = round2.getLineupChoices().get(0).getId();
+        lineupBattleOnlineService.chooseLineup(room, GUEST, l2);
+        guessEveryEntry(room, l2);
+        lineupBattleOnlineService.advanceToNextLineup(room, HOST);
+
+        room = roomService.findByCode(room.getRoomCode());
+        assertThat(room.getStatus()).isEqualTo(com.quizapp.model.RoomStatus.FINISHED);
+
+        // The actual regression check: this line alone used to throw.
+        lineupBattleOnlineService.restartForReplay(room);
+
+        lineupBattleOnlineService.startGame(room, HOST);
+        LineupBattleStateDto freshRound = lineupBattleOnlineService.getState(room, HOST);
+        assertThat(freshRound.isAwaitingLineupChoice()).isTrue();
+        assertThat(freshRound.getCurrentLineupIndex()).isZero();
+        assertThat(freshRound.getTotalLineups()).isEqualTo(2);
+        assertThat(freshRound.getPickerParticipantId()).isEqualTo(hostParticipantId);
+        assertThat(lineupBattleOnlineService.getState(room, GUEST).getYourParticipantId()).isEqualTo(guestParticipantId);
+    }
+
     // The random pool is shared with other test classes' fixtures in the same
     // H2 instance, so a picked board's entry count can't be assumed - guess
     // every entry it actually has, same as a real player finishing the board.

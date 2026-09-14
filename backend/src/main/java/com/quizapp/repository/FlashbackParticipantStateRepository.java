@@ -13,4 +13,6 @@ public interface FlashbackParticipantStateRepository extends JpaRepository<Flash
      *  same fix, same reason. */
     @Query("SELECT s FROM FlashbackParticipantState s WHERE s.roomState.id = :roomStateId ORDER BY s.participant.joinOrder ASC")
     List<FlashbackParticipantState> findByRoomState_Id(@Param("roomStateId") Long roomStateId);
+
+    void deleteByRoomState_Id(Long roomStateId);
 }

@@ -74,6 +74,25 @@ public class LineupBattleOnlineService {
         roomStateRepository.save(state);
     }
 
+    /** "Play again" (see RoomController#restart) - see
+     *  GridBattleOnlineService#restartForReplay, same reasoning. */
+    @Transactional
+    public void restartForReplay(GameRoom room) {
+        Integer previousCount = roomStateRepository.findByRoom_Id(room.getId())
+                .map(s -> s.getLineupIds().isEmpty() ? s.getRandomTotalCount() : s.getLineupIds().size())
+                .orElse(null);
+        roomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+            solvedEntryRepository.deleteByRoomState_Id(state.getId());
+            participantStateRepository.deleteByRoomState_Id(state.getId());
+            roomStateRepository.delete(state);
+        });
+        // See TensionOnlineService#restartForReplay's comment on why this
+        // flush isn't optional - without it the insert below (same room_id,
+        // unique-constrained) flushes before the delete above and fails.
+        roomStateRepository.flush();
+        initializeLineupSequence(room, null, previousCount);
+    }
+
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {

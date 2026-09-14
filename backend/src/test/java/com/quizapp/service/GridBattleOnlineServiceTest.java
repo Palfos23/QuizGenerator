@@ -181,4 +181,48 @@ class GridBattleOnlineServiceTest {
         GridBattleStateDto finalState = gridBattleOnlineService.advanceToNextGrid(room, HOST);
         assertThat(finalState.isFinished()).isTrue();
     }
+
+    // Regression test for a real bug caught live, not hypothetical:
+    // restartForReplay deletes the finished round's GridBattleRoomState and
+    // immediately inserts a fresh one for the same room_id (a unique-
+    // constrained column) in the same transaction. Hibernate's default flush
+    // order is inserts-then-deletes regardless of the order the Java code
+    // called them in, so without an explicit flush() between the two halves,
+    // the insert hits the database before the delete and fails outright with
+    // a duplicate-key violation - confirmed by temporarily removing the
+    // flush() and watching this exact test fail with exactly that error.
+    @Test
+    void restartForReplayTearsDownAndReplacesFinishedStateWithoutThrowing() {
+        GameRoom room = setUpTwoPlayerRandomRoom(2);
+        Long hostParticipantId = gridBattleOnlineService.getState(room, HOST).getYourParticipantId();
+        Long guestParticipantId = gridBattleOnlineService.getState(room, GUEST).getYourParticipantId();
+
+        GridBattleStateDto round1 = gridBattleOnlineService.getState(room, HOST);
+        Long g1 = round1.getGridChoices().get(0).getId();
+        gridBattleOnlineService.chooseGrid(room, HOST, g1);
+        Long a1 = gridRepository.findById(g1).orElseThrow().getEntries().iterator().next().getAthlete().getId();
+        gridBattleOnlineService.guess(room, HOST, a1);
+        GridBattleStateDto round2 = gridBattleOnlineService.advanceToNextGrid(room, HOST);
+        Long g2 = round2.getGridChoices().get(0).getId();
+        gridBattleOnlineService.chooseGrid(room, GUEST, g2);
+        Long a2 = gridRepository.findById(g2).orElseThrow().getEntries().iterator().next().getAthlete().getId();
+        gridBattleOnlineService.guess(room, GUEST, a2);
+        gridBattleOnlineService.advanceToNextGrid(room, HOST);
+
+        room = roomService.findByCode(room.getRoomCode());
+        assertThat(room.getStatus()).isEqualTo(com.quizapp.model.RoomStatus.FINISHED);
+
+        // The actual regression check: this line alone used to throw.
+        gridBattleOnlineService.restartForReplay(room);
+
+        // And the room is genuinely playable again afterward, not just
+        // silently left in a broken half-reset state.
+        gridBattleOnlineService.startGame(room, HOST);
+        GridBattleStateDto freshRound = gridBattleOnlineService.getState(room, HOST);
+        assertThat(freshRound.isAwaitingGridChoice()).isTrue();
+        assertThat(freshRound.getCurrentGridIndex()).isZero();
+        assertThat(freshRound.getTotalGrids()).isEqualTo(2);
+        assertThat(freshRound.getPickerParticipantId()).isEqualTo(hostParticipantId);
+        assertThat(gridBattleOnlineService.getState(room, GUEST).getYourParticipantId()).isEqualTo(guestParticipantId);
+    }
 }
