@@ -165,6 +165,7 @@ public class ImposterGridAdminService {
         dto.setTileCount(grid.getTiles().size());
         dto.setImposterCount((int) grid.getTiles().stream().filter(ImposterTile::isImposter).count());
         dto.setCanExpire(grid.isCanExpire());
+        dto.setUpdatedAt(grid.getUpdatedAt());
         return dto;
     }
 

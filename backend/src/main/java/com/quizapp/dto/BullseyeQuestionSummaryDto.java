@@ -1,5 +1,7 @@
 package com.quizapp.dto;
 
+import java.time.Instant;
+
 public class BullseyeQuestionSummaryDto {
 
     private Long id;
@@ -12,10 +14,12 @@ public class BullseyeQuestionSummaryDto {
     private boolean canExpire;
     private boolean entireCategoryPool;
     private boolean groupDigits;
+    private Instant updatedAt;
 
     public BullseyeQuestionSummaryDto(Long id, String title, String sport, Integer targetValue,
                                        String statLabel, int entryCount, boolean excludedFromBullseye,
-                                       boolean canExpire, boolean entireCategoryPool, boolean groupDigits) {
+                                       boolean canExpire, boolean entireCategoryPool, boolean groupDigits,
+                                       Instant updatedAt) {
         this.id = id;
         this.title = title;
         this.sport = sport;
@@ -26,6 +30,7 @@ public class BullseyeQuestionSummaryDto {
         this.canExpire = canExpire;
         this.entireCategoryPool = entireCategoryPool;
         this.groupDigits = groupDigits;
+        this.updatedAt = updatedAt;
     }
 
     public Long getId() {
@@ -66,5 +71,9 @@ public class BullseyeQuestionSummaryDto {
 
     public boolean isGroupDigits() {
         return groupDigits;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 }

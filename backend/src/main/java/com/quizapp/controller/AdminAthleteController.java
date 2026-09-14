@@ -40,8 +40,10 @@ public class AdminAthleteController {
     // Data-quality scan for the "Duplicate subjects" Insights page - see
     // AthleteService#findDuplicateGroups for the actual detection logic.
     @GetMapping("/duplicates")
-    public List<com.quizapp.dto.AthleteDuplicateGroupDto> duplicates() {
-        return athleteService.findDuplicateGroups();
+    public List<com.quizapp.dto.AthleteDuplicateGroupDto> duplicates(
+            @RequestParam(required = false) String sport,
+            @RequestParam(defaultValue = "0") int maxDistance) {
+        return athleteService.findDuplicateGroups(sport, maxDistance);
     }
 
     @GetMapping("/{id}/grid-usage")

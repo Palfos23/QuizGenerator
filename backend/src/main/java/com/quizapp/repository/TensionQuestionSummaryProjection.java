@@ -9,4 +9,5 @@ public interface TensionQuestionSummaryProjection {
     Long getSafeCount();
     Long getTensionCount();
     Boolean getCanExpire();
+    java.time.Instant getUpdatedAt();
 }

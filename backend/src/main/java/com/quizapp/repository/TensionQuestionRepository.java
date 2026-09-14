@@ -34,7 +34,7 @@ public interface TensionQuestionRepository extends JpaRepository<TensionQuestion
            "q.answersCategory as answersCategory, q.source as source, " +
            "(SELECT COUNT(a) FROM TensionAnswerEntry a WHERE a.question = q AND a.tension = false) as safeCount, " +
            "(SELECT COUNT(a) FROM TensionAnswerEntry a WHERE a.question = q AND a.tension = true) as tensionCount, " +
-           "q.canExpire as canExpire " +
+           "q.canExpire as canExpire, q.updatedAt as updatedAt " +
            "FROM TensionQuestion q")
     List<TensionQuestionSummaryProjection> findAllSummaries();
 }

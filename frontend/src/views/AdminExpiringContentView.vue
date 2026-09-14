@@ -21,7 +21,9 @@
           <div v-for="item in s.items" :key="item.id" class="saved-quiz-row">
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ item.title }}</div>
-              <div class="saved-quiz-meta">{{ item.subtitle }}</div>
+              <div class="saved-quiz-meta">
+                {{ item.subtitle }}<span v-if="item.subtitle"> · </span>Last updated {{ formatUpdatedAt(item.updatedAt) }}
+              </div>
             </div>
             <router-link class="btn btn-secondary btn-sm" :to="s.to">Open in {{ s.label }} →</router-link>
           </div>
@@ -89,6 +91,11 @@ const GAMES = [
 
 onMounted(load)
 
+function formatUpdatedAt(value) {
+  if (!value) return 'unknown'
+  return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
 async function load() {
   loading.value = true
   error.value = ''
@@ -99,7 +106,7 @@ async function load() {
       return {
         label: g.label,
         to: g.to,
-        items: flagged.map(item => ({ id: item.id, title: item.title, subtitle: g.subtitle(item) }))
+        items: flagged.map(item => ({ id: item.id, title: item.title, subtitle: g.subtitle(item), updatedAt: item.updatedAt }))
       }
     }))
     sections.value = results.filter(s => s.items.length)

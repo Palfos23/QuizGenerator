@@ -28,7 +28,8 @@ public class TensionQuestionService {
         return questionRepository.findAllSummaries().stream()
                 .map(p -> new com.quizapp.dto.TensionQuestionSummaryDto(
                         p.getId(), p.getTitle(), p.getMainCategory(), p.getAnswersCategory(),
-                        p.getSource(), p.getSafeCount(), p.getTensionCount(), Boolean.TRUE.equals(p.getCanExpire())))
+                        p.getSource(), p.getSafeCount(), p.getTensionCount(), Boolean.TRUE.equals(p.getCanExpire()),
+                        p.getUpdatedAt()))
                 .collect(Collectors.toList());
     }
 

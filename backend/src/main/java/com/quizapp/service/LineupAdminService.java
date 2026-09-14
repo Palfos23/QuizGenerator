@@ -54,6 +54,7 @@ public class LineupAdminService {
                     dto.setExcludedFromBattle(l.isExcludedFromBattle());
                     dto.setCanExpire(l.isCanExpire());
                     dto.setEntireCategoryPool(l.isEntireCategoryPool());
+                    dto.setUpdatedAt(l.getUpdatedAt());
                     return dto;
                 })
                 .collect(Collectors.toList());

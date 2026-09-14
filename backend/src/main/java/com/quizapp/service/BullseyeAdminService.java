@@ -41,7 +41,7 @@ public class BullseyeAdminService {
                 .map(row -> new BullseyeQuestionSummaryDto(row.getId(), row.getTitle(), row.getSport(),
                         row.getTargetValue(), row.getStatLabel(), row.getEntryCount().intValue(),
                         row.getExcludedFromBullseye(), row.getCanExpire(), row.getEntireCategoryPool(),
-                        row.getGroupDigits()))
+                        row.getGroupDigits(), row.getUpdatedAt()))
                 .collect(Collectors.toList());
     }
 

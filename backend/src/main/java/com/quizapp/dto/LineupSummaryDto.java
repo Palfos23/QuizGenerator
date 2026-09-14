@@ -1,5 +1,6 @@
 package com.quizapp.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 public class LineupSummaryDto {
@@ -49,6 +50,9 @@ public class LineupSummaryDto {
     public void setExcludedFromBattle(boolean excludedFromBattle) { this.excludedFromBattle = excludedFromBattle; }
     public boolean isCanExpire() { return canExpire; }
     public void setCanExpire(boolean canExpire) { this.canExpire = canExpire; }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    private Instant updatedAt;
 
     // Only set on the admin management list - same purpose as
     // GridSummaryDto.entireCategoryPool.

@@ -196,20 +196,33 @@ public class AthleteService {
     // anything, since that would mean reassigning this athlete's Grid/Lineup/
     // Imposter board appearances, which needs a human decision about which
     // record should actually survive.
+    // sport: optional - restricts the scan to one category instead of every
+    // sport in the roster, so a large roster can be checked incrementally.
+    // maxDistance: 0 = only an exact match (once accents/special letters are
+    // normalized) counts as a duplicate; 1-3 additionally catches names that
+    // are that many characters apart (typos, transliteration slips) once
+    // normalized - clamped to [0,3] since a wider net starts matching
+    // unrelated short names. The last-name-only check always runs regardless
+    // of maxDistance, since it's a structural match (one entry is just a
+    // surname), not something edit distance can express.
     @Transactional(readOnly = true)
-    public List<com.quizapp.dto.AthleteDuplicateGroupDto> findDuplicateGroups() {
-        Map<String, List<Athlete>> bySport = athleteRepository.findAll().stream()
+    public List<com.quizapp.dto.AthleteDuplicateGroupDto> findDuplicateGroups(String sport, int maxDistance) {
+        int distance = Math.max(0, Math.min(3, maxDistance));
+        List<Athlete> pool = (sport != null && !sport.isBlank())
+                ? athleteRepository.findBySport(sport)
+                : athleteRepository.findAll();
+        Map<String, List<Athlete>> bySport = pool.stream()
                 .collect(Collectors.groupingBy(a -> a.getSport() == null ? "" : a.getSport().trim().toLowerCase()));
 
         List<com.quizapp.dto.AthleteDuplicateGroupDto> groups = new ArrayList<>();
         for (List<Athlete> athletes : bySport.values()) {
             if (athletes.size() < 2) continue;
-            groups.addAll(clusterDuplicates(athletes));
+            groups.addAll(clusterDuplicates(athletes, distance));
         }
         return groups;
     }
 
-    private List<com.quizapp.dto.AthleteDuplicateGroupDto> clusterDuplicates(List<Athlete> athletes) {
+    private List<com.quizapp.dto.AthleteDuplicateGroupDto> clusterDuplicates(List<Athlete> athletes, int maxDistance) {
         int n = athletes.size();
         List<Set<String>> normalized = athletes.stream().map(a -> normalizeVariants(a.getName())).collect(Collectors.toList());
         // Union-find over this sport's athletes - two entries only need to be
@@ -220,7 +233,7 @@ public class AthleteService {
 
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
-                if (matchReason(normalized.get(i), normalized.get(j)) == null) continue;
+                if (matchReason(normalized.get(i), normalized.get(j), maxDistance) == null) continue;
                 int ri = find(parent, i);
                 int rj = find(parent, j);
                 if (ri != rj) parent[ri] = rj;
@@ -241,7 +254,7 @@ public class AthleteService {
             Set<String> reasons = new java.util.LinkedHashSet<>();
             for (int a = 0; a < indices.size(); a++) {
                 for (int b = a + 1; b < indices.size(); b++) {
-                    String reason = matchReason(normalized.get(indices.get(a)), normalized.get(indices.get(b)));
+                    String reason = matchReason(normalized.get(indices.get(a)), normalized.get(indices.get(b)), maxDistance);
                     if (reason != null) reasons.add(reason);
                 }
             }
@@ -260,17 +273,28 @@ public class AthleteService {
         return i;
     }
 
-    // Exact match (after folding accents/special letters) catches literal
-    // duplicates and spelling variants like "Ø. Hauge" vs "Oyvind Hauge"'s
-    // surname, and (via the two å variants below) "Håland" vs "Haaland"; the
-    // last-name check catches an entry registered as just "Haaland" that's
-    // really the same person as "Erling Haaland" elsewhere. Each name has a
-    // small set of normalized spellings (see normalizeVariants) - any overlap
-    // between the two sides' sets counts as a match.
-    private String matchReason(Set<String> variantsA, Set<String> variantsB) {
+    // Exact-or-near match (after folding accents/special letters) catches
+    // literal duplicates, spelling variants like "Ø. Hauge" vs "Oyvind
+    // Hauge"'s surname, (via the two å variants below) "Håland" vs "Haaland",
+    // and - once maxDistance > 0 - plain typos/transliteration slips within
+    // that many characters. The closest pair across both sides' normalized
+    // spellings wins. The last-name check catches an entry registered as
+    // just "Haaland" that's really the same person as "Erling Haaland"
+    // elsewhere - independent of maxDistance, since it's a word-level match,
+    // not a character-level one.
+    private String matchReason(Set<String> variantsA, Set<String> variantsB, int maxDistance) {
         if (variantsA.isEmpty() || variantsB.isEmpty()) return null;
+        int best = Integer.MAX_VALUE;
         for (String a : variantsA) {
-            if (variantsB.contains(a)) return "Same name once special letters/accents are normalized";
+            for (String b : variantsB) {
+                best = Math.min(best, levenshtein(a, b));
+                if (best == 0) break;
+            }
+            if (best == 0) break;
+        }
+        if (best == 0) return "Same name once special letters/accents are normalized";
+        if (best <= maxDistance) {
+            return best + (best == 1 ? " character" : " characters") + " different once normalized";
         }
         for (String a : variantsA) {
             List<String> tokensA = List.of(a.split(" "));
@@ -285,6 +309,22 @@ public class AthleteService {
             }
         }
         return null;
+    }
+
+    // Classic edit-distance DP - cheap enough at these string lengths (person
+    // names) to run for every pair within a sport group without needing any
+    // fancier indexing.
+    private int levenshtein(String a, String b) {
+        int[][] dp = new int[a.length() + 1][b.length() + 1];
+        for (int i = 0; i <= a.length(); i++) dp[i][0] = i;
+        for (int j = 0; j <= b.length(); j++) dp[0][j] = j;
+        for (int i = 1; i <= a.length(); i++) {
+            for (int j = 1; j <= b.length(); j++) {
+                int cost = a.charAt(i - 1) == b.charAt(j - 1) ? 0 : 1;
+                dp[i][j] = Math.min(Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1), dp[i - 1][j - 1] + cost);
+            }
+        }
+        return dp[a.length()][b.length()];
     }
 
     // Folds case, Nordic/Germanic letters that Unicode normalization alone

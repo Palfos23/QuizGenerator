@@ -24,7 +24,7 @@ public class FiveOhOneCategoryService {
     @Transactional(readOnly = true)
     public List<FiveOhOneCategorySummaryDto> findAllSummaries() {
         return categoryRepository.findAll().stream()
-                .map(c -> new FiveOhOneCategorySummaryDto(c.getId(), c.getTitle(), c.getDescription(), c.getEntries().size(), c.isCanExpire()))
+                .map(c -> new FiveOhOneCategorySummaryDto(c.getId(), c.getTitle(), c.getDescription(), c.getEntries().size(), c.isCanExpire(), c.getUpdatedAt()))
                 .collect(Collectors.toList());
     }
 

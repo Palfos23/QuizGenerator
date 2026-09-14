@@ -1,5 +1,7 @@
 package com.quizapp.dto;
 
+import java.time.Instant;
+
 public class ImposterGridSummaryDto {
     private Long id;
     private String title;
@@ -8,6 +10,7 @@ public class ImposterGridSummaryDto {
     private int tileCount;
     private int imposterCount; // fair-game info, doesn't reveal which tiles
     private boolean canExpire;
+    private Instant updatedAt;
 
     public Long getId() {
         return id;
@@ -63,5 +66,13 @@ public class ImposterGridSummaryDto {
 
     public void setCanExpire(boolean canExpire) {
         this.canExpire = canExpire;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

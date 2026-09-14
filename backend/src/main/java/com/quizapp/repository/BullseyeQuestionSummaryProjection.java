@@ -11,4 +11,5 @@ public interface BullseyeQuestionSummaryProjection {
     Boolean getCanExpire();
     Boolean getEntireCategoryPool();
     Boolean getGroupDigits();
+    java.time.Instant getUpdatedAt();
 }

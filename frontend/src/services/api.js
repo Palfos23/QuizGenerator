@@ -401,8 +401,11 @@ export default {
   adminUpdateAthlete(id, payload) {
     return client.put(`/admin/athletes/${id}`, payload).then(r => r.data)
   },
-  adminFindDuplicateAthletes() {
-    return client.get('/admin/athletes/duplicates').then(r => r.data)
+  adminFindDuplicateAthletes({ sport, maxDistance } = {}) {
+    const query = new URLSearchParams()
+    if (sport) query.set('sport', sport)
+    if (maxDistance !== undefined && maxDistance !== null) query.set('maxDistance', maxDistance)
+    return client.get(`/admin/athletes/duplicates?${query.toString()}`).then(r => r.data)
   },
   adminGetAthleteGridUsage(id) {
     return client.get(`/admin/athletes/${id}/grid-usage`).then(r => r.data)

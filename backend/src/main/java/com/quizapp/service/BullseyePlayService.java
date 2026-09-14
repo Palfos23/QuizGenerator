@@ -120,7 +120,7 @@ public class BullseyePlayService {
     private BullseyeQuestionSummaryDto toSummaryDto(BullseyeQuestionSummaryProjection row) {
         return new BullseyeQuestionSummaryDto(row.getId(), row.getTitle(), row.getSport(), row.getTargetValue(),
                 row.getStatLabel(), row.getEntryCount().intValue(), row.getExcludedFromBullseye(),
-                row.getCanExpire(), row.getEntireCategoryPool(), row.getGroupDigits());
+                row.getCanExpire(), row.getEntireCategoryPool(), row.getGroupDigits(), row.getUpdatedAt());
     }
 
     /**

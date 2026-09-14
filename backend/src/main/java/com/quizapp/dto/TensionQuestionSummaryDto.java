@@ -1,5 +1,7 @@
 package com.quizapp.dto;
 
+import java.time.Instant;
+
 public class TensionQuestionSummaryDto {
     private Long id;
     private String title;
@@ -9,9 +11,11 @@ public class TensionQuestionSummaryDto {
     private long safeCount;
     private long tensionCount;
     private boolean canExpire;
+    private Instant updatedAt;
 
     public TensionQuestionSummaryDto(Long id, String title, String mainCategory, String answersCategory,
-                                      String source, long safeCount, long tensionCount, boolean canExpire) {
+                                      String source, long safeCount, long tensionCount, boolean canExpire,
+                                      Instant updatedAt) {
         this.id = id;
         this.title = title;
         this.mainCategory = mainCategory;
@@ -20,6 +24,7 @@ public class TensionQuestionSummaryDto {
         this.safeCount = safeCount;
         this.tensionCount = tensionCount;
         this.canExpire = canExpire;
+        this.updatedAt = updatedAt;
     }
 
     public Long getId() { return id; }
@@ -30,4 +35,5 @@ public class TensionQuestionSummaryDto {
     public long getSafeCount() { return safeCount; }
     public long getTensionCount() { return tensionCount; }
     public boolean isCanExpire() { return canExpire; }
+    public Instant getUpdatedAt() { return updatedAt; }
 }

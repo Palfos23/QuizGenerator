@@ -28,7 +28,7 @@ public interface BullseyeQuestionRepository extends JpaRepository<BullseyeQuesti
            "q.statLabel as statLabel, (SELECT COUNT(e) FROM BullseyeEntry e WHERE e.question = q) as entryCount, " +
            "q.excludedFromBullseye as excludedFromBullseye, q.canExpire as canExpire, " +
            "q.entireCategoryPool as entireCategoryPool, " +
-           "q.groupDigits as groupDigits " +
+           "q.groupDigits as groupDigits, q.updatedAt as updatedAt " +
            "FROM BullseyeQuestion q")
     List<BullseyeQuestionSummaryProjection> findAllSummaries();
 
@@ -46,7 +46,7 @@ public interface BullseyeQuestionRepository extends JpaRepository<BullseyeQuesti
            "q.statLabel as statLabel, (SELECT COUNT(e) FROM BullseyeEntry e WHERE e.question = q) as entryCount, " +
            "q.excludedFromBullseye as excludedFromBullseye, q.canExpire as canExpire, " +
            "q.entireCategoryPool as entireCategoryPool, " +
-           "q.groupDigits as groupDigits " +
+           "q.groupDigits as groupDigits, q.updatedAt as updatedAt " +
            "FROM BullseyeQuestion q WHERE q.id IN :ids")
     List<BullseyeQuestionSummaryProjection> findSummariesByIdIn(List<Long> ids);
 }
