@@ -66,8 +66,11 @@
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:200px;">
-          <label>Main category <span class="picker-hint">used to filter which questions a game draws from</span></label>
-          <input type="text" v-model="form.mainCategory" placeholder="e.g. Geography" />
+          <label>Main category <span class="picker-hint">used to filter which questions a game draws from - type anything, or pick a suggestion</span></label>
+          <input type="text" v-model="form.mainCategory" placeholder="e.g. Geography" list="main-category-suggestions" />
+          <datalist id="main-category-suggestions">
+            <option v-for="c in mainCategorySuggestions" :key="c" :value="c" />
+          </datalist>
         </div>
         <div style="flex:1; min-width:200px;">
           <label>Answers category <span class="picker-hint">powers the answer-box autocomplete</span></label>
@@ -193,6 +196,34 @@ onMounted(async () => {
     tensionCategories.value = await api.adminListTensionCategories()
   } catch (e) {
     // non-critical - the dropdown just stays empty, with its own message shown
+  }
+})
+
+// Suggestions for the "main category" field, pooled from categories already
+// used across existing Tension questions (so the 170-odd questions already
+// authored keep working exactly as before) plus the normal question bank's
+// categories (so new Tension questions can be tagged consistently with the
+// rest of the app). It's still a plain text input underneath - these are
+// suggestions via <datalist>, not a forced picker, so typing a brand new
+// category works exactly like it always has.
+const mainCategorySuggestions = ref([])
+onMounted(async () => {
+  try {
+    const [tensionCats, subjectCats] = await Promise.all([
+      api.fetchTensionMainCategories(),
+      api.adminListQuestionCategories()
+    ])
+    const seen = new Set()
+    const merged = []
+    for (const c of [...tensionCats, ...subjectCats]) {
+      const key = c.trim().toLowerCase()
+      if (!key || seen.has(key)) continue
+      seen.add(key)
+      merged.push(c)
+    }
+    mainCategorySuggestions.value = merged.sort((a, b) => a.localeCompare(b))
+  } catch (e) {
+    // non-critical - the field still works as plain free text without suggestions
   }
 })
 

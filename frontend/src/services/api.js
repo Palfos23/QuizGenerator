@@ -463,6 +463,12 @@ export default {
   fetchTensionMainCategories() {
     return client.get('/tension/questions/categories').then(r => r.data)
   },
+  // Normal-subject question bank's categories - offered as suggestions when
+  // picking a Tension question's main category, so the two stay consistent
+  // instead of Tension accumulating its own separate vocabulary.
+  adminListQuestionCategories() {
+    return client.get('/admin/questions/categories').then(r => r.data)
+  },
 
   // --- Tension: admin questions ---
   adminListTensionQuestions() {
