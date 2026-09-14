@@ -81,6 +81,7 @@ public class PlayAccessService {
             case BULLSEYE -> requireBullseyeAccess(authentication);
             case PENALTY_SHOOTOUT -> requirePenaltyShootoutAccess(authentication);
             case FLASHBACK -> requireFlashbackAccess(authentication);
+            case TENSION -> requireTensionAccess(authentication);
         }
     }
 

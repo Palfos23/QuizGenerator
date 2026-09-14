@@ -10,6 +10,7 @@ public class BullseyeQuestionAdminDetailDto {
     private Integer targetValue;
     private String statLabel;
     private boolean excludedFromBullseye;
+    private boolean canExpire;
     private boolean entireCategoryPool;
     private boolean groupDigits;
     private List<EntryDetail> entries;
@@ -84,6 +85,14 @@ public class BullseyeQuestionAdminDetailDto {
 
     public void setExcludedFromBullseye(boolean excludedFromBullseye) {
         this.excludedFromBullseye = excludedFromBullseye;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public boolean isEntireCategoryPool() {

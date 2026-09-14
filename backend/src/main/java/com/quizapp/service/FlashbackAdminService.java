@@ -30,7 +30,7 @@ public class FlashbackAdminService {
                 .sorted((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()))
                 .map(row -> new FlashbackYearSummaryDto(row.getId(), row.getTitle(),
                         row.getYear(), row.getHintCount().intValue(), row.getExcludedFromFlashback(),
-                        row.getUpdatedAt()))
+                        row.getCanExpire(), row.getUpdatedAt()))
                 .collect(Collectors.toList());
     }
 
@@ -77,6 +77,7 @@ public class FlashbackAdminService {
         year.setYear(request.getYear());
         year.setHints(hints);
         year.setExcludedFromFlashback(request.isExcludedFromFlashback());
+        year.setCanExpire(request.isCanExpire());
         year.setUpdatedAt(Instant.now());
     }
 
@@ -92,6 +93,7 @@ public class FlashbackAdminService {
         dto.setYear(year.getYear());
         dto.setHints(List.copyOf(year.getHints()));
         dto.setExcludedFromFlashback(year.isExcludedFromFlashback());
+        dto.setCanExpire(year.isCanExpire());
         dto.setUpdatedAt(year.getUpdatedAt());
         return dto;
     }

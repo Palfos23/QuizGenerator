@@ -21,6 +21,8 @@ public class TensionQuestionDto {
     private String answersCategory;
     private String source;
 
+    private boolean canExpire;
+
     @NotEmpty
     @Valid
     private List<TensionAnswerEntryDto> safeAnswers;
@@ -74,6 +76,14 @@ public class TensionQuestionDto {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public List<TensionAnswerEntryDto> getSafeAnswers() {

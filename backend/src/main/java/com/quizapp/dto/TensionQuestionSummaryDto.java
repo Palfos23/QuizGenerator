@@ -8,9 +8,10 @@ public class TensionQuestionSummaryDto {
     private String source;
     private long safeCount;
     private long tensionCount;
+    private boolean canExpire;
 
     public TensionQuestionSummaryDto(Long id, String title, String mainCategory, String answersCategory,
-                                      String source, long safeCount, long tensionCount) {
+                                      String source, long safeCount, long tensionCount, boolean canExpire) {
         this.id = id;
         this.title = title;
         this.mainCategory = mainCategory;
@@ -18,6 +19,7 @@ public class TensionQuestionSummaryDto {
         this.source = source;
         this.safeCount = safeCount;
         this.tensionCount = tensionCount;
+        this.canExpire = canExpire;
     }
 
     public Long getId() { return id; }
@@ -27,4 +29,5 @@ public class TensionQuestionSummaryDto {
     public String getSource() { return source; }
     public long getSafeCount() { return safeCount; }
     public long getTensionCount() { return tensionCount; }
+    public boolean isCanExpire() { return canExpire; }
 }

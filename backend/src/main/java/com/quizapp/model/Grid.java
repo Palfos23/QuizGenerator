@@ -85,6 +85,21 @@ public class Grid {
         return excludedFromGridBattle;
     }
 
+    // Flags this grid's content as time-sensitive (e.g. "current all-time top
+    // scorer") so it surfaces on the admin "Can expire" review page for
+    // periodic rechecking. Purely an admin bookkeeping signal - doesn't affect
+    // visibility or behavior anywhere else.
+    @Column(name = "can_expire", nullable = false)
+    private boolean canExpire = false;
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
+    }
+
     // When true, this grid's guessable pool is never stored as explicit
     // GridCandidate rows at all - GridPlayService.searchCandidates() instead
     // queries every Athlete in this grid's own "sport" category live. That

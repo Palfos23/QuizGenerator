@@ -27,6 +27,7 @@ public class GridRequest {
     private boolean sortAscending = false;
     private boolean ranked = true;
     private boolean excludedFromGridBattle = false;
+    private boolean canExpire = false;
     private String revealMode = "PHOTO"; // "PHOTO" or "DESCRIPTION"
     private boolean fitImages = false; // true = contain (show whole image, e.g. flags); false = cover
 
@@ -122,6 +123,14 @@ public class GridRequest {
 
     public void setExcludedFromGridBattle(boolean excludedFromGridBattle) {
         this.excludedFromGridBattle = excludedFromGridBattle;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public String getRevealMode() {

@@ -6,5 +6,6 @@ public interface FlashbackYearSummaryProjection {
     Integer getYear();
     Long getHintCount();
     Boolean getExcludedFromFlashback();
+    Boolean getCanExpire();
     java.time.Instant getUpdatedAt();
 }

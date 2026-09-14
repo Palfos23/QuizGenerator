@@ -22,6 +22,8 @@ public class ImposterGridRequest {
 
     private boolean fitImages = false; // true = fit whole image in the tile (flags); false = cover/crop
 
+    private boolean canExpire = false; // flags a time-sensitive fact for review on the "Can expire" admin page
+
     @NotEmpty
     @Valid
     private List<TileInput> tiles;
@@ -64,6 +66,14 @@ public class ImposterGridRequest {
 
     public void setFitImages(boolean fitImages) {
         this.fitImages = fitImages;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public List<TileInput> getTiles() {

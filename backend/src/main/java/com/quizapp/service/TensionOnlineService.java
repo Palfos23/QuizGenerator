@@ -19,19 +19,22 @@ public class TensionOnlineService {
     private final TensionRoundAnswerRepository roundAnswerRepository;
     private final TensionQuestionService tensionQuestionService;
     private final RoomService roomService;
+    private final GamePlayEventService gamePlayEventService;
 
     public TensionOnlineService(GameRoomRepository gameRoomRepository,
                                  TensionRoomStateRepository roomStateRepository,
                                  TensionParticipantStateRepository participantStateRepository,
                                  TensionRoundAnswerRepository roundAnswerRepository,
                                  TensionQuestionService tensionQuestionService,
-                                 RoomService roomService) {
+                                 RoomService roomService,
+                                 GamePlayEventService gamePlayEventService) {
         this.gameRoomRepository = gameRoomRepository;
         this.roomStateRepository = roomStateRepository;
         this.participantStateRepository = participantStateRepository;
         this.roundAnswerRepository = roundAnswerRepository;
         this.tensionQuestionService = tensionQuestionService;
         this.roomService = roomService;
+        this.gamePlayEventService = gamePlayEventService;
     }
 
     @Transactional
@@ -261,6 +264,7 @@ public class TensionOnlineService {
             state.setFinished(true);
             room.setStatus(RoomStatus.FINISHED);
             gameRoomRepository.save(room);
+            gamePlayEventService.record(BattleGameType.TENSION);
         } else {
             state.setCurrentQuestionIndex(state.getCurrentQuestionIndex() + 1);
             state.setCurrentTurnParticipantIndex(state.getCurrentQuestionIndex() % room.getParticipants().size());

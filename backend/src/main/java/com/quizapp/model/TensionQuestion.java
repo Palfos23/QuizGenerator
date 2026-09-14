@@ -46,6 +46,20 @@ public class TensionQuestion {
         this.updatedAt = updatedAt;
     }
 
+    // Flags a question whose ranking is time-sensitive (e.g. "current all-time
+    // top scorer") so it surfaces on the admin "Can expire" Insights page for
+    // periodic review - same purpose as Question.couldChange.
+    @Column(name = "can_expire", nullable = false)
+    private boolean canExpire = false;
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
+    }
+
     public String getSource() {
         return source;
     }

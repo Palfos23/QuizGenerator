@@ -12,5 +12,6 @@ public enum BattleGameType {
     FIVE_O_ONE,
     BULLSEYE,
     PENALTY_SHOOTOUT,
-    FLASHBACK
+    FLASHBACK,
+    TENSION
 }

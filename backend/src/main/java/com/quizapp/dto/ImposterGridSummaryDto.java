@@ -7,6 +7,7 @@ public class ImposterGridSummaryDto {
     private String sport;
     private int tileCount;
     private int imposterCount; // fair-game info, doesn't reveal which tiles
+    private boolean canExpire;
 
     public Long getId() {
         return id;
@@ -54,5 +55,13 @@ public class ImposterGridSummaryDto {
 
     public void setImposterCount(int imposterCount) {
         this.imposterCount = imposterCount;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 }

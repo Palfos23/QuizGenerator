@@ -8,6 +8,7 @@ public interface BullseyeQuestionSummaryProjection {
     String getStatLabel();
     Long getEntryCount();
     Boolean getExcludedFromBullseye();
+    Boolean getCanExpire();
     Boolean getEntireCategoryPool();
     Boolean getGroupDigits();
 }

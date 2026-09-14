@@ -31,6 +31,8 @@ import AdminQuizTemplatesView from '../views/AdminQuizTemplatesView.vue'
 import ReportProblemView from '../views/ReportProblemView.vue'
 import AdminReportsView from '../views/AdminReportsView.vue'
 import AdminStatisticsView from '../views/AdminStatisticsView.vue'
+import AdminExpiringContentView from '../views/AdminExpiringContentView.vue'
+import AdminDuplicateSubjectsView from '../views/AdminDuplicateSubjectsView.vue'
 import BullseyeView from '../views/BullseyeView.vue'
 import AdminBullseyeView from '../views/AdminBullseyeView.vue'
 import PenaltyShootoutView from '../views/PenaltyShootoutView.vue'
@@ -94,7 +96,9 @@ const routes = [
   { path: '/admin/quiz-templates', name: 'admin-quiz-templates', component: AdminQuizTemplatesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/report-problem', name: 'report-problem', component: ReportProblemView, meta: { requiresAuth: true } },
   { path: '/admin/reports', name: 'admin-reports', component: AdminReportsView, meta: { requiresAuth: true, requiresAdmin: true } },
-  { path: '/admin/statistics', name: 'admin-statistics', component: AdminStatisticsView, meta: { requiresAuth: true, requiresAdmin: true } }
+  { path: '/admin/statistics', name: 'admin-statistics', component: AdminStatisticsView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/expiring-content', name: 'admin-expiring-content', component: AdminExpiringContentView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/duplicate-subjects', name: 'admin-duplicate-subjects', component: AdminDuplicateSubjectsView, meta: { requiresAuth: true, requiresAdmin: true } }
 ]
 
 const router = createRouter({

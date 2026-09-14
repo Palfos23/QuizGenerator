@@ -52,6 +52,7 @@ public class LineupAdminService {
                             l.getMatchDate(), l.getWeekStartDate(), l.getFormation());
                     dto.setMaxStrikes(l.getMaxStrikes());
                     dto.setExcludedFromBattle(l.isExcludedFromBattle());
+                    dto.setCanExpire(l.isCanExpire());
                     dto.setEntireCategoryPool(l.isEntireCategoryPool());
                     return dto;
                 })
@@ -136,6 +137,7 @@ public class LineupAdminService {
         lineup.setScoreAgainst(request.getScoreAgainst());
         lineup.setMaxStrikes(request.getMaxStrikes());
         lineup.setExcludedFromBattle(request.isExcludedFromBattle());
+        lineup.setCanExpire(request.isCanExpire());
         lineup.setKitColor(request.getKitColor() != null && !request.getKitColor().isBlank()
                 ? request.getKitColor() : DEFAULT_KIT_COLOR);
         lineup.setGoalkeeperKitColor(request.getGoalkeeperKitColor() != null && !request.getGoalkeeperKitColor().isBlank()
@@ -227,6 +229,7 @@ public class LineupAdminService {
         dto.setScoreAgainst(lineup.getScoreAgainst());
         dto.setMaxStrikes(lineup.getMaxStrikes());
         dto.setExcludedFromBattle(lineup.isExcludedFromBattle());
+        dto.setCanExpire(lineup.isCanExpire());
         dto.setKitColor(lineup.getKitColor() != null ? lineup.getKitColor() : DEFAULT_KIT_COLOR);
         dto.setGoalkeeperKitColor(lineup.getGoalkeeperKitColor() != null ? lineup.getGoalkeeperKitColor() : DEFAULT_GK_KIT_COLOR);
         dto.setEntireCategoryPool(lineup.isEntireCategoryPool());

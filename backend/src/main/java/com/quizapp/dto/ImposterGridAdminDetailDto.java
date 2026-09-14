@@ -9,6 +9,7 @@ public class ImposterGridAdminDetailDto {
     private String sport;
     private String displayMode;
     private boolean fitImages;
+    private boolean canExpire;
     private List<TileDetail> tiles;
 
     public Long getId() {
@@ -57,6 +58,14 @@ public class ImposterGridAdminDetailDto {
 
     public void setFitImages(boolean fitImages) {
         this.fitImages = fitImages;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public List<TileDetail> getTiles() {

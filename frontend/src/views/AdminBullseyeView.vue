@@ -41,6 +41,7 @@
               {{ q.title }}
               <span v-if="q.excludedFromBullseye" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Bullseye</span>
               <span v-if="q.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
+              <span v-if="q.canExpire" class="tag" style="background:rgba(242,183,5,0.15); color:var(--gold); margin-left:6px;">Can expire</span>
             </div>
             <div class="saved-quiz-meta">
               {{ sportLabel(q.sport) }} · {{ q.entryCount }} answers · "{{ q.groupDigits === false ? q.targetValue : formatNumber(q.targetValue) }} {{ q.statLabel }}"
@@ -133,6 +134,16 @@
           Use this once a question's stat values are outdated - it stops being
           offered to Bullseye's random or manual pick without deleting it.
         </p>
+      </div>
+
+      <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
+        <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
+        <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
+          Can expire
+          <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
+            e.g. "current all-time top goalscorer" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+          </div>
+        </label>
       </div>
 
       <div class="field">
@@ -316,6 +327,7 @@ const form = reactive({
   targetValue: null,
   statLabel: '',
   excludedFromBullseye: false,
+  canExpire: false,
   entireCategoryPool: false,
   groupDigits: true
 })
@@ -567,6 +579,7 @@ function resetForm() {
   form.targetValue = null
   form.statLabel = ''
   form.excludedFromBullseye = false
+  form.canExpire = false
   form.entireCategoryPool = false
   form.groupDigits = true
   entries.value = []
@@ -597,6 +610,7 @@ async function openEdit(id) {
     form.targetValue = detail.targetValue
     form.statLabel = detail.statLabel
     form.excludedFromBullseye = detail.excludedFromBullseye
+    form.canExpire = detail.canExpire || false
     form.entireCategoryPool = detail.entireCategoryPool || false
     form.groupDigits = detail.groupDigits !== false
 
@@ -655,6 +669,7 @@ async function saveQuestion() {
     targetValue: form.targetValue,
     statLabel: form.statLabel,
     excludedFromBullseye: form.excludedFromBullseye,
+    canExpire: form.canExpire,
     entireCategoryPool: form.entireCategoryPool,
     groupDigits: form.groupDigits,
     entries: entries.value.map(e => ({ athleteId: e.athleteId, statValue: e.statValue }))

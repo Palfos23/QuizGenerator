@@ -28,7 +28,7 @@ public class TensionQuestionService {
         return questionRepository.findAllSummaries().stream()
                 .map(p -> new com.quizapp.dto.TensionQuestionSummaryDto(
                         p.getId(), p.getTitle(), p.getMainCategory(), p.getAnswersCategory(),
-                        p.getSource(), p.getSafeCount(), p.getTensionCount()))
+                        p.getSource(), p.getSafeCount(), p.getTensionCount(), Boolean.TRUE.equals(p.getCanExpire())))
                 .collect(Collectors.toList());
     }
 
@@ -116,6 +116,7 @@ public class TensionQuestionService {
         q.setMainCategory(dto.getMainCategory());
         q.setAnswersCategory(dto.getAnswersCategory());
         q.setSource(dto.getSource());
+        q.setCanExpire(dto.isCanExpire());
         q.setSafeAnswers(toEntryEntities(dto.getSafeAnswers()));
         q.setTensionAnswers(toEntryEntities(dto.getTensionAnswers()));
         q.setUpdatedAt(java.time.Instant.now());
@@ -139,6 +140,7 @@ public class TensionQuestionService {
         dto.setMainCategory(q.getMainCategory());
         dto.setAnswersCategory(q.getAnswersCategory());
         dto.setSource(q.getSource());
+        dto.setCanExpire(q.isCanExpire());
         dto.setSafeAnswers(q.getSafeAnswers().stream()
                 .sorted((a, b) -> a.getRank() - b.getRank())
                 .map(TensionQuestionService::toEntryDto)

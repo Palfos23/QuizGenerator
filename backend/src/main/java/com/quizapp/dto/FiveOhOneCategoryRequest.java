@@ -12,6 +12,8 @@ public class FiveOhOneCategoryRequest {
 
     private String description;
 
+    private boolean canExpire;
+
     @NotEmpty
     @Valid
     private List<FiveOhOneEntryDto> entries;
@@ -20,6 +22,8 @@ public class FiveOhOneCategoryRequest {
     public void setTitle(String title) { this.title = title; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public boolean isCanExpire() { return canExpire; }
+    public void setCanExpire(boolean canExpire) { this.canExpire = canExpire; }
     public List<FiveOhOneEntryDto> getEntries() { return entries; }
     public void setEntries(List<FiveOhOneEntryDto> entries) { this.entries = entries; }
 }

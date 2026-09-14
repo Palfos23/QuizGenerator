@@ -19,6 +19,8 @@ public class FlashbackYearRequest {
 
     private boolean excludedFromFlashback = false;
 
+    private boolean canExpire = false;
+
     public String getTitle() {
         return title;
     }
@@ -49,5 +51,13 @@ public class FlashbackYearRequest {
 
     public void setExcludedFromFlashback(boolean excludedFromFlashback) {
         this.excludedFromFlashback = excludedFromFlashback;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 }

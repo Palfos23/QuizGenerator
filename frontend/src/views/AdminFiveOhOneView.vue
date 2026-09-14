@@ -27,7 +27,10 @@
       <div v-else class="saved-quiz-list">
         <div v-for="c in pagedCategories" :key="c.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
-            <div class="saved-quiz-title">{{ c.title }}</div>
+            <div class="saved-quiz-title">
+              {{ c.title }}
+              <span v-if="c.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Can expire</span>
+            </div>
             <div class="saved-quiz-meta">{{ c.entryCount }} entries<span v-if="c.description"> · {{ c.description }}</span></div>
           </div>
           <div style="display:flex; gap:8px;">
@@ -57,6 +60,16 @@
       <div class="field">
         <label>Description <span class="picker-hint">optional flavor text</span></label>
         <input type="text" v-model="form.description" placeholder="Shown to players before they pick this category" />
+      </div>
+
+      <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
+        <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
+        <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
+          Can expire
+          <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
+            e.g. "countries by current population" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+          </div>
+        </label>
       </div>
 
       <details class="advanced-disclosure">
@@ -127,7 +140,7 @@ const saving = ref(false)
 const editingId = ref(null)
 const pendingDelete = ref(null)
 
-const form = reactive({ title: '', description: '' })
+const form = reactive({ title: '', description: '', canExpire: false })
 const entries = ref([]) // [{ name, value }]
 const bulkText = ref('')
 
@@ -156,6 +169,7 @@ function openCreate() {
   editingId.value = null
   form.title = ''
   form.description = ''
+  form.canExpire = false
   entries.value = []
   bulkText.value = ''
   entryPage.value = 1
@@ -170,6 +184,7 @@ async function openEdit(id) {
     editingId.value = id
     form.title = detail.title
     form.description = detail.description || ''
+    form.canExpire = detail.canExpire || false
     entries.value = detail.entries.map(e => ({ name: e.name, value: e.value }))
     bulkText.value = ''
     entryPage.value = 1
@@ -230,7 +245,7 @@ async function saveCategory() {
 
   saving.value = true
   try {
-    const payload = { title: form.title.trim(), description: form.description.trim() || null, entries: cleanEntries }
+    const payload = { title: form.title.trim(), description: form.description.trim() || null, canExpire: form.canExpire, entries: cleanEntries }
     if (editingId.value) {
       await api.adminUpdateFiveOhOneCategory(editingId.value, payload)
       toast.show('Category updated.')

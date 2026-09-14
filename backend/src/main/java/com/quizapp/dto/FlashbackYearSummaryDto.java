@@ -9,15 +9,17 @@ public class FlashbackYearSummaryDto {
     private Integer year;
     private int hintCount;
     private boolean excludedFromFlashback;
+    private boolean canExpire;
     private Instant updatedAt;
 
     public FlashbackYearSummaryDto(Long id, String title, Integer year, int hintCount,
-                                    boolean excludedFromFlashback, Instant updatedAt) {
+                                    boolean excludedFromFlashback, boolean canExpire, Instant updatedAt) {
         this.id = id;
         this.title = title;
         this.year = year;
         this.hintCount = hintCount;
         this.excludedFromFlashback = excludedFromFlashback;
+        this.canExpire = canExpire;
         this.updatedAt = updatedAt;
     }
 
@@ -39,6 +41,10 @@ public class FlashbackYearSummaryDto {
 
     public boolean isExcludedFromFlashback() {
         return excludedFromFlashback;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
     }
 
     public Instant getUpdatedAt() {

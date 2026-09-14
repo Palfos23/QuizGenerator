@@ -42,6 +42,18 @@ public class GridSummaryDto {
         this.excludedFromGridBattle = excludedFromGridBattle;
     }
 
+    // Flags this grid's content as time-sensitive for the admin "Can expire"
+    // review page - see Grid.canExpire.
+    private boolean canExpire;
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
+    }
+
     // Only set on the admin management list - lets an admin see at a glance
     // which grids auto-draw their whole candidate pool from a category
     // instead of an explicitly curated list.

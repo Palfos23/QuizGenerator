@@ -37,6 +37,13 @@ public class AdminAthleteController {
         return athleteService.update(id, dto);
     }
 
+    // Data-quality scan for the "Duplicate subjects" Insights page - see
+    // AthleteService#findDuplicateGroups for the actual detection logic.
+    @GetMapping("/duplicates")
+    public List<com.quizapp.dto.AthleteDuplicateGroupDto> duplicates() {
+        return athleteService.findDuplicateGroups();
+    }
+
     @GetMapping("/{id}/grid-usage")
     public List<com.quizapp.dto.AthleteGridUsageDto> gridUsage(@PathVariable Long id) {
         return athleteService.findGridUsage(id);

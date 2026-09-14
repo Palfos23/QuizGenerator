@@ -41,6 +41,8 @@ public class LineupRequest {
 
     private boolean excludedFromBattle = false;
 
+    private boolean canExpire = false;
+
     private String kitColor;
     private String goalkeeperKitColor;
 
@@ -91,6 +93,8 @@ public class LineupRequest {
     public void setMaxStrikes(Integer maxStrikes) { this.maxStrikes = maxStrikes; }
     public boolean isExcludedFromBattle() { return excludedFromBattle; }
     public void setExcludedFromBattle(boolean excludedFromBattle) { this.excludedFromBattle = excludedFromBattle; }
+    public boolean isCanExpire() { return canExpire; }
+    public void setCanExpire(boolean canExpire) { this.canExpire = canExpire; }
     public String getKitColor() { return kitColor; }
     public void setKitColor(String kitColor) { this.kitColor = kitColor; }
     public String getGoalkeeperKitColor() { return goalkeeperKitColor; }

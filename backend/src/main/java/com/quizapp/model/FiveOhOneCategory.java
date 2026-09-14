@@ -37,6 +37,21 @@ public class FiveOhOneCategory {
         this.updatedAt = updatedAt;
     }
 
+    // Flags this category's content as time-sensitive (e.g. "current all-time top
+    // scorer") so it surfaces on the admin "Can expire" review page for periodic
+    // rechecking. Purely an admin bookkeeping signal - doesn't affect visibility or
+    // behavior anywhere else. See Grid.canExpire for the same field on another game.
+    @Column(name = "can_expire", nullable = false)
+    private boolean canExpire = false;
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
+    }
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<FiveOhOneEntry> entries = new ArrayList<>();
 

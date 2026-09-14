@@ -15,6 +15,7 @@ public class GridAdminDetailDto {
     private boolean sortAscending;
     private boolean ranked;
     private boolean excludedFromGridBattle;
+    private boolean canExpire;
     private String revealMode;
     private boolean fitImages;
     private boolean entireCategoryPool;
@@ -152,6 +153,14 @@ public class GridAdminDetailDto {
 
     public void setExcludedFromGridBattle(boolean excludedFromGridBattle) {
         this.excludedFromGridBattle = excludedFromGridBattle;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public String getRevealMode() {

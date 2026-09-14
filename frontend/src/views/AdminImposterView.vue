@@ -32,7 +32,10 @@
         </thead>
         <tbody>
           <tr v-for="g in pagedGrids" :key="g.id">
-            <td>{{ g.title }}</td>
+            <td>
+              {{ g.title }}
+              <span v-if="g.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Can expire</span>
+            </td>
             <td>{{ g.sport }}</td>
             <td>{{ g.tileCount }}</td>
             <td>{{ g.imposterCount }}</td>
@@ -99,6 +102,16 @@
           For flags and full-frame logos - shows the entire image with a little padding
           instead of cropping it to fill the square. Leave off for portrait photos.
         </p>
+      </div>
+
+      <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
+        <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
+        <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
+          Can expire
+          <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
+            e.g. "current all-time top goalscorer" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+          </div>
+        </label>
       </div>
 
       <div class="field" style="position:relative;">
@@ -273,7 +286,7 @@ const pendingDelete = ref(null)
 const editingAthleteForModal = ref(null)
 const editingId = ref(null)
 
-const form = ref({ title: '', description: '', sport: '', displayMode: 'NAME_AND_PHOTO', fitImages: false })
+const form = ref({ title: '', description: '', sport: '', displayMode: 'NAME_AND_PHOTO', fitImages: false, canExpire: false })
 const tiles = ref([]) // [{ athleteId, name, imposter, replacedAthleteId, replacedAthleteName, replacedSearchTerm, replacedSearchResults, clubId }]
 
 const clubOptions = ref([])
@@ -303,7 +316,7 @@ async function loadList() {
 
 function openCreate() {
   editingId.value = null
-  form.value = { title: '', description: '', sport: gridCategories.categories.value[0] || '', displayMode: 'NAME_AND_PHOTO', fitImages: false }
+  form.value = { title: '', description: '', sport: gridCategories.categories.value[0] || '', displayMode: 'NAME_AND_PHOTO', fitImages: false, canExpire: false }
   tiles.value = []
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
@@ -322,7 +335,8 @@ async function openEdit(id) {
       description: detail.description || '',
       sport: detail.sport,
       displayMode: detail.displayMode,
-      fitImages: detail.fitImages || false
+      fitImages: detail.fitImages || false,
+      canExpire: detail.canExpire || false
     }
     tiles.value = detail.tiles.map(t => ({
       athleteId: t.athlete.id,
@@ -481,6 +495,7 @@ async function save() {
     sport: form.value.sport,
     displayMode: form.value.displayMode,
     fitImages: form.value.fitImages,
+    canExpire: form.value.canExpire,
     tiles: tiles.value.map(t => ({
       athleteId: t.athleteId,
       imposter: t.imposter,

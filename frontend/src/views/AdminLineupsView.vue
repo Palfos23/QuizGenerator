@@ -38,6 +38,7 @@
               {{ l.title }}
               <span v-if="l.excludedFromBattle" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in XI Battle</span>
               <span v-if="l.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
+              <span v-if="l.canExpire" class="tag" style="background:rgba(255,193,7,0.15); color:#ffc107; margin-left:6px;">Can expire</span>
             </div>
             <div class="saved-quiz-meta">
               {{ l.teamName }} vs {{ l.opponentName }}
@@ -150,6 +151,16 @@
           Use this once a board's roster needs correcting - it stays fully playable solo, but stops
           being offered to XI Battle's random or manual pick.
         </p>
+      </div>
+
+      <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
+        <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
+        <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
+          Can expire
+          <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
+            e.g. "current all-time top goalscorer" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+          </div>
+        </label>
       </div>
 
       <div class="field">
@@ -387,7 +398,7 @@ const showPreview = ref(false)
 const form = reactive({
   title: '', competition: '', matchDate: '', weekStartDate: '', formation: '4-3-3',
   teamName: '', teamCrestUrl: '', opponentName: '', opponentCrestUrl: '',
-  scoreFor: null, scoreAgainst: null, maxStrikes: 5, excludedFromBattle: false,
+  scoreFor: null, scoreAgainst: null, maxStrikes: 5, excludedFromBattle: false, canExpire: false,
   kitColor: DEFAULT_KIT_COLOR, goalkeeperKitColor: DEFAULT_GK_KIT_COLOR, entireCategoryPool: false
 })
 const candidates = ref([])
@@ -627,6 +638,7 @@ function resetForm() {
   form.scoreAgainst = null
   form.maxStrikes = 5
   form.excludedFromBattle = false
+  form.canExpire = false
   form.kitColor = DEFAULT_KIT_COLOR
   form.goalkeeperKitColor = DEFAULT_GK_KIT_COLOR
   form.entireCategoryPool = false
@@ -665,6 +677,7 @@ async function openEdit(id) {
     form.scoreAgainst = detail.scoreAgainst
     form.maxStrikes = detail.maxStrikes
     form.excludedFromBattle = detail.excludedFromBattle
+    form.canExpire = detail.canExpire || false
     form.kitColor = detail.kitColor || DEFAULT_KIT_COLOR
     form.goalkeeperKitColor = detail.goalkeeperKitColor || DEFAULT_GK_KIT_COLOR
     form.entireCategoryPool = detail.entireCategoryPool || false
@@ -749,6 +762,7 @@ async function saveLineup() {
     scoreAgainst: form.scoreAgainst,
     maxStrikes: form.maxStrikes,
     excludedFromBattle: form.excludedFromBattle,
+    canExpire: form.canExpire,
     kitColor: form.kitColor,
     goalkeeperKitColor: form.goalkeeperKitColor,
     entireCategoryPool: form.entireCategoryPool,

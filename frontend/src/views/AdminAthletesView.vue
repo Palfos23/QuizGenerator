@@ -152,6 +152,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
 import AthleteFormModal from '../components/AthleteFormModal.vue'
@@ -342,7 +343,12 @@ const pagedAthletes = computed(() => {
 })
 watch([searchText, sportFilter], () => { page.value = 1 })
 
+const route = useRoute()
 onMounted(() => {
+  // Deep-link support for the "Duplicate subjects" Insights page's "Edit"
+  // links (?q=<name>) - prefills the same search box a person would use here
+  // themselves, rather than needing a full jump-straight-into-edit-mode flow.
+  if (route.query.q) searchText.value = String(route.query.q)
   loadAthletes()
   gridCategories.ensureLoaded()
 })

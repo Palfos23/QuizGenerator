@@ -33,7 +33,8 @@ public interface TensionQuestionRepository extends JpaRepository<TensionQuestion
     @Query("SELECT q.id as id, q.title as title, q.mainCategory as mainCategory, " +
            "q.answersCategory as answersCategory, q.source as source, " +
            "(SELECT COUNT(a) FROM TensionAnswerEntry a WHERE a.question = q AND a.tension = false) as safeCount, " +
-           "(SELECT COUNT(a) FROM TensionAnswerEntry a WHERE a.question = q AND a.tension = true) as tensionCount " +
+           "(SELECT COUNT(a) FROM TensionAnswerEntry a WHERE a.question = q AND a.tension = true) as tensionCount, " +
+           "q.canExpire as canExpire " +
            "FROM TensionQuestion q")
     List<TensionQuestionSummaryProjection> findAllSummaries();
 }

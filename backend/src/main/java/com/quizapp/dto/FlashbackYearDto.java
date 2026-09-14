@@ -14,6 +14,7 @@ public class FlashbackYearDto {
     private Integer year;
     private List<String> hints;
     private boolean excludedFromFlashback;
+    private boolean canExpire;
     private Instant updatedAt;
 
     public Long getId() {
@@ -54,6 +55,14 @@ public class FlashbackYearDto {
 
     public void setExcludedFromFlashback(boolean excludedFromFlashback) {
         this.excludedFromFlashback = excludedFromFlashback;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public Instant getUpdatedAt() {

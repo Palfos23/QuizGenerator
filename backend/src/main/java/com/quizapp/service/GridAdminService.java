@@ -58,6 +58,7 @@ public class GridAdminService {
                             g.getEntries().size(), null, null);
                     dto.setMaxStrikes(g.getMaxStrikes());
                     dto.setExcludedFromGridBattle(g.isExcludedFromGridBattle());
+                    dto.setCanExpire(g.isCanExpire());
                     dto.setEntireCategoryPool(g.isEntireCategoryPool());
                     dto.setUpdatedAt(g.getUpdatedAt());
                     return dto;
@@ -116,6 +117,7 @@ public class GridAdminService {
         grid.setSortAscending(request.isSortAscending());
         grid.setRanked(request.isRanked());
         grid.setExcludedFromGridBattle(request.isExcludedFromGridBattle());
+        grid.setCanExpire(request.isCanExpire());
         grid.setRevealMode(request.getRevealMode() != null
                 ? Grid.RevealMode.valueOf(request.getRevealMode())
                 : Grid.RevealMode.PHOTO);
@@ -263,6 +265,7 @@ public class GridAdminService {
         dto.setSortAscending(grid.isSortAscending());
         dto.setRanked(grid.isRanked());
         dto.setExcludedFromGridBattle(grid.isExcludedFromGridBattle());
+        dto.setCanExpire(grid.isCanExpire());
         dto.setRevealMode(grid.getRevealMode().name());
         dto.setFitImages(grid.isFitImages());
         dto.setEntireCategoryPool(grid.isEntireCategoryPool());

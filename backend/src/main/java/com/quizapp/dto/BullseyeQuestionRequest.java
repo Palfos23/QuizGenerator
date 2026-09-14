@@ -23,6 +23,8 @@ public class BullseyeQuestionRequest {
 
     private boolean excludedFromBullseye = false;
 
+    private boolean canExpire = false;
+
     private boolean entireCategoryPool = false;
 
     private boolean groupDigits = true;
@@ -69,6 +71,14 @@ public class BullseyeQuestionRequest {
 
     public void setExcludedFromBullseye(boolean excludedFromBullseye) {
         this.excludedFromBullseye = excludedFromBullseye;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public boolean isEntireCategoryPool() {

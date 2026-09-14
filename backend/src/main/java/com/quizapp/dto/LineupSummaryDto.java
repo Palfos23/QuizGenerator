@@ -16,6 +16,7 @@ public class LineupSummaryDto {
     private String formation;
     private Integer maxStrikes;
     private boolean excludedFromBattle;
+    private boolean canExpire;
 
     public LineupSummaryDto(Long id, String title, String competition, String teamName, String opponentName,
                              Integer scoreFor, Integer scoreAgainst, LocalDate matchDate, LocalDate weekStartDate,
@@ -46,6 +47,8 @@ public class LineupSummaryDto {
     public void setMaxStrikes(Integer maxStrikes) { this.maxStrikes = maxStrikes; }
     public boolean isExcludedFromBattle() { return excludedFromBattle; }
     public void setExcludedFromBattle(boolean excludedFromBattle) { this.excludedFromBattle = excludedFromBattle; }
+    public boolean isCanExpire() { return canExpire; }
+    public void setCanExpire(boolean canExpire) { this.canExpire = canExpire; }
 
     // Only set on the admin management list - same purpose as
     // GridSummaryDto.entireCategoryPool.

@@ -401,6 +401,9 @@ export default {
   adminUpdateAthlete(id, payload) {
     return client.put(`/admin/athletes/${id}`, payload).then(r => r.data)
   },
+  adminFindDuplicateAthletes() {
+    return client.get('/admin/athletes/duplicates').then(r => r.data)
+  },
   adminGetAthleteGridUsage(id) {
     return client.get(`/admin/athletes/${id}/grid-usage`).then(r => r.data)
   },

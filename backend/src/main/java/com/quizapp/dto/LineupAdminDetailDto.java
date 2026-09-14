@@ -19,6 +19,7 @@ public class LineupAdminDetailDto {
     private Integer scoreAgainst;
     private int maxStrikes;
     private boolean excludedFromBattle;
+    private boolean canExpire;
     private String kitColor;
     private String goalkeeperKitColor;
     private boolean entireCategoryPool;
@@ -53,6 +54,8 @@ public class LineupAdminDetailDto {
     public void setMaxStrikes(int maxStrikes) { this.maxStrikes = maxStrikes; }
     public boolean isExcludedFromBattle() { return excludedFromBattle; }
     public void setExcludedFromBattle(boolean excludedFromBattle) { this.excludedFromBattle = excludedFromBattle; }
+    public boolean isCanExpire() { return canExpire; }
+    public void setCanExpire(boolean canExpire) { this.canExpire = canExpire; }
     public String getKitColor() { return kitColor; }
     public void setKitColor(String kitColor) { this.kitColor = kitColor; }
     public String getGoalkeeperKitColor() { return goalkeeperKitColor; }

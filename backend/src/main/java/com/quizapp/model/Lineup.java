@@ -98,6 +98,11 @@ public class Lineup {
     @Column(name = "excluded_from_battle", nullable = false)
     private boolean excludedFromBattle = false;
 
+    // Flags a time-sensitive fact (e.g. "current all-time top scorer") for
+    // periodic review on the admin "Can expire" aggregated page.
+    @Column(name = "can_expire", nullable = false)
+    private boolean canExpire = false;
+
     // Shirt color for the 10 outfield slots (hex, e.g. "#d92332"), and a
     // separate one for slot 0 - the goalkeeper always wears a different kit in
     // real football, so the pitch renderer uses this to make the keeper's
@@ -267,6 +272,14 @@ public class Lineup {
 
     public void setExcludedFromBattle(boolean excludedFromBattle) {
         this.excludedFromBattle = excludedFromBattle;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public String getKitColor() {

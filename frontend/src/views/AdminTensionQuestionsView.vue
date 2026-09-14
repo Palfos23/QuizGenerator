@@ -38,6 +38,7 @@
               <div class="saved-quiz-title">{{ q.title }}</div>
               <div class="saved-quiz-meta">
                 {{ q.mainCategory || 'Uncategorized' }} · {{ q.safeCount }} safe · {{ q.tensionCount }} tension
+                <span v-if="q.canExpire" class="tag" style="color:var(--gold); border-color:var(--gold);">Can expire</span>
               </div>
             </div>
             <div style="display:flex; gap:8px;">
@@ -88,6 +89,16 @@
       <div class="field">
         <label>Source <span class="picker-hint">optional - shown to players so they know where the data came from</span></label>
         <input type="text" v-model="form.source" placeholder="e.g. Lionpopulation.com" />
+      </div>
+
+      <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
+        <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
+        <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
+          Can expire
+          <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
+            e.g. "current all-time top scorer" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+          </div>
+        </label>
       </div>
 
       <div class="field">
@@ -168,7 +179,7 @@ const editingId = ref(null)
 const pendingDelete = ref(null)
 
 const form = reactive({
-  title: '', mainCategory: '', answersCategory: '', source: '', safeAnswers: [], tensionAnswers: []
+  title: '', mainCategory: '', answersCategory: '', source: '', canExpire: false, safeAnswers: [], tensionAnswers: []
 })
 
 const categoryOptions = ref([])
@@ -244,6 +255,7 @@ function resetForm() {
   form.mainCategory = ''
   form.answersCategory = ''
   form.source = ''
+  form.canExpire = false
   form.safeAnswers = []
   form.tensionAnswers = []
 }
@@ -271,6 +283,7 @@ async function openEdit(id) {
     form.mainCategory = detail.mainCategory || ''
     form.answersCategory = detail.answersCategory || ''
     form.source = detail.source || ''
+    form.canExpire = detail.canExpire || false
     form.safeAnswers = detail.safeAnswers.map(a => ({ rank: a.rank, text: a.text }))
     form.tensionAnswers = detail.tensionAnswers.map(a => ({ rank: a.rank, text: a.text }))
     editingId.value = id

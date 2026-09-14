@@ -52,6 +52,11 @@ public class FlashbackYear {
     @Column(name = "excluded_from_flashback", nullable = false, columnDefinition = "boolean default false")
     private boolean excludedFromFlashback = false;
 
+    // Flags a time-sensitive fact (e.g. "current all-time top scorer") for
+    // later review on the aggregated "Can expire" admin page.
+    @Column(name = "can_expire", nullable = false, columnDefinition = "boolean default false")
+    private boolean canExpire = false;
+
     // Same purpose as Grid.updatedAt - see that field for the full reasoning.
     @Column(name = "updated_at")
     private Instant updatedAt;
@@ -97,6 +102,14 @@ public class FlashbackYear {
 
     public void setExcludedFromFlashback(boolean excludedFromFlashback) {
         this.excludedFromFlashback = excludedFromFlashback;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public Instant getUpdatedAt() {

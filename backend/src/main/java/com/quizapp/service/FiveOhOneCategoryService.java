@@ -24,7 +24,7 @@ public class FiveOhOneCategoryService {
     @Transactional(readOnly = true)
     public List<FiveOhOneCategorySummaryDto> findAllSummaries() {
         return categoryRepository.findAll().stream()
-                .map(c -> new FiveOhOneCategorySummaryDto(c.getId(), c.getTitle(), c.getDescription(), c.getEntries().size()))
+                .map(c -> new FiveOhOneCategorySummaryDto(c.getId(), c.getTitle(), c.getDescription(), c.getEntries().size(), c.isCanExpire()))
                 .collect(Collectors.toList());
     }
 
@@ -60,6 +60,7 @@ public class FiveOhOneCategoryService {
     private void applyRequest(FiveOhOneCategory category, FiveOhOneCategoryRequest request) {
         category.setTitle(request.getTitle());
         category.setDescription(request.getDescription());
+        category.setCanExpire(request.isCanExpire());
         category.setUpdatedAt(java.time.Instant.now());
 
         // Reuse existing entries by name where possible, rather than always creating
@@ -84,6 +85,7 @@ public class FiveOhOneCategoryService {
                 .map(e -> new FiveOhOneEntryDto(e.getId(), e.getName(), e.getValue()))
                 .collect(Collectors.toList());
         FiveOhOneCategoryDto dto = new FiveOhOneCategoryDto(c.getId(), c.getTitle(), c.getDescription(), entries);
+        dto.setCanExpire(c.isCanExpire());
         dto.setUpdatedAt(c.getUpdatedAt());
         return dto;
     }

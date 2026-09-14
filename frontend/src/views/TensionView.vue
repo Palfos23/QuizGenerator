@@ -415,6 +415,7 @@ function onGameOver(scores) {
   passAndPlayState.clear('tension-progress')
   savedPassAndPlay.value = null
   lastGameWasOnline.value = false
+  api.recordGamePlayed('TENSION')
   finalScores.value = scores
   stage.value = 'done'
 }

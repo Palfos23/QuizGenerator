@@ -77,6 +77,7 @@ public class ImposterGridAdminService {
         grid.setSport(request.getSport());
         grid.setDisplayMode(ImposterGrid.DisplayMode.valueOf(request.getDisplayMode()));
         grid.setFitImages(request.isFitImages());
+        grid.setCanExpire(request.isCanExpire());
         grid.setUpdatedAt(java.time.Instant.now());
 
         List<ImposterTile> tiles = new ArrayList<>();
@@ -163,6 +164,7 @@ public class ImposterGridAdminService {
         dto.setSport(grid.getSport());
         dto.setTileCount(grid.getTiles().size());
         dto.setImposterCount((int) grid.getTiles().stream().filter(ImposterTile::isImposter).count());
+        dto.setCanExpire(grid.isCanExpire());
         return dto;
     }
 
@@ -174,6 +176,7 @@ public class ImposterGridAdminService {
         dto.setSport(grid.getSport());
         dto.setDisplayMode(grid.getDisplayMode().name());
         dto.setFitImages(grid.isFitImages());
+        dto.setCanExpire(grid.isCanExpire());
 
         java.util.Set<Athlete> distinctAthletes = new java.util.LinkedHashSet<>();
         for (ImposterTile t : grid.getTiles()) {

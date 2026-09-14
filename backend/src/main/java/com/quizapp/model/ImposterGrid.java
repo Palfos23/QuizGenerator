@@ -57,6 +57,12 @@ public class ImposterGrid {
     @Column(name = "fit_images", nullable = false, columnDefinition = "boolean default false")
     private boolean fitImages = false;
 
+    // Flags a time-sensitive fact (e.g. "current all-time top scorer") for
+    // periodic review on the admin "Can expire" page. Mirrors
+    // Grid.excludedFromGridBattle in style.
+    @Column(name = "can_expire", nullable = false)
+    private boolean canExpire = false;
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -121,6 +127,14 @@ public class ImposterGrid {
 
     public void setFitImages(boolean fitImages) {
         this.fitImages = fitImages;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
     }
 
     public Instant getCreatedAt() {

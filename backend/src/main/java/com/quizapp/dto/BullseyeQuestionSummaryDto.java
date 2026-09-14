@@ -9,12 +9,13 @@ public class BullseyeQuestionSummaryDto {
     private String statLabel;
     private int entryCount;
     private boolean excludedFromBullseye;
+    private boolean canExpire;
     private boolean entireCategoryPool;
     private boolean groupDigits;
 
     public BullseyeQuestionSummaryDto(Long id, String title, String sport, Integer targetValue,
                                        String statLabel, int entryCount, boolean excludedFromBullseye,
-                                       boolean entireCategoryPool, boolean groupDigits) {
+                                       boolean canExpire, boolean entireCategoryPool, boolean groupDigits) {
         this.id = id;
         this.title = title;
         this.sport = sport;
@@ -22,6 +23,7 @@ public class BullseyeQuestionSummaryDto {
         this.statLabel = statLabel;
         this.entryCount = entryCount;
         this.excludedFromBullseye = excludedFromBullseye;
+        this.canExpire = canExpire;
         this.entireCategoryPool = entireCategoryPool;
         this.groupDigits = groupDigits;
     }
@@ -52,6 +54,10 @@ public class BullseyeQuestionSummaryDto {
 
     public boolean isExcludedFromBullseye() {
         return excludedFromBullseye;
+    }
+
+    public boolean isCanExpire() {
+        return canExpire;
     }
 
     public boolean isEntireCategoryPool() {

@@ -238,7 +238,9 @@ const ADMIN_MENUS = [
     label: 'Insights',
     items: [
       { to: '/admin/statistics', label: 'Statistics' },
-      { to: '/admin/reports', label: 'Reports' }
+      { to: '/admin/reports', label: 'Reports' },
+      { to: '/admin/expiring-content', label: 'Can expire' },
+      { to: '/admin/duplicate-subjects', label: 'Duplicate subjects' }
     ]
   }
 ]

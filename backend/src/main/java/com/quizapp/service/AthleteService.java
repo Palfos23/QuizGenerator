@@ -186,6 +186,135 @@ public class AthleteService {
         return toDtosWithPhotos(filtered);
     }
 
+    // Data-quality scan for the admin "Duplicate subjects" Insights page: within
+    // each sport, groups together athletes whose names look like the same
+    // person entered more than once - either an exact match once accents/
+    // special letters are folded away (o/ae/a instead of o/ae/a with special
+    // Nordic letters, accented Latin letters via Unicode normalization), or one
+    // entry being just a last name that matches another entry's last name. This
+    // is read-only and flags for manual review - it never merges or deletes
+    // anything, since that would mean reassigning this athlete's Grid/Lineup/
+    // Imposter board appearances, which needs a human decision about which
+    // record should actually survive.
+    @Transactional(readOnly = true)
+    public List<com.quizapp.dto.AthleteDuplicateGroupDto> findDuplicateGroups() {
+        Map<String, List<Athlete>> bySport = athleteRepository.findAll().stream()
+                .collect(Collectors.groupingBy(a -> a.getSport() == null ? "" : a.getSport().trim().toLowerCase()));
+
+        List<com.quizapp.dto.AthleteDuplicateGroupDto> groups = new ArrayList<>();
+        for (List<Athlete> athletes : bySport.values()) {
+            if (athletes.size() < 2) continue;
+            groups.addAll(clusterDuplicates(athletes));
+        }
+        return groups;
+    }
+
+    private List<com.quizapp.dto.AthleteDuplicateGroupDto> clusterDuplicates(List<Athlete> athletes) {
+        int n = athletes.size();
+        List<Set<String>> normalized = athletes.stream().map(a -> normalizeVariants(a.getName())).collect(Collectors.toList());
+        // Union-find over this sport's athletes - two entries only need to be
+        // linked by ANY pair inside a cluster (e.g. "E. Haaland" <-> "Erling
+        // Haaland" <-> "Haaland") for the whole cluster to be reported together.
+        int[] parent = new int[n];
+        for (int i = 0; i < n; i++) parent[i] = i;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (matchReason(normalized.get(i), normalized.get(j)) == null) continue;
+                int ri = find(parent, i);
+                int rj = find(parent, j);
+                if (ri != rj) parent[ri] = rj;
+            }
+        }
+
+        Map<Integer, List<Integer>> clusters = new java.util.LinkedHashMap<>();
+        for (int i = 0; i < n; i++) {
+            clusters.computeIfAbsent(find(parent, i), k -> new ArrayList<>()).add(i);
+        }
+
+        List<com.quizapp.dto.AthleteDuplicateGroupDto> groups = new ArrayList<>();
+        for (List<Integer> indices : clusters.values()) {
+            if (indices.size() < 2) continue;
+            // Recompute reasons directly from the final cluster's members, rather
+            // than trying to track them during union-find - simpler and always
+            // correct, since a cluster is tiny (a handful of entries at most).
+            Set<String> reasons = new java.util.LinkedHashSet<>();
+            for (int a = 0; a < indices.size(); a++) {
+                for (int b = a + 1; b < indices.size(); b++) {
+                    String reason = matchReason(normalized.get(indices.get(a)), normalized.get(indices.get(b)));
+                    if (reason != null) reasons.add(reason);
+                }
+            }
+            List<Athlete> members = indices.stream().map(athletes::get).collect(Collectors.toList());
+            groups.add(new com.quizapp.dto.AthleteDuplicateGroupDto(
+                    members.get(0).getSport(), String.join("; ", reasons), toDtosWithPhotos(members)));
+        }
+        return groups;
+    }
+
+    private int find(int[] parent, int i) {
+        while (parent[i] != i) {
+            parent[i] = parent[parent[i]];
+            i = parent[i];
+        }
+        return i;
+    }
+
+    // Exact match (after folding accents/special letters) catches literal
+    // duplicates and spelling variants like "Ø. Hauge" vs "Oyvind Hauge"'s
+    // surname, and (via the two å variants below) "Håland" vs "Haaland"; the
+    // last-name check catches an entry registered as just "Haaland" that's
+    // really the same person as "Erling Haaland" elsewhere. Each name has a
+    // small set of normalized spellings (see normalizeVariants) - any overlap
+    // between the two sides' sets counts as a match.
+    private String matchReason(Set<String> variantsA, Set<String> variantsB) {
+        if (variantsA.isEmpty() || variantsB.isEmpty()) return null;
+        for (String a : variantsA) {
+            if (variantsB.contains(a)) return "Same name once special letters/accents are normalized";
+        }
+        for (String a : variantsA) {
+            List<String> tokensA = List.of(a.split(" "));
+            for (String b : variantsB) {
+                List<String> tokensB = List.of(b.split(" "));
+                if (tokensA.size() == 1 && tokensB.size() > 1 && tokensA.get(0).equals(tokensB.get(tokensB.size() - 1))) {
+                    return "One entry looks like a last-name-only version of the other";
+                }
+                if (tokensB.size() == 1 && tokensA.size() > 1 && tokensB.get(0).equals(tokensA.get(tokensA.size() - 1))) {
+                    return "One entry looks like a last-name-only version of the other";
+                }
+            }
+        }
+        return null;
+    }
+
+    // Folds case, Nordic/Germanic letters that Unicode normalization alone
+    // won't decompose (o/ae/a/o are their own codepoints, not accented Latin
+    // letters), then strips any remaining combining accents (e.g. e -> e,
+    // n -> n) and punctuation, so "O'Brien" and "obrien" line up too.
+    //
+    // å gets TWO candidate foldings, not one: the simple single-letter fold
+    // (a) alongside its historical two-letter transliteration (aa) - å is
+    // literally a ligature of "aa", and that's still how it's often written in
+    // ASCII-only contexts (most famously "Haaland" for "Håland"), so a single
+    // fold would miss exactly that kind of pair. ø/æ only get one fold each
+    // (o/ae) since there's no equivalent second convention for those.
+    private Set<String> normalizeVariants(String raw) {
+        if (raw == null || raw.isBlank()) return Set.of();
+        String lower = raw.trim().toLowerCase();
+        Set<String> variants = new java.util.LinkedHashSet<>();
+        for (String aReplacement : new String[]{"a", "aa"}) {
+            String s = lower.replace("å", aReplacement)
+                    .replace("ø", "o").replace("æ", "ae")
+                    .replace("ö", "o").replace("ä", "a").replace("ü", "u")
+                    .replace("ß", "ss").replace("þ", "th").replace("ð", "d")
+                    .replace("ł", "l").replace("đ", "d");
+            s = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+            s = s.replaceAll("[^a-z0-9]+", " ").trim().replaceAll("\\s+", " ");
+            if (!s.isEmpty()) variants.add(s);
+        }
+        return variants;
+    }
+
     @Transactional
     public AthleteDto create(AthleteDto dto) {
         Athlete athlete = new Athlete();

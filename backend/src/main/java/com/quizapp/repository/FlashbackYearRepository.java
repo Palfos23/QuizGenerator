@@ -15,7 +15,7 @@ public interface FlashbackYearRepository extends JpaRepository<FlashbackYear, Lo
     // list, unlike findEligibleIds below which is for players.
     @Query("SELECT y.id as id, y.title as title, y.year as year, " +
            "SIZE(y.hints) as hintCount, y.excludedFromFlashback as excludedFromFlashback, " +
-           "y.updatedAt as updatedAt FROM FlashbackYear y")
+           "y.canExpire as canExpire, y.updatedAt as updatedAt FROM FlashbackYear y")
     List<FlashbackYearSummaryProjection> findAllSummaries();
 
     // ID-only, for random round-choice selection - mirrors

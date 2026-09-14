@@ -153,6 +153,7 @@ public class StatisticsService {
         out.add(new CountEntry("Bullseye", counts.get(BattleGameType.BULLSEYE)));
         out.add(new CountEntry("Penalty Shootout", counts.get(BattleGameType.PENALTY_SHOOTOUT)));
         out.add(new CountEntry("Flashback", counts.get(BattleGameType.FLASHBACK)));
+        out.add(new CountEntry("Tension", counts.get(BattleGameType.TENSION)));
         return out;
     }
 

@@ -40,7 +40,8 @@ public class BullseyeAdminService {
                 .sorted((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()))
                 .map(row -> new BullseyeQuestionSummaryDto(row.getId(), row.getTitle(), row.getSport(),
                         row.getTargetValue(), row.getStatLabel(), row.getEntryCount().intValue(),
-                        row.getExcludedFromBullseye(), row.getEntireCategoryPool(), row.getGroupDigits()))
+                        row.getExcludedFromBullseye(), row.getCanExpire(), row.getEntireCategoryPool(),
+                        row.getGroupDigits()))
                 .collect(Collectors.toList());
     }
 
@@ -81,6 +82,7 @@ public class BullseyeAdminService {
         question.setStatLabel(request.getStatLabel());
         question.setUpdatedAt(java.time.Instant.now());
         question.setExcludedFromBullseye(request.isExcludedFromBullseye());
+        question.setCanExpire(request.isCanExpire());
         question.setEntireCategoryPool(request.isEntireCategoryPool());
         question.setGroupDigits(request.isGroupDigits());
 
@@ -131,6 +133,7 @@ public class BullseyeAdminService {
         dto.setTargetValue(question.getTargetValue());
         dto.setStatLabel(question.getStatLabel());
         dto.setExcludedFromBullseye(question.isExcludedFromBullseye());
+        dto.setCanExpire(question.isCanExpire());
         dto.setEntireCategoryPool(question.isEntireCategoryPool());
         dto.setGroupDigits(question.isGroupDigits());
 

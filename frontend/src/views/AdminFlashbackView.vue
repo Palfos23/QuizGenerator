@@ -39,6 +39,7 @@
             <div class="saved-quiz-title">
               {{ y.title }}
               <span v-if="y.excludedFromFlashback" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Flashback</span>
+              <span v-if="y.canExpire" class="tag" style="background:rgba(255,255,255,0.06); color:var(--text-dim); margin-left:6px;">Can expire</span>
             </div>
             <div class="saved-quiz-meta">
               {{ y.year }} · {{ y.hintCount }} hint{{ y.hintCount === 1 ? '' : 's' }}
@@ -84,6 +85,16 @@
           Use this once a year's clues are outdated or wrong - it stops being offered to
           Flashback's random pick without deleting it.
         </p>
+      </div>
+
+      <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
+        <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
+        <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
+          Can expire
+          <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
+            e.g. "current record holder" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+          </div>
+        </label>
       </div>
 
       <div class="field">
@@ -171,6 +182,7 @@ const form = reactive({
   title: '',
   year: null,
   excludedFromFlashback: false,
+  canExpire: false,
   hints: ['']
 })
 
@@ -200,6 +212,7 @@ function resetForm() {
   form.title = ''
   form.year = null
   form.excludedFromFlashback = false
+  form.canExpire = false
   form.hints = ['']
 }
 
@@ -216,6 +229,7 @@ async function openEdit(id) {
     form.title = detail.title
     form.year = detail.year
     form.excludedFromFlashback = detail.excludedFromFlashback
+    form.canExpire = detail.canExpire
     form.hints = detail.hints.length ? [...detail.hints] : ['']
 
     editingYearId.value = id
@@ -263,6 +277,7 @@ async function saveYear() {
     title: form.title,
     year: form.year,
     excludedFromFlashback: form.excludedFromFlashback,
+    canExpire: form.canExpire,
     hints
   }
 

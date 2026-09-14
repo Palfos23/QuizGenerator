@@ -84,6 +84,24 @@ public class BullseyeQuestion {
         this.excludedFromBullseye = excludedFromBullseye;
     }
 
+    // Flags time-sensitive facts (e.g. "current all-time top scorer") for
+    // later review on the aggregated "Can expire" admin page. Mirrors
+    // excludedFromBullseye's field/getter/setter style; carries an explicit
+    // @ColumnDefault like groupDigits above, since this table is already
+    // populated and a NOT NULL column added via ddl-auto=update needs a
+    // DEFAULT clause to satisfy existing rows.
+    @org.hibernate.annotations.ColumnDefault("false")
+    @Column(name = "can_expire", nullable = false)
+    private boolean canExpire = false;
+
+    public boolean isCanExpire() {
+        return canExpire;
+    }
+
+    public void setCanExpire(boolean canExpire) {
+        this.canExpire = canExpire;
+    }
+
     // When true, every subject in this question's "sport" category is
     // guessable too - not just the explicit entries below - resolving to 0 if
     // picked (same as any other unmatched name). BullseyePlayService queries

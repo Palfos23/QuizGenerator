@@ -41,6 +41,7 @@
               {{ g.title }}
               <span v-if="g.excludedFromGridBattle" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Grid Battle</span>
               <span v-if="g.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
+              <span v-if="g.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Can expire</span>
             </div>
             <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} entries · {{ g.maxStrikes }} {{ g.maxStrikes === 1 ? 'life' : 'lives' }} · week of {{ g.weekStartDate }}</div>
           </div>
@@ -130,6 +131,16 @@
           Weekly Grid archive, but stops being offered to Grid Battle's random or manual pick.
           Duplicate it first to create an updated version with the same content to edit.
         </p>
+      </div>
+
+      <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
+        <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
+        <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
+          Can expire
+          <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
+            e.g. "current all-time top goalscorer" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+          </div>
+        </label>
       </div>
 
       <div class="field">
@@ -395,6 +406,7 @@ const form = reactive({
   sortAscending: false,
   ranked: true,
   excludedFromGridBattle: false,
+  canExpire: false,
   revealMode: 'PHOTO',
   fitImages: false,
   entireCategoryPool: false
@@ -681,6 +693,7 @@ function resetForm() {
   form.sortAscending = false
   form.ranked = true
   form.excludedFromGridBattle = false
+  form.canExpire = false
   form.revealMode = 'PHOTO'
   form.fitImages = false
   form.entireCategoryPool = false
@@ -715,6 +728,7 @@ async function openEdit(id) {
     form.sortAscending = detail.sortAscending
     form.ranked = detail.ranked
     form.excludedFromGridBattle = detail.excludedFromGridBattle
+    form.canExpire = detail.canExpire || false
     form.revealMode = detail.revealMode || 'PHOTO'
     form.fitImages = detail.fitImages || false
     form.entireCategoryPool = detail.entireCategoryPool || false
@@ -799,6 +813,7 @@ async function saveGrid() {
     sortAscending: form.sortAscending,
     ranked: form.ranked,
     excludedFromGridBattle: form.excludedFromGridBattle,
+    canExpire: form.canExpire,
     revealMode: form.revealMode,
     fitImages: form.fitImages,
     entireCategoryPool: form.entireCategoryPool,
