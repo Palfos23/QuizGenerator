@@ -60,7 +60,7 @@ public class ImposterGrid {
     // Flags a time-sensitive fact (e.g. "current all-time top scorer") for
     // periodic review on the admin "Can expire" page. Mirrors
     // Grid.excludedFromGridBattle in style.
-    @Column(name = "can_expire", nullable = false)
+    @Column(name = "can_expire", nullable = false, columnDefinition = "boolean default false")
     private boolean canExpire = false;
 
     @Column(nullable = false)

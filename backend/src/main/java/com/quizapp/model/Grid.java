@@ -89,7 +89,7 @@ public class Grid {
     // scorer") so it surfaces on the admin "Can expire" review page for
     // periodic rechecking. Purely an admin bookkeeping signal - doesn't affect
     // visibility or behavior anywhere else.
-    @Column(name = "can_expire", nullable = false)
+    @Column(name = "can_expire", nullable = false, columnDefinition = "boolean default false")
     private boolean canExpire = false;
 
     public boolean isCanExpire() {

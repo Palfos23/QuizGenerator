@@ -100,7 +100,7 @@ public class Lineup {
 
     // Flags a time-sensitive fact (e.g. "current all-time top scorer") for
     // periodic review on the admin "Can expire" aggregated page.
-    @Column(name = "can_expire", nullable = false)
+    @Column(name = "can_expire", nullable = false, columnDefinition = "boolean default false")
     private boolean canExpire = false;
 
     // Shirt color for the 10 outfield slots (hex, e.g. "#d92332"), and a
