@@ -136,6 +136,8 @@ public class TensionOnlineService {
         dto.setQuestionTitle(question.getTitle());
         dto.setQuestionUpdatedAt(question.getUpdatedAt());
         dto.setAnswersCategory(question.getAnswersCategory());
+        dto.setAnswersFromSubjects(question.isAnswersFromSubjects());
+        dto.setAnswersSport(question.getAnswersSport());
         dto.setSource(question.getSource());
         dto.setTensionAnswerCount(question.getTensionAnswers().size());
 

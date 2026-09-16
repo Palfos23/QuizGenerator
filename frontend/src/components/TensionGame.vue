@@ -148,6 +148,8 @@
       :question-title="question.title"
       :tension-count="question.tensionAnswers.length"
       :category="question.answersCategory"
+      :answers-from-subjects="question.answersFromSubjects"
+      :answers-sport="question.answersSport"
       :answered-players="roundAnswers.map(a => a.player)"
       :all-players="rotatedPlayers"
       :used-answers="roundAnswers.map(a => a.answer)"

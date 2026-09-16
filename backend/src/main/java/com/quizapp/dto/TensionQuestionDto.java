@@ -19,6 +19,8 @@ public class TensionQuestionDto {
     private String mainCategory;
 
     private String answersCategory;
+    private boolean answersFromSubjects;
+    private String answersSport;
     private String source;
 
     private boolean canExpire;
@@ -68,6 +70,22 @@ public class TensionQuestionDto {
 
     public void setAnswersCategory(String answersCategory) {
         this.answersCategory = answersCategory;
+    }
+
+    public boolean isAnswersFromSubjects() {
+        return answersFromSubjects;
+    }
+
+    public void setAnswersFromSubjects(boolean answersFromSubjects) {
+        this.answersFromSubjects = answersFromSubjects;
+    }
+
+    public String getAnswersSport() {
+        return answersSport;
+    }
+
+    public void setAnswersSport(String answersSport) {
+        this.answersSport = answersSport;
     }
 
     public String getSource() {

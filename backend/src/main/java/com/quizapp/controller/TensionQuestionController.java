@@ -51,4 +51,13 @@ public class TensionQuestionController {
     public List<String> categories() {
         return questionService.getDistinctMainCategories();
     }
+
+    // For a question whose answersFromSubjects is true - the answer-box
+    // autocomplete's Subjects-sourced equivalent of TensionCategoryController's
+    // /categories/{name}/options.
+    @GetMapping("/subject-options")
+    public List<String> subjectOptions(@RequestParam String sport, Authentication authentication) {
+        playAccessService.requireTensionAccess(authentication);
+        return questionService.getSubjectOptions(sport);
+    }
 }

@@ -26,8 +26,39 @@ public class TensionQuestion {
 
     // Name of the TensionCategory whose word list powers the answer-box autocomplete
     // for this question - a broader suggestion pool, not necessarily all correct answers.
+    // Only read when answersFromSubjects is false.
     @Column(name = "answers_category")
     private String answersCategory;
+
+    // When true, the answer-box autocomplete is powered by Subjects (athletes)
+    // in answersSport instead of a TensionAnswerCategory's word list - lets a
+    // question reuse the already-large shared athlete pool (e.g. "name a
+    // Premier League footballer") instead of needing a hand-curated Tension
+    // category just for that. Defaults to false so every existing question
+    // keeps using its TensionCategory exactly as before.
+    @Column(name = "answers_from_subjects", nullable = false, columnDefinition = "boolean default false")
+    private boolean answersFromSubjects = false;
+
+    public boolean isAnswersFromSubjects() {
+        return answersFromSubjects;
+    }
+
+    public void setAnswersFromSubjects(boolean answersFromSubjects) {
+        this.answersFromSubjects = answersFromSubjects;
+    }
+
+    // The Athlete "sport" category to draw answers from - only read when
+    // answersFromSubjects is true.
+    @Column(name = "answers_sport")
+    private String answersSport;
+
+    public String getAnswersSport() {
+        return answersSport;
+    }
+
+    public void setAnswersSport(String answersSport) {
+        this.answersSport = answersSport;
+    }
 
     // Where the underlying data/ranking came from (e.g. "Lionpopulation.com") -
     // shown to players so they can see the source behind a question's answers.

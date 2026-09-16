@@ -167,7 +167,7 @@ const filteredOptions = ref([])
 const showDropdown = ref(false)
 const validSelection = ref(false)
 
-let lastCategory = null
+let lastOptionsKey = null
 let wasRevealed = false
 let revealTimer = null
 const revealIndex = ref(0)
@@ -221,9 +221,10 @@ function applyState(fresh) {
   staleGuard.markApplied()
   error.value = ''
   state.value = fresh
-  if (fresh.answersCategory && fresh.answersCategory !== lastCategory) {
-    lastCategory = fresh.answersCategory
-    loadOptions(fresh.answersCategory)
+  const optionsKey = fresh.answersFromSubjects ? fresh.answersSport : fresh.answersCategory
+  if (optionsKey && optionsKey !== lastOptionsKey) {
+    lastOptionsKey = optionsKey
+    loadOptions(fresh.answersFromSubjects, optionsKey)
   }
   if (fresh.roundRevealed && !wasRevealed) {
     revealIndex.value = 0
@@ -255,9 +256,11 @@ function skipReveal() {
   revealIndex.value = allAnswersList.value.length
 }
 
-async function loadOptions(category) {
+async function loadOptions(fromSubjects, key) {
   try {
-    allOptions.value = await api.fetchTensionAnswerOptions(category)
+    allOptions.value = fromSubjects
+      ? await api.fetchTensionSubjectOptions(key)
+      : await api.fetchTensionAnswerOptions(key)
   } catch (e) {
     // autocomplete is a convenience, not essential - fail quietly
   }

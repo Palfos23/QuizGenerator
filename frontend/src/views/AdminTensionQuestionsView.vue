@@ -73,16 +73,37 @@
             <option v-for="c in mainCategorySuggestions" :key="c" :value="c" />
           </datalist>
         </div>
-        <div style="flex:1; min-width:200px;">
-          <label>Answers category <span class="picker-hint">powers the answer-box autocomplete</span></label>
-          <SearchableSelect
-            v-model="form.answersCategory"
-            :options="tensionCategories.map(c => c.name)"
-            placeholder="Search categories…"
-          />
-          <p v-if="!tensionCategories.length" style="color:var(--coral); font-size:0.85rem; margin-top:6px;">
-            No categories exist yet - add one on the Tension categories page first.
-          </p>
+        <div style="flex:1; min-width:240px;">
+          <label>Answers source <span class="picker-hint">powers the answer-box autocomplete</span></label>
+          <div style="display:flex; gap:16px; margin-bottom:8px;">
+            <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400;">
+              <input type="radio" :value="false" v-model="form.answersFromSubjects" style="width:auto;" />
+              Tension category
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400;">
+              <input type="radio" :value="true" v-model="form.answersFromSubjects" style="width:auto;" />
+              Subjects
+            </label>
+          </div>
+          <template v-if="!form.answersFromSubjects">
+            <SearchableSelect
+              v-model="form.answersCategory"
+              :options="tensionCategories.map(c => c.name)"
+              placeholder="Search categories…"
+            />
+            <p v-if="!tensionCategories.length" style="color:var(--coral); font-size:0.85rem; margin-top:6px;">
+              No categories exist yet - add one on the Tension categories page first.
+            </p>
+          </template>
+          <template v-else>
+            <select v-model="form.answersSport">
+              <option value="">Choose a category…</option>
+              <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
+            </select>
+            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:6px;">
+              Answers are drawn from Subjects in this category, e.g. "Football" players by name.
+            </p>
+          </template>
         </div>
       </div>
 
@@ -103,11 +124,12 @@
 
       <div class="field">
         <label>Safe answers <span class="picker-hint">ranked 1-10 - higher rank scores more points</span></label>
-        <p v-if="!form.answersCategory.trim()" style="color:var(--text-dim); font-size:0.85rem; margin-top:-4px;">
-          Set an answers category above to choose from its option list.
+        <p v-if="!(form.answersFromSubjects ? form.answersSport : form.answersCategory).trim()" style="color:var(--text-dim); font-size:0.85rem; margin-top:-4px;">
+          Set an answers source above to choose from its option list.
         </p>
         <p v-else-if="!categoryOptions.length" style="color:var(--coral); font-size:0.85rem; margin-top:-4px;">
-          No options found for "{{ form.answersCategory }}" - add some on the Tension categories page first.
+          <template v-if="form.answersFromSubjects">No subjects found in "{{ form.answersSport }}" - add some on the Subjects page first.</template>
+          <template v-else>No options found for "{{ form.answersCategory }}" - add some on the Tension categories page first.</template>
         </p>
         <div v-for="(a, idx) in form.safeAnswers" :key="idx" class="candidate-row">
           <input type="number" min="1" max="10" v-model.number="a.rank" style="width:70px;" placeholder="Rank" />
@@ -151,6 +173,7 @@ import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import Pagination from '../components/Pagination.vue'
 import SearchableSelect from '../components/SearchableSelect.vue'
+import gridCategories from '../services/gridCategories'
 
 const view = ref('list')
 const questions = ref([])
@@ -179,20 +202,28 @@ const editingId = ref(null)
 const pendingDelete = ref(null)
 
 const form = reactive({
-  title: '', mainCategory: '', answersCategory: '', source: '', canExpire: false, safeAnswers: [], tensionAnswers: []
+  title: '', mainCategory: '', answersCategory: '', answersFromSubjects: false, answersSport: '',
+  source: '', canExpire: false, safeAnswers: [], tensionAnswers: []
 })
 
+// Powers the Safe/Tension answer SearchableSelects - pulled from whichever
+// answer source is currently chosen: a Tension answer category's word list,
+// or Subjects (athletes) in a chosen sport/category.
 const categoryOptions = ref([])
 let categoryOptionsDebounce = null
-watch(() => form.answersCategory, (val) => {
+watch(() => [form.answersFromSubjects, form.answersCategory, form.answersSport], () => {
   clearTimeout(categoryOptionsDebounce)
-  if (!val.trim()) {
+  const fromSubjects = form.answersFromSubjects
+  const key = (fromSubjects ? form.answersSport : form.answersCategory).trim()
+  if (!key) {
     categoryOptions.value = []
     return
   }
   categoryOptionsDebounce = setTimeout(async () => {
     try {
-      categoryOptions.value = await api.fetchTensionAnswerOptions(val.trim())
+      categoryOptions.value = fromSubjects
+        ? (await api.adminSearchAthletes({ sport: key })).map(a => a.name)
+        : await api.fetchTensionAnswerOptions(key)
     } catch (e) {
       categoryOptions.value = []
     }
@@ -200,6 +231,7 @@ watch(() => form.answersCategory, (val) => {
 })
 
 onMounted(loadQuestions)
+onMounted(() => gridCategories.ensureLoaded())
 
 const tensionCategories = ref([])
 onMounted(async () => {
@@ -254,6 +286,8 @@ function resetForm() {
   form.title = ''
   form.mainCategory = ''
   form.answersCategory = ''
+  form.answersFromSubjects = false
+  form.answersSport = ''
   form.source = ''
   form.canExpire = false
   form.safeAnswers = []
@@ -282,6 +316,8 @@ async function openEdit(id) {
     form.title = detail.title
     form.mainCategory = detail.mainCategory || ''
     form.answersCategory = detail.answersCategory || ''
+    form.answersFromSubjects = detail.answersFromSubjects || false
+    form.answersSport = detail.answersSport || ''
     form.source = detail.source || ''
     form.canExpire = detail.canExpire || false
     form.safeAnswers = detail.safeAnswers.map(a => ({ rank: a.rank, text: a.text }))

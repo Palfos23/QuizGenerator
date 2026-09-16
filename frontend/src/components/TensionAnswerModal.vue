@@ -77,6 +77,8 @@ const props = defineProps({
   questionTitle: { type: String, required: true },
   tensionCount: { type: Number, default: 0 },
   category: { type: String, default: '' },
+  answersFromSubjects: { type: Boolean, default: false },
+  answersSport: { type: String, default: '' },
   answeredPlayers: { type: Array, default: () => [] },
   allPlayers: { type: Array, default: () => [] },
   usedAnswers: { type: Array, default: () => [] }
@@ -91,9 +93,12 @@ const validSelection = ref(false)
 const duplicateError = ref(false)
 
 onMounted(async () => {
-  if (!props.category) return
+  const key = props.answersFromSubjects ? props.answersSport : props.category
+  if (!key) return
   try {
-    allOptions.value = await api.fetchTensionAnswerOptions(props.category)
+    allOptions.value = props.answersFromSubjects
+      ? await api.fetchTensionSubjectOptions(key)
+      : await api.fetchTensionAnswerOptions(key)
   } catch (e) {
     // autocomplete is a convenience, not essential - fail quietly
   }

@@ -3,14 +3,17 @@ package com.quizapp.service;
 import com.quizapp.dto.TensionAnswerEntryDto;
 import com.quizapp.dto.TensionQuestionDto;
 import com.quizapp.exception.ResourceNotFoundException;
+import com.quizapp.model.Athlete;
 import com.quizapp.model.TensionAnswerEntry;
 import com.quizapp.model.TensionQuestion;
+import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.TensionQuestionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,9 +21,11 @@ import java.util.stream.Collectors;
 public class TensionQuestionService {
 
     private final TensionQuestionRepository questionRepository;
+    private final AthleteRepository athleteRepository;
 
-    public TensionQuestionService(TensionQuestionRepository questionRepository) {
+    public TensionQuestionService(TensionQuestionRepository questionRepository, AthleteRepository athleteRepository) {
         this.questionRepository = questionRepository;
+        this.athleteRepository = athleteRepository;
     }
 
     @Transactional(readOnly = true)
@@ -89,6 +94,18 @@ public class TensionQuestionService {
         return questionRepository.findDistinctMainCategories();
     }
 
+    // Powers the answer-box autocomplete for a question whose answersFromSubjects
+    // is true - the player-facing equivalent of TensionCategoryService.getOptions,
+    // just sourced from Subjects (athletes) in a sport instead of a hand-curated
+    // TensionCategory word list.
+    @Transactional(readOnly = true)
+    public List<String> getSubjectOptions(String sport) {
+        return athleteRepository.findBySport(sport).stream()
+                .map(Athlete::getName)
+                .sorted(Comparator.naturalOrder())
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public TensionQuestionDto create(TensionQuestionDto dto) {
         TensionQuestion q = new TensionQuestion();
@@ -116,6 +133,8 @@ public class TensionQuestionService {
         q.setTitle(dto.getTitle());
         q.setMainCategory(dto.getMainCategory());
         q.setAnswersCategory(dto.getAnswersCategory());
+        q.setAnswersFromSubjects(dto.isAnswersFromSubjects());
+        q.setAnswersSport(dto.getAnswersSport());
         q.setSource(dto.getSource());
         q.setCanExpire(dto.isCanExpire());
         q.setSafeAnswers(toEntryEntities(dto.getSafeAnswers()));
@@ -140,6 +159,8 @@ public class TensionQuestionService {
         dto.setUpdatedAt(q.getUpdatedAt());
         dto.setMainCategory(q.getMainCategory());
         dto.setAnswersCategory(q.getAnswersCategory());
+        dto.setAnswersFromSubjects(q.isAnswersFromSubjects());
+        dto.setAnswersSport(q.getAnswersSport());
         dto.setSource(q.getSource());
         dto.setCanExpire(q.isCanExpire());
         dto.setSafeAnswers(q.getSafeAnswers().stream()

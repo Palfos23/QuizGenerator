@@ -466,6 +466,12 @@ export default {
     if (!categoryName) return Promise.resolve([])
     return client.get(`/tension/categories/${encodeURIComponent(categoryName)}/options`).then(r => r.data)
   },
+  // Answer-box autocomplete for a question whose answers come from Subjects
+  // (athletes) in a sport, instead of a Tension answer category's word list.
+  fetchTensionSubjectOptions(sport) {
+    if (!sport) return Promise.resolve([])
+    return client.get(`/tension/questions/subject-options?sport=${encodeURIComponent(sport)}`).then(r => r.data)
+  },
   fetchTensionMainCategories() {
     return client.get('/tension/questions/categories').then(r => r.data)
   },

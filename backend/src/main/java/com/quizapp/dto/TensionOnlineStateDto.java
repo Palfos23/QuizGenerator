@@ -14,6 +14,8 @@ public class TensionOnlineStateDto {
     private String questionTitle;
     private Instant questionUpdatedAt;
     private String answersCategory;
+    private boolean answersFromSubjects;
+    private String answersSport;
     private String source;
     private int tensionAnswerCount;
     private List<TensionOnlinePlayerDto> players;
@@ -41,6 +43,10 @@ public class TensionOnlineStateDto {
     public void setQuestionUpdatedAt(Instant questionUpdatedAt) { this.questionUpdatedAt = questionUpdatedAt; }
     public String getAnswersCategory() { return answersCategory; }
     public void setAnswersCategory(String answersCategory) { this.answersCategory = answersCategory; }
+    public boolean isAnswersFromSubjects() { return answersFromSubjects; }
+    public void setAnswersFromSubjects(boolean answersFromSubjects) { this.answersFromSubjects = answersFromSubjects; }
+    public String getAnswersSport() { return answersSport; }
+    public void setAnswersSport(String answersSport) { this.answersSport = answersSport; }
     public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
     public int getTensionAnswerCount() { return tensionAnswerCount; }
