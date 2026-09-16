@@ -296,8 +296,11 @@ function resetForm() {
   form.source = ''
   form.tiebreaker = ''
   form.canExpire = false
-  form.safeAnswers = []
-  form.tensionAnswers = []
+  // Defaults to a full 1-10 safe ranking plus 2 tension slots already laid
+  // out, since almost every question ends up using all 10 anyway - saves
+  // clicking "+ Add safe answer" ten times on every single new question.
+  form.safeAnswers = Array.from({ length: 10 }, (_, i) => ({ rank: i + 1, text: '' }))
+  form.tensionAnswers = Array.from({ length: 2 }, (_, i) => ({ rank: i + 1, text: '' }))
 }
 
 function addSafeAnswer() {
