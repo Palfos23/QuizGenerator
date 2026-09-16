@@ -13,6 +13,9 @@
       <p v-if="state.source" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
         Source: {{ state.source }}
       </p>
+      <p v-if="state.tiebreaker" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
+        Tiebreaker: {{ state.tiebreaker }}
+      </p>
       <p v-if="lastUpdatedLabel" style="text-align:center; margin:0 0 20px; color:var(--text-dim); font-size:0.75rem;">
         {{ lastUpdatedLabel }}
       </p>

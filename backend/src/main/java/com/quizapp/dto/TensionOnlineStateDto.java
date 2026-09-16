@@ -17,6 +17,7 @@ public class TensionOnlineStateDto {
     private boolean answersFromSubjects;
     private String answersSport;
     private String source;
+    private String tiebreaker;
     private int tensionAnswerCount;
     private List<TensionOnlinePlayerDto> players;
     private Long currentTurnParticipantId;
@@ -49,6 +50,8 @@ public class TensionOnlineStateDto {
     public void setAnswersSport(String answersSport) { this.answersSport = answersSport; }
     public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
+    public String getTiebreaker() { return tiebreaker; }
+    public void setTiebreaker(String tiebreaker) { this.tiebreaker = tiebreaker; }
     public int getTensionAnswerCount() { return tensionAnswerCount; }
     public void setTensionAnswerCount(int tensionAnswerCount) { this.tensionAnswerCount = tensionAnswerCount; }
     public List<TensionOnlinePlayerDto> getPlayers() { return players; }

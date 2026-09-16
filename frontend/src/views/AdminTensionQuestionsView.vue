@@ -112,6 +112,11 @@
         <input type="text" v-model="form.source" placeholder="e.g. Lionpopulation.com" />
       </div>
 
+      <div class="field">
+        <label>Tiebreaker <span class="picker-hint">optional - shown to players, describes how to resolve a tie</span></label>
+        <input type="text" v-model="form.tiebreaker" placeholder="e.g. If tied, the country founded first wins" />
+      </div>
+
       <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
@@ -203,7 +208,7 @@ const pendingDelete = ref(null)
 
 const form = reactive({
   title: '', mainCategory: '', answersCategory: '', answersFromSubjects: false, answersSport: '',
-  source: '', canExpire: false, safeAnswers: [], tensionAnswers: []
+  source: '', tiebreaker: '', canExpire: false, safeAnswers: [], tensionAnswers: []
 })
 
 // Powers the Safe/Tension answer SearchableSelects - pulled from whichever
@@ -289,6 +294,7 @@ function resetForm() {
   form.answersFromSubjects = false
   form.answersSport = ''
   form.source = ''
+  form.tiebreaker = ''
   form.canExpire = false
   form.safeAnswers = []
   form.tensionAnswers = []
@@ -319,6 +325,7 @@ async function openEdit(id) {
     form.answersFromSubjects = detail.answersFromSubjects || false
     form.answersSport = detail.answersSport || ''
     form.source = detail.source || ''
+    form.tiebreaker = detail.tiebreaker || ''
     form.canExpire = detail.canExpire || false
     form.safeAnswers = detail.safeAnswers.map(a => ({ rank: a.rank, text: a.text }))
     form.tensionAnswers = detail.tensionAnswers.map(a => ({ rank: a.rank, text: a.text }))

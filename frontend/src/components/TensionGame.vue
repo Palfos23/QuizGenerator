@@ -29,6 +29,9 @@
     <p v-if="question.source" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
       Source: {{ question.source }}
     </p>
+    <p v-if="question.tiebreaker" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
+      Tiebreaker: {{ question.tiebreaker }}
+    </p>
     <p v-if="lastUpdatedLabel" style="text-align:center; margin:0 0 20px; color:var(--text-dim); font-size:0.75rem;">
       {{ lastUpdatedLabel }}
     </p>

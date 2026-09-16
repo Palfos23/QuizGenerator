@@ -22,6 +22,7 @@ public class TensionQuestionDto {
     private boolean answersFromSubjects;
     private String answersSport;
     private String source;
+    private String tiebreaker;
 
     private boolean canExpire;
 
@@ -94,6 +95,14 @@ public class TensionQuestionDto {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public String getTiebreaker() {
+        return tiebreaker;
+    }
+
+    public void setTiebreaker(String tiebreaker) {
+        this.tiebreaker = tiebreaker;
     }
 
     public boolean isCanExpire() {

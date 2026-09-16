@@ -65,6 +65,13 @@ public class TensionQuestion {
     @Column(name = "source", length = 300)
     private String source;
 
+    // Optional freeform note on how to break a tie for this question (e.g.
+    // "if tied, the country founded first wins") - shown to players alongside
+    // the title, same as source, so a room can resolve a tie without needing
+    // to guess a house rule.
+    @Column(name = "tiebreaker", length = 500)
+    private String tiebreaker;
+
     // Same purpose as Grid.updatedAt - see that field for the full reasoning.
     @Column(name = "updated_at")
     private Instant updatedAt;
@@ -97,6 +104,14 @@ public class TensionQuestion {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public String getTiebreaker() {
+        return tiebreaker;
+    }
+
+    public void setTiebreaker(String tiebreaker) {
+        this.tiebreaker = tiebreaker;
     }
 
     // The safe list - correct answers ranked 1..10. Position 10 (the least obvious

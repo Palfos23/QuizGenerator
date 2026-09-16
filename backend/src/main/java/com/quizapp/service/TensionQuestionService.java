@@ -136,6 +136,7 @@ public class TensionQuestionService {
         q.setAnswersFromSubjects(dto.isAnswersFromSubjects());
         q.setAnswersSport(dto.getAnswersSport());
         q.setSource(dto.getSource());
+        q.setTiebreaker(dto.getTiebreaker());
         q.setCanExpire(dto.isCanExpire());
         q.setSafeAnswers(toEntryEntities(dto.getSafeAnswers()));
         q.setTensionAnswers(toEntryEntities(dto.getTensionAnswers()));
@@ -162,6 +163,7 @@ public class TensionQuestionService {
         dto.setAnswersFromSubjects(q.isAnswersFromSubjects());
         dto.setAnswersSport(q.getAnswersSport());
         dto.setSource(q.getSource());
+        dto.setTiebreaker(q.getTiebreaker());
         dto.setCanExpire(q.isCanExpire());
         dto.setSafeAnswers(q.getSafeAnswers().stream()
                 .sorted((a, b) -> a.getRank() - b.getRank())

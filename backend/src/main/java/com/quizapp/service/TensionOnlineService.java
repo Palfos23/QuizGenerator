@@ -139,6 +139,7 @@ public class TensionOnlineService {
         dto.setAnswersFromSubjects(question.isAnswersFromSubjects());
         dto.setAnswersSport(question.getAnswersSport());
         dto.setSource(question.getSource());
+        dto.setTiebreaker(question.getTiebreaker());
         dto.setTensionAnswerCount(question.getTensionAnswers().size());
 
         List<TensionRoundAnswer> roundAnswers = roundAnswerRepository.findByRoomState_IdOrderByIdAsc(state.getId());
