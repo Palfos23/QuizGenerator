@@ -2848,6 +2848,29 @@ table.scoreboard-table {
     padding: 24px 20px;
   }
 
+  /* Horizontal swipe carousel instead of a stacked single column - same
+     "peek at the next card" pattern as a reference site's mobile dashboard.
+     Bleeds out to the screen edge (negative margin cancels .main-content's
+     own 16px side padding) and re-adds it as scroll-area padding, so the
+     first/last card still lines up with everything else on the page while
+     the scrollable strip itself spans edge-to-edge. */
+  .dashboard-features {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 12px;
+    margin: 16px -16px 0;
+    padding: 0 16px 4px;
+  }
+  .dashboard-features::-webkit-scrollbar { display: none; }
+  .dashboard-feature-card {
+    flex: 0 0 78%;
+    max-width: 320px;
+    scroll-snap-align: start;
+  }
+
   /* 3 per row instead of 4 (desktop) - keeps tiles noticeably bigger than a
      typical 4-across mobile grid, while fitting more of the board on screen
      than the old 2-per-row layout did. Tile chrome (logo padding, name/hint/
