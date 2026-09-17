@@ -2866,8 +2866,9 @@ table.scoreboard-table {
   }
   .dashboard-features::-webkit-scrollbar { display: none; }
   .dashboard-feature-card {
-    flex: 0 0 78%;
-    max-width: 320px;
+    /* 2 per screen (with a sliver of the 3rd peeking in) instead of 1 - a
+       single ~78%-wide card read as too empty on a full-height screen. */
+    flex: 0 0 47%;
     scroll-snap-align: start;
   }
 
