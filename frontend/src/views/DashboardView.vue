@@ -5,8 +5,7 @@
     <section class="dashboard-hero">
       <h1>Create a quiz</h1>
       <p class="page-subtitle landing-lede">
-        Pick your categories, how many questions from each, a difficulty and a language -
-        then reorder, swap out, search in specific questions, or remove anything before you save or print it.
+        Build a custom quiz for friends, colleagues, or your local pub night.
       </p>
       <div class="dashboard-hero-actions">
         <router-link to="/generate" class="btn btn-primary btn-lg">Create a quiz →</router-link>

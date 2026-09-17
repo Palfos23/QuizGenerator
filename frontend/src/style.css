@@ -2870,6 +2870,13 @@ table.scoreboard-table {
     gap: 12px;
     margin: 16px -16px 0;
     padding: 0 16px 4px;
+    /* scroll-snap-type + scroll-snap-align:start on the columns makes the
+       browser snap PAST plain padding on load/scroll-to-start (it only
+       respects scroll-padding for snap insets, not padding) - without this,
+       the browser auto-scrolls 16px on first render to flush the first
+       column against the edge, hiding the padding entirely. */
+    scroll-padding-left: 16px;
+    scroll-padding-right: 16px;
   }
   .dashboard-features::-webkit-scrollbar { display: none; }
   .dashboard-feature-column {
