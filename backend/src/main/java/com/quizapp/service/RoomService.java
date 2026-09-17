@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +49,33 @@ public class RoomService {
         GameRoom room = findByCode(roomCode);
         boolean alreadyIn = room.getParticipants().stream().anyMatch(p -> p.getUserEmail().equals(userEmail));
         if (!alreadyIn) {
+            String chosenName = (displayName != null && !displayName.isBlank()) ? displayName.trim() : userEmail;
+
+            // Reclaim: a DISCONNECTED existing participant with the same name
+            // (case-insensitive) hands their seat to this new identity instead
+            // of being rejected or duplicated. This is what actually lets
+            // someone back in after losing their session - most commonly a
+            // guest, whose identity is a one-time token with no way back
+            // otherwise, but it helps a signed-in user switching devices too.
+            // Safe under this app's existing trust model: the room CODE is
+            // already the only thing that gates joining at all, in the lobby
+            // or mid-game; this doesn't add a new way in, just a way back to
+            // a seat that's sitting idle. A still-CONNECTED participant is
+            // never reclaimable - only an abandoned seat can be taken over.
+            Optional<GameRoomParticipant> reclaimable = room.getParticipants().stream()
+                    .filter(p -> p.getDisplayName().equalsIgnoreCase(chosenName))
+                    .filter(p -> !isConnected(p))
+                    .findFirst();
+            if (reclaimable.isPresent()) {
+                GameRoomParticipant participant = reclaimable.get();
+                participant.setUserEmail(userEmail);
+                if (color != null) {
+                    participant.setColor(color);
+                }
+                participant.setLastSeenAt(Instant.now());
+                return gameRoomRepository.save(room);
+            }
+
             if (room.getStatus() != RoomStatus.WAITING) {
                 throw new IllegalStateException("This game has already started - you can't join mid-game.");
             }
@@ -60,7 +88,6 @@ public class RoomService {
             if (room.getParticipants().size() >= maxPlayers) {
                 throw new IllegalStateException("This room already has the maximum of " + maxPlayers + " players.");
             }
-            String chosenName = (displayName != null && !displayName.isBlank()) ? displayName.trim() : userEmail;
             boolean nameTaken = room.getParticipants().stream()
                     .anyMatch(p -> p.getDisplayName().equalsIgnoreCase(chosenName));
             if (nameTaken) {

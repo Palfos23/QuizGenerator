@@ -2767,7 +2767,16 @@ table.scoreboard-table {
 
   h1 { font-size: 1.6rem; }
 
-  .grid-tiles { grid-template-columns: repeat(2, 1fr); }
+  /* 3 per row instead of 4 (desktop) - keeps tiles noticeably bigger than a
+     typical 4-across mobile grid, while fitting more of the board on screen
+     than the old 2-per-row layout did. Tile chrome (logo padding, name/hint/
+     status badge sizing) is scaled down to match the narrower tile width. */
+  .grid-tiles { grid-template-columns: repeat(3, 1fr); }
+  .grid-tiles .grid-tile-logo { padding: 16px 8px 22px; }
+  .grid-tiles .grid-tile-name { padding: 6px 4px; font-size: 0.72rem; min-height: 1.1em; }
+  .grid-tiles .grid-tile-hint { top: 4px; left: 4px; padding: 2px 5px; font-size: 0.62rem; }
+  .grid-tiles .grid-tile-status { top: 4px; right: 4px; width: 17px; height: 17px; font-size: 0.6rem; }
+  .grid-tiles .grid-tile-status.overtime { font-size: 0.5rem; }
 
   .tension-layout { flex-direction: column; align-items: stretch; }
   .tension-player-col { width: 100%; flex-direction: row; flex-wrap: wrap; }
