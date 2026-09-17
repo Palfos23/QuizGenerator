@@ -164,9 +164,6 @@ public class FlashbackOnlineService {
             dto.setVisibleHints(allHints.subList(0, state.getCurrentHintIndex() + 1));
 
             List<FlashbackRoundGuess> allGuessesThisRound = roundGuessRepository.findByRoomState_IdOrderByIdAsc(state.getId());
-            dto.setGuesses(allGuessesThisRound.stream()
-                    .map(g -> new FlashbackOnlineGuessDto(g.getParticipant().getDisplayName(), g.getGuessedYear(), g.getHintIndex()))
-                    .collect(Collectors.toList()));
 
             List<FlashbackRoundGuess> thisHintGuesses = allGuessesThisRound.stream()
                     .filter(g -> g.getHintIndex() == state.getCurrentHintIndex())
@@ -176,6 +173,17 @@ public class FlashbackOnlineService {
 
             if (!allAnswered) {
                 dto.setRoundRevealed(false);
+                // Only earlier hints' guesses are exposed here - the current
+                // hint's guesses stay hidden from everyone (including a
+                // player who's already submitted seeing someone else's)
+                // until the whole table has answered it, same instant it
+                // actually "reveals" below. submitGuess's own duplicate-year
+                // check already only looks at hintIndex < currentHintIndex
+                // for exactly this reason, so nothing else needs to change.
+                dto.setGuesses(allGuessesThisRound.stream()
+                        .filter(g -> g.getHintIndex() < state.getCurrentHintIndex())
+                        .map(g -> new FlashbackOnlineGuessDto(g.getParticipant().getDisplayName(), g.getGuessedYear(), g.getHintIndex()))
+                        .collect(Collectors.toList()));
                 int idx = state.getCurrentTurnParticipantIndex();
                 for (int tries = 0; tries < ordered.size(); tries++) {
                     GameRoomParticipant candidate = ordered.get(idx % ordered.size());
@@ -188,6 +196,12 @@ public class FlashbackOnlineService {
                 dto.setPlayers(toPlayerDtos(participantStates));
                 return dto;
             }
+
+            // Everyone's answered the current hint - safe to reveal it
+            // alongside every earlier hint's guesses.
+            dto.setGuesses(allGuessesThisRound.stream()
+                    .map(g -> new FlashbackOnlineGuessDto(g.getParticipant().getDisplayName(), g.getGuessedYear(), g.getHintIndex()))
+                    .collect(Collectors.toList()));
 
             Map<Long, Integer> distanceByParticipant = new HashMap<>();
             for (FlashbackRoundGuess g : thisHintGuesses) {
