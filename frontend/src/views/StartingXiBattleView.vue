@@ -32,24 +32,26 @@
         </div>
       </div>
 
-      <XiBattlePreview />
+      <div class="game-landing-hero">
+        <XiBattlePreview />
 
-      <div class="mode-choice-row">
-        <button class="mode-choice-card" @click="stage = 'landing'">
-          <h3>Same device</h3>
-          <p>Pass the phone around - everyone takes their turn on one screen.</p>
-        </button>
-        <button class="mode-choice-card" @click="stage = 'onlineChoice'">
-          <h3>Play online</h3>
-          <p>Everyone plays from their own device with a shared room code.</p>
-        </button>
-        <!-- A separate page/route (own setup flow, own player picker) - not a
-             navbar destination of its own, reached only from here since it's
-             another way to test the same Starting XI knowledge. -->
-        <router-link to="/penalty-shootout" class="mode-choice-card">
-          <h3>Penalty Shootout</h3>
-          <p>A different way to test your Starting XI knowledge - guess who took each kick, in real order.</p>
-        </router-link>
+        <div class="mode-choice-row">
+          <button class="mode-choice-card" @click="stage = 'landing'">
+            <h3>Same device</h3>
+            <p>Pass the phone around - everyone takes their turn on one screen.</p>
+          </button>
+          <button class="mode-choice-card" @click="stage = 'onlineChoice'">
+            <h3>Play online</h3>
+            <p>Everyone plays from their own device with a shared room code.</p>
+          </button>
+          <!-- A separate page/route (own setup flow, own player picker) - not a
+               navbar destination of its own, reached only from here since it's
+               another way to test the same Starting XI knowledge. -->
+          <router-link to="/penalty-shootout" class="mode-choice-card">
+            <h3>Penalty Shootout</h3>
+            <p>A different way to test your Starting XI knowledge - guess who took each kick, in real order.</p>
+          </router-link>
+        </div>
       </div>
 
       <details class="advanced-disclosure" style="margin-top:24px;">

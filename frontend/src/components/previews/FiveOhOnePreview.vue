@@ -129,6 +129,10 @@
 
 @media (max-width: 560px) {
   .fp-body { flex-direction: column; gap: 16px; }
-  .fp-throws { width: 100%; }
+  /* .fp-throws' flex-basis (380px, meant to cap its WIDTH in the row layout
+     above) becomes a HEIGHT once flex-direction flips to column - without
+     resetting it to auto here, the box claims 380px of vertical space it
+     doesn't need, leaving a dead gap before the caption below it. */
+  .fp-throws { width: 100%; flex-basis: auto; }
 }
 </style>

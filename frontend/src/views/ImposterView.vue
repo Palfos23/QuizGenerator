@@ -32,17 +32,19 @@
         </div>
       </div>
 
-      <ImposterPreview />
+      <div class="game-landing-hero">
+        <ImposterPreview />
 
-      <div class="mode-choice-row">
-        <button class="mode-choice-card" @click="stage = 'landing'">
-          <h3>Same device</h3>
-          <p>Pass the phone around - everyone takes their turn on one screen.</p>
-        </button>
-        <button class="mode-choice-card" @click="stage = 'onlineChoice'">
-          <h3>Play online</h3>
-          <p>Everyone plays from their own device with a shared room code.</p>
-        </button>
+        <div class="mode-choice-row">
+          <button class="mode-choice-card" @click="stage = 'landing'">
+            <h3>Same device</h3>
+            <p>Pass the phone around - everyone takes their turn on one screen.</p>
+          </button>
+          <button class="mode-choice-card" @click="stage = 'onlineChoice'">
+            <h3>Play online</h3>
+            <p>Everyone plays from their own device with a shared room code.</p>
+          </button>
+        </div>
       </div>
     </template>
 

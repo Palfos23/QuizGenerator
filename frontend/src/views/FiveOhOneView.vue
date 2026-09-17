@@ -32,17 +32,19 @@
         </div>
       </div>
 
-      <FiveOhOnePreview />
+      <div class="game-landing-hero">
+        <FiveOhOnePreview />
 
-      <div class="mode-choice-row">
-        <button class="mode-choice-card" @click="stage = 'category'">
-          <h3>Same device</h3>
-          <p>Pass the phone around - one throw each, back and forth.</p>
-        </button>
-        <button class="mode-choice-card" @click="stage = 'onlineChoice'">
-          <h3>Play online</h3>
-          <p>You and one friend, each on your own device with a shared room code.</p>
-        </button>
+        <div class="mode-choice-row">
+          <button class="mode-choice-card" @click="stage = 'category'">
+            <h3>Same device</h3>
+            <p>Pass the phone around - one throw each, back and forth.</p>
+          </button>
+          <button class="mode-choice-card" @click="stage = 'onlineChoice'">
+            <h3>Play online</h3>
+            <p>You and one friend, each on your own device with a shared room code.</p>
+          </button>
+        </div>
       </div>
 
       <details class="advanced-disclosure" style="margin-top:24px;">

@@ -2439,7 +2439,7 @@ table.scoreboard-table {
 .game-preview {
   position: relative;
   margin: 22px 0 24px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(242, 183, 5, 0.3);
   border-radius: var(--radius-lg);
   padding: 22px 22px 24px;
   overflow: hidden;
@@ -2528,6 +2528,38 @@ table.scoreboard-table {
 }
 .mode-choice-card:hover h3::after { transform: translateX(0); opacity: 1; }
 .mode-choice-card p { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+
+/* Every game's landing screen: the preview illustration and the "how do you
+   want to play" choices side by side instead of stacked full-width one above
+   the other - the preview reads as the hero visual, the choices sit right
+   beside it instead of requiring a scroll past a tall image first. Both
+   children keep their own standalone margins when used elsewhere (a preview
+   or a mode-choice-row alone), so those are zeroed out here and the wrapper
+   takes over that spacing instead. */
+.game-landing-hero {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  margin: 22px 0 24px;
+}
+.game-landing-hero .game-preview {
+  flex: 1 1 56%;
+  min-width: 0;
+  margin: 0;
+}
+.game-landing-hero .mode-choice-row {
+  flex: 1 1 260px;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  margin-top: 0;
+}
+.game-landing-hero .mode-choice-card {
+  flex: 1;
+}
+@media (max-width: 860px) {
+  .game-landing-hero { flex-direction: column; }
+  .game-landing-hero .mode-choice-row { flex-direction: row; flex-wrap: wrap; }
+}
 
 .landing-hero {
   grid-area: hero;
