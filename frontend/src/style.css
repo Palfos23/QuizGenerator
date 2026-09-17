@@ -90,16 +90,26 @@ input[type="radio"] {
   min-height: 100vh;
 }
 
+/* A translucent material rather than a flat opaque bar - page content shows
+   (and blurs) through it as it scrolls underneath, the way sticky chrome
+   should read. prefers-reduced-transparency below trades the blur for a
+   solid bar instead, since that preference means "less see-through", not
+   "less motion" - it needs its own fallback, not the motion one. */
 .top-nav {
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 14px 32px;
-  background: var(--ink-raised);
+  background: rgba(26, 28, 40, 0.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 30;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .top-nav { background: var(--ink-raised); backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 
 .nav-brand {
@@ -502,6 +512,13 @@ input[type="range"]::-moz-range-progress {
 @keyframes btn-ready-pulse {
   0%, 100% { box-shadow: 0 4px 20px rgba(242, 183, 5, 0.25); }
   50% { box-shadow: 0 4px 28px rgba(242, 183, 5, 0.7); }
+}
+/* The only *infinite* looping animation in the app - exactly the kind
+   prefers-reduced-motion exists for (a "ready to start" button can sit on
+   screen through a whole lobby wait). Keeps the glow as a static cue instead
+   of dropping the affordance entirely. */
+@media (prefers-reduced-motion: reduce) {
+  .btn-ready-pulse { animation: none; box-shadow: 0 4px 24px rgba(242, 183, 5, 0.45); }
 }
 
 .btn-secondary { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text); }
@@ -1030,7 +1047,7 @@ mark {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .life-heart.just-lost svg, .grid-tile.just-solved, .guess-box.shake { animation: none; }
+  .life-heart.just-lost svg, .grid-tile.just-solved, .guess-box.shake, .pitch-shirt.wrong-flash { animation: none; }
 }
 
 .grid-tile-logo {
@@ -2280,6 +2297,15 @@ table.scoreboard-table {
   100% { transform: translateY(420px) rotate(720deg); opacity: 0; }
 }
 
+/* Confetti is a full-surface falling/spinning field, and the icon's bounce
+   overshoots past its resting scale - both are exactly what reduced-motion
+   asks to drop. The popup's own pop-in stays: it's a short, small, single-shot
+   scale+fade with no overshoot, not the kind of motion this preference targets. */
+@media (prefers-reduced-motion: reduce) {
+  .confetti-container { display: none; }
+  .completion-icon { animation: none; }
+}
+
 .modal {
   background: var(--ink-raised);
   border: 1px solid var(--border);
@@ -3010,10 +3036,15 @@ table.scoreboard-table {
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--ink-raised);
+    background: rgba(26, 28, 40, 0.78);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     border-top: 1px solid var(--border);
     padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
     z-index: 40;
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .bottom-nav { background: var(--ink-raised); backdrop-filter: none; -webkit-backdrop-filter: none; }
   }
 
   .bottom-nav a, .bottom-nav button {
