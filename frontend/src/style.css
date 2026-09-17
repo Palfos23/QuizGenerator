@@ -2445,6 +2445,7 @@ table.scoreboard-table {
   overflow: hidden;
   pointer-events: none;
   user-select: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.22);
   background:
     radial-gradient(130% 130% at 0% 0%, rgba(242, 183, 5, 0.07), transparent 55%),
     radial-gradient(130% 130% at 100% 100%, rgba(139, 124, 255, 0.08), transparent 55%),
@@ -2452,14 +2453,17 @@ table.scoreboard-table {
 }
 .game-preview-tag {
   position: absolute;
-  top: 13px;
+  top: 14px;
   right: 15px;
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: 700;
   color: var(--text-dim);
-  opacity: 0.75;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+  border-radius: 999px;
 }
 .game-preview-caption {
   margin: 16px 2px 0;
@@ -2471,14 +2475,20 @@ table.scoreboard-table {
 .game-preview-caption .good { color: var(--teal); }
 .game-preview-caption .bad { color: var(--coral); }
 
-/* The two "Same device / Play online" cards, upgraded from a bare bordered box
-   to something with a bit more intent - a leading arrow that slides on hover. */
+/* The two (occasionally three, e.g. XI Battle's Penalty Shootout) "how do you
+   want to play" cards, styled with the same accent-border language as the
+   dashboard's game cards - a color per option (teal/violet/coral, via
+   nth-child so every game view gets this for free with no template change),
+   a lift + accent-colored border on hover, and an arrow that slides in. */
 .mode-choice-row {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
   margin-top: 4px;
 }
+.mode-choice-row > .mode-choice-card:nth-child(1) { --card-accent: var(--teal); }
+.mode-choice-row > .mode-choice-card:nth-child(2) { --card-accent: var(--violet); }
+.mode-choice-row > .mode-choice-card:nth-child(3) { --card-accent: var(--coral); }
 .mode-choice-card {
   flex: 1;
   min-width: 220px;
@@ -2487,6 +2497,7 @@ table.scoreboard-table {
   display: block;
   padding: 18px 20px;
   border: 1px solid var(--border);
+  border-left: 3px solid var(--card-accent, var(--border));
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text);
@@ -2495,8 +2506,10 @@ table.scoreboard-table {
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 .mode-choice-card:hover {
-  border-color: var(--gold);
+  border-color: var(--card-accent, var(--gold));
+  border-left-color: var(--card-accent, var(--gold));
   background: rgba(255, 255, 255, 0.045);
+  transform: translateY(-2px);
 }
 .mode-choice-card h3 {
   font-size: 1rem;
@@ -2507,7 +2520,7 @@ table.scoreboard-table {
 }
 .mode-choice-card h3::after {
   content: '→';
-  color: var(--gold);
+  color: var(--card-accent, var(--gold));
   margin-left: auto;
   transform: translateX(-3px);
   opacity: 0;
