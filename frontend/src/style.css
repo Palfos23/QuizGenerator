@@ -1257,7 +1257,10 @@ mark {
 }
 .guess-box-row {
   display: flex;
-  align-items: center;
+  /* stretch (not center) so "Pass turn" - a shorter .btn-sm - grows to match
+     the taller search input's own padding instead of sitting centered at its
+     own shorter height beside it. */
+  align-items: stretch;
   gap: 8px;
   width: 100%;
 }
@@ -1276,7 +1279,7 @@ mark {
 .guess-box:has(.guess-results) .guess-box-row input {
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
-.guess-box-row .guess-box-skip-btn { flex-shrink: 0; }
+.guess-box-row .guess-box-skip-btn { flex-shrink: 0; box-sizing: border-box; }
 
 .guess-box input {
   width: 100%;
