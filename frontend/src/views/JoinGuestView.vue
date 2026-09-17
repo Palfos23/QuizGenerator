@@ -29,7 +29,7 @@
       {{ joining ? 'Joining…' : 'Join' }}
     </button>
 
-    <p style="margin-top:20px; text-align:center;">
+    <p v-if="needsName" style="margin-top:20px; text-align:center;">
       <router-link to="/">Have an account? Sign in instead</router-link>
     </p>
   </div>
