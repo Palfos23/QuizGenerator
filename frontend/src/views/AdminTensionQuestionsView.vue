@@ -61,14 +61,12 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title / prompt</label>
-        <input type="text" v-model="form.title" placeholder="e.g. Name a country in Europe" />
+        <label>Title / prompt<input type="text" v-model="form.title" placeholder="e.g. Name a country in Europe" /></label>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:200px;">
-          <label>Main category <span class="picker-hint">used to filter which questions a game draws from - type anything, or pick a suggestion</span></label>
-          <input type="text" v-model="form.mainCategory" placeholder="e.g. Geography" list="main-category-suggestions" />
+          <label>Main category <span class="picker-hint">used to filter which questions a game draws from - type anything, or pick a suggestion</span><input type="text" v-model="form.mainCategory" placeholder="e.g. Geography" list="main-category-suggestions" /></label>
           <datalist id="main-category-suggestions">
             <option v-for="c in mainCategorySuggestions" :key="c" :value="c" />
           </datalist>
@@ -108,13 +106,11 @@
       </div>
 
       <div class="field">
-        <label>Source <span class="picker-hint">optional - shown to players so they know where the data came from</span></label>
-        <input type="text" v-model="form.source" placeholder="e.g. Lionpopulation.com" />
+        <label>Source <span class="picker-hint">optional - shown to players so they know where the data came from</span><input type="text" v-model="form.source" placeholder="e.g. Lionpopulation.com" /></label>
       </div>
 
       <div class="field">
-        <label>Tiebreaker <span class="picker-hint">optional - shown to players, describes how to resolve a tie</span></label>
-        <input type="text" v-model="form.tiebreaker" placeholder="e.g. If tied, the country founded first wins" />
+        <label>Tiebreaker <span class="picker-hint">optional - shown to players, describes how to resolve a tie</span><input type="text" v-model="form.tiebreaker" placeholder="e.g. If tied, the country founded first wins" /></label>
       </div>
 
       <div class="field" style="display:flex; align-items:flex-start; gap:8px;">

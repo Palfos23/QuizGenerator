@@ -21,8 +21,7 @@
       </div>
 
       <div class="field">
-        <label>Question</label>
-        <textarea v-model="local.questionText" placeholder="What year did..."></textarea>
+        <label>Question<textarea v-model="local.questionText" placeholder="What year did..."></textarea></label>
       </div>
 
       <div class="field">
@@ -42,21 +41,20 @@
       </div>
 
       <div class="field">
-        <label>Difficulty <span style="text-transform:none;font-weight:400;">(1 = easiest, 10 = hardest)</span></label>
-        <div class="difficulty-slider-row">
-          <input type="range" min="1" max="10" v-model.number="local.difficultyLevel" />
-          <output>{{ local.difficultyLevel }}/10</output>
-        </div>
+        <label>Difficulty <span style="text-transform:none;font-weight:400;">(1 = easiest, 10 = hardest)</span>
+          <div class="difficulty-slider-row">
+            <input type="range" min="1" max="10" v-model.number="local.difficultyLevel" />
+            <output>{{ local.difficultyLevel }}/10</output>
+          </div>
+        </label>
       </div>
 
       <div class="field">
-        <label>Answer</label>
-        <input type="text" v-model="local.answer" placeholder="e.g. Paris" />
+        <label>Answer<input type="text" v-model="local.answer" placeholder="e.g. Paris" /></label>
       </div>
 
       <div class="field">
-        <label>Photo URL <span class="picker-hint">optional - shown to players and included in PDF downloads</span></label>
-        <input type="text" v-model="local.photoUrl" placeholder="https://…" />
+        <label>Photo URL <span class="picker-hint">optional - shown to players and included in PDF downloads</span><input type="text" v-model="local.photoUrl" placeholder="https://…" /></label>
       </div>
 
       <div v-if="allLabels.length" class="field">

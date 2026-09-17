@@ -6,8 +6,7 @@
       <div v-if="localError" class="banner error">{{ localError }}</div>
 
       <div class="field">
-        <label>Name</label>
-        <input type="text" v-model="local.name" placeholder="e.g. Harry Kane, or The Godfather" />
+        <label>Name<input type="text" v-model="local.name" placeholder="e.g. Harry Kane, or The Godfather" /></label>
       </div>
 
       <div class="field">
@@ -26,13 +25,11 @@
       </div>
 
       <div class="field">
-        <label>{{ gridCategories.groupLabelFor(local.sport) }}</label>
-        <input type="text" v-model="local.team" placeholder="e.g. Tottenham Hotspur, or Warner Bros." />
+        <label>{{ gridCategories.groupLabelFor(local.sport) }}<input type="text" v-model="local.team" placeholder="e.g. Tottenham Hotspur, or Warner Bros." /></label>
       </div>
 
       <div class="field">
-        <label>Photo URL <span class="picker-hint">a hosted image link - shown once a player is guessed</span></label>
-        <input type="text" v-model="local.photoUrl" placeholder="https://…" />
+        <label>Photo URL <span class="picker-hint">a hosted image link - shown once a player is guessed</span><input type="text" v-model="local.photoUrl" placeholder="https://…" /></label>
         <div v-if="local.photoUrl" style="margin-top:10px;">
           <img :src="local.photoUrl" alt="" class="club-logo-preview" />
         </div>

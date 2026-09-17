@@ -6,12 +6,10 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div class="field">
-      <label>Username</label>
-      <input type="text" v-model="username" @keyup.enter="submit" autocomplete="username" />
+      <label>Username<input type="text" v-model="username" @keyup.enter="submit" autocomplete="username" /></label>
     </div>
     <div class="field">
-      <label>Password</label>
-      <input type="password" v-model="password" @keyup.enter="submit" autocomplete="current-password" />
+      <label>Password<input type="password" v-model="password" @keyup.enter="submit" autocomplete="current-password" /></label>
     </div>
 
     <button class="btn btn-primary" :disabled="loading" @click="submit">

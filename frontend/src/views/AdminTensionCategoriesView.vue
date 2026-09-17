@@ -54,13 +54,11 @@
         <div v-if="modalError" class="banner error">{{ modalError }}</div>
 
         <div class="field">
-          <label>Name</label>
-          <input type="text" v-model="form.name" placeholder="e.g. countries" />
+          <label>Name<input type="text" v-model="form.name" placeholder="e.g. countries" /></label>
         </div>
 
         <div class="field">
-          <label>Suggestion words <span class="picker-hint">one per line</span></label>
-          <textarea v-model="optionsText" rows="10" placeholder="Norway&#10;Sweden&#10;Denmark&#10;…"></textarea>
+          <label>Suggestion words <span class="picker-hint">one per line</span><textarea v-model="optionsText" rows="10" placeholder="Norway&#10;Sweden&#10;Denmark&#10;…"></textarea></label>
         </div>
 
         <div style="display:flex; gap:10px; justify-content:flex-end;">

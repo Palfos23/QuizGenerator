@@ -28,8 +28,7 @@
       <div class="modal">
         <h2>Mark this report resolved?</h2>
         <div class="field">
-          <label>Note <span class="picker-hint">optional - shown back to the reporter</span></label>
-          <textarea v-model="resolveNote" rows="3" placeholder="e.g. Fixed in the latest update"></textarea>
+          <label>Note <span class="picker-hint">optional - shown back to the reporter</span><textarea v-model="resolveNote" rows="3" placeholder="e.g. Fixed in the latest update"></textarea></label>
         </div>
         <div style="display:flex; gap:10px; justify-content:flex-end;">
           <button class="btn btn-secondary" @click="resolving = null">Cancel</button>

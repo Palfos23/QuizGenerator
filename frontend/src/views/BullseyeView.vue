@@ -59,10 +59,11 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Players</label>
-        <select v-model.number="numPlayers">
-          <option v-for="n in [2,3,4,5,6,7,8]" :key="n" :value="n">{{ n }}</option>
-        </select>
+        <label>Players
+          <select v-model.number="numPlayers">
+            <option v-for="n in [2,3,4,5,6,7,8]" :key="n" :value="n">{{ n }}</option>
+          </select>
+        </label>
       </div>
       <p class="page-subtitle" style="margin-top:-8px;">
         {{ numPlayers }} players means {{ numPlayers - 1 }} round{{ numPlayers - 1 > 1 ? 's' : '' }} - one elimination per round.
@@ -113,8 +114,7 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Your name <span class="picker-hint">shown to other players</span></label>
-        <input type="text" v-model="onlineDisplayName" placeholder="Your name" />
+        <label>Your name <span class="picker-hint">shown to other players</span><input type="text" v-model="onlineDisplayName" placeholder="Your name" /></label>
       </div>
       <p class="page-subtitle">
         The round count is set once everyone's joined and you start the game - one elimination
@@ -133,12 +133,10 @@
       <h1>Join a room</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div class="field">
-        <label>Your name <span class="picker-hint">shown to other players</span></label>
-        <input type="text" v-model="onlineDisplayName" placeholder="Your name" />
+        <label>Your name <span class="picker-hint">shown to other players</span><input type="text" v-model="onlineDisplayName" placeholder="Your name" /></label>
       </div>
       <div class="field">
-        <label>Room code</label>
-        <input type="text" v-model="joinCode" placeholder="e.g. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" />
+        <label>Room code<input type="text" v-model="joinCode" placeholder="e.g. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" /></label>
       </div>
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>

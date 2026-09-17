@@ -87,16 +87,18 @@
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
-          <label>Players</label>
-          <select v-model.number="numPlayers">
-            <option v-for="n in [2,3,4,5]" :key="n" :value="n">{{ n }}</option>
-          </select>
+          <label>Players
+            <select v-model.number="numPlayers">
+              <option v-for="n in [2,3,4,5]" :key="n" :value="n">{{ n }}</option>
+            </select>
+          </label>
         </div>
         <div style="flex:1; min-width:160px;">
-          <label>Grids</label>
-          <select v-model.number="numGrids">
-            <option v-for="n in [2,3,4]" :key="n" :value="n">{{ n }}</option>
-          </select>
+          <label>Grids
+            <select v-model.number="numGrids">
+              <option v-for="n in [2,3,4]" :key="n" :value="n">{{ n }}</option>
+            </select>
+          </label>
         </div>
       </div>
 
@@ -128,15 +130,15 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Your name <span class="picker-hint">shown to other players</span></label>
-        <input type="text" v-model="onlineDisplayName" placeholder="Your name" />
+        <label>Your name <span class="picker-hint">shown to other players</span><input type="text" v-model="onlineDisplayName" placeholder="Your name" /></label>
       </div>
 
       <div class="field">
-        <label>Grids <span class="picker-hint">2-4</span></label>
-        <select v-model.number="onlineNumGrids">
-          <option v-for="n in [2,3,4]" :key="n" :value="n">{{ n }}</option>
-        </select>
+        <label>Grids <span class="picker-hint">2-4</span>
+          <select v-model.number="onlineNumGrids">
+            <option v-for="n in [2,3,4]" :key="n" :value="n">{{ n }}</option>
+          </select>
+        </label>
       </div>
 
       <div class="field">
@@ -179,12 +181,10 @@
       <h1>Join a room</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div class="field">
-        <label>Your name <span class="picker-hint">shown to other players</span></label>
-        <input type="text" v-model="onlineDisplayName" placeholder="Your name" />
+        <label>Your name <span class="picker-hint">shown to other players</span><input type="text" v-model="onlineDisplayName" placeholder="Your name" /></label>
       </div>
       <div class="field">
-        <label>Room code</label>
-        <input type="text" v-model="joinCode" placeholder="e.g. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" />
+        <label>Room code<input type="text" v-model="joinCode" placeholder="e.g. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" /></label>
       </div>
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>

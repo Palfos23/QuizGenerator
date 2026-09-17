@@ -1,6 +1,6 @@
 <template>
   <transition name="toast-fade">
-    <div v-if="toast.state.visible" class="toast" :class="toast.state.type">
+    <div v-if="toast.state.visible" class="toast" :class="toast.state.type" role="status" aria-live="polite" aria-atomic="true">
       {{ toast.state.message }}
     </div>
   </transition>

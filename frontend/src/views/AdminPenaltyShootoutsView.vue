@@ -63,56 +63,46 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title</label>
-        <input type="text" v-model="form.title" placeholder="e.g. 2006 World Cup Final" />
+        <label>Title<input type="text" v-model="form.title" placeholder="e.g. 2006 World Cup Final" /></label>
       </div>
 
       <div class="field">
-        <label>Competition / context <span class="picker-hint">optional</span></label>
-        <textarea v-model="form.competition" placeholder="e.g. Italy win 5-3 on penalties after a 1-1 draw."></textarea>
+        <label>Competition / context <span class="picker-hint">optional</span><textarea v-model="form.competition" placeholder="e.g. Italy win 5-3 on penalties after a 1-1 draw."></textarea></label>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
-          <label>Match date <span class="picker-hint">optional</span></label>
-          <input type="date" v-model="form.matchDate" />
+          <label>Match date <span class="picker-hint">optional</span><input type="date" v-model="form.matchDate" /></label>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>Max strikes</label>
-          <input type="number" min="1" max="20" v-model.number="form.maxStrikes" />
+          <label>Max strikes<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <label>Team</label>
-          <input type="text" v-model="form.teamName" placeholder="e.g. Italy" />
+          <label>Team<input type="text" v-model="form.teamName" placeholder="e.g. Italy" /></label>
         </div>
         <div style="flex:1; min-width:220px;">
-          <label>Team crest URL <span class="picker-hint">optional</span></label>
-          <input type="text" v-model="form.teamCrestUrl" placeholder="https://…" />
+          <label>Team crest URL <span class="picker-hint">optional</span><input type="text" v-model="form.teamCrestUrl" placeholder="https://…" /></label>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <label>Opponent</label>
-          <input type="text" v-model="form.opponentName" placeholder="e.g. France" />
+          <label>Opponent<input type="text" v-model="form.opponentName" placeholder="e.g. France" /></label>
         </div>
         <div style="flex:1; min-width:220px;">
-          <label>Opponent crest URL <span class="picker-hint">optional</span></label>
-          <input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" />
+          <label>Opponent crest URL <span class="picker-hint">optional</span><input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" /></label>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:140px;">
-          <label>{{ form.teamName || 'Team' }} pens scored <span class="picker-hint">optional, e.g. "5"</span></label>
-          <input type="number" min="0" v-model.number="form.teamPensScored" />
+          <label>{{ form.teamName || 'Team' }} pens scored <span class="picker-hint">optional, e.g. "5"</span><input type="number" min="0" v-model.number="form.teamPensScored" /></label>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>{{ form.opponentName || 'Opponent' }} pens scored <span class="picker-hint">optional, e.g. "3"</span></label>
-          <input type="number" min="0" v-model.number="form.opponentPensScored" />
+          <label>{{ form.opponentName || 'Opponent' }} pens scored <span class="picker-hint">optional, e.g. "3"</span><input type="number" min="0" v-model.number="form.opponentPensScored" /></label>
         </div>
       </div>
 

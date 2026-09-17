@@ -10,20 +10,22 @@
 
     <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
       <div class="field" style="margin-bottom:0; flex:1; min-width:180px;">
-        <label>Category</label>
-        <select v-model="sportFilter">
-          <option value="ALL">All categories</option>
-          <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
-        </select>
+        <label>Category
+          <select v-model="sportFilter">
+            <option value="ALL">All categories</option>
+            <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
+          </select>
+        </label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:220px;">
-        <label>Match type <span class="picker-hint">how close names need to be to count as a duplicate</span></label>
-        <select v-model.number="maxDistance">
-          <option :value="0">100% match (plus last-name-only)</option>
-          <option :value="1">1 character different</option>
-          <option :value="2">2 characters different</option>
-          <option :value="3">3 characters different</option>
-        </select>
+        <label>Match type <span class="picker-hint">how close names need to be to count as a duplicate</span>
+          <select v-model.number="maxDistance">
+            <option :value="0">100% match (plus last-name-only)</option>
+            <option :value="1">1 character different</option>
+            <option :value="2">2 characters different</option>
+            <option :value="3">3 characters different</option>
+          </select>
+        </label>
       </div>
       <div style="display:flex; align-items:flex-end;">
         <button class="btn btn-primary" :disabled="loading" @click="scan">{{ loading ? 'Scanning…' : 'Scan' }}</button>

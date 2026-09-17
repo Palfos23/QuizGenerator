@@ -67,13 +67,11 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title <span class="picker-hint">admin-only label, not shown to players</span></label>
-        <input type="text" v-model="form.title" placeholder="e.g. Moon landing" />
+        <label>Title <span class="picker-hint">admin-only label, not shown to players</span><input type="text" v-model="form.title" placeholder="e.g. Moon landing" /></label>
       </div>
 
       <div class="field" style="max-width:200px;">
-        <label>Year <span class="picker-hint">what players are guessing</span></label>
-        <input type="number" v-model.number="form.year" placeholder="1969" />
+        <label>Year <span class="picker-hint">what players are guessing</span><input type="number" v-model.number="form.year" placeholder="1969" /></label>
       </div>
 
       <div class="field">

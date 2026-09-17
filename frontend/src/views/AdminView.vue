@@ -60,30 +60,32 @@
 
     <div class="filter-bar">
       <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
-        <label>Search</label>
-        <input type="text" v-model="searchText" placeholder="Search question, category or answer…" />
+        <label>Search<input type="text" v-model="searchText" placeholder="Search question, category or answer…" /></label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Language</label>
-        <select v-model="languageFilter">
-          <option value="ALL">All languages</option>
-          <option v-for="lang in LANGUAGES" :key="lang.code" :value="lang.code">{{ lang.flag }} {{ lang.label }}</option>
-        </select>
+        <label>Language
+          <select v-model="languageFilter">
+            <option value="ALL">All languages</option>
+            <option v-for="lang in LANGUAGES" :key="lang.code" :value="lang.code">{{ lang.flag }} {{ lang.label }}</option>
+          </select>
+        </label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Category</label>
-        <select v-model="categoryFilter">
-          <option value="ALL">All categories</option>
-          <option v-for="c in availableCategories" :key="c" :value="c">{{ c }}</option>
-        </select>
+        <label>Category
+          <select v-model="categoryFilter">
+            <option value="ALL">All categories</option>
+            <option v-for="c in availableCategories" :key="c" :value="c">{{ c }}</option>
+          </select>
+        </label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Could change?</label>
-        <select v-model="couldChangeFilter">
-          <option value="ALL">Any</option>
-          <option value="YES">May change</option>
-          <option value="NO">Stable</option>
-        </select>
+        <label>Could change?
+          <select v-model="couldChangeFilter">
+            <option value="ALL">Any</option>
+            <option value="YES">May change</option>
+            <option value="NO">Stable</option>
+          </select>
+        </label>
       </div>
     </div>
 

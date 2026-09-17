@@ -68,63 +68,52 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title</label>
-        <input type="text" v-model="form.title" placeholder="e.g. Community Shield 2014" />
+        <label>Title<input type="text" v-model="form.title" placeholder="e.g. Community Shield 2014" /></label>
       </div>
 
       <div class="field">
-        <label>Competition / context <span class="picker-hint">optional</span></label>
-        <textarea v-model="form.competition" placeholder="e.g. Arsenal's opening-day XI the season after winning the FA Cup."></textarea>
+        <label>Competition / context <span class="picker-hint">optional</span><textarea v-model="form.competition" placeholder="e.g. Arsenal's opening-day XI the season after winning the FA Cup."></textarea></label>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
-          <label>Match date <span class="picker-hint">optional</span></label>
-          <input type="date" v-model="form.matchDate" />
+          <label>Match date <span class="picker-hint">optional</span><input type="date" v-model="form.matchDate" /></label>
         </div>
         <div style="flex:1; min-width:160px;">
-          <label>Week start date</label>
-          <input type="date" v-model="form.weekStartDate" />
+          <label>Week start date<input type="date" v-model="form.weekStartDate" /></label>
           <p v-if="weekConflict" style="margin:6px 0 0; color:var(--coral); font-size:0.82rem;">
             ⚠ '{{ weekConflict.title }}' already uses this week.
           </p>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>Max strikes</label>
-          <input type="number" min="1" max="20" v-model.number="form.maxStrikes" />
+          <label>Max strikes<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <label>Team (the XI being guessed)</label>
-          <input type="text" v-model="form.teamName" placeholder="e.g. Arsenal" />
+          <label>Team (the XI being guessed)<input type="text" v-model="form.teamName" placeholder="e.g. Arsenal" /></label>
         </div>
         <div style="flex:1; min-width:220px;">
-          <label>Team crest URL <span class="picker-hint">optional</span></label>
-          <input type="text" v-model="form.teamCrestUrl" placeholder="https://…" />
+          <label>Team crest URL <span class="picker-hint">optional</span><input type="text" v-model="form.teamCrestUrl" placeholder="https://…" /></label>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <label>Opponent <span class="picker-hint">context only, never guessable</span></label>
-          <input type="text" v-model="form.opponentName" placeholder="e.g. Man City" />
+          <label>Opponent <span class="picker-hint">context only, never guessable</span><input type="text" v-model="form.opponentName" placeholder="e.g. Man City" /></label>
         </div>
         <div style="flex:1; min-width:220px;">
-          <label>Opponent crest URL <span class="picker-hint">optional</span></label>
-          <input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" />
+          <label>Opponent crest URL <span class="picker-hint">optional</span><input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" /></label>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:140px;">
-          <label>{{ form.teamName || 'Team' }} score</label>
-          <input type="number" min="0" v-model.number="form.scoreFor" />
+          <label>{{ form.teamName || 'Team' }} score<input type="number" min="0" v-model.number="form.scoreFor" /></label>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>{{ form.opponentName || 'Opponent' }} score</label>
-          <input type="number" min="0" v-model.number="form.scoreAgainst" />
+          <label>{{ form.opponentName || 'Opponent' }} score<input type="number" min="0" v-model.number="form.scoreAgainst" /></label>
         </div>
       </div>
 

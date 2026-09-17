@@ -67,13 +67,11 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title</label>
-        <input type="text" v-model="form.title" placeholder="e.g. Tottenham 10+ goal scorers" />
+        <label>Title<input type="text" v-model="form.title" placeholder="e.g. Tottenham 10+ goal scorers" /></label>
       </div>
 
       <div class="field">
-        <label>Theme / instructions</label>
-        <textarea v-model="form.theme" placeholder="Name every Tottenham player with more than 10 goals."></textarea>
+        <label>Theme / instructions<textarea v-model="form.theme" placeholder="Name every Tottenham player with more than 10 goals."></textarea></label>
       </div>
 
       <div class="field">
@@ -93,15 +91,13 @@
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:180px;">
-          <label>Week start date</label>
-          <input type="date" v-model="form.weekStartDate" />
+          <label>Week start date<input type="date" v-model="form.weekStartDate" /></label>
           <p v-if="weekConflict" style="margin:6px 0 0; color:var(--coral); font-size:0.82rem;">
             ⚠ '{{ weekConflict.title }}' already uses this week.
           </p>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>Max strikes</label>
-          <input type="number" min="1" max="20" v-model.number="form.maxStrikes" />
+          <label>Max strikes<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
         </div>
       </div>
 

@@ -13,12 +13,10 @@
 
     <div class="field" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; max-width:560px;">
       <div style="flex:1; min-width:200px;">
-        <label>New category</label>
-        <input type="text" v-model="newName" placeholder="e.g. Countries by population" />
+        <label>New category<input type="text" v-model="newName" placeholder="e.g. Countries by population" /></label>
       </div>
       <div style="flex:1; min-width:160px;">
-        <label>Grouping word <span class="picker-hint">optional, defaults to "Team"</span></label>
-        <input type="text" v-model="newGroupLabel" placeholder="e.g. Continent" @keyup.enter="createCategory" />
+        <label>Grouping word <span class="picker-hint">optional, defaults to "Team"</span><input type="text" v-model="newGroupLabel" placeholder="e.g. Continent" @keyup.enter="createCategory" /></label>
       </div>
       <button class="btn btn-primary" :disabled="!newName.trim() || saving" @click="createCategory">+ Add</button>
     </div>

@@ -65,9 +65,9 @@
       </template>
     </nav>
 
-    <div class="main-content">
+    <main class="main-content">
       <router-view />
-    </div>
+    </main>
 
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">

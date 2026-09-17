@@ -1,21 +1,23 @@
 <template>
   <div class="board-toolbar">
     <div class="field board-toolbar-search">
-      <label>Search</label>
-      <input
-        type="text"
-        :value="search"
-        :placeholder="placeholder"
-        @input="$emit('update:search', $event.target.value)"
-      />
+      <label>Search
+        <input
+          type="text"
+          :value="search"
+          :placeholder="placeholder"
+          @input="$emit('update:search', $event.target.value)"
+        />
+      </label>
     </div>
 
     <div class="field board-toolbar-sort">
-      <label>Sort by</label>
       <div class="board-toolbar-sort-row">
-        <select :value="sortKey" @change="$emit('update:sortKey', $event.target.value)">
-          <option v-for="s in sorts" :key="s.key" :value="s.key">{{ s.label }}</option>
-        </select>
+        <label>Sort by
+          <select :value="sortKey" @change="$emit('update:sortKey', $event.target.value)">
+            <option v-for="s in sorts" :key="s.key" :value="s.key">{{ s.label }}</option>
+          </select>
+        </label>
         <button
           type="button"
           class="board-toolbar-dir"

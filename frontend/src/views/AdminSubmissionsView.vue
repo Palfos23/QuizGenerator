@@ -36,8 +36,7 @@
         <h2>Reject this question?</h2>
         <p class="page-subtitle">The submitter will see this reason - they can still use the question in their own quizzes.</p>
         <div class="field">
-          <label>Reason</label>
-          <textarea v-model="rejectReason" rows="3" placeholder="e.g. Answer is outdated / duplicate of an existing question"></textarea>
+          <label>Reason<textarea v-model="rejectReason" rows="3" placeholder="e.g. Answer is outdated / duplicate of an existing question"></textarea></label>
         </div>
         <div style="display:flex; gap:10px; justify-content:flex-end;">
           <button class="btn btn-secondary" @click="rejecting = null">Cancel</button>

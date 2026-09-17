@@ -17,15 +17,15 @@
 
     <div class="filter-bar">
       <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
-        <label>Search</label>
-        <input type="text" v-model="searchText" placeholder="Search name or group…" />
+        <label>Search<input type="text" v-model="searchText" placeholder="Search name or group…" /></label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Category</label>
-        <select v-model="sportFilter">
-          <option value="ALL">All categories</option>
-          <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
-        </select>
+        <label>Category
+          <select v-model="sportFilter">
+            <option value="ALL">All categories</option>
+            <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
+          </select>
+        </label>
       </div>
     </div>
 

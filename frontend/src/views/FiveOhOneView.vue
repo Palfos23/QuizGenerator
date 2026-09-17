@@ -98,12 +98,10 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Player 1</label>
-        <input type="text" v-model="playerNames[0]" placeholder="Player 1" />
+        <label>Player 1<input type="text" v-model="playerNames[0]" placeholder="Player 1" /></label>
       </div>
       <div class="field">
-        <label>Player 2</label>
-        <input type="text" v-model="playerNames[1]" placeholder="Player 2" />
+        <label>Player 2<input type="text" v-model="playerNames[1]" placeholder="Player 2" /></label>
       </div>
 
       <button class="btn btn-secondary" @click="stage = 'category'">← Back</button>
@@ -126,8 +124,7 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Your name <span class="picker-hint">shown to the other player</span></label>
-        <input type="text" v-model="onlineDisplayName" placeholder="Your name" />
+        <label>Your name <span class="picker-hint">shown to the other player</span><input type="text" v-model="onlineDisplayName" placeholder="Your name" /></label>
       </div>
 
       <div class="field">
@@ -160,12 +157,10 @@
       <h1>Join a room</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div class="field">
-        <label>Your name <span class="picker-hint">shown to the other player</span></label>
-        <input type="text" v-model="onlineDisplayName" placeholder="Your name" />
+        <label>Your name <span class="picker-hint">shown to the other player</span><input type="text" v-model="onlineDisplayName" placeholder="Your name" /></label>
       </div>
       <div class="field">
-        <label>Room code</label>
-        <input type="text" v-model="joinCode" placeholder="e.g. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" />
+        <label>Room code<input type="text" v-model="joinCode" placeholder="e.g. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" /></label>
       </div>
       <div style="display:flex; gap:12px;">
         <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>

@@ -11,22 +11,22 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div class="field">
-      <label>Which part of the app? <span class="picker-hint">optional</span></label>
-      <select v-model="form.area">
-        <option value="">Not sure / general</option>
-        <option>Create a quiz</option>
-        <option>My quizzes</option>
-        <option>Weekly grid</option>
-        <option>Tension</option>
-        <option>Suggest a question</option>
-        <option>Admin pages</option>
-        <option>Something else</option>
-      </select>
+      <label>Which part of the app? <span class="picker-hint">optional</span>
+        <select v-model="form.area">
+          <option value="">Not sure / general</option>
+          <option>Create a quiz</option>
+          <option>My quizzes</option>
+          <option>Weekly grid</option>
+          <option>Tension</option>
+          <option>Suggest a question</option>
+          <option>Admin pages</option>
+          <option>Something else</option>
+        </select>
+      </label>
     </div>
 
     <div class="field">
-      <label>What happened?</label>
-      <textarea v-model="form.message" rows="5" placeholder="Describe the problem - the more detail, the easier it is to track down."></textarea>
+      <label>What happened?<textarea v-model="form.message" rows="5" placeholder="Describe the problem - the more detail, the easier it is to track down."></textarea></label>
     </div>
 
     <button class="btn btn-primary" :disabled="submitting || !form.message.trim()" @click="submit">

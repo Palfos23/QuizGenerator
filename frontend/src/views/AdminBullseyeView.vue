@@ -69,8 +69,7 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title <span class="picker-hint">admin-only label, not shown to players</span></label>
-        <input type="text" v-model="form.title" placeholder="e.g. Premier League 2024/25 goalscorers" />
+        <label>Title <span class="picker-hint">admin-only label, not shown to players</span><input type="text" v-model="form.title" placeholder="e.g. Premier League 2024/25 goalscorers" /></label>
       </div>
 
       <div class="field">
@@ -90,12 +89,10 @@
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:140px;">
-          <label>Target number</label>
-          <input type="number" v-model.number="form.targetValue" placeholder="13" />
+          <label>Target number<input type="number" v-model.number="form.targetValue" placeholder="13" /></label>
         </div>
         <div style="flex:2; min-width:220px;">
-          <label>Rest of the prompt</label>
-          <input type="text" v-model="form.statLabel" placeholder="goals in the Premier League 2024/25" />
+          <label>Rest of the prompt<input type="text" v-model="form.statLabel" placeholder="goals in the Premier League 2024/25" /></label>
         </div>
       </div>
       <p class="page-subtitle" style="margin-top:-8px;">

@@ -9,7 +9,7 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div class="field">
-      <label>Room code</label>
+      <label>Room code
       <input
         type="text"
         v-model="code"
@@ -17,12 +17,11 @@
         style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;"
         maxlength="5"
         @keyup.enter="join"
-      />
+      /></label>
     </div>
 
     <div v-if="needsName" class="field">
-      <label>Your name <span class="picker-hint">shown to other players</span></label>
-      <input type="text" v-model="displayName" placeholder="Your name" @keyup.enter="join" />
+      <label>Your name <span class="picker-hint">shown to other players</span><input type="text" v-model="displayName" placeholder="Your name" @keyup.enter="join" /></label>
     </div>
 
     <button class="btn btn-primary" style="width:100%;" :disabled="!canSubmit || joining" @click="join">

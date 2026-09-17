@@ -53,13 +53,11 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title</label>
-        <input type="text" v-model="form.title" placeholder="e.g. Premier League appearances" />
+        <label>Title<input type="text" v-model="form.title" placeholder="e.g. Premier League appearances" /></label>
       </div>
 
       <div class="field">
-        <label>Description <span class="picker-hint">optional flavor text</span></label>
-        <input type="text" v-model="form.description" placeholder="Shown to players before they pick this category" />
+        <label>Description <span class="picker-hint">optional flavor text</span><input type="text" v-model="form.description" placeholder="Shown to players before they pick this category" /></label>
       </div>
 
       <div class="field" style="display:flex; align-items:flex-start; gap:8px;">

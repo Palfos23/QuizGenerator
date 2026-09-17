@@ -451,7 +451,9 @@ input[type="range"]::-moz-range-progress {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  min-height: 40px;
   padding: 11px 20px;
   border-radius: var(--radius-sm);
   border: none;
@@ -510,7 +512,10 @@ input[type="range"]::-moz-range-progress {
 .btn-danger-solid { background: var(--coral); border: none; color: #2b0009; }
 .btn-danger-solid:hover { filter: brightness(1.08); }
 
-.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+/* Still noticeably more compact than the default size (dense admin tables,
+   inline row actions need that), but 27px tall was uncomfortably small as a
+   tap target - 32px is a deliberate middle ground. */
+.btn-sm { min-height: 32px; padding: 6px 14px; font-size: 0.8rem; }
 
 .icon-btn {
   padding: 6px 10px;
@@ -1961,8 +1966,8 @@ mark {
 }
 
 .stepper button {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: none;
   background: rgba(255,255,255,0.08);
@@ -1983,13 +1988,16 @@ mark {
 }
 
 .chip-remove-btn {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: none;
   background: transparent;
   color: var(--text-dim);
   font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .chip-remove-btn:hover { background: rgba(255, 77, 109, 0.15); color: var(--coral); }
 

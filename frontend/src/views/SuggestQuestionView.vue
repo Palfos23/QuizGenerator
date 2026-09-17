@@ -12,18 +12,15 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div class="field">
-      <label>Question</label>
-      <input type="text" v-model="form.questionText" placeholder="e.g. What is the capital of Norway?" />
+      <label>Question<input type="text" v-model="form.questionText" placeholder="e.g. What is the capital of Norway?" /></label>
     </div>
 
     <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
       <div style="flex:1; min-width:160px;">
-        <label>Category</label>
-        <input type="text" v-model="form.category" placeholder="e.g. Geography" />
+        <label>Category<input type="text" v-model="form.category" placeholder="e.g. Geography" /></label>
       </div>
       <div style="flex:1; min-width:160px;">
-        <label>Difficulty <span class="picker-hint">1 (easy) - 10 (hard)</span></label>
-        <input type="number" min="1" max="10" v-model.number="form.difficultyLevel" />
+        <label>Difficulty <span class="picker-hint">1 (easy) - 10 (hard)</span><input type="number" min="1" max="10" v-model.number="form.difficultyLevel" /></label>
       </div>
     </div>
 
@@ -43,8 +40,7 @@
     </div>
 
     <div class="field">
-      <label>Answer</label>
-      <input type="text" v-model="form.answer" />
+      <label>Answer<input type="text" v-model="form.answer" /></label>
     </div>
 
     <div class="field">

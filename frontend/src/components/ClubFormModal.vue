@@ -6,8 +6,7 @@
       <div v-if="localError" class="banner error">{{ localError }}</div>
 
       <div class="field">
-        <label>Name</label>
-        <input type="text" v-model="local.name" placeholder="e.g. Tottenham Hotspur, or Warner Bros." />
+        <label>Name<input type="text" v-model="local.name" placeholder="e.g. Tottenham Hotspur, or Warner Bros." /></label>
       </div>
 
       <div class="field">
@@ -26,8 +25,7 @@
       </div>
 
       <div class="field">
-        <label>Logo URL <span class="picker-hint">a hosted image link, not a file upload</span></label>
-        <input type="text" v-model="local.logoUrl" placeholder="https://…" />
+        <label>Logo URL <span class="picker-hint">a hosted image link, not a file upload</span><input type="text" v-model="local.logoUrl" placeholder="https://…" /></label>
         <div v-if="local.logoUrl" style="margin-top:10px;">
           <img :src="local.logoUrl" alt="" class="club-logo-preview" @error="previewFailed = true" />
           <span v-if="previewFailed" style="color:var(--coral); font-size:0.85rem; margin-left:8px;">

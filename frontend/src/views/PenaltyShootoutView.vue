@@ -20,10 +20,11 @@
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
-          <label>Players <span class="picker-hint">1 = solo</span></label>
-          <select v-model.number="numPlayers">
-            <option v-for="n in [1,2,3,4]" :key="n" :value="n">{{ n }}</option>
-          </select>
+          <label>Players <span class="picker-hint">1 = solo</span>
+            <select v-model.number="numPlayers">
+              <option v-for="n in [1,2,3,4]" :key="n" :value="n">{{ n }}</option>
+            </select>
+          </label>
         </div>
       </div>
 

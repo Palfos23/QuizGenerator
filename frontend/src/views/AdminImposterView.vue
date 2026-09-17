@@ -58,13 +58,11 @@
       <div v-if="error" class="banner error" style="margin-top:16px;">{{ error }}</div>
 
       <div class="field" style="margin-top:16px;">
-        <label>Title</label>
-        <input type="text" v-model="form.title" placeholder="e.g. Top 10 Premier League goalscorers" />
+        <label>Title<input type="text" v-model="form.title" placeholder="e.g. Top 10 Premier League goalscorers" /></label>
       </div>
 
       <div class="field">
-        <label>Description <span class="picker-hint">optional</span></label>
-        <input type="text" v-model="form.description" placeholder="Shown to players above the board" />
+        <label>Description <span class="picker-hint">optional</span><input type="text" v-model="form.description" placeholder="Shown to players above the board" /></label>
       </div>
 
       <div class="field">
@@ -115,8 +113,7 @@
       </div>
 
       <div class="field" style="position:relative;">
-        <label>Add subjects to the board</label>
-        <input type="text" v-model="athleteSearchTerm" placeholder="Search subjects by name…" />
+        <label>Add subjects to the board<input type="text" v-model="athleteSearchTerm" placeholder="Search subjects by name…" /></label>
         <div v-if="athleteSearchResults.length" class="guess-results">
           <button
             v-for="a in athleteSearchResults"

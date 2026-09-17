@@ -41,8 +41,7 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title</label>
-        <input type="text" v-model="newTitle" placeholder="e.g. Office Christmas Party Quiz" />
+        <label>Title<input type="text" v-model="newTitle" placeholder="e.g. Office Christmas Party Quiz" /></label>
       </div>
 
       <div class="field">

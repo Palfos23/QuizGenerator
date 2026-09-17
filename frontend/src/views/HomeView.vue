@@ -67,12 +67,10 @@
           <template v-if="passwordStage === 'signin'">
             <form @submit.prevent="submitPasswordLogin">
               <div class="field">
-                <label>Email</label>
-                <input type="email" v-model="loginEmail" autocomplete="email" placeholder="you@example.com" />
+                <label>Email<input type="email" v-model="loginEmail" autocomplete="email" placeholder="you@example.com" /></label>
               </div>
               <div class="field">
-                <label>Password</label>
-                <input type="password" v-model="loginPassword" autocomplete="current-password" placeholder="Your password" />
+                <label>Password<input type="password" v-model="loginPassword" autocomplete="current-password" placeholder="Your password" /></label>
               </div>
               <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="passwordBusy">
                 {{ passwordBusy ? 'Signing in…' : 'Sign in' }}
@@ -95,16 +93,13 @@
             <template v-if="!registerSent">
               <form @submit.prevent="submitRegister">
                 <div class="field">
-                  <label>Name</label>
-                  <input type="text" v-model="registerName" placeholder="Your name" />
+                  <label>Name<input type="text" v-model="registerName" placeholder="Your name" /></label>
                 </div>
                 <div class="field">
-                  <label>Email</label>
-                  <input type="email" v-model="registerEmail" autocomplete="email" placeholder="you@example.com" />
+                  <label>Email<input type="email" v-model="registerEmail" autocomplete="email" placeholder="you@example.com" /></label>
                 </div>
                 <div class="field">
-                  <label>Password</label>
-                  <input type="password" v-model="registerPassword" autocomplete="new-password" placeholder="At least 8 characters" />
+                  <label>Password<input type="password" v-model="registerPassword" autocomplete="new-password" placeholder="At least 8 characters" /></label>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="passwordBusy">
                   {{ passwordBusy ? 'Creating account…' : 'Create account' }}
@@ -122,8 +117,7 @@
           <template v-else-if="passwordStage === 'forgot'">
             <template v-if="!forgotSent">
               <div class="field">
-                <label>Email</label>
-                <input type="email" v-model="forgotEmail" autocomplete="email" placeholder="you@example.com" />
+                <label>Email<input type="email" v-model="forgotEmail" autocomplete="email" placeholder="you@example.com" /></label>
               </div>
               <button class="btn btn-primary" style="width:100%;" :disabled="passwordBusy || !forgotEmail.trim()" @click="submitForgotPassword">
                 {{ passwordBusy ? 'Sending…' : 'Send reset link' }}

@@ -11,8 +11,7 @@
 
     <div class="field" style="display:flex; gap:10px; align-items:flex-end; max-width:420px;">
       <div style="flex:1;">
-        <label>New label</label>
-        <input type="text" v-model="newName" placeholder="e.g. Lord of the Rings" @keyup.enter="createLabel" />
+        <label>New label<input type="text" v-model="newName" placeholder="e.g. Lord of the Rings" @keyup.enter="createLabel" /></label>
       </div>
       <button class="btn btn-primary" :disabled="!newName.trim() || saving" @click="createLabel">+ Add</button>
     </div>

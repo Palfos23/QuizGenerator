@@ -17,8 +17,7 @@
     <!-- Step 1: settings form -->
     <section v-if="!quiz">
       <div class="field">
-        <label>Quiz title</label>
-        <input type="text" v-model="form.title" placeholder="e.g. Sarah's 30th Birthday Quiz" />
+        <label>Quiz title<input type="text" v-model="form.title" placeholder="e.g. Sarah's 30th Birthday Quiz" /></label>
       </div>
 
       <div class="field">

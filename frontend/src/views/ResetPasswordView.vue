@@ -19,12 +19,10 @@
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>New password</label>
-        <input type="password" v-model="newPassword" placeholder="At least 8 characters" autocomplete="new-password" @keyup.enter="submit" />
+        <label>New password<input type="password" v-model="newPassword" placeholder="At least 8 characters" autocomplete="new-password" @keyup.enter="submit" /></label>
       </div>
       <div class="field">
-        <label>Confirm password</label>
-        <input type="password" v-model="confirmPassword" placeholder="Type it again" autocomplete="new-password" @keyup.enter="submit" />
+        <label>Confirm password<input type="password" v-model="confirmPassword" placeholder="Type it again" autocomplete="new-password" @keyup.enter="submit" /></label>
       </div>
 
       <button class="btn btn-primary" style="width:100%;" :disabled="!canSubmit || submitting" @click="submit">
