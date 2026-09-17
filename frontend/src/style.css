@@ -1234,15 +1234,26 @@ mark {
    app, sized up slightly since this is the primary action on these screens
    rather than a secondary list filter. The icon switches to gold on focus,
    echoing the border/glow change instead of sitting there inert. */
-/* Turn label + inline "Pass turn" layout (Grid Battle) - the search pill and
+/* Turn label + inline "Pass turn" layout (Grid Battle) - the search box and
    the pass/skip action sit side by side in one row, same idea as a search box
    next to an "Archive" button on a reference site, instead of the button
-   floating in a header above the input. */
+   floating in a header above the input. Unlike every other guess-box screen,
+   this variant also drops .guess-box-wrap's own shared card (border/
+   background/shadow) - the input and the button are two independent boxes
+   sitting directly on the page, not both nested inside one bigger bordered
+   card, and both use the app's normal squared-off radius-sm corners instead
+   of the usual full-pill search input. */
 .guess-box-turn-label {
   margin: 0 0 8px;
   text-align: center;
   color: var(--gold);
   font-weight: 600;
+}
+.guess-box-wrap:has(.guess-box-row) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 14px 0;
 }
 .guess-box-row {
   display: flex;
@@ -1250,7 +1261,21 @@ mark {
   gap: 8px;
   width: 100%;
 }
-.guess-box-row input { flex: 1; min-width: 0; }
+.guess-box-row input {
+  flex: 1;
+  min-width: 0;
+}
+/* Same specificity as .guess-box's own base "input" rules below (one class +
+   the element) means source order alone would decide the winner - qualifying
+   with the outer .guess-box class here guarantees this squared-off radius
+   always beats the shared pill-radius default, regardless of where either
+   rule ends up in the file. */
+.guess-box .guess-box-row input {
+  border-radius: var(--radius-sm);
+}
+.guess-box:has(.guess-results) .guess-box-row input {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
 .guess-box-row .guess-box-skip-btn { flex-shrink: 0; }
 
 .guess-box input {
