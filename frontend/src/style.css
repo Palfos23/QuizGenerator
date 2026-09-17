@@ -2357,15 +2357,40 @@ table.scoreboard-table {
   align-self: center;
 }
 
+.dashboard-welcome {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  margin: 0 0 16px;
+}
+.dashboard-welcome strong { color: var(--gold); font-weight: 600; }
+
 .dashboard-hero {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
   padding: 40px 32px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.02));
   margin-bottom: 12px;
 }
-.dashboard-hero h1 { margin-bottom: 10px; }
+.dashboard-hero-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: var(--gold-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+}
+.dashboard-hero-body { min-width: 0; flex: 1; }
+.dashboard-hero h1 { margin: 0 0 10px; }
 .dashboard-hero .landing-lede { max-width: 640px; margin-bottom: 24px; }
+.dashboard-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+.dashboard-section-title { margin-top: 48px; }
 
 .btn-lg {
   padding: 14px 28px;
@@ -2374,27 +2399,58 @@ table.scoreboard-table {
 
 .dashboard-features {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 14px;
   margin-top: 16px;
 }
 
+/* Left accent bar + tinted icon badge per card (via each card's own
+   --card-accent custom property, set inline from DashboardView's data) -
+   same idea as a reference site's colored dashboard cards, built from this
+   app's own gold/teal/coral/violet palette rather than new colors. The
+   accent rotation is purely visual variety between cards, not a status
+   signal - unlike that reference site, nothing here is tracking per-game
+   completion/streaks, so no card claims a "done today" state it can't back. */
 .dashboard-feature-card {
+  position: relative;
   display: block;
-  padding: 18px 20px;
+  padding: 20px 20px 52px;
   border: 1px solid var(--border);
+  border-left: 3px solid var(--card-accent, var(--border));
   border-radius: var(--radius-md);
   background: rgba(255,255,255,0.02);
   color: var(--text);
   text-decoration: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 .dashboard-feature-card:hover {
-  border-color: var(--gold);
+  border-color: var(--card-accent, var(--gold));
+  border-left-color: var(--card-accent, var(--gold));
   background: rgba(255,255,255,0.04);
+  transform: translateY(-2px);
+}
+.dashboard-feature-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--card-accent, var(--gold)) 16%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-bottom: 12px;
 }
 .dashboard-feature-card h3 { font-size: 1rem; margin-bottom: 6px; }
-.dashboard-feature-card p { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+.dashboard-feature-card p { color: var(--text-dim); font-size: 0.87rem; margin: 0; line-height: 1.4; }
+.dashboard-feature-play {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--card-accent, var(--gold));
+}
 
 /* ---------- Game-mode intro preview ("here's what this looks like") ---------- */
 /* A decorative, non-interactive freeze-frame of the game, shown on each mode's
@@ -2813,6 +2869,13 @@ table.scoreboard-table {
   }
 
   h1 { font-size: 1.6rem; }
+
+  .dashboard-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 20px;
+    gap: 14px;
+  }
 
   /* 3 per row instead of 4 (desktop) - keeps tiles noticeably bigger than a
      typical 4-across mobile grid, while fitting more of the board on screen
