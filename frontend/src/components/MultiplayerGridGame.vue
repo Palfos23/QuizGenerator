@@ -40,27 +40,27 @@
       </div>
 
       <div v-if="!gridComplete" class="guess-box-wrap no-print">
+        <p class="guess-box-turn-label">{{ currentPlayerName }}'s turn</p>
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
-          <div class="guess-box-header">
-            <p style="margin:0; color:var(--gold); font-weight:600;">{{ currentPlayerName }}'s turn</p>
+          <div class="guess-box-row">
+            <input
+              type="text"
+              v-model="searchTerm"
+              placeholder="Search for an answer…"
+              aria-label="Search for an answer"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              @keydown.esc="searchTerm = ''"
+            />
             <button
               type="button"
-              class="btn btn-danger btn-sm no-print"
+              class="btn btn-danger btn-sm no-print guess-box-skip-btn"
               :disabled="guessing"
               @click="showSkipConfirm = true"
             >Pass turn</button>
           </div>
-          <input
-            type="text"
-            v-model="searchTerm"
-            placeholder="Search for an answer…"
-            aria-label="Search for an answer"
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            @keydown.esc="searchTerm = ''"
-          />
           <div v-if="searchResults.length" class="guess-results">
             <button
               v-for="a in searchResults"

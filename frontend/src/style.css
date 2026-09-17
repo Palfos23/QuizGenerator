@@ -1234,6 +1234,25 @@ mark {
    app, sized up slightly since this is the primary action on these screens
    rather than a secondary list filter. The icon switches to gold on focus,
    echoing the border/glow change instead of sitting there inert. */
+/* Turn label + inline "Pass turn" layout (Grid Battle) - the search pill and
+   the pass/skip action sit side by side in one row, same idea as a search box
+   next to an "Archive" button on a reference site, instead of the button
+   floating in a header above the input. */
+.guess-box-turn-label {
+  margin: 0 0 8px;
+  text-align: center;
+  color: var(--gold);
+  font-weight: 600;
+}
+.guess-box-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.guess-box-row input { flex: 1; min-width: 0; }
+.guess-box-row .guess-box-skip-btn { flex-shrink: 0; }
+
 .guess-box input {
   width: 100%;
   padding: 14px 20px 14px 46px;
