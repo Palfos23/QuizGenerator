@@ -56,7 +56,7 @@
             />
             <button
               type="button"
-              class="btn btn-danger btn-sm no-print guess-box-skip-btn"
+              class="btn btn-danger-solid btn-sm no-print guess-box-skip-btn"
               :disabled="guessing"
               @click="showSkipConfirm = true"
             >Pass turn</button>
