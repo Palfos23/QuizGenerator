@@ -6,7 +6,10 @@
         Pick your categories, how many questions from each, a difficulty and a language -
         then reorder, swap out, search in specific questions, or remove anything before you save or print it.
       </p>
-      <router-link to="/generate" class="btn btn-primary btn-lg">Create a quiz →</router-link>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <router-link to="/generate" class="btn btn-primary btn-lg">Create a quiz →</router-link>
+        <router-link to="/join" class="btn btn-secondary btn-lg">Join a game with a code →</router-link>
+      </div>
     </section>
 
     <h2 style="margin-top:48px;">More ways to play</h2>

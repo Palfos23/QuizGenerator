@@ -603,6 +603,15 @@ export default {
   restartRoom(code) {
     return client.post(`/rooms/${code}/restart`).then(r => r.data)
   },
+  // Host-only - removes a stuck/disconnected player, lobby or mid-game.
+  kickParticipant(code, participantId) {
+    return client.post(`/rooms/${code}/kick?participantId=${participantId}`).then(r => r.data)
+  },
+  // Any remaining participant, once the current host has actually gone
+  // quiet (server checks this, not just "someone asked").
+  claimHost(code) {
+    return client.post(`/rooms/${code}/claim-host`).then(r => r.data)
+  },
   // Keeps this participant's "connected" status fresh while the room's push
   // channel is doing the real work - see useRoomChannel.js.
   sendRoomHeartbeat(code) {

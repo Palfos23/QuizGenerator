@@ -90,6 +90,16 @@ public class FlashbackOnlineService {
         initializeYearSequence(room, previousCount);
     }
 
+    // Host-only removal of a stuck/disconnected participant (see
+    // RoomController#kick) - see TensionOnlineService#kick for the full
+    // reasoning on why no turn-order patchup is needed afterward.
+    @Transactional
+    public void kick(GameRoom room, Long participantId) {
+        roundGuessRepository.deleteByParticipant_Id(participantId);
+        participantStateRepository.deleteByParticipant_Id(participantId);
+        roomService.removeParticipant(room, participantId);
+    }
+
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {

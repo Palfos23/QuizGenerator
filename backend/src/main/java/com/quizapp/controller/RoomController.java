@@ -4,6 +4,7 @@ import com.quizapp.dto.CreateRoomRequest;
 import com.quizapp.dto.JoinRoomRequest;
 import com.quizapp.dto.RoomDto;
 import com.quizapp.model.GameRoom;
+import com.quizapp.model.GameRoomParticipant;
 import com.quizapp.model.RoomGameType;
 import com.quizapp.model.RoomStatus;
 import com.quizapp.service.BullseyeOnlineService;
@@ -188,6 +189,66 @@ public class RoomController {
             tensionOnlineService.restartForReplay(room);
         }
         RoomDto dto = roomService.toDto(roomService.markWaitingForReplay(room), email);
+        roomBroadcastService.broadcastLobby(code, dto);
+        return dto;
+    }
+
+    /**
+     * Host-only removal of a stuck/disconnected participant, mid-game or
+     * still in the lobby - see the individual XxxOnlineService#kick methods
+     * for why no turn-order patchup is needed afterward (every game already
+     * recomputes "whose turn" fresh off the live participant list). Can't
+     * target the host themselves - see claimHost for that path instead.
+     */
+    @PostMapping("/{code}/kick")
+    public RoomDto kick(@PathVariable String code, @RequestParam Long participantId, Authentication authentication) {
+        String email = authentication.getName();
+        GameRoom room = roomService.findByCode(code);
+        if (!room.getHostEmail().equals(email)) {
+            throw new IllegalStateException("Only the host can remove a player.");
+        }
+        String targetEmail = room.getParticipants().stream()
+                .filter(p -> p.getId().equals(participantId))
+                .findFirst()
+                .map(GameRoomParticipant::getUserEmail)
+                .orElseThrow(() -> new IllegalStateException("That player isn't in this room."));
+        if (room.getHostEmail().equals(targetEmail)) {
+            throw new IllegalStateException("The host can't remove themselves - leave the room instead.");
+        }
+
+        if (room.getGameType() == RoomGameType.GRID_BATTLE) {
+            gridBattleOnlineService.kick(room, participantId);
+        } else if (room.getGameType() == RoomGameType.IMPOSTER) {
+            imposterOnlineService.kick(room, participantId);
+        } else if (room.getGameType() == RoomGameType.FIVE_O_ONE) {
+            fiveOhOneOnlineService.kick(room, participantId);
+        } else if (room.getGameType() == RoomGameType.STARTING_XI_BATTLE) {
+            lineupBattleOnlineService.kick(room, participantId);
+        } else if (room.getGameType() == RoomGameType.BULLSEYE) {
+            bullseyeOnlineService.kick(room, participantId);
+        } else if (room.getGameType() == RoomGameType.FLASHBACK) {
+            flashbackOnlineService.kick(room, participantId);
+        } else {
+            tensionOnlineService.kick(room, participantId);
+        }
+
+        RoomDto dto = roomService.toDto(roomService.findByCode(code), email);
+        roomBroadcastService.broadcastLobby(code, dto);
+        return dto;
+    }
+
+    /**
+     * Manual host takeover (see RoomService#claimHost) - any remaining
+     * participant can claim host once the current host has actually gone
+     * quiet (isConnected's 20s threshold), no auto-timer involved. Lets a
+     * group recover from a host who disappeared mid-game without anyone
+     * being able to restart, kick a stuck player, etc.
+     */
+    @PostMapping("/{code}/claim-host")
+    public RoomDto claimHost(@PathVariable String code, Authentication authentication) {
+        String email = authentication.getName();
+        GameRoom room = roomService.claimHost(roomService.findByCode(code), email);
+        RoomDto dto = roomService.toDto(room, email);
         roomBroadcastService.broadcastLobby(code, dto);
         return dto;
     }

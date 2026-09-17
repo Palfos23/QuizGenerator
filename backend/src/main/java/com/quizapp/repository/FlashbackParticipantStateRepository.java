@@ -15,4 +15,6 @@ public interface FlashbackParticipantStateRepository extends JpaRepository<Flash
     List<FlashbackParticipantState> findByRoomState_Id(@Param("roomStateId") Long roomStateId);
 
     void deleteByRoomState_Id(Long roomStateId);
+    // For kicking a single participant mid-game - see RoomController#kick.
+    void deleteByParticipant_Id(Long participantId);
 }

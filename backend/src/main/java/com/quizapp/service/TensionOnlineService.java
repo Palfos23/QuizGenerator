@@ -83,6 +83,22 @@ public class TensionOnlineService {
         initializeQuestionSequence(room, previousCount, null, null);
     }
 
+    // Host-only removal of a stuck/disconnected participant (see
+    // RoomController#kick) - tears down just THAT participant's own rows
+    // first (their round answers, their participant state), same FK-ordering
+    // reasoning as restartForReplay/RoomCleanupService, then removes them
+    // from the room. No turn-index surgery needed afterward: getState()
+    // above already recomputes "whose turn" fresh from the live
+    // room.getParticipants() list every call and skips anyone who's already
+    // answered, so a kicked player's turn resolves to the next real player
+    // automatically the moment they're gone.
+    @Transactional
+    public void kick(GameRoom room, Long participantId) {
+        roundAnswerRepository.deleteByParticipant_Id(participantId);
+        participantStateRepository.deleteByParticipant_Id(participantId);
+        roomService.removeParticipant(room, participantId);
+    }
+
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {

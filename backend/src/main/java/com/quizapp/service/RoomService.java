@@ -144,7 +144,8 @@ public class RoomService {
         dto.setStatus(room.getStatus());
         dto.setHostEmail(room.getHostEmail());
         dto.setParticipants(room.getParticipants().stream()
-                .map(p -> new RoomParticipantDto(p.getId(), p.getDisplayName(), p.getColor(), isConnected(p)))
+                .map(p -> new RoomParticipantDto(p.getId(), p.getDisplayName(), p.getColor(), isConnected(p),
+                        p.getUserEmail().equals(room.getHostEmail())))
                 .collect(Collectors.toList()));
         room.getParticipants().stream()
                 .filter(p -> p.getUserEmail().equals(requestingUserEmail))
@@ -159,6 +160,45 @@ public class RoomService {
                 .filter(p -> p.getUserEmail().equals(userEmail))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("You're not a participant in this room."));
+    }
+
+    // Manual host takeover (see RoomController#claimHost) - only when the
+    // current host has actually gone quiet (isConnected, same 20s threshold
+    // used everywhere else), not just "someone else wants to be host". No
+    // auto-timer transfers this on its own; a remaining player has to
+    // explicitly claim it once the old host is confirmed unreachable.
+    @Transactional
+    public GameRoom claimHost(GameRoom room, String requestingEmail) {
+        GameRoomParticipant me = requireParticipant(room, requestingEmail);
+        if (room.getHostEmail().equals(requestingEmail)) {
+            throw new IllegalStateException("You're already the host.");
+        }
+        GameRoomParticipant currentHost = room.getParticipants().stream()
+                .filter(p -> p.getUserEmail().equals(room.getHostEmail()))
+                .findFirst()
+                .orElse(null);
+        if (currentHost != null && isConnected(currentHost)) {
+            throw new IllegalStateException("The host is still connected.");
+        }
+        room.setHostEmail(me.getUserEmail());
+        return gameRoomRepository.save(room);
+    }
+
+    // Removes a participant outright - used by each game's own kick() after
+    // it's torn down that participant's game-specific state rows (answers,
+    // solved entries, etc.), which must happen first or this throws the exact
+    // ConstraintViolationException RoomCleanupService was fixed for: those
+    // child rows still reference game_room_participants until deleted.
+    // cascade=ALL/orphanRemoval=true on GameRoom.participants means removing
+    // it from this collection (not calling the repository directly) is what
+    // actually deletes the row.
+    @Transactional
+    public GameRoom removeParticipant(GameRoom room, Long participantId) {
+        boolean removed = room.getParticipants().removeIf(p -> p.getId().equals(participantId));
+        if (!removed) {
+            throw new ResourceNotFoundException("No participant found with id " + participantId);
+        }
+        return gameRoomRepository.save(room);
     }
 
     private String generateUniqueCode() {

@@ -1,6 +1,10 @@
 <template>
   <GameAccessGate game="bullseye">
   <div>
+    <div v-if="onlineRoom && (stage === 'onlineLobby' || stage === 'onlineGame')" style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+      <button class="btn btn-secondary btn-sm" @click="openPlayersModal">Manage players</button>
+    </div>
+
     <template v-if="stage === 'modeChoice'">
       <h1>Bullseye</h1>
       <p class="page-subtitle">
@@ -283,6 +287,16 @@
         </div>
       </div>
     </template>
+
+    <RoomPlayersModal
+      v-if="showPlayersModal && onlineRoom"
+      :room-code="onlineRoom.roomCode"
+      :participants="playersModalParticipants"
+      :your-participant-id="onlineRoom.yourParticipantId"
+      :is-host="isHost"
+      @close="showPlayersModal = false"
+      @changed="onPlayersModalChanged"
+    />
   </div>
   </GameAccessGate>
 </template>
@@ -302,6 +316,7 @@ import BullseyeGame from '../components/BullseyeGame.vue'
 import OnlineBullseyeGame from '../components/OnlineBullseyeGame.vue'
 import LoadingState from '../components/LoadingState.vue'
 import GameAccessGate from '../components/GameAccessGate.vue'
+import RoomPlayersModal from '../components/RoomPlayersModal.vue'
 import BullseyePreview from '../components/previews/BullseyePreview.vue'
 
 const colorOptions = [
@@ -485,6 +500,28 @@ const startingRoom = ref(false)
 let lobbyChannel = null
 
 const isHost = computed(() => !!onlineRoom.value?.host)
+
+// "Manage players" (kick a stuck participant / claim host) - fetches a fresh
+// room snapshot on open rather than trusting whatever onlineRoom already has,
+// since that can be stale once a game's in progress (the lobby channel stops
+// polling by then - see stopLobbyChannel below) and connected/isHost are
+// exactly the fields that matter most here.
+const showPlayersModal = ref(false)
+const playersModalParticipants = ref([])
+async function openPlayersModal() {
+  if (!onlineRoom.value) return
+  try {
+    const fresh = await api.getRoom(onlineRoom.value.roomCode)
+    playersModalParticipants.value = fresh.participants
+    showPlayersModal.value = true
+  } catch (e) {
+    error.value = 'Could not load the player list.'
+  }
+}
+function onPlayersModalChanged(dto) {
+  playersModalParticipants.value = dto.participants
+  onlineRoom.value = onlineRoom.value ? { ...onlineRoom.value, ...dto } : dto
+}
 
 // Colors are auto-assigned (no picker) - picks one not already in use by
 // another participant in the room, same convention every online game's view

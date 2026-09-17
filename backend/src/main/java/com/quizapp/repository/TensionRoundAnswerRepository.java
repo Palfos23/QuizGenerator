@@ -19,4 +19,6 @@ public interface TensionRoundAnswerRepository extends JpaRepository<TensionRound
     List<TensionRoundAnswer> findByRoomState_IdOrderByIdAsc(Long roomStateId);
     Optional<TensionRoundAnswer> findByRoomState_IdAndParticipant_Id(Long roomStateId, Long participantId);
     void deleteByRoomState_Id(Long roomStateId);
+    // For kicking a single participant mid-game - see RoomController#kick.
+    void deleteByParticipant_Id(Long participantId);
 }

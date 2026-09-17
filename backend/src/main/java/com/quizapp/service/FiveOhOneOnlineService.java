@@ -78,6 +78,27 @@ public class FiveOhOneOnlineService {
         initializeCategory(room, previousCategoryId);
     }
 
+    // Host-only removal of a stuck/disconnected participant (see
+    // RoomController#kick). Unlike every other online game, 501 is strictly
+    // 1v1 - startGame itself refuses anything but exactly 2 players - so
+    // kicking either one doesn't leave a "continue with who's left" case to
+    // handle the way the others do; it just ends the game, same as if it had
+    // been played out, so the remaining player's screen naturally shows
+    // "finished" on its next poll instead of waiting forever on an opponent
+    // who's never coming back.
+    @Transactional
+    public void kick(GameRoom room, Long participantId) {
+        roomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+            throwRepository.deleteByThrownBy_Id(participantId);
+            state.setFinished(true);
+            roomStateRepository.save(state);
+        });
+        participantStateRepository.deleteByParticipant_Id(participantId);
+        room.setStatus(RoomStatus.FINISHED);
+        gameRoomRepository.save(room);
+        roomService.removeParticipant(room, participantId);
+    }
+
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {

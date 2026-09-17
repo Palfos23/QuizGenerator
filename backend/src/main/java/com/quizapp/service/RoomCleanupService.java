@@ -30,7 +30,17 @@ public class RoomCleanupService {
     private final LineupBattleParticipantStateRepository lineupBattleParticipantStateRepository;
     private final LineupBattleSolvedEntryRepository lineupBattleSolvedEntryRepository;
     private final ImposterRoomStateRepository imposterRoomStateRepository;
+    private final ImposterParticipantStateRepository imposterParticipantStateRepository;
+    private final ImposterFlippedTileRepository imposterFlippedTileRepository;
     private final FiveOhOneRoomStateRepository fiveOhOneRoomStateRepository;
+    private final FiveOhOneParticipantStateRepository fiveOhOneParticipantStateRepository;
+    private final FiveOhOneThrowRepository fiveOhOneThrowRepository;
+    private final BullseyeRoomStateRepository bullseyeRoomStateRepository;
+    private final BullseyeParticipantStateRepository bullseyeParticipantStateRepository;
+    private final BullseyeRoundAnswerRepository bullseyeRoundAnswerRepository;
+    private final FlashbackRoomStateRepository flashbackRoomStateRepository;
+    private final FlashbackParticipantStateRepository flashbackParticipantStateRepository;
+    private final FlashbackRoundGuessRepository flashbackRoundGuessRepository;
 
     public RoomCleanupService(GameRoomRepository gameRoomRepository,
                                GridBattleRoomStateRepository gridBattleRoomStateRepository,
@@ -43,7 +53,17 @@ public class RoomCleanupService {
                                LineupBattleParticipantStateRepository lineupBattleParticipantStateRepository,
                                LineupBattleSolvedEntryRepository lineupBattleSolvedEntryRepository,
                                ImposterRoomStateRepository imposterRoomStateRepository,
-                               FiveOhOneRoomStateRepository fiveOhOneRoomStateRepository) {
+                               ImposterParticipantStateRepository imposterParticipantStateRepository,
+                               ImposterFlippedTileRepository imposterFlippedTileRepository,
+                               FiveOhOneRoomStateRepository fiveOhOneRoomStateRepository,
+                               FiveOhOneParticipantStateRepository fiveOhOneParticipantStateRepository,
+                               FiveOhOneThrowRepository fiveOhOneThrowRepository,
+                               BullseyeRoomStateRepository bullseyeRoomStateRepository,
+                               BullseyeParticipantStateRepository bullseyeParticipantStateRepository,
+                               BullseyeRoundAnswerRepository bullseyeRoundAnswerRepository,
+                               FlashbackRoomStateRepository flashbackRoomStateRepository,
+                               FlashbackParticipantStateRepository flashbackParticipantStateRepository,
+                               FlashbackRoundGuessRepository flashbackRoundGuessRepository) {
         this.gameRoomRepository = gameRoomRepository;
         this.gridBattleRoomStateRepository = gridBattleRoomStateRepository;
         this.gridBattleParticipantStateRepository = gridBattleParticipantStateRepository;
@@ -55,15 +75,31 @@ public class RoomCleanupService {
         this.lineupBattleParticipantStateRepository = lineupBattleParticipantStateRepository;
         this.lineupBattleSolvedEntryRepository = lineupBattleSolvedEntryRepository;
         this.imposterRoomStateRepository = imposterRoomStateRepository;
+        this.imposterParticipantStateRepository = imposterParticipantStateRepository;
+        this.imposterFlippedTileRepository = imposterFlippedTileRepository;
         this.fiveOhOneRoomStateRepository = fiveOhOneRoomStateRepository;
+        this.fiveOhOneParticipantStateRepository = fiveOhOneParticipantStateRepository;
+        this.fiveOhOneThrowRepository = fiveOhOneThrowRepository;
+        this.bullseyeRoomStateRepository = bullseyeRoomStateRepository;
+        this.bullseyeParticipantStateRepository = bullseyeParticipantStateRepository;
+        this.bullseyeRoundAnswerRepository = bullseyeRoundAnswerRepository;
+        this.flashbackRoomStateRepository = flashbackRoomStateRepository;
+        this.flashbackParticipantStateRepository = flashbackParticipantStateRepository;
+        this.flashbackRoundGuessRepository = flashbackRoundGuessRepository;
     }
 
     // Runs once an hour. Thresholds: finished games kept 24h (nothing currently lets
     // anyone look back at a past game anyway), never-started rooms kept 2h (nobody
     // hit "start" - safe to assume abandoned), and stuck-in-progress games kept 24h
     // (someone likely disconnected and never came back).
+    //
+    // Each room is deleted in its own transaction (see deleteStale) - previously this
+    // whole sweep ran as one transaction, so a single room whose game-specific child
+    // rows weren't being cleaned up first (a ConstraintViolationException from
+    // game_room_participants' FK) rolled back the ENTIRE hourly batch, silently
+    // wedging cleanup for every other stale room too, every single hour, until that
+    // one room was fixed. One room's per-game-cleanup bug should never block the rest.
     @Scheduled(fixedRate = 60 * 60 * 1000)
-    @Transactional
     public void cleanup() {
         Instant now = Instant.now();
         int removed = 0;
@@ -76,11 +112,23 @@ public class RoomCleanupService {
     }
 
     private int deleteStale(RoomStatus status, Instant cutoff) {
-        List<GameRoom> stale = gameRoomRepository.findByStatusAndCreatedAtBefore(status, cutoff);
-        for (GameRoom room : stale) {
-            deleteRoomData(room);
+        List<Long> staleIds = gameRoomRepository.findByStatusAndCreatedAtBefore(status, cutoff)
+                .stream().map(GameRoom::getId).toList();
+        int removed = 0;
+        for (Long id : staleIds) {
+            try {
+                deleteRoomById(id);
+                removed++;
+            } catch (Exception e) {
+                log.error("Room cleanup: failed to delete stale room {} - leaving it for the next run", id, e);
+            }
         }
-        return stale.size();
+        return removed;
+    }
+
+    @Transactional
+    public void deleteRoomById(Long roomId) {
+        gameRoomRepository.findById(roomId).ifPresent(this::deleteRoomData);
     }
 
     private void deleteRoomData(GameRoom room) {
@@ -103,16 +151,33 @@ public class RoomCleanupService {
                 lineupBattleRoomStateRepository.delete(state);
             });
         } else if (room.getGameType() == RoomGameType.IMPOSTER) {
-            // No separate participant/solved-entry child tables here - just the
-            // room state itself (its grid-sequence list is a Hibernate
-            // @ElementCollection, deleted automatically with the parent row).
-            imposterRoomStateRepository.findByRoom_Id(room.getId())
-                    .ifPresent(imposterRoomStateRepository::delete);
+            imposterRoomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+                imposterFlippedTileRepository.deleteByRoomState_Id(state.getId());
+                imposterParticipantStateRepository.deleteByRoomState_Id(state.getId());
+                imposterRoomStateRepository.delete(state);
+            });
         } else if (room.getGameType() == RoomGameType.FIVE_O_ONE) {
-            fiveOhOneRoomStateRepository.findByRoom_Id(room.getId())
-                    .ifPresent(fiveOhOneRoomStateRepository::delete);
+            fiveOhOneRoomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+                fiveOhOneThrowRepository.deleteByRoomState_Id(state.getId());
+                fiveOhOneParticipantStateRepository.deleteByRoomState_Id(state.getId());
+                fiveOhOneRoomStateRepository.delete(state);
+            });
+        } else if (room.getGameType() == RoomGameType.BULLSEYE) {
+            bullseyeRoomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+                bullseyeRoundAnswerRepository.deleteByRoomState_Id(state.getId());
+                bullseyeParticipantStateRepository.deleteByRoomState_Id(state.getId());
+                bullseyeRoomStateRepository.delete(state);
+            });
+        } else if (room.getGameType() == RoomGameType.FLASHBACK) {
+            flashbackRoomStateRepository.findByRoom_Id(room.getId()).ifPresent(state -> {
+                flashbackRoundGuessRepository.deleteByRoomState_Id(state.getId());
+                flashbackParticipantStateRepository.deleteByRoomState_Id(state.getId());
+                flashbackRoomStateRepository.delete(state);
+            });
         }
-        // GameRoomParticipant rows cascade automatically (cascade=ALL, orphanRemoval=true on GameRoom.participants).
+        // GameRoomParticipant rows cascade automatically (cascade=ALL, orphanRemoval=true on GameRoom.participants) -
+        // but only once every OTHER table referencing them (the per-game participant-state rows just deleted above)
+        // is gone first, which is exactly what the branches above exist to guarantee.
         gameRoomRepository.delete(room);
     }
 }
