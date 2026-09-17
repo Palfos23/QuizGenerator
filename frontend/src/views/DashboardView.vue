@@ -16,22 +16,30 @@
 
     <h2 class="dashboard-section-title">More ways to play</h2>
     <div class="dashboard-features">
-      <router-link
-        v-for="card in featureCards"
-        :key="card.to"
-        :to="card.to"
-        class="dashboard-feature-card"
-        :style="{ '--card-accent': card.accent }"
-      >
-        <h3>{{ card.title }}</h3>
-        <p>{{ card.description }}</p>
-        <span class="dashboard-feature-play">Play →</span>
-      </router-link>
+      <!-- Grouped into pairs so mobile can lay each pair out as its own
+           2-tall column and scroll horizontally between columns (see
+           .dashboard-feature-column's mobile rule in style.css). On desktop
+           display:contents makes this wrapper invisible to layout, so cards
+           flow straight into the existing wrapping grid as before. -->
+      <div v-for="(column, i) in featureCardColumns" :key="i" class="dashboard-feature-column">
+        <router-link
+          v-for="card in column"
+          :key="card.to"
+          :to="card.to"
+          class="dashboard-feature-card"
+          :style="{ '--card-accent': card.accent }"
+        >
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.description }}</p>
+          <span class="dashboard-feature-play">Play →</span>
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import auth from '../services/auth'
 
 // One card per dashboard link - was hand-duplicated markup per game before,
@@ -55,4 +63,12 @@ const featureCards = [
   { to: '/suggest-question', title: 'Suggest a question', description: 'Add to the shared question bank - admin-reviewed, and usable in your own quizzes either way.', accent: 'var(--coral)' },
   { to: '/report-problem', title: 'Report a problem', description: 'Found a bug or something confusing? Let us know.', accent: 'var(--gold)' }
 ]
+
+const featureCardColumns = computed(() => {
+  const columns = []
+  for (let i = 0; i < featureCards.length; i += 2) {
+    columns.push(featureCards.slice(i, i + 2))
+  }
+  return columns
+})
 </script>

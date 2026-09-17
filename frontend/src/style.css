@@ -2388,6 +2388,12 @@ table.scoreboard-table {
   gap: 14px;
   margin-top: 16px;
 }
+/* Invisible to layout on desktop - each pair's cards flow straight into the
+   grid above as if there were no wrapper at all. Mobile's media query below
+   turns this into the actual 2-tall column. */
+.dashboard-feature-column {
+  display: contents;
+}
 
 /* Left accent bar per card (via each card's own --card-accent custom
    property, set inline from DashboardView's data) - same idea as a reference
@@ -2848,12 +2854,13 @@ table.scoreboard-table {
     padding: 24px 20px;
   }
 
-  /* Horizontal swipe carousel instead of a stacked single column - same
-     "peek at the next card" pattern as a reference site's mobile dashboard.
-     Bleeds out to the screen edge (negative margin cancels .main-content's
-     own 16px side padding) and re-adds it as scroll-area padding, so the
-     first/last card still lines up with everything else on the page while
-     the scrollable strip itself spans edge-to-edge. */
+  /* Horizontally-scrolling strip of 2-tall columns - each swipe reveals the
+     next pair of cards stacked on top of each other, same pattern as a
+     reference site's dashboard (2 rows per screen, next column peeking in).
+     Bleeds to the screen edge (negative margin cancels .main-content's own
+     16px side padding) and re-adds it as scroll-area padding, so the first/
+     last column still lines up with everything else on the page while the
+     scrollable strip itself spans edge-to-edge. */
   .dashboard-features {
     display: flex;
     overflow-x: auto;
@@ -2865,11 +2872,15 @@ table.scoreboard-table {
     padding: 0 16px 4px;
   }
   .dashboard-features::-webkit-scrollbar { display: none; }
-  .dashboard-feature-card {
-    /* 2 per screen (with a sliver of the 3rd peeking in) instead of 1 - a
-       single ~78%-wide card read as too empty on a full-height screen. */
-    flex: 0 0 47%;
+  .dashboard-feature-column {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 80%;
+    gap: 12px;
     scroll-snap-align: start;
+  }
+  .dashboard-feature-card {
+    flex: 1;
   }
 
   /* 3 per row instead of 4 (desktop) - keeps tiles noticeably bigger than a
