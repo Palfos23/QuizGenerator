@@ -10,7 +10,6 @@
   --coral: #ff4d6d;
   --teal: #3ddc97;
   --violet: #8b7cff;
-  --blue: #4dabf7;
   --text: #f1efe7;
   --text-dim: #9a9dae;
   --border: rgba(241, 239, 231, 0.12);
@@ -2466,6 +2465,36 @@ table.scoreboard-table {
   letter-spacing: 0.02em;
   color: var(--card-accent, var(--gold));
 }
+
+/* A full-width, always-visible strip rather than another small tile in the
+   grid above - the whole point is that this is easy to notice, not one of
+   13 similar-looking cards. Coral marks it as the "something's wrong" path
+   (same color language as error banners elsewhere), but the surrounding
+   card stays neutral/calm - this is an easy, low-stakes feedback channel,
+   not an alarm. */
+.dashboard-report-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--coral);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.dashboard-report-callout:hover {
+  border-color: var(--coral);
+  background: rgba(255,255,255,0.04);
+}
+.dashboard-report-callout h3 { margin: 0 0 4px; font-size: 1rem; }
+.dashboard-report-callout p { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
+.dashboard-report-callout .btn { flex-shrink: 0; pointer-events: none; }
 
 /* ---------- Game-mode intro preview ("here's what this looks like") ---------- */
 /* A decorative, non-interactive freeze-frame of the game, shown on each mode's
