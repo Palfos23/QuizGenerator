@@ -2398,16 +2398,43 @@ table.scoreboard-table {
 }
 .dashboard-welcome strong { color: var(--gold); font-weight: 600; }
 
+.dashboard-hero-row {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  margin-bottom: 12px;
+}
 .dashboard-hero {
+  flex: 1.6;
+  min-width: 0;
   padding: 40px 32px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.02));
-  margin-bottom: 12px;
 }
 .dashboard-hero h1 { margin: 0 0 10px; }
 .dashboard-hero .landing-lede { max-width: 640px; margin-bottom: 24px; }
 .dashboard-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+/* Joining a game isn't quiz-making - it's the entry point into the games
+   side of the app, so it gets its own card beside the "Create a quiz" hero
+   instead of a second button inside it. Violet ties it to the "Games"
+   dashboard section below, the same way the hero's gold ties to quiz
+   creation/management. */
+.dashboard-join-card {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 28px;
+  border: 1px solid rgba(139, 124, 255, 0.3);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(139,124,255,0.12), rgba(255,255,255,0.02));
+}
+.dashboard-join-card h2 { margin: 0 0 8px; }
+.dashboard-join-card .page-subtitle { margin: 0 0 18px; }
+.dashboard-join-card .btn { align-self: flex-start; }
 
 .dashboard-section-title { margin-top: 48px; }
 
@@ -2959,8 +2986,16 @@ table.scoreboard-table {
 
   h1 { font-size: 1.6rem; }
 
+  .dashboard-hero-row {
+    flex-direction: column;
+  }
+
   .dashboard-hero {
     padding: 24px 20px;
+  }
+
+  .dashboard-join-card {
+    padding: 20px;
   }
 
   /* Horizontally-scrolling strip of 2-tall columns - each swipe reveals the

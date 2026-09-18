@@ -2,16 +2,27 @@
   <div class="dashboard">
     <p class="dashboard-welcome">Welcome back, <strong>{{ auth.state.displayName }}</strong></p>
 
-    <section class="dashboard-hero">
-      <h1>Create a quiz</h1>
-      <p class="page-subtitle landing-lede">
-        Build a custom quiz for friends, colleagues, or your local pub night.
-      </p>
-      <div class="dashboard-hero-actions">
-        <router-link to="/generate" class="btn btn-primary btn-lg">Create a quiz →</router-link>
-        <router-link to="/join" class="btn btn-secondary btn-lg">Join a game with a code →</router-link>
-      </div>
-    </section>
+    <div class="dashboard-hero-row">
+      <section class="dashboard-hero">
+        <h1>Create a quiz</h1>
+        <p class="page-subtitle landing-lede">
+          Build a custom quiz for friends, colleagues, or your local pub night.
+        </p>
+        <div class="dashboard-hero-actions">
+          <router-link to="/generate" class="btn btn-primary btn-lg">Create a quiz →</router-link>
+        </div>
+      </section>
+
+      <!-- Not folded into the "Create a quiz" hero above - joining a game
+           someone else is hosting has nothing to do with making a quiz, it's
+           the entry point into the games/rooms side of the app. Still gets
+           top billing of its own instead, right beside the other hero. -->
+      <section class="dashboard-join-card">
+        <h2>Join a game</h2>
+        <p class="page-subtitle">Got a room code from someone hosting? Jump straight in.</p>
+        <router-link to="/join" class="btn btn-secondary btn-lg">Join with a code →</router-link>
+      </section>
+    </div>
 
     <template v-for="section in dashboardSections" :key="section.title">
       <h2 class="dashboard-section-title">{{ section.title }}</h2>
