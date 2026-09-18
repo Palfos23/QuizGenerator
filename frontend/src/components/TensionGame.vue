@@ -68,11 +68,11 @@
             class="tension-reveal-row"
             :class="{ 'is-revealed': revealIndex > idx, 'is-trap': revealIndex > idx && ans.tension }"
           >
-            <div class="tension-reveal-rank">{{ revealIndex > idx ? ans.rank : '?' }}</div>
+            <div class="tension-reveal-rank">{{ idx + 1 }}</div>
             <div class="tension-reveal-main">
               <div class="tension-reveal-answer">{{ revealIndex > idx ? ans.text : 'Hidden until revealed' }}</div>
               <div v-if="revealIndex > idx" class="tension-reveal-tag" :class="ans.tension ? 'trap' : 'safe'">
-                {{ ans.tension ? '⚠ Tension answer' : 'Safe answer' }}
+                {{ ans.tension ? 'Tension answer' : 'Safe answer' }}
               </div>
             </div>
             <div v-if="revealIndex > idx" class="tension-reveal-guessers">
@@ -295,10 +295,18 @@ function reveal() {
   scheduleReveal()
 }
 
+const REVEAL_STEP_MS = 1100
+// Extra beat between the last safe answer and the first tension answer - the
+// tension answers are the whole twist of the round, so they get a breath of
+// their own instead of arriving on the same steady drip as ranks 1-10.
+const TENSION_REVEAL_PAUSE_MS = 1500
+
 let revealTimer = null
 function scheduleReveal() {
   clearTimeout(revealTimer)
   if (revealIndex.value < allAnswersList.value.length) {
+    const isTensionTransition = revealIndex.value === question.value.safeAnswers.length
+    const delay = REVEAL_STEP_MS + (isTensionTransition ? TENSION_REVEAL_PAUSE_MS : 0)
     revealTimer = setTimeout(() => {
       revealIndex.value += 1
       if (revealIndex.value >= allAnswersList.value.length) {
@@ -306,7 +314,7 @@ function scheduleReveal() {
       } else {
         scheduleReveal()
       }
-    }, 1100)
+    }, delay)
   } else {
     finishReveal()
   }
