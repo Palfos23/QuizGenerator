@@ -172,6 +172,19 @@
         <label>Entries <span class="picker-hint">{{ entries.length }} total</span></label>
         <div v-if="!entries.length" class="empty-state" style="padding:20px;">No entries yet - import a CSV above, or add one at a time below.</div>
         <div v-else class="candidate-list">
+          <input
+            type="text"
+            v-model="entryFilterTerm"
+            placeholder="Find someone already in this list…"
+            class="search-input"
+            style="margin-bottom:12px;"
+          />
+
+          <div v-if="!filteredEntries.length" class="empty-state" style="padding:20px;">
+            Nobody in this list matches "{{ entryFilterTerm }}".
+          </div>
+
+          <template v-else>
           <div v-for="(e, idx) in pagedEntries" :key="idx" class="candidate-row">
             <span
               v-if="e.athleteId"
@@ -189,7 +202,8 @@
             <input type="number" v-model.number="e.value" placeholder="Value" style="width:100px;" />
             <button class="btn btn-danger btn-sm" @click="removeEntry(e)">✕</button>
           </div>
-          <Pagination v-model:page="entryPage" :page-size="ENTRY_PAGE_SIZE" :total-items="entries.length" />
+          <Pagination v-model:page="entryPage" :page-size="ENTRY_PAGE_SIZE" :total-items="filteredEntries.length" />
+          </template>
         </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
           <button class="btn btn-secondary btn-sm" @click="addBlankEntry">+ Add one manually</button>
@@ -257,9 +271,17 @@ const athleteSearchResults = ref([])
 
 const ENTRY_PAGE_SIZE = 25
 const entryPage = ref(1)
+const entryFilterTerm = ref('')
+const filteredEntries = computed(() => {
+  const term = entryFilterTerm.value.trim().toLowerCase()
+  if (!term) return entries.value
+  return entries.value.filter(e => e.name.toLowerCase().includes(term))
+})
+watch(entryFilterTerm, () => { entryPage.value = 1 })
+
 const pagedEntries = computed(() => {
   const start = (entryPage.value - 1) * ENTRY_PAGE_SIZE
-  return entries.value.slice(start, start + ENTRY_PAGE_SIZE)
+  return filteredEntries.value.slice(start, start + ENTRY_PAGE_SIZE)
 })
 
 onMounted(() => {
@@ -294,6 +316,7 @@ function openCreate() {
   pendingImportPool.value = []
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
+  entryFilterTerm.value = ''
   entryPage.value = 1
   error.value = ''
   view.value = 'form'
@@ -317,6 +340,7 @@ async function openEdit(id) {
     pendingImportPool.value = []
     athleteSearchTerm.value = ''
     athleteSearchResults.value = []
+    entryFilterTerm.value = ''
     entryPage.value = 1
     view.value = 'form'
   } catch (e) {
@@ -399,6 +423,8 @@ function applyImportSelection(selectedRows) {
       unmatched.push({ name: row.name, value: row.value })
     }
   }
+  entryPage.value = 1
+  entryFilterTerm.value = ''
   toast.show(`${pendingImportLabel.value}: ${added} entry(ies) added, ${updated} updated.`)
   csvUnmatchedNames.value = unmatched
 }
