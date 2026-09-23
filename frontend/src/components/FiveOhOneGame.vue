@@ -196,10 +196,16 @@ const searchResults = computed(() => {
     .slice(0, 8)
 })
 
+// A pool-only entry (category.entireCategoryPool, no explicit checkout value
+// authored for this name) arrives with value: null - resolves to 0, same as
+// the server does (see FiveOhOneOnlineService#rawValueOf) and the same
+// null-means-zero convention Bullseye's frontend already uses for its own
+// unlisted-subject picks.
 function effectiveScore(rawValue) {
-  if (rawValue > 180) return 0
-  if (IMPOSSIBLE_CHECKOUTS.has(rawValue)) return 0
-  return rawValue
+  const value = rawValue ?? 0
+  if (value > 180) return 0
+  if (IMPOSSIBLE_CHECKOUTS.has(value)) return 0
+  return value
 }
 
 const currentPlayerTotal = computed(() => totals[currentPlayer.value])
@@ -235,7 +241,8 @@ function submitThrow(entry) {
 
   usedEntryIds.value.add(entry.id) // the specific name is claimed regardless of how the throw scores
 
-  const score = effectiveScore(entry.value)
+  const rawValue = entry.value ?? 0
+  const score = effectiveScore(rawValue)
   const previousTotal = totals[player]
   const candidateTotal = previousTotal - score
   const bust = candidateTotal < -10
@@ -244,7 +251,7 @@ function submitThrow(entry) {
     totals[player] = candidateTotal
   }
 
-  lastThrow.value = { player, name: entry.name, rawValue: entry.value, score, bust, resultingTotal: bust ? previousTotal : candidateTotal }
+  lastThrow.value = { player, name: entry.name, rawValue, score, bust, resultingTotal: bust ? previousTotal : candidateTotal }
   history.value.push({ ...lastThrow.value })
 
   if (bust) {

@@ -38,6 +38,21 @@ public class FiveOhOneCategory {
         this.sport = sport;
     }
 
+    // Every other subject in `sport` becomes guessable too (resolving to 0 if
+    // picked) without needing an explicit entry here - queried live at play
+    // time, same idea as BullseyeQuestion.entireCategoryPool. Only meaningful
+    // once a sport is actually chosen.
+    @Column(name = "entire_category_pool", nullable = false, columnDefinition = "boolean default false")
+    private boolean entireCategoryPool = false;
+
+    public boolean isEntireCategoryPool() {
+        return entireCategoryPool;
+    }
+
+    public void setEntireCategoryPool(boolean entireCategoryPool) {
+        this.entireCategoryPool = entireCategoryPool;
+    }
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 

@@ -17,6 +17,9 @@ public class FiveOhOneCategoryRequest {
 
     private boolean canExpire;
 
+    // Only meaningful when sport is set - see FiveOhOneCategory.entireCategoryPool.
+    private boolean entireCategoryPool;
+
     @NotEmpty
     @Valid
     private List<FiveOhOneEntryDto> entries;
@@ -29,6 +32,8 @@ public class FiveOhOneCategoryRequest {
     public void setSport(String sport) { this.sport = sport; }
     public boolean isCanExpire() { return canExpire; }
     public void setCanExpire(boolean canExpire) { this.canExpire = canExpire; }
+    public boolean isEntireCategoryPool() { return entireCategoryPool; }
+    public void setEntireCategoryPool(boolean entireCategoryPool) { this.entireCategoryPool = entireCategoryPool; }
     public List<FiveOhOneEntryDto> getEntries() { return entries; }
     public void setEntries(List<FiveOhOneEntryDto> entries) { this.entries = entries; }
 }

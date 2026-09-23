@@ -8,15 +8,17 @@ public class FiveOhOneCategorySummaryDto {
     private String description;
     private int entryCount;
     private boolean canExpire;
+    private boolean entireCategoryPool;
     private Instant updatedAt;
 
     public FiveOhOneCategorySummaryDto(Long id, String title, String description, int entryCount, boolean canExpire,
-                                        Instant updatedAt) {
+                                        boolean entireCategoryPool, Instant updatedAt) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.entryCount = entryCount;
         this.canExpire = canExpire;
+        this.entireCategoryPool = entireCategoryPool;
         this.updatedAt = updatedAt;
     }
 
@@ -25,5 +27,6 @@ public class FiveOhOneCategorySummaryDto {
     public String getDescription() { return description; }
     public int getEntryCount() { return entryCount; }
     public boolean isCanExpire() { return canExpire; }
+    public boolean isEntireCategoryPool() { return entireCategoryPool; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

@@ -37,7 +37,7 @@ public class FiveOhOneCategoryController {
         if (!isGuest(authentication)) {
             playAccessService.requireFiveOhOneAccess(authentication);
         }
-        return categoryService.getOne(id);
+        return categoryService.getOneForPlay(id);
     }
 
     private boolean isGuest(Authentication authentication) {

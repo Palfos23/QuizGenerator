@@ -29,6 +29,7 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ c.title }}
+              <span v-if="c.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
               <span v-if="c.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Can expire</span>
             </div>
             <div class="saved-quiz-meta">{{ c.entryCount }} entries<span v-if="c.description"> · {{ c.description }}</span></div>
@@ -86,11 +87,26 @@
         </label>
       </div>
 
+      <div v-if="form.sport" class="field">
+        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
+          <input type="checkbox" v-model="form.entireCategoryPool" style="width:auto;" />
+          Use every subject in "{{ form.sport }}" as the pool
+        </label>
+        <p class="page-subtitle" style="margin-top:4px;">
+          Every subject in "{{ form.sport }}" becomes throwable too, including ones added to it later -
+          nothing to re-import. Anyone not listed below with a real checkout value just throws for 0.
+          You still add the ones worth a real value below.
+        </p>
+      </div>
+
       <div style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" :disabled="importingCsv" @click="triggerCsvUpload">
           {{ importingCsv ? 'Importing…' : '+ Import from CSV' }}
         </button>
         <input ref="csvInput" type="file" accept=".csv,text/csv" style="display:none;" @change="handleCsvFile" />
+        <button v-if="form.sport" class="btn btn-secondary btn-sm" :disabled="!entries.length" @click="checkEntriesAgainstSubjects">
+          Check names against subjects
+        </button>
       </div>
       <p class="page-subtitle" style="margin-top:-4px;">
         CSV format: one row per entry, <code>name,value</code> - e.g. <code>Mohamed Salah,233</code>.
@@ -129,7 +145,19 @@
         <div v-if="!entries.length" class="empty-state" style="padding:20px;">No entries yet - import a CSV above, or add one at a time below.</div>
         <div v-else class="candidate-list">
           <div v-for="(e, idx) in pagedEntries" :key="idx" class="candidate-row">
-            <input type="text" v-model="e.name" placeholder="Name" style="flex:1;" />
+            <span
+              v-if="e.athleteId"
+              class="tag"
+              style="background:rgba(61,220,151,0.15); color:var(--teal); flex-shrink:0;"
+              title="Linked to a subject"
+            >✓ Subject</span>
+            <input
+              type="text"
+              v-model="e.name"
+              placeholder="Name"
+              style="flex:1;"
+              @input="e.athleteId = null"
+            />
             <input type="number" v-model.number="e.value" placeholder="Value" style="width:100px;" />
             <button class="btn btn-danger btn-sm" @click="removeEntry(e)">✕</button>
           </div>
@@ -189,8 +217,8 @@ const saving = ref(false)
 const editingId = ref(null)
 const pendingDelete = ref(null)
 
-const form = reactive({ title: '', description: '', sport: '', canExpire: false })
-const entries = ref([]) // [{ name, value }]
+const form = reactive({ title: '', description: '', sport: '', canExpire: false, entireCategoryPool: false })
+const entries = ref([]) // [{ name, value, athleteId }]
 const csvInput = ref(null)
 const importingCsv = ref(false)
 const csvUnmatchedNames = ref([]) // [{name, value}] - see AdminBullseyeView's csvUnmatchedNames
@@ -226,6 +254,7 @@ function openCreate() {
   form.description = ''
   form.sport = ''
   form.canExpire = false
+  form.entireCategoryPool = false
   entries.value = []
   csvUnmatchedNames.value = []
   showAddSubjectsModal.value = false
@@ -243,7 +272,8 @@ async function openEdit(id) {
     form.description = detail.description || ''
     form.sport = detail.sport || ''
     form.canExpire = detail.canExpire || false
-    entries.value = detail.entries.map(e => ({ name: e.name, value: e.value }))
+    form.entireCategoryPool = detail.entireCategoryPool || false
+    entries.value = detail.entries.map(e => ({ name: e.name, value: e.value, athleteId: e.athleteId || null }))
     csvUnmatchedNames.value = []
     showAddSubjectsModal.value = false
     entryPage.value = 1
@@ -272,32 +302,39 @@ async function handleCsvFile(event) {
       return
     }
 
+    // Entries below are free text and always accepted regardless of a match -
+    // unlike Bullseye, nothing here is skipped or blocked. A match just also
+    // links the entry to that subject (see the "✓ Subject" tag), so it only
+    // runs when a subjects category is actually chosen.
+    let athleteByName = new Map()
+    if (form.sport) {
+      const pool = await api.adminSearchAthletes({ sport: form.sport })
+      athleteByName = new Map(pool.map(a => [a.name.trim().toLowerCase(), a]))
+    }
+
     const byName = new Map(entries.value.map(e => [e.name.toLowerCase(), e]))
     let added = 0
     let updated = 0
+    const unmatched = []
     for (const row of rows) {
+      const athlete = athleteByName.get(row.name.trim().toLowerCase())
       const existing = byName.get(row.name.toLowerCase())
       if (existing) {
         existing.value = row.value
+        if (athlete) existing.athleteId = athlete.id
         updated++
       } else {
-        const fresh = { name: row.name, value: row.value }
+        const fresh = { name: row.name, value: row.value, athleteId: athlete ? athlete.id : null }
         entries.value.push(fresh)
         byName.set(row.name.toLowerCase(), fresh)
         added++
       }
+      if (form.sport && !athlete) {
+        unmatched.push({ name: row.name, value: row.value })
+      }
     }
     toast.show(`CSV import: ${added} entry(ies) added, ${updated} updated.`)
-
-    // Entries above are free text and always accepted regardless of this check -
-    // unlike Bullseye, nothing here is skipped or blocked. This is purely a
-    // convenience prompt to also grow the shared Subjects list other games draw
-    // from, so it only runs when a subjects category is actually chosen.
-    if (form.sport) {
-      const pool = await api.adminSearchAthletes({ sport: form.sport })
-      const known = new Set(pool.map(a => a.name.trim().toLowerCase()))
-      csvUnmatchedNames.value = rows.filter(row => !known.has(row.name.trim().toLowerCase()))
-    }
+    csvUnmatchedNames.value = unmatched
   } catch (e) {
     error.value = 'Could not read that CSV file.'
   } finally {
@@ -305,16 +342,50 @@ async function handleCsvFile(event) {
   }
 }
 
-// AddSubjectsModal created these as real subjects - the entries themselves are
-// already in the list (added above regardless of match), so there's nothing
-// to wire in here beyond clearing the prompt.
-function onSubjectsAdded() {
+// Runs the same name-matching CSV import already does, but against every
+// current entry regardless of how it got there (manually typed, an older
+// import, pre-dating this category having a sport at all) - the CSV path
+// alone only ever checks the rows from that one file.
+async function checkEntriesAgainstSubjects() {
+  if (!form.sport || !entries.value.length) return
+  error.value = ''
+  try {
+    const pool = await api.adminSearchAthletes({ sport: form.sport })
+    const athleteByName = new Map(pool.map(a => [a.name.trim().toLowerCase(), a]))
+    const unmatched = []
+    for (const e of entries.value) {
+      const athlete = athleteByName.get(e.name.trim().toLowerCase())
+      if (athlete) {
+        e.athleteId = athlete.id
+      } else if (!e.athleteId) {
+        unmatched.push({ name: e.name, value: e.value })
+      }
+    }
+    csvUnmatchedNames.value = unmatched
+    toast.show(
+      unmatched.length ? `${unmatched.length} name(s) aren't subjects in "${form.sport}" yet.` : 'Every entry is already a subject.',
+      unmatched.length ? 'error' : 'success'
+    )
+  } catch (e) {
+    error.value = 'Could not check entries against subjects.'
+  }
+}
+
+// AddSubjectsModal created these as real subjects - link each matching entry
+// to its new subject (by name; entries themselves were already in the list
+// either way).
+function onSubjectsAdded(createdWithValues) {
+  const byName = new Map(entries.value.map(e => [e.name.trim().toLowerCase(), e]))
+  for (const { athlete } of createdWithValues) {
+    const existing = byName.get(athlete.name.trim().toLowerCase())
+    if (existing) existing.athleteId = athlete.id
+  }
   csvUnmatchedNames.value = []
   showAddSubjectsModal.value = false
 }
 
-// Same "name,value" shape the bulk-paste box above reads, so a downloaded
-// file pastes straight back in.
+// Same "name,value" shape the CSV importer above reads back in, so a
+// downloaded file round-trips straight back through "+ Import from CSV".
 function downloadEntriesCsv() {
   const rows = [['name', 'value'], ...entries.value.map(e => [e.name, e.value])]
   const filename = `${(form.title.trim() || '501').replace(/[^\w\- ]+/g, '').trim() || '501'}.csv`
@@ -322,7 +393,7 @@ function downloadEntriesCsv() {
 }
 
 function addBlankEntry() {
-  entries.value.push({ name: '', value: 0 })
+  entries.value.push({ name: '', value: 0, athleteId: null })
   entryPage.value = Math.max(1, Math.ceil(entries.value.length / ENTRY_PAGE_SIZE))
 }
 
@@ -336,7 +407,7 @@ function removeEntry(e) {
 async function saveCategory() {
   error.value = ''
   const cleanEntries = entries.value
-    .map(e => ({ name: e.name.trim(), value: e.value }))
+    .map(e => ({ name: e.name.trim(), value: e.value, athleteId: e.athleteId || null }))
     .filter(e => e.name && Number.isFinite(e.value))
 
   if (!form.title.trim()) {
@@ -350,7 +421,14 @@ async function saveCategory() {
 
   saving.value = true
   try {
-    const payload = { title: form.title.trim(), description: form.description.trim() || null, sport: form.sport || null, canExpire: form.canExpire, entries: cleanEntries }
+    const payload = {
+      title: form.title.trim(),
+      description: form.description.trim() || null,
+      sport: form.sport || null,
+      canExpire: form.canExpire,
+      entireCategoryPool: !!(form.sport && form.entireCategoryPool),
+      entries: cleanEntries
+    }
     if (editingId.value) {
       await api.adminUpdateFiveOhOneCategory(editingId.value, payload)
       toast.show('Category updated.')

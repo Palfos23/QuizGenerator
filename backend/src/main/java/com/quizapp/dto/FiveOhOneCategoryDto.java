@@ -8,6 +8,7 @@ public class FiveOhOneCategoryDto {
     private String title;
     private String description;
     private String sport;
+    private boolean entireCategoryPool;
     private boolean canExpire;
     private Instant updatedAt;
     private List<FiveOhOneEntryDto> entries;
@@ -30,6 +31,8 @@ public class FiveOhOneCategoryDto {
     public void setDescription(String description) { this.description = description; }
     public String getSport() { return sport; }
     public void setSport(String sport) { this.sport = sport; }
+    public boolean isEntireCategoryPool() { return entireCategoryPool; }
+    public void setEntireCategoryPool(boolean entireCategoryPool) { this.entireCategoryPool = entireCategoryPool; }
     public boolean isCanExpire() { return canExpire; }
     public void setCanExpire(boolean canExpire) { this.canExpire = canExpire; }
     public Instant getUpdatedAt() { return updatedAt; }

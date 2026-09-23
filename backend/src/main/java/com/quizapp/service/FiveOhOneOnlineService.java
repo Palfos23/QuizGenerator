@@ -22,6 +22,7 @@ public class FiveOhOneOnlineService {
     private final FiveOhOneParticipantStateRepository participantStateRepository;
     private final FiveOhOneThrowRepository throwRepository;
     private final FiveOhOneCategoryRepository categoryRepository;
+    private final FiveOhOneCategoryService categoryService;
     private final RoomService roomService;
     private final GamePlayEventService gamePlayEventService;
 
@@ -30,6 +31,7 @@ public class FiveOhOneOnlineService {
                                    FiveOhOneParticipantStateRepository participantStateRepository,
                                    FiveOhOneThrowRepository throwRepository,
                                    FiveOhOneCategoryRepository categoryRepository,
+                                   FiveOhOneCategoryService categoryService,
                                    RoomService roomService,
                                    GamePlayEventService gamePlayEventService) {
         this.gameRoomRepository = gameRoomRepository;
@@ -37,6 +39,7 @@ public class FiveOhOneOnlineService {
         this.participantStateRepository = participantStateRepository;
         this.throwRepository = throwRepository;
         this.categoryRepository = categoryRepository;
+        this.categoryService = categoryService;
         this.roomService = roomService;
         this.gamePlayEventService = gamePlayEventService;
     }
@@ -126,6 +129,13 @@ public class FiveOhOneOnlineService {
         return rawValue;
     }
 
+    // A pool-only entry (see FiveOhOneCategoryService#getEffectiveEntries)
+    // carries a null value - resolves to 0, same as Bullseye's frontend
+    // treats a null statValue for an unlisted subject.
+    private int rawValueOf(FiveOhOneEntryDto entry) {
+        return entry.getValue() != null ? entry.getValue() : 0;
+    }
+
     @Transactional
     public FiveOhOneOnlineStateDto getState(GameRoom room, String requestingEmail) {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
@@ -184,17 +194,21 @@ public class FiveOhOneOnlineService {
             int currentTotal = participantStates.stream()
                     .filter(ps -> ps.getParticipant().getId().equals(currentTurnId))
                     .findFirst().map(FiveOhOneParticipantState::getTotal).orElse(501);
-            List<FiveOhOneEntry> unused = category.getEntries().stream()
+            // The full guessable set, not just this category's own authored
+            // entries - includes the rest of the sport's roster when
+            // entireCategoryPool is on, each resolving to 0 (see
+            // FiveOhOneCategoryService#getEffectiveEntries).
+            List<FiveOhOneEntryDto> unused = categoryService.getEffectiveEntries(category).stream()
                     .filter(e -> !usedEntryIds.contains(e.getId()))
                     .collect(Collectors.toList());
 
             if (currentTotal > 180) {
                 dto.setBestAvailableScore(unused.isEmpty() ? 0 :
-                        unused.stream().mapToInt(e -> effectiveScore(e.getValue())).max().orElse(0));
+                        unused.stream().mapToInt(e -> effectiveScore(rawValueOf(e))).max().orElse(0));
             } else {
                 long count = unused.stream()
                         .filter(e -> {
-                            int resulting = currentTotal - effectiveScore(e.getValue());
+                            int resulting = currentTotal - effectiveScore(rawValueOf(e));
                             return resulting >= -10 && resulting <= 0;
                         })
                         .count();
@@ -219,9 +233,13 @@ public class FiveOhOneOnlineService {
 
         FiveOhOneRoomState state = roomStateRepository.findByRoom_Id(room.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
-        FiveOhOneEntry entry = categoryRepository.findById(state.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category no longer exists"))
-                .getEntries().stream()
+        FiveOhOneCategory category = categoryRepository.findById(state.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category no longer exists"));
+        // Resolves against the same pool-expanded list the player searched
+        // against (see FiveOhOneCategoryService#getEffectiveEntries) - a bare
+        // subject pick (negative id, no explicit entry) is just as valid a
+        // throw as an authored one once entireCategoryPool is on.
+        FiveOhOneEntryDto entry = categoryService.getEffectiveEntries(category).stream()
                 .filter(e -> e.getId().equals(entryId))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("No entry found with id " + entryId));
@@ -230,7 +248,7 @@ public class FiveOhOneOnlineService {
                 .findByRoomState_IdAndParticipant_Id(state.getId(), me.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("No progress state for you in this room"));
 
-        int score = effectiveScore(entry.getValue());
+        int score = effectiveScore(rawValueOf(entry));
         int previousTotal = myState.getTotal();
         int candidateTotal = previousTotal - score;
         boolean bust = candidateTotal < -10;
@@ -246,7 +264,7 @@ public class FiveOhOneOnlineService {
         throwRecord.setThrownBy(me);
         throwRecord.setEntryId(entryId);
         throwRecord.setEntryName(entry.getName());
-        throwRecord.setRawValue(entry.getValue());
+        throwRecord.setRawValue(rawValueOf(entry));
         throwRecord.setScore(score);
         throwRecord.setBust(bust);
         throwRecord.setResultingTotal(resultingTotal);
