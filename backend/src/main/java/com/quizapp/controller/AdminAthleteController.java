@@ -32,6 +32,13 @@ public class AdminAthleteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(athleteService.create(dto));
     }
 
+    // Used by Bullseye/501's "add these as subjects" prompt for names a bulk/CSV
+    // import didn't find - see AthleteService#createBulk.
+    @PostMapping("/bulk")
+    public ResponseEntity<List<AthleteDto>> createBulk(@Valid @RequestBody List<@Valid AthleteDto> dtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(athleteService.createBulk(dtos));
+    }
+
     @PutMapping("/{id}")
     public AthleteDto update(@PathVariable Long id, @Valid @RequestBody AthleteDto dto) {
         return athleteService.update(id, dto);

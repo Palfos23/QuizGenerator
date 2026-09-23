@@ -368,6 +368,24 @@ public class AthleteService {
         return toDtoWithPhotos(athlete);
     }
 
+    // Bullseye/501's "these names weren't found as subjects" prompt - accepting
+    // it creates a batch of bare name+sport athletes in one request (no photos/
+    // team yet, same as any newly typed-in subject - an admin fills those in
+    // later from the Subjects page). One transaction for the whole batch rather
+    // than N separate create() calls, so a mid-batch failure doesn't leave a
+    // half-imported set of subjects behind.
+    @Transactional
+    public List<AthleteDto> createBulk(List<AthleteDto> dtos) {
+        List<Athlete> athletes = dtos.stream().map(dto -> {
+            Athlete athlete = new Athlete();
+            athlete.setName(dto.getName());
+            athlete.setSport(dto.getSport());
+            athlete.setTeam(dto.getTeam());
+            return athlete;
+        }).collect(Collectors.toList());
+        return athleteRepository.saveAll(athletes).stream().map(AthleteService::toDto).collect(Collectors.toList());
+    }
+
     @Transactional
     public AthleteDto update(Long id, AthleteDto dto) {
         Athlete athlete = athleteRepository.findById(id)

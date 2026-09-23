@@ -7,6 +7,7 @@ public class FiveOhOneCategoryDto {
     private Long id;
     private String title;
     private String description;
+    private String sport;
     private boolean canExpire;
     private Instant updatedAt;
     private List<FiveOhOneEntryDto> entries;
@@ -27,6 +28,8 @@ public class FiveOhOneCategoryDto {
     public void setTitle(String title) { this.title = title; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public String getSport() { return sport; }
+    public void setSport(String sport) { this.sport = sport; }
     public boolean isCanExpire() { return canExpire; }
     public void setCanExpire(boolean canExpire) { this.canExpire = canExpire; }
     public Instant getUpdatedAt() { return updatedAt; }

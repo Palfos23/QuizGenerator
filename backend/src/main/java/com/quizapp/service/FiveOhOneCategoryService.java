@@ -60,6 +60,7 @@ public class FiveOhOneCategoryService {
     private void applyRequest(FiveOhOneCategory category, FiveOhOneCategoryRequest request) {
         category.setTitle(request.getTitle());
         category.setDescription(request.getDescription());
+        category.setSport(request.getSport());
         category.setCanExpire(request.isCanExpire());
         category.setUpdatedAt(java.time.Instant.now());
 
@@ -85,6 +86,7 @@ public class FiveOhOneCategoryService {
                 .map(e -> new FiveOhOneEntryDto(e.getId(), e.getName(), e.getValue()))
                 .collect(Collectors.toList());
         FiveOhOneCategoryDto dto = new FiveOhOneCategoryDto(c.getId(), c.getTitle(), c.getDescription(), entries);
+        dto.setSport(c.getSport());
         dto.setCanExpire(c.isCanExpire());
         dto.setUpdatedAt(c.getUpdatedAt());
         return dto;

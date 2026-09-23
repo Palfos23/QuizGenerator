@@ -60,6 +60,22 @@
         <label>Description <span class="picker-hint">optional flavor text</span><input type="text" v-model="form.description" placeholder="Shown to players before they pick this category" /></label>
       </div>
 
+      <div class="field">
+        <label>Subjects category <span class="picker-hint">optional - lets bulk-pasted names be checked against this category's subjects</span></label>
+        <div class="language-row">
+          <button
+            v-for="s in gridCategories.categories.value"
+            :key="s"
+            type="button"
+            class="language-btn"
+            :class="{ active: form.sport === s }"
+            @click="form.sport = form.sport === s ? '' : s"
+          >
+            {{ s }}
+          </button>
+        </div>
+      </div>
+
       <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
@@ -79,6 +95,33 @@
         </div>
       </details>
 
+      <div v-if="bulkUnmatchedNames.length" style="background:rgba(242,183,5,0.1); border:1px solid rgba(242,183,5,0.3); border-radius:var(--radius-md); padding:14px 16px; margin-top:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+          <strong style="color:var(--gold);">
+            {{ bulkUnmatchedNames.length }} name{{ bulkUnmatchedNames.length > 1 ? 's' : '' }} weren't found in "{{ form.sport }}"
+          </strong>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary btn-sm" @click="showAddSubjectsModal = true">+ Add as subjects</button>
+            <button class="btn btn-secondary btn-sm" @click="bulkUnmatchedNames = []">Dismiss</button>
+          </div>
+        </div>
+        <p class="page-subtitle" style="margin:6px 0 10px;">
+          These entries are already in the list below either way - this just offers to add them to
+          "{{ form.sport }}" too, so other games can find them as subjects.
+        </p>
+        <ul style="margin:0; padding-left:20px; max-height:200px; overflow-y:auto; line-height:1.8;">
+          <li v-for="row in bulkUnmatchedNames" :key="row.name">{{ row.name }}</li>
+        </ul>
+      </div>
+
+      <AddSubjectsModal
+        v-if="showAddSubjectsModal"
+        :names="bulkUnmatchedNames"
+        :sport="form.sport"
+        @close="showAddSubjectsModal = false"
+        @added="onSubjectsAdded"
+      />
+
       <div class="field" style="margin-top:20px;">
         <label>Entries <span class="picker-hint">{{ entries.length }} total</span></label>
         <div v-if="!entries.length" class="empty-state" style="padding:20px;">No entries yet - paste some above, or add one at a time below.</div>
@@ -90,7 +133,10 @@
           </div>
           <Pagination v-model:page="entryPage" :page-size="ENTRY_PAGE_SIZE" :total-items="entries.length" />
         </div>
-        <button class="btn btn-secondary btn-sm" style="margin-top:10px;" @click="addBlankEntry">+ Add one manually</button>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button class="btn btn-secondary btn-sm" @click="addBlankEntry">+ Add one manually</button>
+          <button class="btn btn-secondary btn-sm" :disabled="!entries.length" @click="downloadEntriesCsv">⇩ Download CSV</button>
+        </div>
       </div>
 
       <button class="btn btn-primary" :disabled="saving" @click="saveCategory" style="margin-top:20px;">
@@ -113,9 +159,12 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import AddSubjectsModal from '../components/AddSubjectsModal.vue'
 import Pagination from '../components/Pagination.vue'
 import BoardListToolbar from '../components/BoardListToolbar.vue'
 import { useBoardList } from '../composables/useBoardList'
+import gridCategories from '../services/gridCategories'
+import { downloadCsv } from '../services/csv'
 
 const view = ref('list')
 const categories = ref([])
@@ -138,9 +187,11 @@ const saving = ref(false)
 const editingId = ref(null)
 const pendingDelete = ref(null)
 
-const form = reactive({ title: '', description: '', canExpire: false })
+const form = reactive({ title: '', description: '', sport: '', canExpire: false })
 const entries = ref([]) // [{ name, value }]
 const bulkText = ref('')
+const bulkUnmatchedNames = ref([]) // [{name, value}] - see AdminBullseyeView's csvUnmatchedNames
+const showAddSubjectsModal = ref(false)
 
 const ENTRY_PAGE_SIZE = 25
 const entryPage = ref(1)
@@ -149,7 +200,10 @@ const pagedEntries = computed(() => {
   return entries.value.slice(start, start + ENTRY_PAGE_SIZE)
 })
 
-onMounted(loadCategories)
+onMounted(() => {
+  loadCategories()
+  gridCategories.ensureLoaded()
+})
 
 async function loadCategories() {
   loading.value = true
@@ -167,9 +221,12 @@ function openCreate() {
   editingId.value = null
   form.title = ''
   form.description = ''
+  form.sport = ''
   form.canExpire = false
   entries.value = []
   bulkText.value = ''
+  bulkUnmatchedNames.value = []
+  showAddSubjectsModal.value = false
   entryPage.value = 1
   error.value = ''
   view.value = 'form'
@@ -182,9 +239,12 @@ async function openEdit(id) {
     editingId.value = id
     form.title = detail.title
     form.description = detail.description || ''
+    form.sport = detail.sport || ''
     form.canExpire = detail.canExpire || false
     entries.value = detail.entries.map(e => ({ name: e.name, value: e.value }))
     bulkText.value = ''
+    bulkUnmatchedNames.value = []
+    showAddSubjectsModal.value = false
     entryPage.value = 1
     view.value = 'form'
   } catch (e) {
@@ -192,15 +252,17 @@ async function openEdit(id) {
   }
 }
 
-function applyBulkPaste() {
+async function applyBulkPaste() {
   const lines = bulkText.value.split('\n').map(l => l.trim()).filter(Boolean)
   const byName = new Map(entries.value.map(e => [e.name.toLowerCase(), e]))
+  const parsed = []
   for (const line of lines) {
     const commaIdx = line.lastIndexOf(',')
     if (commaIdx === -1) continue
     const name = line.slice(0, commaIdx).trim()
     const value = parseInt(line.slice(commaIdx + 1).trim(), 10)
     if (!name || Number.isNaN(value)) continue
+    parsed.push({ name, value })
     const existing = byName.get(name.toLowerCase())
     if (existing) {
       existing.value = value
@@ -212,6 +274,37 @@ function applyBulkPaste() {
   }
   bulkText.value = ''
   toast.show(`Added/updated ${lines.length} line(s).`)
+
+  // Entries above are free text and always accepted regardless of this check -
+  // unlike Bullseye, nothing here is skipped or blocked. This is purely a
+  // convenience prompt to also grow the shared Subjects list other games draw
+  // from, so it only runs when a subjects category is actually chosen.
+  bulkUnmatchedNames.value = []
+  if (form.sport && parsed.length) {
+    try {
+      const pool = await api.adminSearchAthletes({ sport: form.sport })
+      const known = new Set(pool.map(a => a.name.trim().toLowerCase()))
+      bulkUnmatchedNames.value = parsed.filter(row => !known.has(row.name.trim().toLowerCase()))
+    } catch (e) {
+      // non-critical - the subject check is just a convenience prompt
+    }
+  }
+}
+
+// AddSubjectsModal created these as real subjects - the entries themselves are
+// already in the list (added above regardless of match), so there's nothing
+// to wire in here beyond clearing the prompt.
+function onSubjectsAdded() {
+  bulkUnmatchedNames.value = []
+  showAddSubjectsModal.value = false
+}
+
+// Same "name,value" shape the bulk-paste box above reads, so a downloaded
+// file pastes straight back in.
+function downloadEntriesCsv() {
+  const rows = [['name', 'value'], ...entries.value.map(e => [e.name, e.value])]
+  const filename = `${(form.title.trim() || '501').replace(/[^\w\- ]+/g, '').trim() || '501'}.csv`
+  downloadCsv(filename, rows)
 }
 
 function addBlankEntry() {
@@ -243,7 +336,7 @@ async function saveCategory() {
 
   saving.value = true
   try {
-    const payload = { title: form.title.trim(), description: form.description.trim() || null, canExpire: form.canExpire, entries: cleanEntries }
+    const payload = { title: form.title.trim(), description: form.description.trim() || null, sport: form.sport || null, canExpire: form.canExpire, entries: cleanEntries }
     if (editingId.value) {
       await api.adminUpdateFiveOhOneCategory(editingId.value, payload)
       toast.show('Category updated.')

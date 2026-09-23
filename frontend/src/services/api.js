@@ -398,6 +398,9 @@ export default {
   adminCreateAthlete(payload) {
     return client.post('/admin/athletes', payload).then(r => r.data)
   },
+  adminCreateAthletesBulk(payloads) {
+    return client.post('/admin/athletes/bulk', payloads).then(r => r.data)
+  },
   adminUpdateAthlete(id, payload) {
     return client.put(`/admin/athletes/${id}`, payload).then(r => r.data)
   },

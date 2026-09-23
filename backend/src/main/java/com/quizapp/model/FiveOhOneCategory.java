@@ -22,6 +22,22 @@ public class FiveOhOneCategory {
     @Column(length = 500)
     private String description;
 
+    // Optional (existing categories predate this field, so it's nullable, not
+    // required) - lets the admin editor check bulk-pasted names against the
+    // Subjects/Athlete pool for this sport, the same way Bullseye's importer
+    // does, and offer to add any that aren't in it yet. Purely an admin-side
+    // convenience; entries stay free text either way (see FiveOhOneEntry).
+    @Column
+    private String sport;
+
+    public String getSport() {
+        return sport;
+    }
+
+    public void setSport(String sport) {
+        this.sport = sport;
+    }
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 

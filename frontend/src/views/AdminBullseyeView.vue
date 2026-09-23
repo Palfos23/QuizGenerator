@@ -170,6 +170,9 @@
           <button class="btn btn-secondary btn-sm" :disabled="!form.sport || loadingFiveOhOneCategories" @click="toggleFiveOhOnePicker">
             {{ loadingFiveOhOneCategories ? 'Loading…' : '+ Import from 501 quiz' }}
           </button>
+          <button class="btn btn-secondary btn-sm" :disabled="!entries.length" @click="downloadEntriesCsv">
+            ⇩ Download CSV
+          </button>
           <input ref="csvInput" type="file" accept=".csv,text/csv" style="display:none;" @change="handleCsvFile" />
         </div>
         <p class="page-subtitle" style="margin-top:-4px;">
@@ -206,19 +209,30 @@
         </div>
 
         <div v-if="csvUnmatchedNames.length" style="background:rgba(242,183,5,0.1); border:1px solid rgba(242,183,5,0.3); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:10px;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
             <strong style="color:var(--gold);">
               {{ csvUnmatchedNames.length }} name{{ csvUnmatchedNames.length > 1 ? 's' : '' }} weren't found in "{{ form.sport }}"
             </strong>
-            <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">Dismiss</button>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-primary btn-sm" @click="showAddSubjectsModal = true">+ Add as subjects</button>
+              <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">Dismiss</button>
+            </div>
           </div>
           <p class="page-subtitle" style="margin:6px 0 10px;">
-            Add these as subjects first (or fix a typo in the source), then re-import.
+            Add these as subjects now, or fix a typo in the source and re-import.
           </p>
           <ul style="margin:0; padding-left:20px; max-height:200px; overflow-y:auto; line-height:1.8;">
-            <li v-for="name in csvUnmatchedNames" :key="name">{{ name }}</li>
+            <li v-for="row in csvUnmatchedNames" :key="row.name">{{ row.name }}</li>
           </ul>
         </div>
+
+        <AddSubjectsModal
+          v-if="showAddSubjectsModal"
+          :names="csvUnmatchedNames"
+          :sport="form.sport"
+          @close="showAddSubjectsModal = false"
+          @added="onSubjectsAdded"
+        />
 
         <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
           <button
@@ -289,11 +303,13 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import AddSubjectsModal from '../components/AddSubjectsModal.vue'
 import Pagination from '../components/Pagination.vue'
 import BoardListToolbar from '../components/BoardListToolbar.vue'
 import { useBoardList } from '../composables/useBoardList'
 import { formatNumber, sportLabel } from '../constants'
 import gridCategories from '../services/gridCategories'
+import { downloadCsv } from '../services/csv'
 
 const view = ref('list')
 const questions = ref([])
@@ -416,6 +432,14 @@ function removeEntry(e) {
   if (entryPage.value > maxPage) entryPage.value = maxPage
 }
 
+// Same "name,value" shape the CSV importer above reads back in, so a
+// downloaded file round-trips straight back through "+ Import from CSV".
+function downloadEntriesCsv() {
+  const rows = [['name', 'value'], ...entries.value.map(e => [e.name, e.statValue])]
+  const filename = `${(form.title.trim() || 'bullseye').replace(/[^\w\- ]+/g, '').trim() || 'bullseye'}.csv`
+  downloadCsv(filename, rows)
+}
+
 const importingAllInCategory = ref(false)
 async function importAllInCategory() {
   if (!form.sport) return
@@ -434,7 +458,21 @@ async function importAllInCategory() {
 
 const csvInput = ref(null)
 const importingCsv = ref(false)
-const csvUnmatchedNames = ref([]) // full list, shown in-page - the toast only ever had room for a few
+const csvUnmatchedNames = ref([]) // [{name, value}] full list, shown in-page - the toast only ever had room for a few
+const showAddSubjectsModal = ref(false)
+
+// AddSubjectsModal created these as real subjects - wire each straight into
+// entries with the value its import row already had, same as importRows does
+// for a name that matched on the first try.
+function onSubjectsAdded(createdWithValues) {
+  for (const { athlete, value } of createdWithValues) {
+    if (entries.value.some(e => e.athleteId === athlete.id)) continue
+    entries.value.push({ athleteId: athlete.id, name: athlete.name, team: athlete.team, statValue: value })
+  }
+  const addedNames = new Set(createdWithValues.map(c => c.athlete.name.trim().toLowerCase()))
+  csvUnmatchedNames.value = csvUnmatchedNames.value.filter(row => !addedNames.has(row.name.trim().toLowerCase()))
+  showAddSubjectsModal.value = false
+}
 
 function triggerCsvUpload() {
   csvInput.value?.click()
@@ -456,7 +494,10 @@ async function importRows(rows, sourceLabel) {
   for (const row of rows) {
     const athlete = athleteByName.get(row.name.trim().toLowerCase())
     if (!athlete) {
-      unmatched.push(row.name)
+      // Keeps the row's value alongside the name - AddSubjectsModal needs it
+      // to wire a freshly-created subject straight into entries once accepted,
+      // instead of the admin having to look the value back up in the source.
+      unmatched.push({ name: row.name, value: row.value })
       continue
     }
     const existing = entries.value.find(e => e.athleteId === athlete.id)
@@ -585,6 +626,7 @@ function resetForm() {
   athleteSearchTerm.value = ''
   athleteSearchResults.value = []
   csvUnmatchedNames.value = []
+  showAddSubjectsModal.value = false
   showFiveOhOnePicker.value = false
   selectedFiveOhOneCategoryId.value = null
 }
@@ -598,6 +640,7 @@ function openCreate() {
 async function openEdit(id) {
   error.value = ''
   csvUnmatchedNames.value = []
+  showAddSubjectsModal.value = false
   showFiveOhOnePicker.value = false
   selectedFiveOhOneCategoryId.value = null
   try {
