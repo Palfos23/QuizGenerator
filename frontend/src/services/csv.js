@@ -1,7 +1,32 @@
 // Minimal CSV helpers - quoting only when a field actually needs it (contains
-// a comma, quote, or newline). Not RFC 4180-complete, but matches the equally
-// minimal "name,value" parser already used for CSV import (see
-// AdminBullseyeView's parseCsv) - this is that same round trip, outbound.
+// a comma, quote, or newline). Not RFC 4180-complete, but plenty for the
+// simple "name,value" import/export shape shared by the Bullseye and 501
+// admin editors.
+
+// Deliberately minimal - just "name,value" rows, no quoted/embedded commas,
+// which is all this import needs. Skips a header row if the first row's
+// second column isn't a number, and skips blank lines.
+export function parseNameValueCsv(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+  let start = 0
+  if (lines.length) {
+    const firstCols = lines[0].split(',')
+    if (firstCols.length >= 2 && Number.isNaN(Number(firstCols[1].trim()))) {
+      start = 1 // first row looks like a header - skip it
+    }
+  }
+  const rows = []
+  for (let i = start; i < lines.length; i++) {
+    const cols = lines[i].split(',')
+    if (cols.length < 2) continue
+    const name = cols[0].trim().replace(/^"|"$/g, '')
+    const value = Number(cols[1].trim())
+    if (!name || Number.isNaN(value)) continue
+    rows.push({ name, value })
+  }
+  return rows
+}
+
 function escapeCsvField(value) {
   const str = String(value ?? '')
   if (/[",\n]/.test(str)) {

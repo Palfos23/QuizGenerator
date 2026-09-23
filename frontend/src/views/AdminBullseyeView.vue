@@ -309,7 +309,7 @@ import BoardListToolbar from '../components/BoardListToolbar.vue'
 import { useBoardList } from '../composables/useBoardList'
 import { formatNumber, sportLabel } from '../constants'
 import gridCategories from '../services/gridCategories'
-import { downloadCsv } from '../services/csv'
+import { downloadCsv, parseNameValueCsv } from '../services/csv'
 
 const view = ref('list')
 const questions = ref([])
@@ -529,7 +529,7 @@ async function handleCsvFile(event) {
   csvUnmatchedNames.value = []
   importingCsv.value = true
   try {
-    const rows = parseCsv(await file.text())
+    const rows = parseNameValueCsv(await file.text())
     if (!rows.length) {
       toast.show('That CSV had no valid "name,value" rows to import.', 'error')
       return
@@ -585,30 +585,6 @@ async function importFromFiveOhOne() {
   } finally {
     importingFiveOhOne.value = false
   }
-}
-
-// Deliberately minimal - just "name,value" rows, no quoted/embedded commas,
-// which is all this import needs. Skips a header row if the first row's
-// second column isn't a number, and skips blank lines.
-function parseCsv(text) {
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
-  let start = 0
-  if (lines.length) {
-    const firstCols = lines[0].split(',')
-    if (firstCols.length >= 2 && Number.isNaN(Number(firstCols[1].trim()))) {
-      start = 1 // first row looks like a header - skip it
-    }
-  }
-  const rows = []
-  for (let i = start; i < lines.length; i++) {
-    const cols = lines[i].split(',')
-    if (cols.length < 2) continue
-    const name = cols[0].trim().replace(/^"|"$/g, '')
-    const value = Number(cols[1].trim())
-    if (!name || Number.isNaN(value)) continue
-    rows.push({ name, value })
-  }
-  return rows
 }
 
 function resetForm() {

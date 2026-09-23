@@ -61,7 +61,7 @@
       </div>
 
       <div class="field">
-        <label>Subjects category <span class="picker-hint">optional - lets bulk-pasted names be checked against this category's subjects</span></label>
+        <label>Subjects category <span class="picker-hint">optional - lets CSV-imported names be checked against this category's subjects</span></label>
         <div class="language-row">
           <button
             v-for="s in gridCategories.categories.value"
@@ -86,23 +86,25 @@
         </label>
       </div>
 
-      <details class="advanced-disclosure">
-        <summary>Bulk paste entries</summary>
-        <div style="margin-top:12px;">
-          <p class="page-subtitle" style="margin-top:0;">One per line, as <code>Name, Number</code> - e.g. <code>Mohamed Salah, 233</code>. Adds to (or updates) what's below, doesn't replace it.</p>
-          <textarea v-model="bulkText" rows="6" placeholder="Mohamed Salah, 233&#10;Harry Kane, 189"></textarea>
-          <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="applyBulkPaste">Add to list</button>
-        </div>
-      </details>
+      <div style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" :disabled="importingCsv" @click="triggerCsvUpload">
+          {{ importingCsv ? 'Importing…' : '+ Import from CSV' }}
+        </button>
+        <input ref="csvInput" type="file" accept=".csv,text/csv" style="display:none;" @change="handleCsvFile" />
+      </div>
+      <p class="page-subtitle" style="margin-top:-4px;">
+        CSV format: one row per entry, <code>name,value</code> - e.g. <code>Mohamed Salah,233</code>.
+        Adds to (or updates) what's below, doesn't replace it.
+      </p>
 
-      <div v-if="bulkUnmatchedNames.length" style="background:rgba(242,183,5,0.1); border:1px solid rgba(242,183,5,0.3); border-radius:var(--radius-md); padding:14px 16px; margin-top:14px;">
+      <div v-if="csvUnmatchedNames.length" style="background:rgba(242,183,5,0.1); border:1px solid rgba(242,183,5,0.3); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:14px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
           <strong style="color:var(--gold);">
-            {{ bulkUnmatchedNames.length }} name{{ bulkUnmatchedNames.length > 1 ? 's' : '' }} weren't found in "{{ form.sport }}"
+            {{ csvUnmatchedNames.length }} name{{ csvUnmatchedNames.length > 1 ? 's' : '' }} weren't found in "{{ form.sport }}"
           </strong>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-primary btn-sm" @click="showAddSubjectsModal = true">+ Add as subjects</button>
-            <button class="btn btn-secondary btn-sm" @click="bulkUnmatchedNames = []">Dismiss</button>
+            <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">Dismiss</button>
           </div>
         </div>
         <p class="page-subtitle" style="margin:6px 0 10px;">
@@ -110,13 +112,13 @@
           "{{ form.sport }}" too, so other games can find them as subjects.
         </p>
         <ul style="margin:0; padding-left:20px; max-height:200px; overflow-y:auto; line-height:1.8;">
-          <li v-for="row in bulkUnmatchedNames" :key="row.name">{{ row.name }}</li>
+          <li v-for="row in csvUnmatchedNames" :key="row.name">{{ row.name }}</li>
         </ul>
       </div>
 
       <AddSubjectsModal
         v-if="showAddSubjectsModal"
-        :names="bulkUnmatchedNames"
+        :names="csvUnmatchedNames"
         :sport="form.sport"
         @close="showAddSubjectsModal = false"
         @added="onSubjectsAdded"
@@ -124,7 +126,7 @@
 
       <div class="field" style="margin-top:20px;">
         <label>Entries <span class="picker-hint">{{ entries.length }} total</span></label>
-        <div v-if="!entries.length" class="empty-state" style="padding:20px;">No entries yet - paste some above, or add one at a time below.</div>
+        <div v-if="!entries.length" class="empty-state" style="padding:20px;">No entries yet - import a CSV above, or add one at a time below.</div>
         <div v-else class="candidate-list">
           <div v-for="(e, idx) in pagedEntries" :key="idx" class="candidate-row">
             <input type="text" v-model="e.name" placeholder="Name" style="flex:1;" />
@@ -164,7 +166,7 @@ import Pagination from '../components/Pagination.vue'
 import BoardListToolbar from '../components/BoardListToolbar.vue'
 import { useBoardList } from '../composables/useBoardList'
 import gridCategories from '../services/gridCategories'
-import { downloadCsv } from '../services/csv'
+import { downloadCsv, parseNameValueCsv } from '../services/csv'
 
 const view = ref('list')
 const categories = ref([])
@@ -189,8 +191,9 @@ const pendingDelete = ref(null)
 
 const form = reactive({ title: '', description: '', sport: '', canExpire: false })
 const entries = ref([]) // [{ name, value }]
-const bulkText = ref('')
-const bulkUnmatchedNames = ref([]) // [{name, value}] - see AdminBullseyeView's csvUnmatchedNames
+const csvInput = ref(null)
+const importingCsv = ref(false)
+const csvUnmatchedNames = ref([]) // [{name, value}] - see AdminBullseyeView's csvUnmatchedNames
 const showAddSubjectsModal = ref(false)
 
 const ENTRY_PAGE_SIZE = 25
@@ -224,8 +227,7 @@ function openCreate() {
   form.sport = ''
   form.canExpire = false
   entries.value = []
-  bulkText.value = ''
-  bulkUnmatchedNames.value = []
+  csvUnmatchedNames.value = []
   showAddSubjectsModal.value = false
   entryPage.value = 1
   error.value = ''
@@ -242,8 +244,7 @@ async function openEdit(id) {
     form.sport = detail.sport || ''
     form.canExpire = detail.canExpire || false
     entries.value = detail.entries.map(e => ({ name: e.name, value: e.value }))
-    bulkText.value = ''
-    bulkUnmatchedNames.value = []
+    csvUnmatchedNames.value = []
     showAddSubjectsModal.value = false
     entryPage.value = 1
     view.value = 'form'
@@ -252,42 +253,55 @@ async function openEdit(id) {
   }
 }
 
-async function applyBulkPaste() {
-  const lines = bulkText.value.split('\n').map(l => l.trim()).filter(Boolean)
-  const byName = new Map(entries.value.map(e => [e.name.toLowerCase(), e]))
-  const parsed = []
-  for (const line of lines) {
-    const commaIdx = line.lastIndexOf(',')
-    if (commaIdx === -1) continue
-    const name = line.slice(0, commaIdx).trim()
-    const value = parseInt(line.slice(commaIdx + 1).trim(), 10)
-    if (!name || Number.isNaN(value)) continue
-    parsed.push({ name, value })
-    const existing = byName.get(name.toLowerCase())
-    if (existing) {
-      existing.value = value
-    } else {
-      const fresh = { name, value }
-      entries.value.push(fresh)
-      byName.set(name.toLowerCase(), fresh)
-    }
-  }
-  bulkText.value = ''
-  toast.show(`Added/updated ${lines.length} line(s).`)
+function triggerCsvUpload() {
+  csvInput.value?.click()
+}
 
-  // Entries above are free text and always accepted regardless of this check -
-  // unlike Bullseye, nothing here is skipped or blocked. This is purely a
-  // convenience prompt to also grow the shared Subjects list other games draw
-  // from, so it only runs when a subjects category is actually chosen.
-  bulkUnmatchedNames.value = []
-  if (form.sport && parsed.length) {
-    try {
+async function handleCsvFile(event) {
+  const file = event.target.files?.[0]
+  event.target.value = '' // lets the same file be re-selected after fixing it
+  if (!file) return
+
+  error.value = ''
+  csvUnmatchedNames.value = []
+  importingCsv.value = true
+  try {
+    const rows = parseNameValueCsv(await file.text())
+    if (!rows.length) {
+      toast.show('That CSV had no valid "name,value" rows to import.', 'error')
+      return
+    }
+
+    const byName = new Map(entries.value.map(e => [e.name.toLowerCase(), e]))
+    let added = 0
+    let updated = 0
+    for (const row of rows) {
+      const existing = byName.get(row.name.toLowerCase())
+      if (existing) {
+        existing.value = row.value
+        updated++
+      } else {
+        const fresh = { name: row.name, value: row.value }
+        entries.value.push(fresh)
+        byName.set(row.name.toLowerCase(), fresh)
+        added++
+      }
+    }
+    toast.show(`CSV import: ${added} entry(ies) added, ${updated} updated.`)
+
+    // Entries above are free text and always accepted regardless of this check -
+    // unlike Bullseye, nothing here is skipped or blocked. This is purely a
+    // convenience prompt to also grow the shared Subjects list other games draw
+    // from, so it only runs when a subjects category is actually chosen.
+    if (form.sport) {
       const pool = await api.adminSearchAthletes({ sport: form.sport })
       const known = new Set(pool.map(a => a.name.trim().toLowerCase()))
-      bulkUnmatchedNames.value = parsed.filter(row => !known.has(row.name.trim().toLowerCase()))
-    } catch (e) {
-      // non-critical - the subject check is just a convenience prompt
+      csvUnmatchedNames.value = rows.filter(row => !known.has(row.name.trim().toLowerCase()))
     }
+  } catch (e) {
+    error.value = 'Could not read that CSV file.'
+  } finally {
+    importingCsv.value = false
   }
 }
 
@@ -295,7 +309,7 @@ async function applyBulkPaste() {
 // already in the list (added above regardless of match), so there's nothing
 // to wire in here beyond clearing the prompt.
 function onSubjectsAdded() {
-  bulkUnmatchedNames.value = []
+  csvUnmatchedNames.value = []
   showAddSubjectsModal.value = false
 }
 

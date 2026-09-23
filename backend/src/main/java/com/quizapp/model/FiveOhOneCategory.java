@@ -23,7 +23,7 @@ public class FiveOhOneCategory {
     private String description;
 
     // Optional (existing categories predate this field, so it's nullable, not
-    // required) - lets the admin editor check bulk-pasted names against the
+    // required) - lets the admin editor check CSV-imported names against the
     // Subjects/Athlete pool for this sport, the same way Bullseye's importer
     // does, and offer to add any that aren't in it yet. Purely an admin-side
     // convenience; entries stay free text either way (see FiveOhOneEntry).
