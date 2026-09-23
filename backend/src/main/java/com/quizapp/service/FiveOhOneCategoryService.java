@@ -71,7 +71,7 @@ public class FiveOhOneCategoryService {
     @Transactional(readOnly = true)
     public List<FiveOhOneEntryDto> getEffectiveEntries(FiveOhOneCategory category) {
         List<FiveOhOneEntryDto> explicit = category.getEntries().stream()
-                .map(e -> new FiveOhOneEntryDto(e.getId(), e.getName(), e.getValue(),
+                .map(e -> new FiveOhOneEntryDto(e.getId(), displayName(e), e.getValue(),
                         e.getAthlete() != null ? e.getAthlete().getId() : null))
                 .collect(Collectors.toList());
 
@@ -132,15 +132,24 @@ public class FiveOhOneCategoryService {
         category.setEntireCategoryPool(request.isEntireCategoryPool());
         category.setUpdatedAt(java.time.Instant.now());
 
-        // Reuse existing entries by name where possible, rather than always creating
-        // fresh rows - keeps saves fast for large categories and avoids needlessly
-        // recreating rows that didn't actually change.
+        // Reuse existing entries where possible rather than always creating fresh
+        // rows - keeps saves fast for large categories and avoids needlessly
+        // recreating rows that didn't actually change. Matched by linked subject
+        // first (a rename changes the displayed name - see displayName() below -
+        // without changing which entry that is), falling back to name only for
+        // legacy free-text entries with no subject link.
+        Map<Long, FiveOhOneEntry> existingByAthleteId = category.getEntries().stream()
+                .filter(e -> e.getAthlete() != null)
+                .collect(Collectors.toMap(e -> e.getAthlete().getId(), e -> e, (a, b) -> a));
         Map<String, FiveOhOneEntry> existingByName = category.getEntries().stream()
                 .collect(Collectors.toMap(e -> e.getName().toLowerCase(), e -> e, (a, b) -> a));
 
         List<FiveOhOneEntry> entries = request.getEntries().stream()
                 .map(input -> {
-                    FiveOhOneEntry entry = existingByName.getOrDefault(input.getName().toLowerCase(), new FiveOhOneEntry());
+                    FiveOhOneEntry entry = input.getAthleteId() != null ? existingByAthleteId.get(input.getAthleteId()) : null;
+                    if (entry == null) {
+                        entry = existingByName.getOrDefault(input.getName().trim().toLowerCase(), new FiveOhOneEntry());
+                    }
                     entry.setName(input.getName().trim());
                     entry.setValue(input.getValue() != null ? input.getValue() : 0);
                     entry.setAthlete(input.getAthleteId() != null
@@ -152,9 +161,19 @@ public class FiveOhOneCategoryService {
         category.setEntries(entries);
     }
 
+    // A linked entry's displayed name always follows its subject's current
+    // name - the same live-reference behavior Bullseye/Grid/Lineup already
+    // have - so renaming a Subject is reflected here immediately instead of
+    // staying frozen at whatever name was typed/imported when the entry was
+    // created. Only a legacy/free-text entry with no subject link falls back
+    // to its own stored name.
+    private static String displayName(FiveOhOneEntry e) {
+        return e.getAthlete() != null ? e.getAthlete().getName() : e.getName();
+    }
+
     static FiveOhOneCategoryDto toDto(FiveOhOneCategory c) {
         List<FiveOhOneEntryDto> entries = c.getEntries().stream()
-                .map(e -> new FiveOhOneEntryDto(e.getId(), e.getName(), e.getValue(),
+                .map(e -> new FiveOhOneEntryDto(e.getId(), displayName(e), e.getValue(),
                         e.getAthlete() != null ? e.getAthlete().getId() : null))
                 .collect(Collectors.toList());
         FiveOhOneCategoryDto dto = new FiveOhOneCategoryDto(c.getId(), c.getTitle(), c.getDescription(), entries);
