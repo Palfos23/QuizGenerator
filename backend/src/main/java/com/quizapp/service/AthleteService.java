@@ -390,7 +390,13 @@ public class AthleteService {
     public AthleteDto update(Long id, AthleteDto dto) {
         Athlete athlete = athleteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No athlete found with id " + id));
-        athlete.setName(dto.getName());
+        String newName = dto.getName() != null ? dto.getName().trim() : null;
+        if (newName != null && !newName.isBlank()
+                && athleteRepository.existsBySportAndNameIgnoreCaseAndIdNot(dto.getSport(), newName, id)) {
+            throw new IllegalArgumentException(
+                    "Another subject named \"" + newName + "\" already exists in \"" + dto.getSport() + "\".");
+        }
+        athlete.setName(newName);
         athlete.setSport(dto.getSport());
         athlete.setTeam(dto.getTeam());
         athlete.setPhotoUrl(dto.getPhotoUrl());

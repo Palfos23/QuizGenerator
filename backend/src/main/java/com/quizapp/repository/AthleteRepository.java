@@ -22,4 +22,9 @@ public interface AthleteRepository extends JpaRepository<Athlete, Long> {
     int renameSport(String oldName, String newName);
 
     boolean existsBySport(String sport);
+
+    // Duplicate-name guard for editing a subject - IdNot excludes the subject
+    // being edited itself, so renaming it back to its own current name (no-op)
+    // or to a name unused elsewhere in the same category is still allowed.
+    boolean existsBySportAndNameIgnoreCaseAndIdNot(String sport, String name, Long id);
 }
