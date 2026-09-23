@@ -234,6 +234,14 @@
           @added="onSubjectsAdded"
         />
 
+        <ImportEntriesModal
+          v-if="showImportReviewModal"
+          :rows="pendingImportRows"
+          :source-label="pendingImportLabel"
+          @close="showImportReviewModal = false"
+          @confirm="applyImportSelection"
+        />
+
         <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
           <button
             v-for="a in athleteSearchResults"
@@ -304,6 +312,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import AddSubjectsModal from '../components/AddSubjectsModal.vue'
+import ImportEntriesModal from '../components/ImportEntriesModal.vue'
 import Pagination from '../components/Pagination.vue'
 import BoardListToolbar from '../components/BoardListToolbar.vue'
 import { useBoardList } from '../composables/useBoardList'
@@ -479,33 +488,49 @@ function triggerCsvUpload() {
 }
 
 // Shared by CSV import and the "import from 501 quiz" picker below - both
-// just produce a list of {name, value} rows, matched against subjects
-// already in this category (same pool importAllInCategory draws from).
-// Deliberately doesn't create new Athlete records on the fly, since a typo
-// in the source would otherwise silently create a junk duplicate subject
-// instead of surfacing as a skipped row.
+// just produce a list of {name, value} rows. Resolves each against subjects
+// already in this category (same pool importAllInCategory draws from), then
+// hands the annotated rows to ImportEntriesModal for a review/select step -
+// nothing lands in entries until the admin confirms which ones. Deliberately
+// doesn't create new Athlete records on the fly for an unmatched row, since a
+// typo in the source would otherwise silently create a junk duplicate
+// subject instead of surfacing as a row to fix or explicitly add.
+const pendingImportRows = ref([])
+const pendingImportLabel = ref('')
+const showImportReviewModal = ref(false)
+
 async function importRows(rows, sourceLabel) {
   const pool = await api.adminSearchAthletes({ sport: form.sport })
   const athleteByName = new Map(pool.map(a => [a.name.trim().toLowerCase(), a]))
+  pendingImportRows.value = rows.map(row => ({
+    name: row.name,
+    value: row.value,
+    athlete: athleteByName.get(row.name.trim().toLowerCase()) || null
+  }))
+  pendingImportLabel.value = sourceLabel
+  showImportReviewModal.value = true
+}
 
+// ImportEntriesModal confirmed this subset - only these actually get applied.
+function applyImportSelection(selectedRows) {
+  showImportReviewModal.value = false
   let added = 0
   let updated = 0
   const unmatched = []
-  for (const row of rows) {
-    const athlete = athleteByName.get(row.name.trim().toLowerCase())
-    if (!athlete) {
+  for (const row of selectedRows) {
+    if (!row.athlete) {
       // Keeps the row's value alongside the name - AddSubjectsModal needs it
       // to wire a freshly-created subject straight into entries once accepted,
       // instead of the admin having to look the value back up in the source.
       unmatched.push({ name: row.name, value: row.value })
       continue
     }
-    const existing = entries.value.find(e => e.athleteId === athlete.id)
+    const existing = entries.value.find(e => e.athleteId === row.athlete.id)
     if (existing) {
       existing.statValue = row.value
       updated++
     } else {
-      entries.value.push({ athleteId: athlete.id, name: athlete.name, team: athlete.team, statValue: row.value })
+      entries.value.push({ athleteId: row.athlete.id, name: row.athlete.name, team: row.athlete.team, statValue: row.value })
       added++
     }
   }
@@ -513,7 +538,7 @@ async function importRows(rows, sourceLabel) {
   entryFilterTerm.value = ''
   csvUnmatchedNames.value = unmatched
 
-  let message = `${sourceLabel}: ${added} answer(s) added, ${updated} updated.`
+  let message = `${pendingImportLabel.value}: ${added} answer(s) added, ${updated} updated.`
   if (unmatched.length) {
     message += ` ${unmatched.length} name(s) weren't found - see the list below.`
   }
@@ -603,6 +628,8 @@ function resetForm() {
   athleteSearchResults.value = []
   csvUnmatchedNames.value = []
   showAddSubjectsModal.value = false
+  showImportReviewModal.value = false
+  pendingImportRows.value = []
   showFiveOhOnePicker.value = false
   selectedFiveOhOneCategoryId.value = null
 }
@@ -617,6 +644,8 @@ async function openEdit(id) {
   error.value = ''
   csvUnmatchedNames.value = []
   showAddSubjectsModal.value = false
+  showImportReviewModal.value = false
+  pendingImportRows.value = []
   showFiveOhOnePicker.value = false
   selectedFiveOhOneCategoryId.value = null
   try {

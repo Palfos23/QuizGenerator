@@ -140,6 +140,14 @@
         @added="onSubjectsAdded"
       />
 
+      <ImportEntriesModal
+        v-if="showImportReviewModal"
+        :rows="pendingImportRows"
+        :source-label="pendingImportLabel"
+        @close="showImportReviewModal = false"
+        @confirm="applyImportSelection"
+      />
+
       <div class="field" style="margin-top:20px;">
         <label>Entries <span class="picker-hint">{{ entries.length }} total</span></label>
         <div v-if="!entries.length" class="empty-state" style="padding:20px;">No entries yet - import a CSV above, or add one at a time below.</div>
@@ -190,6 +198,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import AddSubjectsModal from '../components/AddSubjectsModal.vue'
+import ImportEntriesModal from '../components/ImportEntriesModal.vue'
 import Pagination from '../components/Pagination.vue'
 import BoardListToolbar from '../components/BoardListToolbar.vue'
 import { useBoardList } from '../composables/useBoardList'
@@ -258,6 +267,8 @@ function openCreate() {
   entries.value = []
   csvUnmatchedNames.value = []
   showAddSubjectsModal.value = false
+  showImportReviewModal.value = false
+  pendingImportRows.value = []
   entryPage.value = 1
   error.value = ''
   view.value = 'form'
@@ -276,6 +287,8 @@ async function openEdit(id) {
     entries.value = detail.entries.map(e => ({ name: e.name, value: e.value, athleteId: e.athleteId || null }))
     csvUnmatchedNames.value = []
     showAddSubjectsModal.value = false
+    showImportReviewModal.value = false
+    pendingImportRows.value = []
     entryPage.value = 1
     view.value = 'form'
   } catch (e) {
@@ -286,6 +299,16 @@ async function openEdit(id) {
 function triggerCsvUpload() {
   csvInput.value?.click()
 }
+
+// Entries are free text and always accepted regardless of a match - unlike
+// Bullseye, nothing here is skipped or blocked. A match just also links the
+// entry to that subject (see the "✓ Subject" tag), so matching only runs
+// when a subjects category is actually chosen. ImportEntriesModal still gets
+// a look at every row first so the admin can drop rows they don't want,
+// same review step Bullseye's CSV/501 import got.
+const pendingImportRows = ref([])
+const pendingImportLabel = ref('')
+const showImportReviewModal = ref(false)
 
 async function handleCsvFile(event) {
   const file = event.target.files?.[0]
@@ -302,44 +325,51 @@ async function handleCsvFile(event) {
       return
     }
 
-    // Entries below are free text and always accepted regardless of a match -
-    // unlike Bullseye, nothing here is skipped or blocked. A match just also
-    // links the entry to that subject (see the "✓ Subject" tag), so it only
-    // runs when a subjects category is actually chosen.
     let athleteByName = new Map()
     if (form.sport) {
       const pool = await api.adminSearchAthletes({ sport: form.sport })
       athleteByName = new Map(pool.map(a => [a.name.trim().toLowerCase(), a]))
     }
 
-    const byName = new Map(entries.value.map(e => [e.name.toLowerCase(), e]))
-    let added = 0
-    let updated = 0
-    const unmatched = []
-    for (const row of rows) {
-      const athlete = athleteByName.get(row.name.trim().toLowerCase())
-      const existing = byName.get(row.name.toLowerCase())
-      if (existing) {
-        existing.value = row.value
-        if (athlete) existing.athleteId = athlete.id
-        updated++
-      } else {
-        const fresh = { name: row.name, value: row.value, athleteId: athlete ? athlete.id : null }
-        entries.value.push(fresh)
-        byName.set(row.name.toLowerCase(), fresh)
-        added++
-      }
-      if (form.sport && !athlete) {
-        unmatched.push({ name: row.name, value: row.value })
-      }
-    }
-    toast.show(`CSV import: ${added} entry(ies) added, ${updated} updated.`)
-    csvUnmatchedNames.value = unmatched
+    pendingImportRows.value = rows.map(row => ({
+      name: row.name,
+      value: row.value,
+      athlete: athleteByName.get(row.name.trim().toLowerCase()) || null
+    }))
+    pendingImportLabel.value = 'CSV import'
+    showImportReviewModal.value = true
   } catch (e) {
     error.value = 'Could not read that CSV file.'
   } finally {
     importingCsv.value = false
   }
+}
+
+// ImportEntriesModal confirmed this subset - only these actually get applied.
+function applyImportSelection(selectedRows) {
+  showImportReviewModal.value = false
+  const byName = new Map(entries.value.map(e => [e.name.toLowerCase(), e]))
+  let added = 0
+  let updated = 0
+  const unmatched = []
+  for (const row of selectedRows) {
+    const existing = byName.get(row.name.toLowerCase())
+    if (existing) {
+      existing.value = row.value
+      if (row.athlete) existing.athleteId = row.athlete.id
+      updated++
+    } else {
+      const fresh = { name: row.name, value: row.value, athleteId: row.athlete ? row.athlete.id : null }
+      entries.value.push(fresh)
+      byName.set(row.name.toLowerCase(), fresh)
+      added++
+    }
+    if (form.sport && !row.athlete) {
+      unmatched.push({ name: row.name, value: row.value })
+    }
+  }
+  toast.show(`${pendingImportLabel.value}: ${added} entry(ies) added, ${updated} updated.`)
+  csvUnmatchedNames.value = unmatched
 }
 
 // Runs the same name-matching CSV import already does, but against every
