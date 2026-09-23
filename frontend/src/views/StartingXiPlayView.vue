@@ -17,7 +17,7 @@
 
       <div class="pitch-scoreline">
         <div class="pitch-scoreline-team">
-          <img v-if="state.teamCrestUrl" :src="state.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
+          <GameImage v-if="state.teamCrestUrl" :src="state.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
           <span>{{ state.teamName }}</span>
         </div>
         <div v-if="state.scoreFor != null && state.scoreAgainst != null" class="pitch-scoreline-score">
@@ -25,7 +25,7 @@
         </div>
         <div v-else class="pitch-scoreline-vs">vs</div>
         <div class="pitch-scoreline-team away">
-          <img v-if="state.opponentCrestUrl" :src="state.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
+          <GameImage v-if="state.opponentCrestUrl" :src="state.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
           <span>{{ state.opponentName }}</span>
         </div>
       </div>
@@ -137,7 +137,7 @@
                 <span class="pitch-shirt-sleeve right"></span>
                 <span class="pitch-shirt-collar"></span>
               </template>
-              <img v-if="slot.solved && slot.athletePhotoUrl" :src="slot.athletePhotoUrl" alt="" class="pitch-slot-photo" />
+              <GameImage v-if="slot.solved && slot.athletePhotoUrl" :src="slot.athletePhotoUrl" alt="" class="pitch-slot-photo" />
               <template v-else>{{ slot.shirtNumber }}</template>
               <span v-if="slot.captain" class="pitch-shirt-captain">C</span>
             </div>
@@ -156,8 +156,10 @@ import api from '../services/api'
 import toast from '../services/toast'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor, formatLastUpdated } from '../constants'
+import { preloadImage, preloadImages } from '../services/imagePreload'
 import PitchMarkings from '../components/PitchMarkings.vue'
 import LivesHearts from '../components/LivesHearts.vue'
+import GameImage from '../components/GameImage.vue'
 
 const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'
@@ -195,7 +197,14 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    state.value = await api.getLineupPlayState(lineupId.value)
+    const fresh = await api.getLineupPlayState(lineupId.value)
+    // Covers resuming a board already partway solved, plus both crests -
+    // all load now, behind the spinner, instead of popping in right after.
+    await preloadImages([
+      fresh.teamCrestUrl, fresh.opponentCrestUrl,
+      ...fresh.slots.filter(s => s.solved).map(s => s.athletePhotoUrl)
+    ])
+    state.value = fresh
   } catch (e) {
     error.value = 'Could not load this board.'
   } finally {
@@ -232,6 +241,7 @@ async function submitGuess(athlete) {
     state.value.strikesUsed = result.strikesUsed
 
     if (result.correct) {
+      await preloadImage(result.slot.athletePhotoUrl)
       const idx = state.value.slots.findIndex(s => s.id === result.slot.id)
       if (idx !== -1) state.value.slots.splice(idx, 1, result.slot)
     } else {
@@ -251,7 +261,9 @@ async function submitGuess(athlete) {
 
 async function giveUp() {
   try {
-    state.value = await api.revealLineup(lineupId.value)
+    const fresh = await api.revealLineup(lineupId.value)
+    await preloadImages(fresh.slots.map(s => s.athletePhotoUrl))
+    state.value = fresh
   } catch (e) {
     error.value = 'Could not reveal the remaining answers.'
   }

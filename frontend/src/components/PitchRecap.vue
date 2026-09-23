@@ -8,12 +8,11 @@
           :class="{ solved: slot.wasFound, 'revealed-only': !slot.wasFound, goalkeeper: slot.slotIndex === 0 }"
           :style="shirtStyle(slot)"
         >
-          <img
+          <GameImage
             v-if="slot.athletePhotoUrl"
             :src="slot.athletePhotoUrl"
             alt=""
             class="pitch-slot-photo"
-            @error="$event.target.style.display = 'none'"
           />
           <template v-else>{{ slot.shirtNumber }}</template>
           <span v-if="slot.captain" class="pitch-shirt-captain">C</span>
@@ -27,6 +26,7 @@
 <script setup>
 import { readableTextColor } from '../constants'
 import PitchMarkings from './PitchMarkings.vue'
+import GameImage from './GameImage.vue'
 
 // Shrunk, non-interactive copy of the play pitch for the Starting XI Battle
 // results modal. Every slot is revealed - green shirt if a player found it,

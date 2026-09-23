@@ -70,7 +70,7 @@
         >
           <div v-if="isNameOnlyTile(t)" class="grid-tile-name-fill">{{ t.athleteName }}</div>
           <template v-else>
-            <img
+            <GameImage
               v-if="tileImage(t)"
               :src="tileImage(t)"
               alt=""
@@ -79,7 +79,6 @@
                 'is-photo': !!t.photoUrl && state.displayMode !== 'NAME_AND_LOGO',
                 'is-fit': state.fitImages && !!t.photoUrl && state.displayMode !== 'NAME_AND_LOGO'
               }"
-              @error="$event.target.style.display = 'none'"
             />
             <div v-if="state.displayMode !== 'PHOTO_ONLY' || t.flipped" class="grid-tile-name">{{ t.athleteName }}</div>
           </template>
@@ -133,9 +132,11 @@
 import { computed, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
+import GameImage from './GameImage.vue'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatLastUpdated } from '../constants'
+import { preloadImages } from '../services/imagePreload'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -202,7 +203,7 @@ async function poll() {
   const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.getImposterOnlineState(props.roomCode)
-    if (stillFresh()) applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = 'Lost connection to the room - retrying…'
   } finally {
@@ -210,13 +211,18 @@ async function poll() {
   }
 }
 
-function applyState(fresh) {
+async function applyState(fresh) {
   staleGuard.markApplied()
   error.value = ''
   if (fresh.currentGridIndex !== lastGridIndexSeen) {
     lastGridIndexSeen = fresh.currentGridIndex
     revealList.value = []
   }
+  // Same "load before reveal" treatment as the pass-and-play version -
+  // covers a tile another player just flipped arriving here via poll/socket.
+  // Already-cached tiles (the majority, unchanged between snapshots) resolve
+  // immediately.
+  await preloadImages(fresh.tiles.map(t => fresh.displayMode === 'NAME_AND_LOGO' ? t.logoUrl : t.photoUrl))
   state.value = fresh
   if (fresh.boardComplete && revealList.value.length === 0) {
     api.getImposterOnlineReveal(props.roomCode).then(list => { revealList.value = list }).catch(() => {})
@@ -234,7 +240,7 @@ async function chooseGrid(g) {
   choosing.value = true
   try {
     const fresh = await api.chooseImposterOnlineGrid(props.roomCode, g.id)
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not choose that board.'
   } finally {
@@ -252,7 +258,7 @@ async function flipTile(t) {
     if (after && after.flipped && !before.flipped) {
       showFlipOverlay(after.imposter)
     }
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not flip that tile.'
   } finally {
@@ -264,7 +270,7 @@ async function nextBoard() {
   advancing.value = true
   try {
     const fresh = await api.advanceImposterOnlineBoard(props.roomCode)
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not advance to the next board.'
   } finally {

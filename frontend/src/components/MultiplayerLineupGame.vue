@@ -25,7 +25,7 @@
 
     <div v-if="lineupState && (lineupState.teamName || lineupState.opponentName)" class="pitch-scoreline">
       <div class="pitch-scoreline-team">
-        <img v-if="lineupState.teamCrestUrl" :src="lineupState.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
+        <GameImage v-if="lineupState.teamCrestUrl" :src="lineupState.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
         <span>{{ lineupState.teamName }}</span>
       </div>
       <div v-if="lineupState.scoreFor != null && lineupState.scoreAgainst != null" class="pitch-scoreline-score">
@@ -33,7 +33,7 @@
       </div>
       <div v-else class="pitch-scoreline-vs">vs</div>
       <div class="pitch-scoreline-team away">
-        <img v-if="lineupState.opponentCrestUrl" :src="lineupState.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
+        <GameImage v-if="lineupState.opponentCrestUrl" :src="lineupState.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
         <span>{{ lineupState.opponentName }}</span>
       </div>
     </div>
@@ -137,7 +137,7 @@
                 <span class="pitch-shirt-sleeve right"></span>
                 <span class="pitch-shirt-collar"></span>
               </template>
-              <img v-if="slot.solved && slot.athletePhotoUrl" :src="slot.athletePhotoUrl" alt="" class="pitch-slot-photo" />
+              <GameImage v-if="slot.solved && slot.athletePhotoUrl" :src="slot.athletePhotoUrl" alt="" class="pitch-slot-photo" />
               <template v-else>{{ slot.shirtNumber }}</template>
               <span v-if="slot.captain" class="pitch-shirt-captain">C</span>
             </div>
@@ -166,11 +166,13 @@ import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor, formatLastUpdated } from '../constants'
+import { preloadImage, preloadImages } from '../services/imagePreload'
 import PitchMarkings from './PitchMarkings.vue'
 import PitchRecap from './PitchRecap.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
+import GameImage from './GameImage.vue'
 
 const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'
@@ -277,7 +279,12 @@ async function loadLineup(lineupId) {
   scoresAtLineupStart.value = { ...scores.value }
   currentPlayerIdx.value = currentLineupIndex.value % props.players.length // rotate who starts, like Grid Battle
   try {
-    lineupState.value = await api.getMultiplayerLineupStart(lineupId)
+    const fresh = await api.getMultiplayerLineupStart(lineupId)
+    // Crests persist across boards on an already-mounted <img> (via GameImage,
+    // which re-fades on a src change) - preloading here means that swap never
+    // shows blank in the meantime.
+    await preloadImages([fresh.teamCrestUrl, fresh.opponentCrestUrl])
+    lineupState.value = fresh
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
   } catch (e) {
     toast.show(e.response?.data?.message || 'Could not load this board - please try again.', 'error')
@@ -348,9 +355,10 @@ async function submitGuess(athlete) {
     )
     if (result.correct) {
       guessedSlotIds.value.push(result.slot.id)
-      solvedById.value[result.slot.id] = result.slot
       scores.value[player] = (scores.value[player] || 0) + 1
       showResultOverlay(true)
+      await preloadImage(result.slot.athletePhotoUrl)
+      solvedById.value[result.slot.id] = result.slot
       if (result.allSolved) {
         lineupComplete.value = true
         return
@@ -415,6 +423,7 @@ function advanceTurn() {
 async function revealRemaining() {
   try {
     const all = await api.revealAllLineupSlots(currentLineupId.value)
+    await preloadImages(all.map(s => s.athletePhotoUrl))
     revealedSlots.value = Object.fromEntries(all.map(s => [s.id, s]))
   } catch (e) {
     // if this fails, shirts just stay hidden - not worth blocking the game-over flow over
@@ -471,6 +480,10 @@ async function initGame() {
     chosenLineups.value = saved.chosenLineups || []
     await proceedToCurrentRound()
     guessedSlotIds.value = saved.guessedSlotIds
+    await preloadImages([
+      ...Object.values(saved.solvedById || {}),
+      ...Object.values(saved.revealedSlots || {})
+    ].map(s => s.athletePhotoUrl))
     solvedById.value = saved.solvedById || {}
     revealedSlots.value = saved.revealedSlots || {}
     livesUsed.value = saved.livesUsed

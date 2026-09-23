@@ -145,13 +145,12 @@
           <div v-if="state.revealMode === 'DESCRIPTION'" class="grid-tile-description">
             {{ e.revealedDescription || '?' }}
           </div>
-          <img
+          <GameImage
             v-else-if="tileImage(e)"
             :src="tileImage(e)"
             alt=""
             class="grid-tile-logo"
             :class="{ 'is-photo': !!e.athletePhotoUrl, 'is-fit': state.fitImages && !!e.athletePhotoUrl }"
-            @error="$event.target.style.display = 'none'"
           />
           <div
             v-if="e.hintValue != null || e.hintLabel"
@@ -212,8 +211,10 @@ import { useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
 import { readableTextColor, formatHint, formatLastUpdated } from '../constants'
+import { preloadImage, preloadImages } from '../services/imagePreload'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import LivesHearts from '../components/LivesHearts.vue'
+import GameImage from '../components/GameImage.vue'
 
 const route = useRoute()
 const gridId = route.params.id
@@ -278,7 +279,11 @@ async function loadState() {
   loading.value = true
   error.value = ''
   try {
-    state.value = await api.getGridPlayState(gridId)
+    const fresh = await api.getGridPlayState(gridId)
+    // Covers resuming a grid already partway solved - those tiles' photos
+    // load now, behind the spinner, instead of popping in right after.
+    await preloadImages(fresh.entries.map(tileImage))
+    state.value = fresh
   } catch (e) {
     error.value = 'Could not load this grid.'
   } finally {
@@ -322,6 +327,9 @@ async function submitGuess(athlete) {
     state.value.strikesUsed = result.strikesUsed
 
     if (result.correct) {
+      // Loads the tile's photo/logo before it ever appears in the DOM, so the
+      // reveal itself never shows a blank/loading image mid-round.
+      await preloadImage(tileImage(result.entry))
       const idx = state.value.entries.findIndex(e => e.id === result.entry.id)
       if (idx !== -1) state.value.entries.splice(idx, 1, result.entry)
       justSolvedId.value = result.entry.id
@@ -348,7 +356,9 @@ async function doOvertime() {
   actionBusy.value = true
   error.value = ''
   try {
-    state.value = await api.enterGridOvertime(gridId)
+    const fresh = await api.enterGridOvertime(gridId)
+    await preloadImages(fresh.entries.map(tileImage))
+    state.value = fresh
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not start overtime.'
   } finally {
@@ -360,7 +370,9 @@ async function doReveal() {
   actionBusy.value = true
   error.value = ''
   try {
-    state.value = await api.revealGrid(gridId)
+    const fresh = await api.revealGrid(gridId)
+    await preloadImages(fresh.entries.map(tileImage))
+    state.value = fresh
     triggerCompletionPopup('given-up')
   } catch (e) {
     error.value = 'Could not reveal the answers.'

@@ -127,13 +127,12 @@
                 <div v-if="state.revealMode === 'DESCRIPTION'" class="grid-tile-description">
                   {{ e.revealedDescription || '?' }}
                 </div>
-                <img
+                <GameImage
                   v-else-if="tileImage(e)"
                   :src="tileImage(e)"
                   alt=""
                   class="grid-tile-logo"
                   :class="{ 'is-photo': !!e.athletePhotoUrl, 'is-fit': state.fitImages && !!e.athletePhotoUrl }"
-                  @error="$event.target.style.display = 'none'"
                 />
                 <div
                   v-if="e.hintValue != null || e.hintLabel"
@@ -164,13 +163,12 @@
           <div v-if="state.revealMode === 'DESCRIPTION'" class="grid-tile-description">
             {{ e.revealedDescription || '?' }}
           </div>
-          <img
+          <GameImage
             v-else-if="tileImage(e)"
             :src="tileImage(e)"
             alt=""
             class="grid-tile-logo"
             :class="{ 'is-photo': e.athletePhotoUrl, 'is-fit': state.fitImages && e.athletePhotoUrl }"
-            @error="$event.target.style.display = 'none'"
           />
           <div
             v-if="e.hintValue != null || e.hintLabel"
@@ -198,9 +196,11 @@
 import { computed, ref, watch } from 'vue'
 import api from '../services/api'
 import { readableTextColor, formatHint, sportLabel, formatLastUpdated } from '../constants'
+import { preloadImages } from '../services/imagePreload'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
+import GameImage from './GameImage.vue'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 
@@ -286,7 +286,7 @@ async function poll() {
   const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.getGridBattleState(props.roomCode)
-    if (stillFresh()) applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = 'Lost connection to the room - retrying…'
   } finally {
@@ -294,7 +294,7 @@ async function poll() {
   }
 }
 
-function applyState(fresh) {
+async function applyState(fresh) {
   staleGuard.markApplied()
   error.value = ''
   if (fresh.currentGridIndex !== lastGridIndexSeen) {
@@ -302,9 +302,18 @@ function applyState(fresh) {
     lastGridIndexSeen = fresh.currentGridIndex
     revealedEntries.value = []
   }
+  // Preloads every tile image this snapshot carries before it's applied - a
+  // tile solved by another player arrives here the same way one of our own
+  // guesses does, so it needs the same "load before reveal" treatment.
+  // Already-cached URLs (the common case - most tiles are unchanged between
+  // snapshots) resolve immediately, so this adds no real delay.
+  await preloadImages(fresh.entries.map(tileImage))
   state.value = fresh
   if (fresh.gridComplete && !revealedEntries.value.length) {
-    api.revealAllGridEntries(fresh.currentGridId).then(list => { revealedEntries.value = list }).catch(() => {})
+    api.revealAllGridEntries(fresh.currentGridId).then(async list => {
+      await preloadImages(list.map(tileImage))
+      revealedEntries.value = list
+    }).catch(() => {})
   }
   if (fresh.finished) {
     stopPolling()
@@ -353,7 +362,7 @@ async function submitGuess(athlete) {
       setTimeout(() => { shakeGuessBox.value = false }, 400)
       showResultOverlay(false)
     }
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
   } finally {
@@ -365,7 +374,7 @@ async function chooseGrid(g) {
   choosing.value = true
   try {
     const fresh = await api.chooseGridBattleGrid(props.roomCode, g.id)
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not choose that grid.'
   } finally {
@@ -385,7 +394,7 @@ async function skipTurn() {
   searchResults.value = []
   try {
     const fresh = await api.skipGridBattleTurn(props.roomCode)
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not skip your turn.'
   } finally {
@@ -397,7 +406,7 @@ async function nextGrid() {
   advancing.value = true
   try {
     const fresh = await api.advanceGridBattleGrid(props.roomCode)
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not advance to the next grid.'
   } finally {

@@ -2,7 +2,7 @@
   <div class="pen-shootout-board">
     <div class="pitch-scoreline" v-if="showScoreline && (teamName || opponentName)">
       <div class="pitch-scoreline-team">
-        <img v-if="teamCrestUrl" :src="teamCrestUrl" alt="" class="pitch-scoreline-crest" />
+        <GameImage v-if="teamCrestUrl" :src="teamCrestUrl" alt="" class="pitch-scoreline-crest" />
         <span>{{ teamName }}</span>
       </div>
       <div v-if="teamPensScored != null && opponentPensScored != null" class="pitch-scoreline-score">
@@ -10,7 +10,7 @@
       </div>
       <div v-else class="pitch-scoreline-vs">vs</div>
       <div class="pitch-scoreline-team away">
-        <img v-if="opponentCrestUrl" :src="opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
+        <GameImage v-if="opponentCrestUrl" :src="opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
         <span>{{ opponentName }}</span>
       </div>
     </div>
@@ -30,7 +30,7 @@
           <span class="pen-kick-outcome" :class="k.scored ? 'scored' : 'missed'" :title="k.scored ? 'Scored' : 'Missed'">
             {{ k.scored ? '✓' : '✕' }}
           </span>
-          <img v-if="k.solved && k.athletePhotoUrl" :src="k.athletePhotoUrl" alt="" class="pen-kick-photo" />
+          <GameImage v-if="k.solved && k.athletePhotoUrl" :src="k.athletePhotoUrl" alt="" class="pen-kick-photo" />
           <span class="pen-kick-name">{{ k.solved ? k.athleteName : '?' }}</span>
         </div>
       </div>
@@ -40,6 +40,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import GameImage from './GameImage.vue'
 
 // Shared by the admin preview, solo play, and pass-and-play battle - a
 // vertical timeline of kicks in real shootout order, each side's kicks

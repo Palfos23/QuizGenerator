@@ -18,7 +18,7 @@
 
       <div class="pitch-scoreline" v-if="shootout.teamName || shootout.opponentName">
         <div class="pitch-scoreline-team">
-          <img v-if="shootout.teamCrestUrl" :src="shootout.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
+          <GameImage v-if="shootout.teamCrestUrl" :src="shootout.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
           <span>{{ shootout.teamName }}</span>
         </div>
         <div v-if="shootout.teamPensScored != null && shootout.opponentPensScored != null" class="pitch-scoreline-score">
@@ -26,7 +26,7 @@
         </div>
         <div v-else class="pitch-scoreline-vs">vs</div>
         <div class="pitch-scoreline-team away">
-          <img v-if="shootout.opponentCrestUrl" :src="shootout.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
+          <GameImage v-if="shootout.opponentCrestUrl" :src="shootout.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
           <span>{{ shootout.opponentName }}</span>
         </div>
       </div>
@@ -143,7 +143,9 @@ import toast from '../services/toast'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
+import GameImage from './GameImage.vue'
 import PenaltyShootoutBoard from './PenaltyShootoutBoard.vue'
+import { preloadImage, preloadImages } from '../services/imagePreload'
 
 // Stateless server-side (see PenaltyShootoutPlayService's class comment) -
 // this component owns all progress itself, the same way
@@ -216,7 +218,9 @@ async function loadShootout() {
   loading.value = true
   error.value = ''
   try {
-    shootout.value = await api.getPenaltyShootoutStart(props.shootoutId)
+    const fresh = await api.getPenaltyShootoutStart(props.shootoutId)
+    await preloadImages([fresh.teamCrestUrl, fresh.opponentCrestUrl])
+    shootout.value = fresh
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not load this shootout - please try again.'
@@ -254,12 +258,15 @@ async function submitGuess(athlete) {
     const result = await api.submitPenaltyShootoutGuess(props.shootoutId, athlete.id, revealedKickIds.value)
     if (result.correct) {
       revealedKickIds.value.push(result.kick.id)
+      scores.value[player] = (scores.value[player] || 0) + 1
+      showResultOverlay(true)
+      // Loads the kick's photo before it ever appears in the DOM, so the
+      // reveal itself never shows a blank/loading image mid-round.
+      await preloadImage(result.kick.athletePhotoUrl)
       const idx = shootout.value.kicks.findIndex(k => k.id === result.kick.id)
       if (idx !== -1) shootout.value.kicks[idx] = result.kick
       justSolvedId.value = result.kick.id
       setTimeout(() => { justSolvedId.value = null }, 600)
-      scores.value[player] = (scores.value[player] || 0) + 1
-      showResultOverlay(true)
       if (result.allSolved) {
         allKicksSolved.value = true
         shootoutComplete.value = true
@@ -324,6 +331,7 @@ function advanceTurn() {
 async function revealRemaining() {
   try {
     const revealed = await api.revealAllPenaltyShootoutKicks(props.shootoutId)
+    await preloadImages(revealed.map(k => k.athletePhotoUrl))
     shootout.value.kicks = shootout.value.kicks.map(k => {
       if (k.solved) return k // already correctly guessed - keep as-is
       const match = revealed.find(r => r.id === k.id)

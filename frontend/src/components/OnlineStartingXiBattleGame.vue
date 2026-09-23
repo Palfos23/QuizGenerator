@@ -9,7 +9,7 @@
 
     <div v-if="state && (state.teamName || state.opponentName)" class="pitch-scoreline">
       <div class="pitch-scoreline-team">
-        <img v-if="state.teamCrestUrl" :src="state.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
+        <GameImage v-if="state.teamCrestUrl" :src="state.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
         <span>{{ state.teamName }}</span>
       </div>
       <div v-if="state.scoreFor != null && state.scoreAgainst != null" class="pitch-scoreline-score">
@@ -17,7 +17,7 @@
       </div>
       <div v-else class="pitch-scoreline-vs">vs</div>
       <div class="pitch-scoreline-team away">
-        <img v-if="state.opponentCrestUrl" :src="state.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
+        <GameImage v-if="state.opponentCrestUrl" :src="state.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
         <span>{{ state.opponentName }}</span>
       </div>
     </div>
@@ -149,7 +149,7 @@
                 <span class="pitch-shirt-sleeve right"></span>
                 <span class="pitch-shirt-collar"></span>
               </template>
-              <img v-if="slot.solved && slot.athletePhotoUrl" :src="slot.athletePhotoUrl" alt="" class="pitch-slot-photo" />
+              <GameImage v-if="slot.solved && slot.athletePhotoUrl" :src="slot.athletePhotoUrl" alt="" class="pitch-slot-photo" />
               <template v-else>{{ slot.shirtNumber }}</template>
               <span v-if="slot.captain" class="pitch-shirt-captain">C</span>
             </div>
@@ -179,11 +179,13 @@ import { computed, ref, watch } from 'vue'
 import api from '../services/api'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor, formatLastUpdated } from '../constants'
+import { preloadImages } from '../services/imagePreload'
 import PitchMarkings from './PitchMarkings.vue'
 import PitchRecap from './PitchRecap.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
+import GameImage from './GameImage.vue'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 
@@ -268,7 +270,7 @@ async function poll() {
   const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.getLineupBattleState(props.roomCode)
-    if (stillFresh()) applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = 'Lost connection to the room - retrying…'
   } finally {
@@ -276,7 +278,7 @@ async function poll() {
   }
 }
 
-function applyState(fresh) {
+async function applyState(fresh) {
   staleGuard.markApplied()
   error.value = ''
   if (fresh.currentLineupIndex !== lastLineupIndexSeen) {
@@ -284,10 +286,21 @@ function applyState(fresh) {
     lastLineupIndexSeen = fresh.currentLineupIndex
     revealedSlots.value = {}
   }
+  // Preloads every solved slot's photo plus both crests before applying -
+  // covers a slot another player just solved arriving via poll/socket, the
+  // same "load before reveal" treatment the pass-and-play version gets.
+  // Already-cached URLs (crests, unchanged slots) resolve immediately.
+  await preloadImages([
+    fresh.teamCrestUrl, fresh.opponentCrestUrl,
+    ...fresh.slots.filter(s => s.solved).map(s => s.athletePhotoUrl)
+  ])
   state.value = fresh
   if (fresh.lineupComplete && !Object.keys(revealedSlots.value).length) {
     api.revealAllLineupSlots(fresh.currentLineupId)
-      .then(all => { revealedSlots.value = Object.fromEntries(all.map(s => [s.id, s])) })
+      .then(async all => {
+        await preloadImages(all.map(s => s.athletePhotoUrl))
+        revealedSlots.value = Object.fromEntries(all.map(s => [s.id, s]))
+      })
       .catch(() => {})
   }
   if (fresh.finished) {
@@ -334,7 +347,7 @@ async function submitGuess(athlete) {
       setTimeout(() => { shakeGuessBox.value = false }, 400)
       showResultOverlay(false)
     }
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
   } finally {
@@ -346,7 +359,7 @@ async function chooseLineup(l) {
   choosing.value = true
   try {
     const fresh = await api.chooseLineupBattleLineup(props.roomCode, l.id)
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not choose that board.'
   } finally {
@@ -366,7 +379,7 @@ async function skipTurn() {
   searchResults.value = []
   try {
     const fresh = await api.skipLineupBattleTurn(props.roomCode)
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not skip your turn.'
   } finally {
@@ -378,7 +391,7 @@ async function nextLineup() {
   advancing.value = true
   try {
     const fresh = await api.advanceLineupBattleLineup(props.roomCode)
-    applyState(fresh)
+    await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not advance to the next board.'
   } finally {

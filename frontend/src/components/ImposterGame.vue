@@ -57,7 +57,7 @@
         >
           <div v-if="isNameOnlyTile(t)" class="grid-tile-name-fill">{{ t.athleteName }}</div>
           <template v-else>
-            <img
+            <GameImage
               v-if="tileImage(t)"
               :src="tileImage(t)"
               alt=""
@@ -66,7 +66,6 @@
                 'is-photo': !!t.photoUrl && playState.displayMode !== 'NAME_AND_LOGO',
                 'is-fit': playState.fitImages && !!t.photoUrl && playState.displayMode !== 'NAME_AND_LOGO'
               }"
-              @error="$event.target.style.display = 'none'"
             />
             <div v-if="playState.displayMode !== 'PHOTO_ONLY' || flippedTiles[t.id]" class="grid-tile-name">{{ t.athleteName }}</div>
           </template>
@@ -118,7 +117,9 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
 import LoadingState from './LoadingState.vue'
+import GameImage from './GameImage.vue'
 import { formatLastUpdated } from '../constants'
+import { preloadImage, preloadImages } from '../services/imagePreload'
 
 const props = defineProps({
   mode: { type: String, default: 'manual' }, // 'manual' | 'random'
@@ -251,6 +252,17 @@ async function loadPlayState(gridId) {
     const tilesById = new Map(state.tiles.map(t => [t.id, t]))
     state.tiles = order.map(id => tilesById.get(id)).filter(Boolean)
 
+    // Every tile's photo/logo is already known up front in most display
+    // modes - load them all now, while the spinner's still up, instead of
+    // letting the whole board pop in tile-by-tile as each image lands. A
+    // tile already flipped (resuming a saved session) shows its reveal photo
+    // instead, same fallback tileImage() uses once playState is live.
+    await preloadImages(state.tiles.map(t => {
+      const flipped = flippedTiles[t.id]
+      if (flipped && flipped.revealPhotoUrl) return flipped.revealPhotoUrl
+      return state.displayMode === 'NAME_AND_LOGO' ? t.logoUrl : t.photoUrl
+    }))
+
     playState.value = state
   } catch (e) {
     error.value = 'Could not load this board.'
@@ -303,6 +315,7 @@ async function flipTile(t) {
   flipping.value = true
   try {
     const result = await api.flipImposterTile(currentGridId.value, t.id)
+    await preloadImage(result.revealPhotoUrl)
     flippedTiles[t.id] = { imposter: result.imposter, revealPhotoUrl: result.revealPhotoUrl, player: currentPlayer.value }
     if (result.imposter) scores[currentPlayer.value]++
     showFlipOverlay(result.imposter)

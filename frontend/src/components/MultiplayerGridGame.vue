@@ -112,13 +112,12 @@
                 <div v-if="gridState.revealMode === 'DESCRIPTION'" class="grid-tile-description">
                   {{ e.revealedDescription || '?' }}
                 </div>
-                <img
+                <GameImage
                   v-else-if="tileImage(e)"
                   :src="tileImage(e)"
                   alt=""
                   class="grid-tile-logo"
                   :class="{ 'is-photo': !!e.athletePhotoUrl, 'is-fit': gridState.fitImages && !!e.athletePhotoUrl }"
-                  @error="$event.target.style.display = 'none'"
                 />
                 <div
                   v-if="e.hintValue != null || e.hintLabel"
@@ -148,13 +147,12 @@
           <div v-if="gridState.revealMode === 'DESCRIPTION'" class="grid-tile-description">
             {{ e.revealedDescription || '?' }}
           </div>
-          <img
+          <GameImage
             v-else-if="tileImage(e)"
             :src="tileImage(e)"
             alt=""
             class="grid-tile-logo"
             :class="{ 'is-photo': !!e.athletePhotoUrl, 'is-fit': gridState.fitImages && !!e.athletePhotoUrl }"
-            @error="$event.target.style.display = 'none'"
           />
           <div
             v-if="e.hintValue != null || e.hintLabel"
@@ -184,9 +182,11 @@ import api from '../services/api'
 import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
 import { readableTextColor, formatHint, sportLabel, formatLastUpdated } from '../constants'
+import { preloadImage, preloadImages } from '../services/imagePreload'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
 import LoadingState from './LoadingState.vue'
+import GameImage from './GameImage.vue'
 
 const props = defineProps({
   mode: { type: String, default: 'manual' }, // 'manual' | 'random'
@@ -340,12 +340,15 @@ async function submitGuess(athlete) {
     )
     if (result.correct) {
       revealedEntryIds.value.push(result.entry.id)
+      scores.value[player] = (scores.value[player] || 0) + 1
+      showResultOverlay(true)
+      // Loads the tile's photo/logo before it ever appears in the DOM, so the
+      // reveal itself never shows a blank/loading image mid-round.
+      await preloadImage(tileImage(result.entry))
       const idx = gridState.value.entries.findIndex(e => e.id === result.entry.id)
       if (idx !== -1) gridState.value.entries[idx] = result.entry
       justSolvedId.value = result.entry.id
       setTimeout(() => { justSolvedId.value = null }, 600)
-      scores.value[player] = (scores.value[player] || 0) + 1
-      showResultOverlay(true)
       if (result.allSolved) {
         gridComplete.value = true
         return
@@ -410,6 +413,7 @@ function advanceTurn() {
 async function revealRemaining() {
   try {
     const revealed = await api.revealAllGridEntries(currentGridId.value)
+    await preloadImages(revealed.map(tileImage))
     gridState.value.entries = gridState.value.entries.map(e => {
       if (e.solved) return e // already correctly guessed - keep as-is
       const match = revealed.find(r => r.id === e.id)
@@ -481,8 +485,10 @@ async function initGame() {
     gridComplete.value = saved.gridComplete
     // proceedToCurrentRound() just fetched this same grid fresh (all-unsolved),
     // if it was already chosen - replace its entries with the saved mix of
-    // solved/unsolved tiles instead.
+    // solved/unsolved tiles instead. Preloaded first so resuming mid-grid
+    // doesn't flash every already-solved tile's photo at once.
     if (gridState.value && saved.entries) {
+      await preloadImages(saved.entries.map(tileImage))
       gridState.value.entries = saved.entries
     }
   } else {
