@@ -307,7 +307,7 @@ async function applyState(fresh) {
   // guesses does, so it needs the same "load before reveal" treatment.
   // Already-cached URLs (the common case - most tiles are unchanged between
   // snapshots) resolve immediately, so this adds no real delay.
-  await preloadImages(fresh.entries.map(tileImage))
+  await preloadImages((fresh.entries || []).map(tileImage))
   state.value = fresh
   if (fresh.gridComplete && !revealedEntries.value.length) {
     api.revealAllGridEntries(fresh.currentGridId).then(async list => {

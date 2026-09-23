@@ -222,7 +222,7 @@ async function applyState(fresh) {
   // covers a tile another player just flipped arriving here via poll/socket.
   // Already-cached tiles (the majority, unchanged between snapshots) resolve
   // immediately.
-  await preloadImages(fresh.tiles.map(t => fresh.displayMode === 'NAME_AND_LOGO' ? t.logoUrl : t.photoUrl))
+  await preloadImages((fresh.tiles || []).map(t => fresh.displayMode === 'NAME_AND_LOGO' ? t.logoUrl : t.photoUrl))
   state.value = fresh
   if (fresh.boardComplete && revealList.value.length === 0) {
     api.getImposterOnlineReveal(props.roomCode).then(list => { revealList.value = list }).catch(() => {})

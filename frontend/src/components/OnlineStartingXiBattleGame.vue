@@ -292,7 +292,7 @@ async function applyState(fresh) {
   // Already-cached URLs (crests, unchanged slots) resolve immediately.
   await preloadImages([
     fresh.teamCrestUrl, fresh.opponentCrestUrl,
-    ...fresh.slots.filter(s => s.solved).map(s => s.athletePhotoUrl)
+    ...(fresh.slots || []).filter(s => s.solved).map(s => s.athletePhotoUrl)
   ])
   state.value = fresh
   if (fresh.lineupComplete && !Object.keys(revealedSlots.value).length) {
