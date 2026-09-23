@@ -99,6 +99,25 @@
         </p>
       </div>
 
+      <div v-if="form.sport" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+        <input
+          type="text"
+          v-model="athleteSearchTerm"
+          placeholder="Search subjects by name…"
+          style="flex:1; min-width:180px;"
+        />
+      </div>
+      <div v-if="athleteSearchResults.length" class="guess-results" style="margin-bottom:10px;">
+        <button
+          v-for="a in athleteSearchResults"
+          :key="a.id"
+          class="guess-result-row"
+          @click="addAthleteEntry(a)"
+        >
+          {{ a.name }} <span style="color:var(--text-dim); font-size:0.85rem;">{{ a.team }}</span>
+        </button>
+      </div>
+
       <div style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" :disabled="importingCsv" @click="triggerCsvUpload">
           {{ importingCsv ? 'Importing…' : '+ Import from CSV' }}
@@ -233,6 +252,8 @@ const csvInput = ref(null)
 const importingCsv = ref(false)
 const csvUnmatchedNames = ref([]) // [{name, value}] - see AdminBullseyeView's csvUnmatchedNames
 const showAddSubjectsModal = ref(false)
+const athleteSearchTerm = ref('')
+const athleteSearchResults = ref([])
 
 const ENTRY_PAGE_SIZE = 25
 const entryPage = ref(1)
@@ -271,6 +292,8 @@ function openCreate() {
   showImportReviewModal.value = false
   pendingImportRows.value = []
   pendingImportPool.value = []
+  athleteSearchTerm.value = ''
+  athleteSearchResults.value = []
   entryPage.value = 1
   error.value = ''
   view.value = 'form'
@@ -292,6 +315,8 @@ async function openEdit(id) {
     showImportReviewModal.value = false
     pendingImportRows.value = []
     pendingImportPool.value = []
+    athleteSearchTerm.value = ''
+    athleteSearchResults.value = []
     entryPage.value = 1
     view.value = 'form'
   } catch (e) {
@@ -430,6 +455,28 @@ function downloadEntriesCsv() {
 
 function addBlankEntry() {
   entries.value.push({ name: '', value: 0, athleteId: null })
+  entryPage.value = Math.max(1, Math.ceil(entries.value.length / ENTRY_PAGE_SIZE))
+}
+
+let athleteSearchDebounce = null
+watch(athleteSearchTerm, (val) => {
+  clearTimeout(athleteSearchDebounce)
+  if (!val || val.trim().length < 2) {
+    athleteSearchResults.value = []
+    return
+  }
+  athleteSearchDebounce = setTimeout(async () => {
+    try {
+      athleteSearchResults.value = await api.adminSearchAthletes({ sport: form.sport, name: val })
+    } catch (e) {
+      // non-critical
+    }
+  }, 250)
+})
+
+function addAthleteEntry(athlete) {
+  if (entries.value.some(e => e.athleteId === athlete.id)) return
+  entries.value.push({ name: athlete.name, value: 0, athleteId: athlete.id })
   entryPage.value = Math.max(1, Math.ceil(entries.value.length / ENTRY_PAGE_SIZE))
 }
 
