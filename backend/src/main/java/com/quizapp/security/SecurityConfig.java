@@ -21,6 +21,10 @@ public class SecurityConfig {
     @Value("${quiz.cors.allowed-origins:http://localhost:5173}")
     private String[] allowedOrigins;
 
+    // --- Birthday quiz (one-off, delete together with the rest of the Bday* files) ---
+    @Value("${app.birthday.password}")
+    private String birthdayPassword;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -79,9 +83,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/penalty-shootouts/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/flashback/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/play-access/**").hasAnyRole("USER", "ADMIN")
+                        // Birthday quiz (one-off): gated entirely by BdayPinAuthFilter's own
+                        // PIN check below, not by the role system - permitAll here just means
+                        // Spring Security itself doesn't also demand a JWT on top of that.
+                        .requestMatchers("/api/bday/**").permitAll()
                         .anyRequest().hasAnyRole("USER", "ADMIN"))
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // needed for the H2 console
-                .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new BdayPinAuthFilter(birthdayPassword), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

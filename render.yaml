@@ -29,3 +29,5 @@ services:
         value: admin
       - key: ADMIN_DEFAULT_PASSWORD
         sync: false
+      - key: BDAY_PASSWORD           # one-off birthday-quiz PIN - delete this entry once that feature is removed
+        sync: false

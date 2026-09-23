@@ -42,6 +42,9 @@ import AdminFlashbackView from '../views/AdminFlashbackView.vue'
 import JoinGuestView from '../views/JoinGuestView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
 import VerifyEmailView from '../views/VerifyEmailView.vue'
+// Birthday quiz (one-off - delete together with frontend/src/bday/)
+import BdayHostView from '../bday/views/BdayHostView.vue'
+import BdayLeaderboardView from '../bday/views/BdayLeaderboardView.vue'
 import auth from '../services/auth'
 
 const routes = [
@@ -98,7 +101,13 @@ const routes = [
   { path: '/admin/reports', name: 'admin-reports', component: AdminReportsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/statistics', name: 'admin-statistics', component: AdminStatisticsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/expiring-content', name: 'admin-expiring-content', component: AdminExpiringContentView, meta: { requiresAuth: true, requiresAdmin: true } },
-  { path: '/admin/duplicate-subjects', name: 'admin-duplicate-subjects', component: AdminDuplicateSubjectsView, meta: { requiresAuth: true, requiresAdmin: true } }
+  { path: '/admin/duplicate-subjects', name: 'admin-duplicate-subjects', component: AdminDuplicateSubjectsView, meta: { requiresAuth: true, requiresAdmin: true } },
+
+  // Birthday quiz (one-off): its own PIN gate handles access, not the real
+  // auth system - no requiresAuth/requiresAdmin, and deliberately unlinked
+  // from any nav menu.
+  { path: '/bday', name: 'bday-host', component: BdayHostView },
+  { path: '/bday/leaderboard', name: 'bday-leaderboard', component: BdayLeaderboardView }
 ]
 
 const router = createRouter({
