@@ -8,8 +8,14 @@
         <template v-if="pool.length"> If a name looks unmatched only because of spelling or special characters (e.g. "ø"/"ö"), search for the real subject and link it.</template>
       </p>
 
+      <label v-if="pool.length" style="display:flex; align-items:center; gap:8px; margin-bottom:10px; cursor:pointer; text-transform:none; font-weight:400;">
+        <input type="checkbox" v-model="showOnlyUnmatched" style="width:auto;" />
+        Only show names not found in the subjects list ({{ unmatchedCount }})
+      </label>
+
       <div class="candidate-list" style="max-height:380px; overflow-y:auto;">
-        <div v-for="item in items" :key="item.key" style="display:flex; flex-direction:column; gap:6px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px;">
+        <p v-if="!visibleItems.length" class="page-subtitle" style="margin:0;">Every name here already matches a subject.</p>
+        <div v-for="item in visibleItems" :key="item.key" style="display:flex; flex-direction:column; gap:6px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px;">
           <label class="candidate-row" style="cursor:pointer; border:none; padding:0;">
             <input type="checkbox" v-model="item.include" style="width:auto;" />
             <span style="flex:1; min-width:140px; font-weight:600;">{{ item.name }}</span>
@@ -67,7 +73,7 @@
 </template>
 
 <script setup>
-import { computed, reactive } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useEscapeKey } from '../composables/useEscapeKey'
 
 const props = defineProps({
@@ -97,6 +103,13 @@ const items = reactive(props.rows.map((r, i) => ({
 })))
 const includedCount = computed(() => items.filter(i => i.include).length)
 const hasSubjectMatches = computed(() => items.some(i => i.athlete))
+
+const showOnlyUnmatched = ref(false)
+const unmatchedCount = computed(() => items.filter(i => !i.athlete).length)
+// A view filter only - unaffected rows stay in `items` and keep whatever
+// `include` state they had, so hiding a row here never silently drops it
+// from (or adds it to) what confirm() sends.
+const visibleItems = computed(() => showOnlyUnmatched.value ? items.filter(i => !i.athlete) : items)
 
 useEscapeKey(() => emit('close'))
 
