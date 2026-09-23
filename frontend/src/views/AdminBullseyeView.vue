@@ -238,6 +238,7 @@
           v-if="showImportReviewModal"
           :rows="pendingImportRows"
           :source-label="pendingImportLabel"
+          :pool="pendingImportPool"
           @close="showImportReviewModal = false"
           @confirm="applyImportSelection"
         />
@@ -497,6 +498,7 @@ function triggerCsvUpload() {
 // subject instead of surfacing as a row to fix or explicitly add.
 const pendingImportRows = ref([])
 const pendingImportLabel = ref('')
+const pendingImportPool = ref([])
 const showImportReviewModal = ref(false)
 
 async function importRows(rows, sourceLabel) {
@@ -508,6 +510,7 @@ async function importRows(rows, sourceLabel) {
     athlete: athleteByName.get(row.name.trim().toLowerCase()) || null
   }))
   pendingImportLabel.value = sourceLabel
+  pendingImportPool.value = pool
   showImportReviewModal.value = true
 }
 
@@ -630,6 +633,7 @@ function resetForm() {
   showAddSubjectsModal.value = false
   showImportReviewModal.value = false
   pendingImportRows.value = []
+  pendingImportPool.value = []
   showFiveOhOnePicker.value = false
   selectedFiveOhOneCategoryId.value = null
 }
@@ -646,6 +650,7 @@ async function openEdit(id) {
   showAddSubjectsModal.value = false
   showImportReviewModal.value = false
   pendingImportRows.value = []
+  pendingImportPool.value = []
   showFiveOhOnePicker.value = false
   selectedFiveOhOneCategoryId.value = null
   try {

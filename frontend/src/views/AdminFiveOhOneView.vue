@@ -144,6 +144,7 @@
         v-if="showImportReviewModal"
         :rows="pendingImportRows"
         :source-label="pendingImportLabel"
+        :pool="pendingImportPool"
         @close="showImportReviewModal = false"
         @confirm="applyImportSelection"
       />
@@ -269,6 +270,7 @@ function openCreate() {
   showAddSubjectsModal.value = false
   showImportReviewModal.value = false
   pendingImportRows.value = []
+  pendingImportPool.value = []
   entryPage.value = 1
   error.value = ''
   view.value = 'form'
@@ -289,6 +291,7 @@ async function openEdit(id) {
     showAddSubjectsModal.value = false
     showImportReviewModal.value = false
     pendingImportRows.value = []
+    pendingImportPool.value = []
     entryPage.value = 1
     view.value = 'form'
   } catch (e) {
@@ -308,6 +311,7 @@ function triggerCsvUpload() {
 // same review step Bullseye's CSV/501 import got.
 const pendingImportRows = ref([])
 const pendingImportLabel = ref('')
+const pendingImportPool = ref([])
 const showImportReviewModal = ref(false)
 
 async function handleCsvFile(event) {
@@ -326,8 +330,9 @@ async function handleCsvFile(event) {
     }
 
     let athleteByName = new Map()
+    let pool = []
     if (form.sport) {
-      const pool = await api.adminSearchAthletes({ sport: form.sport })
+      pool = await api.adminSearchAthletes({ sport: form.sport })
       athleteByName = new Map(pool.map(a => [a.name.trim().toLowerCase(), a]))
     }
 
@@ -337,6 +342,7 @@ async function handleCsvFile(event) {
       athlete: athleteByName.get(row.name.trim().toLowerCase()) || null
     }))
     pendingImportLabel.value = 'CSV import'
+    pendingImportPool.value = pool
     showImportReviewModal.value = true
   } catch (e) {
     error.value = 'Could not read that CSV file.'
