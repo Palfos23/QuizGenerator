@@ -5,11 +5,6 @@
       <router-link to="/" class="btn btn-secondary btn-sm">← Back</router-link>
     </div>
 
-    <div class="banner" style="background:rgba(242,183,5,0.1); border:1px solid rgba(242,183,5,0.3); color:var(--text);">
-      <strong>Draft, not legal advice.</strong> This page describes what the app actually does today, for the site
-      operator to review before treating it as final.
-    </div>
-
     <p class="page-subtitle">Last updated: 2026-09-24.</p>
 
     <h2>The short version</h2>
