@@ -37,8 +37,11 @@ public class SubmittedQuestion {
     @Column(name = "could_change", nullable = false)
     private boolean couldChange = false;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "submitted_by", nullable = false)
+    // Nullable - cleared (anonymized) rather than cascading a delete when the
+    // submitter deletes their own account, since the question itself stays in
+    // the shared bank. See AccountService#deleteAccount.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "submitted_by")
     private AppUser submittedBy;
 
     @NotNull

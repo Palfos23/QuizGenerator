@@ -67,7 +67,7 @@ public class ReportService {
         dto.setMessage(r.getMessage());
         dto.setStatus(r.getStatus());
         dto.setAdminNote(r.getAdminNote());
-        dto.setReporterName(r.getReportedBy().getName());
+        dto.setReporterName(r.getReportedBy() != null ? r.getReportedBy().getName() : "(deleted user)");
         dto.setCreatedAt(r.getCreatedAt());
         return dto;
     }

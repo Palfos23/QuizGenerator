@@ -101,7 +101,11 @@ public class AuthService {
      * so nothing here can be used to claim someone else's inbox as your own account.
      */
     @Transactional
-    public void registerWithPassword(String rawEmail, String rawPassword, String name) {
+    public void registerWithPassword(String rawEmail, String rawPassword, String name, String clientKey) {
+        String rateLimitKey = "register:" + clientKey;
+        loginRateLimiter.checkAllowed(rateLimitKey);
+        loginRateLimiter.recordFailure(rateLimitKey); // see requestPasswordReset's comment on this reused call - caps how many accounts/verification emails one IP can trigger, not "wrong password" attempts
+
         String email = normalizeEmail(rawEmail);
         AppUser existing = appUserRepository.findByEmail(email).orElse(null);
         if (existing != null) {
@@ -245,7 +249,11 @@ public class AuthService {
      * type the same display name still get distinct room-participant identities.
      * Nothing to clean up afterwards since nothing was ever persisted.
      */
-    public AuthResponse loginAsGuest(String displayName) {
+    public AuthResponse loginAsGuest(String displayName, String clientKey) {
+        String rateLimitKey = "guest-login:" + clientKey;
+        loginRateLimiter.checkAllowed(rateLimitKey);
+        loginRateLimiter.recordFailure(rateLimitKey); // same "cap total requests" reuse as requestPasswordReset - every guest token minted counts, not just "wrong" ones
+
         String trimmedName = displayName.trim();
         String subject = "guest:" + UUID.randomUUID();
         String token = jwtService.generateToken(subject, "GUEST", null, trimmedName);

@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -31,7 +32,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService, LoginRateLimiter loginRateLimiter) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
@@ -88,9 +89,15 @@ public class SecurityConfig {
                         // Spring Security itself doesn't also demand a JWT on top of that.
                         .requestMatchers("/api/bday/**").permitAll()
                         .anyRequest().hasAnyRole("USER", "ADMIN"))
-                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // needed for the H2 console
+                .headers(headers -> headers
+                        // sameOrigin (not disable()) - the local H2 console still frames itself
+                        // fine from the same origin, but this restores real clickjacking
+                        // protection for every other response; disable() had been turned off
+                        // application-wide, not just for the H2 console as the old comment implied.
+                        .frameOptions(frame -> frame.sameOrigin())
+                        .referrerPolicy(policy -> policy.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new BdayPinAuthFilter(birthdayPassword), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new BdayPinAuthFilter(birthdayPassword, loginRateLimiter), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

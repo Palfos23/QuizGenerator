@@ -23,8 +23,11 @@ public class Report {
     @Column(nullable = false, length = 2000)
     private String message;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "reported_by", nullable = false)
+    // Nullable - cleared (anonymized) rather than cascading a delete when the
+    // reporter deletes their own account, since the report itself stays for
+    // admin review. See AccountService#deleteAccount.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reported_by")
     private AppUser reportedBy;
 
     @NotNull

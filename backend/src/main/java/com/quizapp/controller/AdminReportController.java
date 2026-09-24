@@ -3,6 +3,7 @@ package com.quizapp.controller;
 import com.quizapp.dto.ReportDto;
 import com.quizapp.dto.ResolveReportRequest;
 import com.quizapp.service.ReportService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class AdminReportController {
     }
 
     @PostMapping("/{id}/resolve")
-    public ReportDto resolve(@PathVariable Long id, @RequestBody ResolveReportRequest request) {
+    public ReportDto resolve(@PathVariable Long id, @Valid @RequestBody ResolveReportRequest request) {
         return reportService.resolve(id, request);
     }
 }

@@ -1,16 +1,17 @@
 package com.quizapp.controller;
 
+import com.quizapp.dto.BdayAddGuestRequest;
 import com.quizapp.dto.BdayGuestDto;
 import com.quizapp.dto.BdayQuizDto;
 import com.quizapp.dto.BdayResultDto;
 import com.quizapp.dto.BdaySubmitRequest;
 import com.quizapp.service.BdayQuizService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 // One-off birthday-quiz feature - gated by BdayPinAuthFilter (a single shared
 // PIN, entirely separate from the real admin/JWT/role system), not by
@@ -32,8 +33,8 @@ public class BdayController {
     }
 
     @PostMapping("/guests")
-    public ResponseEntity<BdayGuestDto> addGuest(@RequestBody Map<String, String> body) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(quizService.addGuest(body.get("name")));
+    public ResponseEntity<BdayGuestDto> addGuest(@Valid @RequestBody BdayAddGuestRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(quizService.addGuest(request.getName()));
     }
 
     @DeleteMapping("/guests/{id}")
@@ -48,7 +49,7 @@ public class BdayController {
     }
 
     @PostMapping("/quiz/{guestId}/submit")
-    public BdayResultDto submit(@PathVariable Long guestId, @RequestBody BdaySubmitRequest request) {
+    public BdayResultDto submit(@PathVariable Long guestId, @Valid @RequestBody BdaySubmitRequest request) {
         return quizService.submitAnswers(guestId, request);
     }
 

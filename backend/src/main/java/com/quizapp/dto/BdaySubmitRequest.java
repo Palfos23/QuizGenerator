@@ -1,9 +1,14 @@
 package com.quizapp.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.List;
 
 public class BdaySubmitRequest {
+    @Valid
     private List<MapAnswer> mapAnswers;
+    @Valid
     private List<TileAnswer> tileAnswers;
 
     public List<MapAnswer> getMapAnswers() {
@@ -23,6 +28,7 @@ public class BdaySubmitRequest {
     }
 
     public static class MapAnswer {
+        @NotBlank
         private String questionId;
         private double x;
         private double y;
@@ -53,7 +59,9 @@ public class BdaySubmitRequest {
     }
 
     public static class TileAnswer {
+        @NotBlank
         private String tileId;
+        @NotBlank
         private String chosenOwner;
 
         public String getTileId() {

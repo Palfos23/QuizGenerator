@@ -57,6 +57,7 @@
         </template>
 
         <div class="top-nav-spacer"></div>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/account" class="nav-link" @click="onNavClick('/account', 'account')">Account</router-link>
         <span class="top-nav-user">{{ auth.state.displayName }}<template v-if="auth.isGuest.value"> (guest)</template></span>
         <button class="btn btn-secondary btn-sm" @click="logout">{{ auth.isGuest.value ? 'Leave' : 'Log out' }}</button>
       </template>
@@ -68,6 +69,12 @@
     <main class="main-content">
       <router-view />
     </main>
+
+    <footer class="app-footer">
+      <router-link to="/privacy">Privacy Policy</router-link>
+      <router-link to="/cookies">Cookie Policy</router-link>
+      <button type="button" class="app-footer-link-btn" @click="cookieConsent.reset()">Cookie settings</button>
+    </footer>
 
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
@@ -128,6 +135,7 @@
     </nav>
 
     <ToastHost />
+    <CookieConsentBanner />
 
     <div v-if="showInactivityWarning" class="modal-backdrop">
       <div class="modal" role="alertdialog" aria-modal="true" aria-label="Still there?" style="max-width:420px; text-align:center;">
@@ -156,7 +164,9 @@ import auth from './services/auth'
 import api from './services/api'
 import { useRouter } from 'vue-router'
 import navTrigger from './services/navTrigger'
+import cookieConsent from './services/cookieConsent'
 import ToastHost from './components/ToastHost.vue'
+import CookieConsentBanner from './components/CookieConsentBanner.vue'
 import { useEscapeKey } from './composables/useEscapeKey'
 
 const router = useRouter()

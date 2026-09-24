@@ -106,7 +106,7 @@ public class SubmittedQuestionService {
         dto.setCouldChange(s.isCouldChange());
         dto.setStatus(s.getStatus());
         dto.setRejectionReason(s.getRejectionReason());
-        dto.setSubmitterName(s.getSubmittedBy().getName());
+        dto.setSubmitterName(s.getSubmittedBy() != null ? s.getSubmittedBy().getName() : "(deleted user)");
         dto.setCreatedAt(s.getCreatedAt());
         return dto;
     }

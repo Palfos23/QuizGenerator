@@ -812,5 +812,13 @@ export default {
       // Best-effort - a failed stats ping should never interrupt the
       // "game over" screen the player is already looking at.
     })
+  },
+
+  // --- Self-service account export/deletion ---
+  exportMyData() {
+    return client.get('/account/export').then(r => r.data)
+  },
+  deleteMyAccount(password) {
+    return client.post('/account/delete', { password })
   }
 }

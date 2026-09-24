@@ -47,8 +47,8 @@ public class AuthController {
      */
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void register(@Valid @RequestBody RegisterRequest request) {
-        authService.registerWithPassword(request.getEmail(), request.getPassword(), request.getName());
+    public void register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+        authService.registerWithPassword(request.getEmail(), request.getPassword(), request.getName(), clientKey(httpRequest));
     }
 
     /** Regular users: sign in with a previously-registered email + password. Rate-limited per IP. */
@@ -94,8 +94,8 @@ public class AuthController {
      * logins above - nothing sensitive is exposed by letting anyone mint one.
      */
     @PostMapping("/guest")
-    public AuthResponse guestLogin(@Valid @RequestBody GuestLoginRequest request) {
-        return authService.loginAsGuest(request.getDisplayName());
+    public AuthResponse guestLogin(@Valid @RequestBody GuestLoginRequest request, HttpServletRequest httpRequest) {
+        return authService.loginAsGuest(request.getDisplayName(), clientKey(httpRequest));
     }
 
     /** Admins: username/password login - a completely separate credential store from AppUser. Rate-limited per IP. */

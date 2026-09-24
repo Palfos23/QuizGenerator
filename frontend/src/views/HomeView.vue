@@ -25,7 +25,17 @@
              entirely ours - real markup, real CSS, will never change again - and Google's
              actual button is rendered into the invisible overlay layered on top of it, so
              every click still goes through Google's real, working auth flow underneath. -->
-        <div v-show="!loadingScript && clientIdConfigured" class="google-btn-slot">
+        <div
+          v-show="clientIdConfigured && cookieConsent.state.status !== 'accepted'"
+          style="text-align:center; padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); color:var(--text-dim); font-size:0.85rem;"
+        >
+          Sign in with Google needs the optional cookie setting turned on.
+          <div style="margin-top:8px;">
+            <button type="button" class="btn btn-secondary btn-sm" @click="cookieConsent.accept()">Accept cookies</button>
+          </div>
+        </div>
+
+        <div v-show="cookieConsent.state.status === 'accepted' && !loadingScript && clientIdConfigured" class="google-btn-slot">
           <button type="button" class="google-fake-btn" tabindex="-1" aria-hidden="true">
             <span class="google-fake-btn-icon" aria-hidden="true">
               <svg viewBox="0 0 48 48" width="18" height="18">
@@ -171,16 +181,20 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '../services/api'
 import auth from '../services/auth'
+import cookieConsent from '../services/cookieConsent'
+import { loadScript } from '../services/loadScript'
+
+const GIS_SCRIPT_URL = 'https://accounts.google.com/gsi/client'
 
 const route = useRoute()
 const router = useRouter()
 const buttonEl = ref(null)
 const error = ref('')
-const loadingScript = ref(true)
+const loadingScript = ref(false)
 const loggingIn = ref(false)
 const slowLogin = ref(false)
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
@@ -206,20 +220,17 @@ function waitForGoogleIdentity(timeoutMs = 10000) {
   })
 }
 
-onMounted(async () => {
-  if (auth.isAuthenticated.value) {
-    router.push(auth.isAdmin.value ? '/admin/questions' : '/dashboard')
-    return
-  }
-  if (route.query.sessionExpired) {
-    error.value = 'Your session expired - please sign in again.'
-  }
-  if (!clientIdConfigured) {
-    loadingScript.value = false
-    return
-  }
+const googleLoaded = ref(false)
 
+// The Google Identity Services script itself only ever loads once cookie
+// consent has been accepted (see CookieConsentBanner.vue) - it can set
+// cookies on Google's own domain the moment it runs. Not loaded at all in
+// index.html any more; loadScript() injects it here, on demand.
+async function loadGoogleButton() {
+  if (googleLoaded.value) return
+  loadingScript.value = true
   try {
+    await loadScript(GIS_SCRIPT_URL)
     await waitForGoogleIdentity()
     window.google.accounts.id.initialize({
       client_id: clientId,
@@ -237,10 +248,35 @@ onMounted(async () => {
       logo_alignment: 'left',
       width: 320
     })
+    googleLoaded.value = true
   } catch (e) {
     error.value = 'Could not load Google Sign-In - check your connection and try refreshing.'
   } finally {
     loadingScript.value = false
+  }
+}
+
+onMounted(async () => {
+  if (auth.isAuthenticated.value) {
+    router.push(auth.isAdmin.value ? '/admin/questions' : '/dashboard')
+    return
+  }
+  if (route.query.sessionExpired) {
+    error.value = 'Your session expired - please sign in again.'
+  }
+  if (!clientIdConfigured) {
+    return
+  }
+  if (cookieConsent.state.status === 'accepted') {
+    await loadGoogleButton()
+  }
+})
+
+// Covers accepting from the banner while already sitting on this page -
+// loads the script immediately instead of needing a refresh.
+watch(() => cookieConsent.state.status, (status) => {
+  if (status === 'accepted' && clientIdConfigured) {
+    loadGoogleButton()
   }
 })
 

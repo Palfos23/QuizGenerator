@@ -42,6 +42,9 @@ import AdminFlashbackView from '../views/AdminFlashbackView.vue'
 import JoinGuestView from '../views/JoinGuestView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
 import VerifyEmailView from '../views/VerifyEmailView.vue'
+import PrivacyPolicyView from '../views/PrivacyPolicyView.vue'
+import CookiePolicyView from '../views/CookiePolicyView.vue'
+import AccountView from '../views/AccountView.vue'
 // Birthday quiz (one-off - delete together with frontend/src/bday/)
 import BdayHostView from '../bday/views/BdayHostView.vue'
 import BdayLeaderboardView from '../bday/views/BdayLeaderboardView.vue'
@@ -57,6 +60,9 @@ const routes = [
   { path: '/join/:code', name: 'join-guest-code', component: JoinGuestView },
   { path: '/reset-password', name: 'reset-password', component: ResetPasswordView },
   { path: '/verify-email', name: 'verify-email', component: VerifyEmailView },
+  { path: '/privacy', name: 'privacy', component: PrivacyPolicyView },
+  { path: '/cookies', name: 'cookies', component: CookiePolicyView },
+  { path: '/account', name: 'account', component: AccountView, meta: { requiresAuth: true } },
 
   { path: '/generate', name: 'generate', component: QuizGeneratorView, meta: { requiresAuth: true } },
   { path: '/dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true } },

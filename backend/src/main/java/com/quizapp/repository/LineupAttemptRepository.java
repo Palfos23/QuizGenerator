@@ -10,4 +10,6 @@ public interface LineupAttemptRepository extends JpaRepository<LineupAttempt, Lo
     Optional<LineupAttempt> findByLineup_IdAndUser_Email(Long lineupId, String email);
     List<LineupAttempt> findByLineup_IdInAndUser_Email(List<Long> lineupIds, String email);
     List<LineupAttempt> findByLineup_Id(Long lineupId);
+    // For account export/deletion - every attempt this user has, across all lineups.
+    List<LineupAttempt> findByUser_Email(String email);
 }

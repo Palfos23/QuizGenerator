@@ -10,6 +10,8 @@ public interface GridAttemptRepository extends JpaRepository<GridAttempt, Long> 
     Optional<GridAttempt> findByGrid_IdAndUser_Email(Long gridId, String email);
     List<GridAttempt> findByGrid_IdInAndUser_Email(List<Long> gridIds, String email);
     List<GridAttempt> findByGrid_Id(Long gridId);
+    // For account export/deletion - every attempt this user has, across all grids.
+    List<GridAttempt> findByUser_Email(String email);
 
     // For the weekly-grid attempt cleanup job. Deliberately explicit, ordered
     // native deletes rather than loading and removing GridAttempt entities one

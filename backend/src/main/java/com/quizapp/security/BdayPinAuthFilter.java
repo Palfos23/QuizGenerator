@@ -1,5 +1,6 @@
 package com.quizapp.security;
 
+import com.quizapp.exception.TooManyAttemptsException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,9 +18,11 @@ import java.io.IOException;
 public class BdayPinAuthFilter extends OncePerRequestFilter {
 
     private final String expectedPin;
+    private final LoginRateLimiter rateLimiter;
 
-    public BdayPinAuthFilter(String expectedPin) {
+    public BdayPinAuthFilter(String expectedPin, LoginRateLimiter rateLimiter) {
         this.expectedPin = expectedPin;
+        this.rateLimiter = rateLimiter;
     }
 
     @Override
@@ -30,14 +33,39 @@ public class BdayPinAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        String providedPin = request.getHeader("X-Bday-Pin");
-        if (expectedPin == null || expectedPin.isBlank() || !expectedPin.equals(providedPin)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"message\":\"Wrong PIN.\"}");
+        String clientKey = clientKey(request);
+        // This filter runs before Spring MVC dispatch, so GlobalExceptionHandler
+        // never sees it - has to write its own error response for a lockout,
+        // same as the wrong-PIN case below.
+        try {
+            rateLimiter.checkAllowed(clientKey);
+        } catch (TooManyAttemptsException e) {
+            writeJson(response, 429, e.getMessage()); // HttpServletResponse has no SC_TOO_MANY_REQUESTS constant
             return;
         }
 
+        String providedPin = request.getHeader("X-Bday-Pin");
+        if (expectedPin == null || expectedPin.isBlank() || !expectedPin.equals(providedPin)) {
+            rateLimiter.recordFailure(clientKey);
+            writeJson(response, HttpServletResponse.SC_UNAUTHORIZED, "Wrong PIN.");
+            return;
+        }
+
+        rateLimiter.recordSuccess(clientKey);
         chain.doFilter(request, response);
+    }
+
+    private String clientKey(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            return "bday:" + forwardedFor.split(",")[0].trim();
+        }
+        return "bday:" + request.getRemoteAddr();
+    }
+
+    private void writeJson(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"message\":\"" + message.replace("\"", "'") + "\"}");
     }
 }

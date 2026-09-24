@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quizzes</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <!-- Google Identity Services (the sign-in button) is deliberately NOT loaded
+         here - it's injected on demand, only after cookie consent is accepted,
+         by services/loadScript.js (see HomeView.vue). Loading it unconditionally
+         on every page would let it set cookies on Google's domain before anyone
+         had a chance to consent to that. -->
     <script type="text/javascript">
       // Single Page Apps for GitHub Pages
       // MIT License

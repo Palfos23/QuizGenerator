@@ -7,6 +7,7 @@ import com.quizapp.model.GameRoom;
 import com.quizapp.model.GameRoomParticipant;
 import com.quizapp.model.RoomGameType;
 import com.quizapp.model.RoomStatus;
+import com.quizapp.security.LoginRateLimiter;
 import com.quizapp.service.BullseyeOnlineService;
 import com.quizapp.service.FlashbackOnlineService;
 import com.quizapp.service.GridBattleOnlineService;
@@ -17,6 +18,7 @@ import com.quizapp.service.PlayAccessService;
 import com.quizapp.service.RoomBroadcastService;
 import com.quizapp.service.RoomService;
 import com.quizapp.service.TensionOnlineService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +39,7 @@ public class RoomController {
     private final FlashbackOnlineService flashbackOnlineService;
     private final PlayAccessService playAccessService;
     private final RoomBroadcastService roomBroadcastService;
+    private final LoginRateLimiter loginRateLimiter;
 
     public RoomController(RoomService roomService, GridBattleOnlineService gridBattleOnlineService,
                            TensionOnlineService tensionOnlineService, ImposterOnlineService imposterOnlineService,
@@ -45,7 +48,8 @@ public class RoomController {
                            BullseyeOnlineService bullseyeOnlineService,
                            FlashbackOnlineService flashbackOnlineService,
                            PlayAccessService playAccessService,
-                           RoomBroadcastService roomBroadcastService) {
+                           RoomBroadcastService roomBroadcastService,
+                           LoginRateLimiter loginRateLimiter) {
         this.roomService = roomService;
         this.gridBattleOnlineService = gridBattleOnlineService;
         this.tensionOnlineService = tensionOnlineService;
@@ -56,6 +60,7 @@ public class RoomController {
         this.flashbackOnlineService = flashbackOnlineService;
         this.playAccessService = playAccessService;
         this.roomBroadcastService = roomBroadcastService;
+        this.loginRateLimiter = loginRateLimiter;
     }
 
     @PostMapping
@@ -86,8 +91,19 @@ public class RoomController {
     }
 
     @PostMapping("/{code}/join")
-    public RoomDto join(@PathVariable String code, @RequestBody JoinRoomRequest request, Authentication authentication) {
-        GameRoom existing = roomService.findByCode(code);
+    public RoomDto join(@PathVariable String code, @Valid @RequestBody JoinRoomRequest request,
+                         Authentication authentication, HttpServletRequest httpRequest) {
+        // Room codes are only 5 characters - without this, a held GUEST token
+        // could be used to brute-force codes with no throttle at all.
+        String rateLimitKey = "room-join:" + clientKey(httpRequest);
+        loginRateLimiter.checkAllowed(rateLimitKey);
+        GameRoom existing;
+        try {
+            existing = roomService.findByCode(code);
+        } catch (com.quizapp.exception.ResourceNotFoundException e) {
+            loginRateLimiter.recordFailure(rateLimitKey);
+            throw e;
+        }
         // A guest has no AppUser row to check canPlayX flags against - the host
         // already passed that check when creating the room, so a guest joining it
         // is covered by that, not a separate check of their own (see isGuest).
@@ -96,6 +112,7 @@ public class RoomController {
         }
         String email = authentication.getName();
         GameRoom room = roomService.join(code, email, request.getDisplayName(), request.getColor());
+        loginRateLimiter.recordSuccess(rateLimitKey);
         RoomDto dto = roomService.toDto(room, email);
         roomBroadcastService.broadcastLobby(code, dto);
         return dto;
@@ -263,5 +280,14 @@ public class RoomController {
         if (isGuest(authentication)) {
             throw new IllegalStateException("Guests can't host a game - sign in to create a room, or ask the host for a room code to join.");
         }
+    }
+
+    /** Same reasoning/shape as AuthController's own copy - Render sits behind a reverse proxy. */
+    private String clientKey(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            return forwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }
