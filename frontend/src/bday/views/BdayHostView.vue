@@ -3,7 +3,10 @@
     <div style="max-width:720px; margin:0 auto; padding:20px 20px 60px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <h1 style="margin:0;">🎂 Birthday Quiz</h1>
-        <router-link to="/bday/leaderboard" class="btn btn-secondary btn-sm">Open leaderboard</router-link>
+        <div style="display:flex; gap:8px;">
+          <router-link to="/bday/admin" class="btn btn-secondary btn-sm">Manage players</router-link>
+          <router-link to="/bday/leaderboard" class="btn btn-secondary btn-sm">Open leaderboard</router-link>
+        </div>
       </div>
 
       <div v-if="error" class="banner error" style="margin-top:16px;">{{ error }}</div>
@@ -12,21 +15,15 @@
         <p class="page-subtitle">Pick your name to start. Once you finish, your name won't show up again.</p>
 
         <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
-        <div v-else-if="!guests.length" class="empty-state">Everyone's taken the quiz - check the leaderboard!</div>
+        <div v-else-if="!guests.length" class="empty-state">
+          No one's waiting to play - check the leaderboard, or
+          <router-link to="/bday/admin">manage players</router-link> to add someone.
+        </div>
         <div v-else class="candidate-list">
           <div v-for="g in guests" :key="g.id" class="candidate-row">
             <button type="button" style="flex:1; text-align:left; background:none; border:none; color:var(--text); font-weight:600; font-size:1rem; cursor:pointer;" @click="pickGuest(g)">
               {{ g.name }}
             </button>
-            <button class="btn btn-danger btn-sm" @click="removeGuest(g)">✕</button>
-          </div>
-        </div>
-
-        <div class="field" style="margin-top:24px;">
-          <label>Add a guest</label>
-          <div style="display:flex; gap:10px;">
-            <input type="text" v-model="newGuestName" placeholder="Name" @keydown.enter="addGuest" />
-            <button class="btn btn-secondary" :disabled="addingGuest" @click="addGuest">Add</button>
           </div>
         </div>
       </template>
@@ -89,8 +86,6 @@ const step = ref('picking') // 'picking' | 'quiz' | 'result'
 const guests = ref([])
 const loading = ref(true)
 const error = ref('')
-const newGuestName = ref('')
-const addingGuest = ref(false)
 
 const activeGuest = ref(null)
 const quiz = ref(null)
@@ -110,32 +105,6 @@ async function loadGuests() {
     error.value = 'Could not load the guest list.'
   } finally {
     loading.value = false
-  }
-}
-
-async function addGuest() {
-  const name = newGuestName.value.trim()
-  if (!name) return
-  addingGuest.value = true
-  error.value = ''
-  try {
-    const guest = await bdayApi.addGuest(name)
-    guests.value.push(guest)
-    newGuestName.value = ''
-  } catch (e) {
-    error.value = e.response?.data?.message || 'Could not add that guest.'
-  } finally {
-    addingGuest.value = false
-  }
-}
-
-async function removeGuest(guest) {
-  error.value = ''
-  try {
-    await bdayApi.deleteGuest(guest.id)
-    guests.value = guests.value.filter(g => g.id !== guest.id)
-  } catch (e) {
-    error.value = e.response?.data?.message || 'Could not remove that guest.'
   }
 }
 
