@@ -35,8 +35,10 @@
             <div class="saved-quiz-meta">{{ c.entryCount }} entries<span v-if="c.description"> · {{ c.description }}</span></div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(c.id)">Edit</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(c)">Delete</button>
+            <button class="btn btn-secondary btn-sm" :disabled="openingId === c.id" @click="openEdit(c.id)">
+              {{ openingId === c.id ? 'Loading…' : 'Edit' }}
+            </button>
+            <button class="btn btn-danger btn-sm" :disabled="openingId === c.id" @click="requestDelete(c)">Delete</button>
           </div>
         </div>
       </div>
@@ -220,6 +222,8 @@
       v-if="pendingDelete"
       title="Delete this category?"
       :message="`'${pendingDelete.title}' and all ${pendingDelete.entryCount} entries will be removed.`"
+      :busy="deleting"
+      busy-text="Deleting…"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -258,6 +262,8 @@ const {
 const error = ref('')
 const saving = ref(false)
 const editingId = ref(null)
+const openingId = ref(null)
+const deleting = ref(false)
 const pendingDelete = ref(null)
 
 const form = reactive({ title: '', description: '', sport: '', canExpire: false, entireCategoryPool: false })
@@ -324,6 +330,7 @@ function openCreate() {
 
 async function openEdit(id) {
   error.value = ''
+  openingId.value = id
   try {
     const detail = await api.adminGetFiveOhOneCategory(id)
     editingId.value = id
@@ -345,6 +352,8 @@ async function openEdit(id) {
     view.value = 'form'
   } catch (e) {
     error.value = 'Could not load that category.'
+  } finally {
+    openingId.value = null
   }
 }
 
@@ -560,13 +569,17 @@ function requestDelete(c) {
 
 async function doDelete() {
   const c = pendingDelete.value
-  pendingDelete.value = null
+  deleting.value = true
   try {
     await api.adminDeleteFiveOhOneCategory(c.id)
+    pendingDelete.value = null
     toast.show('Category deleted.')
     loadCategories()
   } catch (e) {
+    pendingDelete.value = null
     error.value = 'Could not delete that category.'
+  } finally {
+    deleting.value = false
   }
 }
 </script>

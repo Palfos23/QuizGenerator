@@ -18,4 +18,12 @@ public interface FiveOhOneEntryRepository extends JpaRepository<FiveOhOneEntry, 
     // which has proven unreliable for this exact scenario.
     @Transactional
     long deleteByAthlete_Id(Long athleteId);
+
+    // Same reasoning again, this time for deleting a whole category: entries is
+    // mapped cascade=ALL/orphanRemoval, so Hibernate would otherwise issue one
+    // DELETE per entry when the category itself is removed - a category with a
+    // few hundred subjects made deleting it noticeably slow. One statement here
+    // instead, run before the (now childless) category delete.
+    @Transactional
+    long deleteByCategory_Id(Long categoryId);
 }

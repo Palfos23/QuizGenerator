@@ -7,11 +7,14 @@ import com.quizapp.model.FiveOhOneCategory;
 import com.quizapp.model.FiveOhOneEntry;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.FiveOhOneCategoryRepository;
+import com.quizapp.repository.FiveOhOneEntryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -23,10 +26,13 @@ public class FiveOhOneCategoryService {
 
     private final FiveOhOneCategoryRepository categoryRepository;
     private final AthleteRepository athleteRepository;
+    private final FiveOhOneEntryRepository entryRepository;
 
-    public FiveOhOneCategoryService(FiveOhOneCategoryRepository categoryRepository, AthleteRepository athleteRepository) {
+    public FiveOhOneCategoryService(FiveOhOneCategoryRepository categoryRepository, AthleteRepository athleteRepository,
+                                     FiveOhOneEntryRepository entryRepository) {
         this.categoryRepository = categoryRepository;
         this.athleteRepository = athleteRepository;
+        this.entryRepository = entryRepository;
     }
 
     @Transactional(readOnly = true)
@@ -70,8 +76,9 @@ public class FiveOhOneCategoryService {
     // whether it's an authored answer or a bare subject pick.
     @Transactional(readOnly = true)
     public List<FiveOhOneEntryDto> getEffectiveEntries(FiveOhOneCategory category) {
+        Map<Long, Athlete> athletesById = batchLoadLinkedAthletes(category.getEntries());
         List<FiveOhOneEntryDto> explicit = category.getEntries().stream()
-                .map(e -> new FiveOhOneEntryDto(e.getId(), displayName(e), e.getValue(),
+                .map(e -> new FiveOhOneEntryDto(e.getId(), displayName(e, athletesById), e.getValue(),
                         e.getAthlete() != null ? e.getAthlete().getId() : null))
                 .collect(Collectors.toList());
 
@@ -121,6 +128,9 @@ public class FiveOhOneCategoryService {
         if (!categoryRepository.existsById(id)) {
             throw new ResourceNotFoundException("No 501 category found with id " + id);
         }
+        // Direct bulk delete first - see FiveOhOneEntryRepository#deleteByCategory_Id
+        // for why (avoids Hibernate cascading the removal one entry at a time).
+        entryRepository.deleteByCategory_Id(id);
         categoryRepository.deleteById(id);
     }
 
@@ -144,6 +154,19 @@ public class FiveOhOneCategoryService {
         Map<String, FiveOhOneEntry> existingByName = category.getEntries().stream()
                 .collect(Collectors.toMap(e -> e.getName().toLowerCase(), e -> e, (a, b) -> a));
 
+        // One batch lookup for every linked subject this save touches, instead of
+        // a separate findById() per entry inside the loop below - the latter was
+        // a real N+1 (a save with, say, 200 linked subjects fired 200 individual
+        // queries just to re-attach them) and was the actual cause of 501 saves
+        // taking noticeably longer the more subjects a category links.
+        Set<Long> requestedAthleteIds = request.getEntries().stream()
+                .map(FiveOhOneEntryDto::getAthleteId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, Athlete> requestedAthletesById = requestedAthleteIds.isEmpty() ? Map.of()
+                : athleteRepository.findAllById(requestedAthleteIds).stream()
+                        .collect(Collectors.toMap(Athlete::getId, a -> a));
+
         List<FiveOhOneEntry> entries = request.getEntries().stream()
                 .map(input -> {
                     FiveOhOneEntry entry = input.getAthleteId() != null ? existingByAthleteId.get(input.getAthleteId()) : null;
@@ -152,9 +175,7 @@ public class FiveOhOneCategoryService {
                     }
                     entry.setName(input.getName().trim());
                     entry.setValue(input.getValue() != null ? input.getValue() : 0);
-                    entry.setAthlete(input.getAthleteId() != null
-                            ? athleteRepository.findById(input.getAthleteId()).orElse(null)
-                            : null);
+                    entry.setAthlete(input.getAthleteId() != null ? requestedAthletesById.get(input.getAthleteId()) : null);
                     return entry;
                 })
                 .collect(Collectors.toList());
@@ -166,14 +187,40 @@ public class FiveOhOneCategoryService {
     // have - so renaming a Subject is reflected here immediately instead of
     // staying frozen at whatever name was typed/imported when the entry was
     // created. Only a legacy/free-text entry with no subject link falls back
-    // to its own stored name.
-    private static String displayName(FiveOhOneEntry e) {
-        return e.getAthlete() != null ? e.getAthlete().getName() : e.getName();
+    // to its own stored name. Takes the already-batch-loaded athlete map
+    // (see batchLoadLinkedAthletes) rather than dereferencing e.getAthlete()
+    // itself - the entity behind that lazy association is deliberately never
+    // touched here, since doing that per-entry is exactly the N+1 that used
+    // to make opening/saving a subject-heavy 501 category slow.
+    private static String displayName(FiveOhOneEntry e, Map<Long, Athlete> athletesById) {
+        if (e.getAthlete() == null) return e.getName();
+        Athlete a = athletesById.get(e.getAthlete().getId());
+        return a != null ? a.getName() : e.getName();
     }
 
-    static FiveOhOneCategoryDto toDto(FiveOhOneCategory c) {
+    // One query for every linked subject a list of entries touches, instead of
+    // Hibernate lazily loading each entry's own `athlete` association one at a
+    // time. Reading e.getAthlete().getId() below never itself hits the DB -
+    // Hibernate can resolve a lazy @ManyToOne's id straight from the entry's
+    // own already-loaded athlete_id column, without initializing the proxy -
+    // only calling something like .getName() on it would.
+    private Map<Long, Athlete> batchLoadLinkedAthletes(Collection<FiveOhOneEntry> entries) {
+        Set<Long> athleteIds = entries.stream()
+                .map(e -> e.getAthlete() != null ? e.getAthlete().getId() : null)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (athleteIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, Athlete> byId = new HashMap<>();
+        athleteRepository.findAllById(athleteIds).forEach(a -> byId.put(a.getId(), a));
+        return byId;
+    }
+
+    FiveOhOneCategoryDto toDto(FiveOhOneCategory c) {
+        Map<Long, Athlete> athletesById = batchLoadLinkedAthletes(c.getEntries());
         List<FiveOhOneEntryDto> entries = c.getEntries().stream()
-                .map(e -> new FiveOhOneEntryDto(e.getId(), displayName(e), e.getValue(),
+                .map(e -> new FiveOhOneEntryDto(e.getId(), displayName(e, athletesById), e.getValue(),
                         e.getAthlete() != null ? e.getAthlete().getId() : null))
                 .collect(Collectors.toList());
         FiveOhOneCategoryDto dto = new FiveOhOneCategoryDto(c.getId(), c.getTitle(), c.getDescription(), entries);
