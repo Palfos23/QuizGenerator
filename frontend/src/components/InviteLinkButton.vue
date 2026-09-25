@@ -1,16 +1,20 @@
 <template>
-  <div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-      <button type="button" class="btn btn-secondary" @click="share">
-        {{ copied ? 'Copied!' : 'Invite friends' }}
-      </button>
-      <button type="button" class="btn btn-secondary" @click="toggleQr">
-        {{ showQr ? 'Hide QR code' : 'Show QR code' }}
-      </button>
-    </div>
-    <div v-if="showQr" style="margin-top:12px; text-align:center;">
-      <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR code to join the room" width="200" height="200" style="border-radius:8px; background:#fff; padding:8px;" />
-      <p v-else style="color:var(--text-dim); font-size:0.85rem;">Generating QR code…</p>
+  <div style="display:inline-flex; gap:8px; flex-wrap:wrap;">
+    <button type="button" class="btn btn-secondary" @click="share">
+      {{ copied ? 'Copied!' : 'Invite friends' }}
+    </button>
+    <button type="button" class="btn btn-secondary" @click="toggleQr">
+      Show QR code
+    </button>
+
+    <div v-if="showQr" class="modal-backdrop" @click.self="toggleQr">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="QR code to join the room" style="text-align:center; max-width:280px;">
+        <h2 style="margin-bottom:4px;">Scan to join</h2>
+        <p class="page-subtitle" style="margin-bottom:16px;">Room code {{ roomCode }}</p>
+        <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR code to join the room" width="220" height="220" style="border-radius:8px; background:#fff; padding:8px;" />
+        <p v-else style="color:var(--text-dim); font-size:0.85rem;">Generating QR code…</p>
+        <button type="button" class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="toggleQr">Close</button>
+      </div>
     </div>
   </div>
 </template>
@@ -18,6 +22,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import QRCode from 'qrcode'
+import { useEscapeKey } from '../composables/useEscapeKey'
 
 // /join/:code already exists (see JoinGuestView.vue / router/index.js) as a
 // game-agnostic "type a name, get dropped straight into the room" landing
@@ -35,6 +40,8 @@ const copied = ref(false)
 const showQr = ref(false)
 const qrDataUrl = ref('')
 let resetTimer = null
+
+useEscapeKey(() => { showQr.value = false })
 
 function toggleQr() {
   showQr.value = !showQr.value

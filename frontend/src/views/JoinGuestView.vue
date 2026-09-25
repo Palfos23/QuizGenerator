@@ -29,7 +29,7 @@
     </button>
 
     <p v-if="needsName" style="margin-top:20px; text-align:center;">
-      <router-link to="/">Have an account? Sign in instead</router-link>
+      <router-link :to="{ path: '/', query: { redirect: signInRedirect } }">Have an account? Sign in instead</router-link>
     </p>
   </div>
 </template>
@@ -53,6 +53,14 @@ const joining = ref(false)
 // already there rather than forcing a fresh guest identity on top of it.
 const needsName = computed(() => !auth.isAuthenticated.value)
 const canSubmit = computed(() => code.value.trim().length > 0 && (!needsName.value || displayName.value.trim().length > 0))
+
+// Signing in instead of joining as guest used to drop the room code entirely
+// (a bare "/" link) - carry whatever code is currently typed as a ?redirect=
+// so HomeView.vue lands them back here (see safeRedirectTarget) once signed in.
+const signInRedirect = computed(() => {
+  const c = code.value.trim().toUpperCase()
+  return c ? `/join/${c}` : '/join'
+})
 
 // Route this game type's room code to the matching game view - each one
 // already has its own "join with a code" flow (see joinOnlineRoom in

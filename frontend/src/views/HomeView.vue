@@ -187,6 +187,7 @@ import api from '../services/api'
 import auth from '../services/auth'
 import cookieConsent from '../services/cookieConsent'
 import { loadScript } from '../services/loadScript'
+import { safeRedirectTarget } from '../router'
 
 const GIS_SCRIPT_URL = 'https://accounts.google.com/gsi/client'
 
@@ -258,7 +259,7 @@ async function loadGoogleButton() {
 
 onMounted(async () => {
   if (auth.isAuthenticated.value) {
-    router.push(auth.isAdmin.value ? '/admin/questions' : '/dashboard')
+    router.push(auth.isAdmin.value ? '/admin/questions' : safeRedirectTarget(route, '/dashboard'))
     return
   }
   if (route.query.sessionExpired) {
@@ -291,7 +292,7 @@ async function handleCredentialResponse(response) {
   try {
     const result = await api.loginWithGoogle(response.credential)
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
-    router.push('/dashboard')
+    router.push(safeRedirectTarget(route, '/dashboard'))
   } catch (e) {
     error.value = e.response?.data?.message || 'Sign-in failed. Please try again.'
     loggingIn.value = false
@@ -337,7 +338,7 @@ async function submitPasswordLogin() {
   try {
     const result = await api.loginWithPassword(loginEmail.value.trim(), loginPassword.value)
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
-    router.push('/dashboard')
+    router.push(safeRedirectTarget(route, '/dashboard'))
   } catch (e) {
     const message = e.response?.data?.message || 'Sign-in failed. Please try again.'
     error.value = message
