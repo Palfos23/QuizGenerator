@@ -177,6 +177,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import api from '../services/api'
+import { useDebouncedSearch } from '../composables/useDebouncedSearch'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor, formatLastUpdated } from '../constants'
 import { preloadImages } from '../services/imagePreload'
@@ -206,7 +207,10 @@ let lastLineupIndexSeen = null
 const loading = ref(true)
 const error = ref('')
 const searchTerm = ref('')
-const searchResults = ref([])
+const { results: searchResults, search: triggerSearch } = useDebouncedSearch(
+  term => api.searchLineupCandidates(state.value.currentLineupId, term),
+  { delay: 250, minLength: 1, postFilter: (term, results) => term.length < 3 ? results.filter(a => a.name.toLowerCase() === term.toLowerCase()) : results }
+)
 const guessing = ref(false)
 const advancing = ref(false)
 const shakeGuessBox = ref(false)
@@ -312,25 +316,7 @@ async function applyState(fresh) {
 
 const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/state`, { poll, onMessage: applyState })
 
-let searchDebounce = null
-watch(searchTerm, (val) => {
-  clearTimeout(searchDebounce)
-  const trimmed = (val || '').trim()
-  if (!trimmed) {
-    searchResults.value = []
-    return
-  }
-  searchDebounce = setTimeout(async () => {
-    try {
-      const results = await api.searchLineupCandidates(state.value.currentLineupId, val)
-      searchResults.value = trimmed.length < 3
-        ? results.filter(a => a.name.toLowerCase() === trimmed.toLowerCase())
-        : results
-    } catch (e) {
-      // autocomplete failing isn't worth surfacing
-    }
-  }, 250)
-})
+watch(searchTerm, triggerSearch)
 
 async function submitGuess(athlete) {
   guessing.value = true

@@ -209,6 +209,7 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
+import { useDebouncedSearch } from '../composables/useDebouncedSearch'
 import toast from '../services/toast'
 import { readableTextColor, formatHint, formatLastUpdated } from '../constants'
 import { preloadImage, preloadImages } from '../services/imagePreload'
@@ -224,7 +225,10 @@ const loading = ref(true)
 const error = ref('')
 
 const searchTerm = ref('')
-const searchResults = ref([])
+const { results: searchResults, search: triggerSearch } = useDebouncedSearch(
+  term => api.searchGridCandidates(gridId, term),
+  { delay: 250, minLength: 1, postFilter: (term, results) => term.length < 3 ? results.filter(a => a.name.toLowerCase() === term.toLowerCase()) : results }
+)
 const guessing = ref(false)
 const actionBusy = ref(false)
 
@@ -291,25 +295,7 @@ async function loadState() {
   }
 }
 
-let searchDebounce = null
-watch(searchTerm, (val) => {
-  clearTimeout(searchDebounce)
-  const trimmed = (val || '').trim()
-  if (!trimmed) {
-    searchResults.value = []
-    return
-  }
-  searchDebounce = setTimeout(async () => {
-    try {
-      const results = await api.searchGridCandidates(gridId, val)
-      searchResults.value = trimmed.length < 3
-        ? results.filter(a => a.name.toLowerCase() === trimmed.toLowerCase())
-        : results
-    } catch (e) {
-      // search failures are non-critical - just show no results
-    }
-  }, 250)
-})
+watch(searchTerm, triggerSearch)
 
 async function submitGuess(athlete) {
   guessing.value = true

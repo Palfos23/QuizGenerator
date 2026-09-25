@@ -153,6 +153,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
+import { useDebouncedSearch } from '../composables/useDebouncedSearch'
 import toast from '../services/toast'
 import { displayRowsFor } from '../services/formations'
 import { readableTextColor, formatLastUpdated } from '../constants'
@@ -173,7 +174,10 @@ const error = ref('')
 
 const shakeGuessBox = ref(false)
 const searchTerm = ref('')
-const searchResults = ref([])
+const { results: searchResults, search: triggerSearch } = useDebouncedSearch(
+  term => api.searchLineupCandidates(lineupId.value, term),
+  { delay: 250, minLength: 1, postFilter: (term, results) => term.length < 3 ? results.filter(a => a.name.toLowerCase() === term.toLowerCase()) : results }
+)
 const guessing = ref(false)
 
 const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.updatedAt))
@@ -212,25 +216,6 @@ async function load() {
   }
 }
 
-let searchDebounce = null
-function onSearchInput() {
-  clearTimeout(searchDebounce)
-  const trimmed = searchTerm.value.trim()
-  if (!trimmed) {
-    searchResults.value = []
-    return
-  }
-  searchDebounce = setTimeout(async () => {
-    try {
-      const results = await api.searchLineupCandidates(lineupId.value, trimmed)
-      searchResults.value = trimmed.length < 3
-        ? results.filter(a => a.name.toLowerCase() === trimmed.toLowerCase())
-        : results
-    } catch (e) {
-      // autocomplete failing isn't worth surfacing
-    }
-  }, 250)
-}
 
 async function submitGuess(athlete) {
   guessing.value = true
@@ -316,5 +301,5 @@ async function updateLeaderboardPreference() {
   }
 }
 
-watch(searchTerm, onSearchInput)
+watch(searchTerm, triggerSearch)
 </script>

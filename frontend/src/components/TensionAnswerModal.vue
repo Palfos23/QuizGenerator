@@ -71,6 +71,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 
 const props = defineProps({
   currentPlayer: { type: String, required: true },
@@ -100,7 +101,11 @@ onMounted(async () => {
       ? await api.fetchTensionSubjectOptions(key)
       : await api.fetchTensionAnswerOptions(key)
   } catch (e) {
-    // autocomplete is a convenience, not essential - fail quietly
+    // Unlike the other games' per-keystroke search, this is a single fetch
+    // for the whole round - if it fails (a network hiccup, or this app's
+    // backend cold-starting after being idle), the suggestion list would
+    // otherwise stay silently empty all round with no indication why.
+    toast.show("Couldn't load the answer list - check your connection and try refreshing.", 'error')
   }
 })
 

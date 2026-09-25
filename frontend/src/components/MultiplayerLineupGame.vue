@@ -162,6 +162,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
+import { useDebouncedSearch } from '../composables/useDebouncedSearch'
 import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
 import { displayRowsFor } from '../services/formations'
@@ -211,7 +212,10 @@ const scores = ref(Object.fromEntries(props.players.map(p => [p.name, 0])))
 const scoresAtLineupStart = ref(Object.fromEntries(props.players.map(p => [p.name, 0])))
 const lineupComplete = ref(false)
 const searchTerm = ref('')
-const searchResults = ref([])
+const { results: searchResults, search: triggerSearch } = useDebouncedSearch(
+  term => api.searchLineupCandidates(currentLineupId.value, term),
+  { delay: 200, minLength: 1, postFilter: (term, results) => term.length < 3 ? results.filter(a => a.name.toLowerCase() === term.toLowerCase()) : results }
+)
 const guessing = ref(false)
 const shakeGuessBox = ref(false)
 
@@ -324,25 +328,7 @@ function proceedToCurrentRound() {
   }
 }
 
-let searchDebounce = null
-watch(searchTerm, (val) => {
-  clearTimeout(searchDebounce)
-  const trimmed = (val || '').trim()
-  if (!trimmed) {
-    searchResults.value = []
-    return
-  }
-  searchDebounce = setTimeout(async () => {
-    try {
-      const results = await api.searchLineupCandidates(currentLineupId.value, val)
-      searchResults.value = trimmed.length < 3
-        ? results.filter(a => a.name.toLowerCase() === trimmed.toLowerCase())
-        : results
-    } catch (e) {
-      // autocomplete is a convenience - fail quietly
-    }
-  }, 200)
-})
+watch(searchTerm, triggerSearch)
 
 async function submitGuess(athlete) {
   guessing.value = true

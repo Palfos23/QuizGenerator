@@ -145,6 +145,7 @@
 <script setup>
 import { computed, onUnmounted, ref } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 import LoadingState from './LoadingState.vue'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
@@ -226,7 +227,6 @@ function applyState(fresh) {
   state.value = fresh
   const optionsKey = fresh.answersFromSubjects ? fresh.answersSport : fresh.answersCategory
   if (optionsKey && optionsKey !== lastOptionsKey) {
-    lastOptionsKey = optionsKey
     loadOptions(fresh.answersFromSubjects, optionsKey)
   }
   if (fresh.roundRevealed && !wasRevealed) {
@@ -271,8 +271,14 @@ async function loadOptions(fromSubjects, key) {
     allOptions.value = fromSubjects
       ? await api.fetchTensionSubjectOptions(key)
       : await api.fetchTensionAnswerOptions(key)
+    // Only remembered once it actually succeeds - otherwise a failed fetch
+    // (a network hiccup, or this app's backend cold-starting after being
+    // idle) would permanently skip retrying for the rest of the round, since
+    // applyState() is called again every poll with this same, now-"already
+    // seen" key.
+    lastOptionsKey = key
   } catch (e) {
-    // autocomplete is a convenience, not essential - fail quietly
+    toast.show("Couldn't load the answer list - check your connection.", 'error')
   }
 }
 

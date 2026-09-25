@@ -139,6 +139,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
+import { useDebouncedSearch } from '../composables/useDebouncedSearch'
 import toast from '../services/toast'
 import ConfirmModal from './ConfirmModal.vue'
 import LivesHearts from './LivesHearts.vue'
@@ -171,7 +172,10 @@ const scores = ref(Object.fromEntries(props.players.map(p => [p.name, 0])))
 const shootoutComplete = ref(false)
 const allKicksSolved = ref(false)
 const searchTerm = ref('')
-const searchResults = ref([])
+const { results: searchResults, search: triggerSearch } = useDebouncedSearch(
+  term => api.searchPenaltyShootoutCandidates(props.shootoutId, term),
+  { delay: 250, minLength: 1, postFilter: (term, results) => term.length < 3 ? results.filter(a => a.name.toLowerCase() === term.toLowerCase()) : results }
+)
 const guessing = ref(false)
 const justSolvedId = ref(null)
 const shakeGuessBox = ref(false)
@@ -229,25 +233,7 @@ async function loadShootout() {
   }
 }
 
-let searchDebounce = null
-watch(searchTerm, (val) => {
-  clearTimeout(searchDebounce)
-  const trimmed = (val || '').trim()
-  if (!trimmed) {
-    searchResults.value = []
-    return
-  }
-  searchDebounce = setTimeout(async () => {
-    try {
-      const results = await api.searchPenaltyShootoutCandidates(props.shootoutId, val)
-      searchResults.value = trimmed.length < 3
-        ? results.filter(a => a.name.toLowerCase() === trimmed.toLowerCase())
-        : results
-    } catch (e) {
-      // autocomplete failing isn't worth surfacing - just shows no results
-    }
-  }, 250)
-})
+watch(searchTerm, triggerSearch)
 
 async function submitGuess(athlete) {
   guessing.value = true
