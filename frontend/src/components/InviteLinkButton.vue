@@ -1,22 +1,56 @@
 <template>
-  <button type="button" class="btn btn-secondary" @click="share">
-    {{ copied ? 'Copied!' : 'Invite friends' }}
-  </button>
+  <div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button type="button" class="btn btn-secondary" @click="share">
+        {{ copied ? 'Copied!' : 'Invite friends' }}
+      </button>
+      <button type="button" class="btn btn-secondary" @click="toggleQr">
+        {{ showQr ? 'Hide QR code' : 'Show QR code' }}
+      </button>
+    </div>
+    <div v-if="showQr" style="margin-top:12px; text-align:center;">
+      <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR code to join the room" width="200" height="200" style="border-radius:8px; background:#fff; padding:8px;" />
+      <p v-else style="color:var(--text-dim); font-size:0.85rem;">Generating QR code…</p>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import QRCode from 'qrcode'
 
 // /join/:code already exists (see JoinGuestView.vue / router/index.js) as a
 // game-agnostic "type a name, get dropped straight into the room" landing
 // page - this button just hands out a link to it instead of the room code
-// alone, so a friend can tap through without retyping anything.
+// alone, so a friend can tap through without retyping anything. The QR code
+// below encodes that same link, so it works identically for a logged-in
+// scanner (dropped straight in) and a guest (asked for a name first) -
+// generated client-side so the room link is never sent to a third-party
+// QR-rendering API.
 const props = defineProps({
   roomCode: { type: String, required: true }
 })
 
 const copied = ref(false)
+const showQr = ref(false)
+const qrDataUrl = ref('')
 let resetTimer = null
+
+function toggleQr() {
+  showQr.value = !showQr.value
+}
+
+watch(showQr, async (visible) => {
+  if (visible && !qrDataUrl.value) {
+    try {
+      qrDataUrl.value = await QRCode.toDataURL(inviteLink(), { width: 200, margin: 1 })
+    } catch (e) {
+      // Generation failed (shouldn't normally happen client-side) - the
+      // "Generating..." placeholder just stays put; the room code and the
+      // Invite friends button above are still there as a fallback.
+    }
+  }
+})
 
 function inviteLink() {
   return `${window.location.origin}/join/${props.roomCode}`
