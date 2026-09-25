@@ -8,34 +8,67 @@ import java.util.List;
 // added here, and a redeploy picks them up. No admin authoring UI needed for
 // a party that happens once.
 //
-// Map-pin coordinates are {x, y} fractions (0..1) of MAP_IMAGE_URL's
-// *rendered* width/height, matching exactly what the frontend's
-// getBoundingClientRect()-based click handler computes - see
-// MapPinQuestion.vue. These placeholder coordinates are rough guesses, not
-// calibrated against the real map image yet.
+// The frontend still just reports a click as {x, y} fractions (0..1) of
+// MAP_IMAGE_URL's rendered width/height (see MapPinQuestion.vue) - it knows
+// nothing about geography. The backend converts that click into a real
+// lat/lng using the map's calibration bounds below, then scores it against
+// each question's real correctLat/correctLng with a great-circle (Haversine)
+// distance in km. MAP_IMAGE_URL is the actual NordNordWest "Norway location
+// map.svg" from Wikimedia Commons (CC BY-SA 3.0 / GFDL, blank base map, no
+// text/labels) - MAP_TOP_LAT/BOTTOM_LAT/LEFT_LNG/RIGHT_LNG are the exact
+// bounds Wikipedia's own Module:Location_map/data/Norway uses to place
+// markers on this same file, so linear interpolation against them lines up
+// with the image's drawn coastline (the image itself is a deliberately
+// N/S-stretched equirectangular projection - these bounds already account
+// for that; do not "correct" them against a plain globe).
 public final class BdayQuestionCatalog {
 
     private BdayQuestionCatalog() {
     }
 
     public static final String MAP_IMAGE_URL = "/norway-map.svg";
-    public static final double MAP_TOLERANCE = 0.06;
+    public static final double MAP_TOP_LAT = 71.5;
+    public static final double MAP_BOTTOM_LAT = 57.6;
+    public static final double MAP_LEFT_LNG = 4.1;
+    public static final double MAP_RIGHT_LNG = 31.6;
     public static final int MAP_POINTS = 10;
+    private static final double EARTH_RADIUS_KM = 6371.0;
 
     public static class MapQuestion {
         public final String id;
         public final String prompt;
-        public final double correctX;
-        public final double correctY;
+        public final double correctLat;
+        public final double correctLng;
+        public final double toleranceKm;
         public final String correctCityName;
 
-        public MapQuestion(String id, String prompt, double correctX, double correctY, String correctCityName) {
+        public MapQuestion(String id, String prompt, double correctLat, double correctLng, double toleranceKm, String correctCityName) {
             this.id = id;
             this.prompt = prompt;
-            this.correctX = correctX;
-            this.correctY = correctY;
+            this.correctLat = correctLat;
+            this.correctLng = correctLng;
+            this.toleranceKm = toleranceKm;
             this.correctCityName = correctCityName;
         }
+    }
+
+    // x/y are the frontend's raw click fractions (0..1) of the map image.
+    public static double clickToLat(double y) {
+        return MAP_TOP_LAT - y * (MAP_TOP_LAT - MAP_BOTTOM_LAT);
+    }
+
+    public static double clickToLng(double x) {
+        return MAP_LEFT_LNG + x * (MAP_RIGHT_LNG - MAP_LEFT_LNG);
+    }
+
+    public static double distanceKm(double lat1, double lng1, double lat2, double lng2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lng2 - lng1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS_KM * c;
     }
 
     public static class Tile {
@@ -69,7 +102,7 @@ public final class BdayQuestionCatalog {
     // --- Placeholder content - replace/extend as real questions arrive ---
 
     public static final List<MapQuestion> MAP_QUESTIONS = List.of(
-            new MapQuestion("map-1", "(Placeholder) Where was the birthday host born?", 0.23, 0.85, "Oslo")
+            new MapQuestion("map-1", "Where are Pål and Erik born?", 61.4522, 5.8572, 20, "Førde")
     );
 
     public static final List<TileQuestion> TILE_QUESTIONS = List.of(

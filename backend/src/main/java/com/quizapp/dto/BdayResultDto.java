@@ -45,15 +45,17 @@ public class BdayResultDto {
         private boolean correct;
         private String correctCityName;
         private int pointsEarned;
+        private double distanceKm;
 
         public MapResult() {
         }
 
-        public MapResult(String questionId, boolean correct, String correctCityName, int pointsEarned) {
+        public MapResult(String questionId, boolean correct, String correctCityName, int pointsEarned, double distanceKm) {
             this.questionId = questionId;
             this.correct = correct;
             this.correctCityName = correctCityName;
             this.pointsEarned = pointsEarned;
+            this.distanceKm = distanceKm;
         }
 
         public String getQuestionId() {
@@ -86,6 +88,14 @@ public class BdayResultDto {
 
         public void setPointsEarned(int pointsEarned) {
             this.pointsEarned = pointsEarned;
+        }
+
+        public double getDistanceKm() {
+            return distanceKm;
+        }
+
+        public void setDistanceKm(double distanceKm) {
+            this.distanceKm = distanceKm;
         }
     }
 

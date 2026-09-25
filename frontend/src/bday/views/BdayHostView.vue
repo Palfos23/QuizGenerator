@@ -62,6 +62,7 @@
           <ul style="margin:0; padding-left:20px; line-height:1.8;">
             <li v-for="r in result.mapResults" :key="r.questionId">
               {{ r.correct ? '✓' : '✕' }} Correct city: <strong>{{ r.correctCityName }}</strong>
+              <span style="color:var(--text-dim);"> - {{ Math.round(r.distanceKm) }} km away</span>
             </li>
           </ul>
         </div>

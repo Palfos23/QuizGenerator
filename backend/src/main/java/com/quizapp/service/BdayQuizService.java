@@ -107,17 +107,19 @@ public class BdayQuizService {
 
             boolean correct = false;
             int points = 0;
+            double distanceKm = -1;
             Map<String, Object> responsePayload = Map.of();
             if (answer != null) {
-                double dx = answer.getX() - q.correctX;
-                double dy = answer.getY() - q.correctY;
-                correct = Math.sqrt(dx * dx + dy * dy) <= BdayQuestionCatalog.MAP_TOLERANCE;
+                double clickLat = BdayQuestionCatalog.clickToLat(answer.getY());
+                double clickLng = BdayQuestionCatalog.clickToLng(answer.getX());
+                distanceKm = BdayQuestionCatalog.distanceKm(clickLat, clickLng, q.correctLat, q.correctLng);
+                correct = distanceKm <= q.toleranceKm;
                 points = correct ? BdayQuestionCatalog.MAP_POINTS : 0;
                 responsePayload = Map.of("x", answer.getX(), "y", answer.getY());
             }
             totalScore += points;
             totalMax += BdayQuestionCatalog.MAP_POINTS;
-            mapResults.add(new BdayResultDto.MapResult(q.id, correct, q.correctCityName, points));
+            mapResults.add(new BdayResultDto.MapResult(q.id, correct, q.correctCityName, points, distanceKm));
             saveAnswer(guest, q.id, responsePayload, points, BdayQuestionCatalog.MAP_POINTS);
         }
 
