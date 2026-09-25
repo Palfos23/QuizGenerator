@@ -3,24 +3,36 @@ package com.quizapp.service;
 import com.quizapp.dto.AthleteDto;
 import com.quizapp.dto.AthleteDescriptionDto;
 import com.quizapp.dto.AthletePhotoDto;
+import com.quizapp.dto.AthleteUsageDto;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.Athlete;
 import com.quizapp.model.AthleteDescription;
 import com.quizapp.model.AthletePhoto;
+import com.quizapp.model.BullseyeEntry;
+import com.quizapp.model.FiveOhOneEntry;
 import com.quizapp.model.Grid;
+import com.quizapp.model.ImposterTile;
+import com.quizapp.model.Lineup;
+import com.quizapp.model.PenaltyKick;
 import com.quizapp.repository.AthleteDescriptionRepository;
 import com.quizapp.repository.AthletePhotoRepository;
 import com.quizapp.repository.AthleteRepository;
+import com.quizapp.repository.BullseyeEntryRepository;
+import com.quizapp.repository.FiveOhOneEntryRepository;
 import com.quizapp.repository.GridCandidateRepository;
 import com.quizapp.repository.GridEntryRepository;
 import com.quizapp.repository.GridRepository;
+import com.quizapp.repository.ImposterTileRepository;
 import com.quizapp.repository.LineupCandidateRepository;
 import com.quizapp.repository.LineupEntryRepository;
+import com.quizapp.repository.LineupRepository;
+import com.quizapp.repository.PenaltyKickRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,13 +49,23 @@ public class AthleteService {
     private final AthleteDescriptionRepository athleteDescriptionRepository;
     private final LineupCandidateRepository lineupCandidateRepository;
     private final LineupEntryRepository lineupEntryRepository;
+    private final LineupRepository lineupRepository;
+    private final BullseyeEntryRepository bullseyeEntryRepository;
+    private final FiveOhOneEntryRepository fiveOhOneEntryRepository;
+    private final ImposterTileRepository imposterTileRepository;
+    private final PenaltyKickRepository penaltyKickRepository;
 
     public AthleteService(AthleteRepository athleteRepository, GridCandidateRepository gridCandidateRepository,
                            GridEntryRepository gridEntryRepository, GridRepository gridRepository,
                            AthletePhotoRepository athletePhotoRepository,
                            AthleteDescriptionRepository athleteDescriptionRepository,
                            LineupCandidateRepository lineupCandidateRepository,
-                           LineupEntryRepository lineupEntryRepository) {
+                           LineupEntryRepository lineupEntryRepository,
+                           LineupRepository lineupRepository,
+                           BullseyeEntryRepository bullseyeEntryRepository,
+                           FiveOhOneEntryRepository fiveOhOneEntryRepository,
+                           ImposterTileRepository imposterTileRepository,
+                           PenaltyKickRepository penaltyKickRepository) {
         this.athleteRepository = athleteRepository;
         this.gridCandidateRepository = gridCandidateRepository;
         this.gridEntryRepository = gridEntryRepository;
@@ -52,6 +74,11 @@ public class AthleteService {
         this.athleteDescriptionRepository = athleteDescriptionRepository;
         this.lineupCandidateRepository = lineupCandidateRepository;
         this.lineupEntryRepository = lineupEntryRepository;
+        this.lineupRepository = lineupRepository;
+        this.bullseyeEntryRepository = bullseyeEntryRepository;
+        this.fiveOhOneEntryRepository = fiveOhOneEntryRepository;
+        this.imposterTileRepository = imposterTileRepository;
+        this.penaltyKickRepository = penaltyKickRepository;
     }
 
     // Wraps the plain static toDto with the athlete's additional photos -
@@ -407,31 +434,64 @@ public class AthleteService {
     }
 
     private List<Grid> findGridsReferencingAthlete(Long athleteId) {
-        java.util.Map<Long, Grid> byId = new java.util.LinkedHashMap<>();
+        Map<Long, Grid> byId = new LinkedHashMap<>();
         gridRepository.findByCandidateAthleteId(athleteId).forEach(g -> byId.put(g.getId(), g));
         gridRepository.findByEntryAthleteId(athleteId).forEach(g -> byId.put(g.getId(), g));
-        return new java.util.ArrayList<>(byId.values());
+        return new ArrayList<>(byId.values());
     }
 
+    private List<Lineup> findLineupsReferencingAthlete(Long athleteId) {
+        Map<Long, Lineup> byId = new LinkedHashMap<>();
+        lineupRepository.findByCandidateAthleteId(athleteId).forEach(l -> byId.put(l.getId(), l));
+        lineupRepository.findByEntryAthleteId(athleteId).forEach(l -> byId.put(l.getId(), l));
+        return new ArrayList<>(byId.values());
+    }
+
+    // Every game type that can reference a subject, not just Grid/Starting XI -
+    // shown to an admin before a delete is blocked (see delete() below) so the
+    // message names the actual quiz instead of failing with a raw DB error.
     @Transactional(readOnly = true)
-    public List<com.quizapp.dto.AthleteGridUsageDto> findGridUsage(Long athleteId) {
-        return findGridsReferencingAthlete(athleteId).stream()
-                .map(g -> new com.quizapp.dto.AthleteGridUsageDto(
-                        g.getId(), g.getTitle(),
-                        g.getEntries().stream().anyMatch(e -> e.getAthlete().getId().equals(athleteId))))
-                .collect(Collectors.toList());
+    public List<AthleteUsageDto> findUsage(Long athleteId) {
+        List<AthleteUsageDto> usage = new ArrayList<>();
+
+        for (Grid g : findGridsReferencingAthlete(athleteId)) {
+            boolean isAnswer = g.getEntries().stream().anyMatch(e -> e.getAthlete().getId().equals(athleteId));
+            usage.add(new AthleteUsageDto("Grid", g.getId(), g.getTitle(), isAnswer));
+        }
+        for (Lineup l : findLineupsReferencingAthlete(athleteId)) {
+            boolean isAnswer = l.getEntries().stream().anyMatch(e -> e.getAthlete().getId().equals(athleteId));
+            usage.add(new AthleteUsageDto("Starting XI", l.getId(), l.getTitle(), isAnswer));
+        }
+        for (BullseyeEntry e : bullseyeEntryRepository.findByAthlete_Id(athleteId)) {
+            usage.add(new AthleteUsageDto("Bullseye", e.getQuestion().getId(), e.getQuestion().getTitle(), true));
+        }
+        for (FiveOhOneEntry e : fiveOhOneEntryRepository.findByAthlete_Id(athleteId)) {
+            usage.add(new AthleteUsageDto("501", e.getCategory().getId(), e.getCategory().getTitle(), true));
+        }
+        for (ImposterTile t : imposterTileRepository.findByAthlete_Id(athleteId)) {
+            usage.add(new AthleteUsageDto("Imposter", t.getImposterGrid().getId(), t.getImposterGrid().getTitle(), true));
+        }
+        for (PenaltyKick k : penaltyKickRepository.findByAthlete_Id(athleteId)) {
+            usage.add(new AthleteUsageDto("Penalty Shootout", k.getShootout().getId(), k.getShootout().getTitle(), true));
+        }
+        return usage;
     }
 
     @Transactional
-    public void delete(Long id, boolean removeFromGrids) {
+    public void delete(Long id, boolean force) {
         if (!athleteRepository.existsById(id)) {
             throw new ResourceNotFoundException("No athlete found with id " + id);
         }
-        boolean usedInLineups = lineupCandidateRepository.existsByAthlete_Id(id);
-        if (gridCandidateRepository.existsByAthlete_Id(id) || usedInLineups) {
-            if (!removeFromGrids) {
+        boolean blocked = gridCandidateRepository.existsByAthlete_Id(id)
+                || lineupCandidateRepository.existsByAthlete_Id(id)
+                || bullseyeEntryRepository.existsByAthlete_Id(id)
+                || fiveOhOneEntryRepository.existsByAthlete_Id(id)
+                || imposterTileRepository.existsByAthlete_Id(id)
+                || penaltyKickRepository.existsByAthlete_Id(id);
+        if (blocked) {
+            if (!force) {
                 throw new IllegalArgumentException(
-                        "This athlete is used in one or more grids or Starting XI boards - remove them from those first.");
+                        "This subject is used in one or more quizzes - remove it from those first.");
             }
             // Direct delete statements, not collection-based removal (load the
             // collection, remove an element, let Hibernate's orphanRemoval figure
@@ -442,7 +502,15 @@ public class AthleteService {
             gridCandidateRepository.deleteByAthlete_Id(id);
             lineupEntryRepository.deleteByAthlete_Id(id);
             lineupCandidateRepository.deleteByAthlete_Id(id);
+            bullseyeEntryRepository.deleteByAthlete_Id(id);
+            fiveOhOneEntryRepository.deleteByAthlete_Id(id);
+            imposterTileRepository.deleteByAthlete_Id(id);
+            penaltyKickRepository.deleteByAthlete_Id(id);
         }
+        // Historical "who this imposter replaced" data, not a live displayed
+        // reference - never blocks a delete, just forgotten along with it
+        // (nullable field, same as athletePhotoRepository's cleanup below).
+        imposterTileRepository.clearReplacedAthlete(id);
         athletePhotoRepository.deleteByAthlete_Id(id);
         athleteRepository.deleteById(id);
     }

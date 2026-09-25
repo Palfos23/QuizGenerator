@@ -20,7 +20,7 @@
       <div class="field" style="margin-bottom:0; flex:1; min-width:220px;">
         <label>Match type <span class="picker-hint">how close names need to be to count as a duplicate</span>
           <select v-model.number="maxDistance">
-            <option :value="0">100% match (plus last-name-only)</option>
+            <option :value="0">Same name (accents/special letters ignored, plus last-name-only)</option>
             <option :value="1">1 character different</option>
             <option :value="2">2 characters different</option>
             <option :value="3">3 characters different</option>

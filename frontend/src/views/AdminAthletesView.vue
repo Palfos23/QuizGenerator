@@ -85,26 +85,27 @@
       @cancel="pendingDelete = null"
     />
 
-    <div v-if="pendingGridUsage" class="modal-backdrop" @click.self="pendingGridUsage = null">
+    <div v-if="pendingUsage" class="modal-backdrop" @click.self="pendingUsage = null">
       <div class="modal">
-        <h2 style="margin-top:0;">'{{ pendingGridUsage.athlete.name }}' is used in {{ pendingGridUsage.usage.length }} grid(s)</h2>
+        <h2 style="margin-top:0;">'{{ pendingUsage.athlete.name }}' is used in {{ pendingUsage.usage.length }} quiz(zes)</h2>
         <p class="page-subtitle" style="margin-top:0;">
-          Deleting this subject first removes them from every grid listed below.
+          Deleting this subject first removes them from every quiz listed below.
         </p>
         <ul style="margin:0 0 16px; padding-left:20px; line-height:1.8;">
-          <li v-for="u in pendingGridUsage.usage" :key="u.gridId">
-            {{ u.gridTitle }}
+          <li v-for="(u, idx) in pendingUsage.usage" :key="u.gameType + '-' + u.id + '-' + idx">
+            <span class="tag" style="background:rgba(255,255,255,0.08);">{{ u.gameType }}</span>
+            {{ u.title }}
             <span v-if="u.isCorrectAnswer" style="color:var(--coral); font-weight:600;"> - a correct answer here, not just a decoy</span>
           </li>
         </ul>
-        <p v-if="pendingGridUsage.usage.some(u => u.isCorrectAnswer)" style="color:var(--coral); font-size:0.9rem;">
-          For the grid(s) marked above, this genuinely changes that grid's answer key - including for anyone who's
-          already played it. If that grid is meant to stay exactly as-is, consider duplicating it as a new version
-          and editing the copy instead, rather than deleting this subject outright.
+        <p v-if="pendingUsage.usage.some(u => u.isCorrectAnswer)" style="color:var(--coral); font-size:0.9rem;">
+          For the quiz(zes) marked above, this genuinely changes that quiz's answer key - including for anyone
+          who's already played it. If a quiz is meant to stay exactly as-is, consider duplicating it as a new
+          version and editing the copy instead, rather than deleting this subject outright.
         </p>
         <div style="display:flex; gap:10px; justify-content:flex-end;">
-          <button class="btn btn-secondary" @click="pendingGridUsage = null">Cancel</button>
-          <button class="btn btn-danger" @click="confirmRemoveFromGridsAndDelete">Remove from grids and delete</button>
+          <button class="btn btn-secondary" @click="pendingUsage = null">Cancel</button>
+          <button class="btn btn-danger" @click="confirmForceDelete">Remove from those quizzes and delete</button>
         </div>
       </div>
     </div>
@@ -170,7 +171,7 @@ const sportFilter = ref('ALL')
 const showModal = ref(false)
 const editingAthlete = ref(null)
 const pendingDelete = ref(null)
-const pendingGridUsage = ref(null)
+const pendingUsage = ref(null)
 
 const fileInput = ref(null)
 const showImportPreview = ref(false)
@@ -396,8 +397,8 @@ async function doDelete() {
   } catch (e) {
     if (e.response?.status === 400) {
       try {
-        const usage = await api.adminGetAthleteGridUsage(a.id)
-        pendingGridUsage.value = { athlete: a, usage }
+        const usage = await api.adminGetAthleteUsage(a.id)
+        pendingUsage.value = { athlete: a, usage }
         return
       } catch (e2) {
         // fall through to the generic error below
@@ -407,13 +408,13 @@ async function doDelete() {
   }
 }
 
-async function confirmRemoveFromGridsAndDelete() {
-  const { athlete } = pendingGridUsage.value
-  pendingGridUsage.value = null
+async function confirmForceDelete() {
+  const { athlete } = pendingUsage.value
+  pendingUsage.value = null
   error.value = ''
   try {
     await api.adminDeleteAthlete(athlete.id, true)
-    toast.show('Subject removed from those grids and deleted.')
+    toast.show('Subject removed from those quizzes and deleted.')
     loadAthletes()
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not delete that subject.'

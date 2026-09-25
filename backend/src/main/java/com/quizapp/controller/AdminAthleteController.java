@@ -53,15 +53,19 @@ public class AdminAthleteController {
         return athleteService.findDuplicateGroups(sport, maxDistance);
     }
 
-    @GetMapping("/{id}/grid-usage")
-    public List<com.quizapp.dto.AthleteGridUsageDto> gridUsage(@PathVariable Long id) {
-        return athleteService.findGridUsage(id);
+    // Every quiz (Grid, Starting XI, Bullseye, 501, Imposter, Penalty Shootout)
+    // that references this subject - see AthleteService#findUsage. Kept at the
+    // old "/grid-usage" path name would be misleading now that it covers every
+    // game type, hence the rename to "/usage".
+    @GetMapping("/{id}/usage")
+    public List<com.quizapp.dto.AthleteUsageDto> usage(@PathVariable Long id) {
+        return athleteService.findUsage(id);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id,
-                                        @RequestParam(defaultValue = "false") boolean removeFromGrids) {
-        athleteService.delete(id, removeFromGrids);
+                                        @RequestParam(defaultValue = "false") boolean force) {
+        athleteService.delete(id, force);
         return ResponseEntity.noContent().build();
     }
 }

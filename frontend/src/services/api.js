@@ -410,11 +410,13 @@ export default {
     if (maxDistance !== undefined && maxDistance !== null) query.set('maxDistance', maxDistance)
     return client.get(`/admin/athletes/duplicates?${query.toString()}`).then(r => r.data)
   },
-  adminGetAthleteGridUsage(id) {
-    return client.get(`/admin/athletes/${id}/grid-usage`).then(r => r.data)
+  // Every quiz type (Grid, Starting XI, Bullseye, 501, Imposter, Penalty
+  // Shootout) that references this subject - [{gameType, id, title, isCorrectAnswer}].
+  adminGetAthleteUsage(id) {
+    return client.get(`/admin/athletes/${id}/usage`).then(r => r.data)
   },
-  adminDeleteAthlete(id, removeFromGrids = false) {
-    return client.delete(`/admin/athletes/${id}?removeFromGrids=${removeFromGrids}`)
+  adminDeleteAthlete(id, force = false) {
+    return client.delete(`/admin/athletes/${id}?force=${force}`)
   },
 
   // --- Clubs: admin ---
