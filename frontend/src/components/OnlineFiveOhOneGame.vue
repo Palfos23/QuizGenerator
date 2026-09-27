@@ -195,17 +195,26 @@ async function poll() {
 }
 
 async function applyState(fresh) {
-  staleGuard.markApplied()
-  error.value = ''
+  // Claims this call's spot before the async category fetch below, then
+  // checks it's still the latest right after - otherwise two overlapping
+  // applyState calls (a WS push racing this poll's own response, or your own
+  // throw's response racing another player's broadcast) apply in whichever
+  // order they finish, not in the order they actually happened. Nothing
+  // below mutates until we know we're still current.
+  const isLatest = staleGuard.claim()
+  let entriesForNewCategory = null
   if (fresh.categoryId && fresh.categoryId !== loadedCategoryId) {
     loadedCategoryId = fresh.categoryId
     try {
       const category = await api.getFiveOhOneCategory(fresh.categoryId)
-      categoryEntries.value = category.entries
+      entriesForNewCategory = category.entries
     } catch (e) {
       // search just won't have results if this fails - the next poll will retry
     }
   }
+  if (!isLatest()) return
+  error.value = ''
+  if (entriesForNewCategory) categoryEntries.value = entriesForNewCategory
   if (fresh.throwHistory && fresh.throwHistory.length) {
     lastThrow.value = fresh.throwHistory[fresh.throwHistory.length - 1]
   }
@@ -222,6 +231,7 @@ const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/sta
 async function submitThrow(entry) {
   throwing.value = true
   searchTerm.value = ''
+  const stillFresh = staleGuard.begin()
   try {
     const before = state.value.throwHistory.length
     const fresh = await api.throwFiveOhOneOnline(props.roomCode, entry.id)
@@ -237,7 +247,7 @@ async function submitThrow(entry) {
         showThrowOverlay(String(newest.score), 'hit')
       }
     }
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that throw.'
   } finally {

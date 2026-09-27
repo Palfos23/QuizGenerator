@@ -181,7 +181,7 @@ async function poll() {
 }
 
 function applyState(fresh) {
-  staleGuard.markApplied()
+  staleGuard.claim()
   error.value = ''
   state.value = fresh
   if (fresh.finished) {
@@ -196,10 +196,11 @@ const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/sta
 async function submitGuess() {
   if (guessValue.value === null || guessValue.value === '' || submitting.value) return
   submitting.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.submitFlashbackOnlineGuess(props.roomCode, Math.trunc(guessValue.value))
     guessValue.value = null
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     const message = e.response?.data?.message || 'Could not submit that guess.'
     error.value = message
@@ -215,9 +216,10 @@ async function submitGuess() {
 
 async function nextRound() {
   advancing.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.advanceFlashbackOnlineRound(props.roomCode)
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not advance to the next round.'
   } finally {

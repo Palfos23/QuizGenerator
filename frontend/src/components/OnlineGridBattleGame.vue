@@ -299,19 +299,27 @@ async function poll() {
 }
 
 async function applyState(fresh) {
-  staleGuard.markApplied()
-  error.value = ''
-  if (fresh.currentGridIndex !== lastGridIndexSeen) {
-    scoresAtGridStart.value = Object.fromEntries(fresh.players.map(p => [p.name, p.totalScore]))
-    lastGridIndexSeen = fresh.currentGridIndex
-    revealedEntries.value = []
-  }
+  // Claims this call's spot before the async preload below, then checks it's
+  // still the latest right after - otherwise two overlapping applyState
+  // calls (a WS push racing this poll's own response, or your own guess's
+  // response racing another player's broadcast) apply in whichever order
+  // their preloads happen to finish, not in the order they actually
+  // happened - which is what could make a guess look like it didn't register.
+  // Nothing below mutates until we know we're still current.
+  const isLatest = staleGuard.claim()
   // Preloads every tile image this snapshot carries before it's applied - a
   // tile solved by another player arrives here the same way one of our own
   // guesses does, so it needs the same "load before reveal" treatment.
   // Already-cached URLs (the common case - most tiles are unchanged between
   // snapshots) resolve immediately, so this adds no real delay.
   await preloadImages((fresh.entries || []).map(tileImage))
+  if (!isLatest()) return
+  error.value = ''
+  if (fresh.currentGridIndex !== lastGridIndexSeen) {
+    scoresAtGridStart.value = Object.fromEntries(fresh.players.map(p => [p.name, p.totalScore]))
+    lastGridIndexSeen = fresh.currentGridIndex
+    revealedEntries.value = []
+  }
   state.value = fresh
   if (fresh.gridComplete && !revealedEntries.value.length) {
     api.revealAllGridEntries(fresh.currentGridId).then(async list => {
@@ -334,6 +342,7 @@ async function submitGuess(athlete) {
   guessing.value = true
   searchTerm.value = ''
   searchResults.value = []
+  const stillFresh = staleGuard.begin()
   try {
     const before = state.value.entries.filter(e => e.solved).length
     const fresh = await api.submitGridBattleGuess(props.roomCode, athlete.id)
@@ -348,7 +357,7 @@ async function submitGuess(athlete) {
       setTimeout(() => { shakeGuessBox.value = false }, 400)
       showResultOverlay(false)
     }
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
   } finally {
@@ -358,9 +367,10 @@ async function submitGuess(athlete) {
 
 async function chooseGrid(g) {
   choosing.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.chooseGridBattleGrid(props.roomCode, g.id)
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not choose that grid.'
   } finally {
@@ -378,9 +388,10 @@ async function skipTurn() {
   guessing.value = true
   searchTerm.value = ''
   searchResults.value = []
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.skipGridBattleTurn(props.roomCode)
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not skip your turn.'
   } finally {
@@ -390,9 +401,10 @@ async function skipTurn() {
 
 async function nextGrid() {
   advancing.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.advanceGridBattleGrid(props.roomCode)
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not advance to the next grid.'
   } finally {

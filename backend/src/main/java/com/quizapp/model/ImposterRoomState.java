@@ -31,8 +31,15 @@ public class ImposterRoomState {
     @Column(nullable = false)
     private int currentGridIndex = 0;
 
-    @Column(nullable = false)
-    private int currentTurnParticipantIndex = 0;
+    // Whose turn it is to flip a tile, by participant id - not a raw index
+    // into room.getParticipants(). An index would silently point at a
+    // different person the moment anyone earlier in that list is kicked
+    // (the array shifts under it); an id stays correct regardless, and
+    // getState() falls back gracefully if this exact id is no longer in the
+    // room (they were the one kicked). Null only before the first board's
+    // starter is picked.
+    @Column(name = "current_turn_participant_id")
+    private Long currentTurnParticipantId;
 
     @Column(nullable = false)
     private boolean finished = false;
@@ -81,12 +88,12 @@ public class ImposterRoomState {
         this.currentGridIndex = currentGridIndex;
     }
 
-    public int getCurrentTurnParticipantIndex() {
-        return currentTurnParticipantIndex;
+    public Long getCurrentTurnParticipantId() {
+        return currentTurnParticipantId;
     }
 
-    public void setCurrentTurnParticipantIndex(int currentTurnParticipantIndex) {
-        this.currentTurnParticipantIndex = currentTurnParticipantIndex;
+    public void setCurrentTurnParticipantId(Long currentTurnParticipantId) {
+        this.currentTurnParticipantId = currentTurnParticipantId;
     }
 
     public boolean isFinished() {

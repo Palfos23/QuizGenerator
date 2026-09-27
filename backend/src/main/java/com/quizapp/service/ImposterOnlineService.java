@@ -212,11 +212,23 @@ public class ImposterOnlineService {
         dto.setBoardComplete(allFlipped || onlyImpostersRemain);
 
         if (!dto.isBoardComplete()) {
-            List<GameRoomParticipant> ordered = room.getParticipants();
-            int idx = state.getCurrentTurnParticipantIndex() % ordered.size();
-            dto.setCurrentTurnParticipantId(ordered.get(idx).getId());
+            dto.setCurrentTurnParticipantId(resolveCurrentTurnParticipantId(state, room.getParticipants()));
         }
         return dto;
+    }
+
+    // currentTurnParticipantId is stored as an actual participant id, not a
+    // raw list position, precisely so a kick elsewhere in the room can't
+    // silently retarget whose turn this resolves to. The only edge case is
+    // the held id itself being gone (that exact participant was the one
+    // kicked, mid-turn) - falls back to whoever's first in the room now
+    // rather than getting the game stuck with no valid turn at all.
+    private Long resolveCurrentTurnParticipantId(ImposterRoomState state, List<GameRoomParticipant> ordered) {
+        Long storedId = state.getCurrentTurnParticipantId();
+        if (storedId != null && ordered.stream().anyMatch(p -> p.getId().equals(storedId))) {
+            return storedId;
+        }
+        return ordered.isEmpty() ? null : ordered.get(0).getId();
     }
 
     // Same idea as ImposterGridPlayService.resolvedPhotoUrl - a tile-specific
@@ -278,7 +290,7 @@ public class ImposterOnlineService {
 
         List<GameRoomParticipant> ordered = room.getParticipants();
         int myIndex = ordered.indexOf(me);
-        state.setCurrentTurnParticipantIndex((myIndex + 1) % ordered.size());
+        state.setCurrentTurnParticipantId(ordered.get((myIndex + 1) % ordered.size()).getId());
         roomStateRepository.save(state);
 
         return getState(room, requestingEmail);
@@ -341,7 +353,8 @@ public class ImposterOnlineService {
         } else {
             state.setCurrentGridIndex(state.getCurrentGridIndex() + 1);
             // rotate who starts each board, same convention as grid battle between grids
-            state.setCurrentTurnParticipantIndex(state.getCurrentGridIndex() % room.getParticipants().size());
+            List<GameRoomParticipant> ordered = room.getParticipants();
+            state.setCurrentTurnParticipantId(ordered.get(state.getCurrentGridIndex() % ordered.size()).getId());
         }
         roomStateRepository.save(state);
         return getState(room, requestingEmail);
@@ -375,7 +388,7 @@ public class ImposterOnlineService {
 
         state.getGridIds().add(gridId);
         state.setPendingChoiceIds(new HashSet<>());
-        state.setCurrentTurnParticipantIndex(state.getCurrentGridIndex() % ordered.size());
+        state.setCurrentTurnParticipantId(ordered.get(state.getCurrentGridIndex() % ordered.size()).getId());
         roomStateRepository.save(state);
 
         return getState(room, requestingEmail);

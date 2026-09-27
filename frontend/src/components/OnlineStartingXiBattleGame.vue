@@ -283,13 +283,13 @@ async function poll() {
 }
 
 async function applyState(fresh) {
-  staleGuard.markApplied()
-  error.value = ''
-  if (fresh.currentLineupIndex !== lastLineupIndexSeen) {
-    scoresAtLineupStart.value = Object.fromEntries((fresh.players || []).map(p => [p.name, p.totalScore]))
-    lastLineupIndexSeen = fresh.currentLineupIndex
-    revealedSlots.value = {}
-  }
+  // Claims this call's spot before the async preload below, then checks it's
+  // still the latest right after - otherwise two overlapping applyState
+  // calls (a WS push racing this poll's own response, or your own guess's
+  // response racing another player's broadcast) apply in whichever order
+  // their preloads happen to finish, not in the order they actually
+  // happened. Nothing below mutates until we know we're still current.
+  const isLatest = staleGuard.claim()
   // Preloads every solved slot's photo plus both crests before applying -
   // covers a slot another player just solved arriving via poll/socket, the
   // same "load before reveal" treatment the pass-and-play version gets.
@@ -298,6 +298,13 @@ async function applyState(fresh) {
     fresh.teamCrestUrl, fresh.opponentCrestUrl,
     ...(fresh.slots || []).filter(s => s.solved).map(s => s.athletePhotoUrl)
   ])
+  if (!isLatest()) return
+  error.value = ''
+  if (fresh.currentLineupIndex !== lastLineupIndexSeen) {
+    scoresAtLineupStart.value = Object.fromEntries((fresh.players || []).map(p => [p.name, p.totalScore]))
+    lastLineupIndexSeen = fresh.currentLineupIndex
+    revealedSlots.value = {}
+  }
   state.value = fresh
   if (fresh.lineupComplete && !Object.keys(revealedSlots.value).length) {
     api.revealAllLineupSlots(fresh.currentLineupId)
@@ -322,6 +329,7 @@ async function submitGuess(athlete) {
   guessing.value = true
   searchTerm.value = ''
   searchResults.value = []
+  const stillFresh = staleGuard.begin()
   try {
     const before = state.value.slots.filter(s => s.solved).length
     const fresh = await api.submitLineupBattleGuess(props.roomCode, athlete.id)
@@ -333,7 +341,7 @@ async function submitGuess(athlete) {
       setTimeout(() => { shakeGuessBox.value = false }, 400)
       showResultOverlay(false)
     }
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
   } finally {
@@ -343,9 +351,10 @@ async function submitGuess(athlete) {
 
 async function chooseLineup(l) {
   choosing.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.chooseLineupBattleLineup(props.roomCode, l.id)
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not choose that board.'
   } finally {
@@ -363,9 +372,10 @@ async function skipTurn() {
   guessing.value = true
   searchTerm.value = ''
   searchResults.value = []
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.skipLineupBattleTurn(props.roomCode)
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not skip your turn.'
   } finally {
@@ -375,9 +385,10 @@ async function skipTurn() {
 
 async function nextLineup() {
   advancing.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.advanceLineupBattleLineup(props.roomCode)
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not advance to the next board.'
   } finally {

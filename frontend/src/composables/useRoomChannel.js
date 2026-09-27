@@ -62,6 +62,22 @@ export function createStaleGuard() {
     },
     markApplied() {
       seq += 1
+    },
+    // Claims the latest slot immediately (synchronously, at call time) and
+    // returns a checker reporting whether this is STILL the latest claim -
+    // i.e. whether some other call has claimed since. Same bookkeeping as
+    // markApplied() (it also just bumps the shared sequence, so begin()'s
+    // own staleness check still sees it), but also guards the caller's OWN
+    // subsequent async work: an applyState() with an `await` between
+        // "snapshot arrived" and "snapshot written" (e.g. an image preload) can
+    // have a slower, earlier-claimed call finish AFTER a faster, later one
+    // already committed - checking the returned function right before that
+    // write drops the stale one instead of letting whichever happens to
+    // finish last win regardless of true order.
+    claim() {
+      seq += 1
+      const mySeq = seq
+      return () => seq === mySeq
     }
   }
 }
@@ -100,6 +116,21 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
   let connectTimeoutTimer = null
   let heartbeatTimer = null
   let presencePollTimer = null
+
+  // Browsers throttle setInterval heavily in a backgrounded/minimized tab
+  // (often to once a minute or less) - both heartbeatTimer (10s) and
+  // presencePollTimer (15s) are subject to this, so a player who locks their
+  // phone or switches apps mid-game can silently blow past
+  // RoomService.DISCONNECT_THRESHOLD (20s) and show as "disconnected" to
+  // everyone else despite still being in the room. Catching up the instant
+  // the tab becomes visible again - instead of waiting for whichever
+  // throttled timer happens to fire next - closes most of that gap.
+  function handleVisibilityChange() {
+    if (document.visibilityState === 'visible') {
+      if (roomCode) api.sendRoomHeartbeat(roomCode).catch(() => {})
+      poll()
+    }
+  }
 
   function startFallbackPolling() {
     if (pollTimer) return
@@ -146,6 +177,7 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
     })
     connectTimeoutTimer = setTimeout(startFallbackPolling, CONNECT_TIMEOUT_MS)
     stompClient.activate()
+    document.addEventListener('visibilitychange', handleVisibilityChange)
   }
 
   function stop() {
@@ -153,6 +185,7 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
     clearInterval(heartbeatTimer)
     clearInterval(presencePollTimer)
     stopFallbackPolling()
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
     if (subscription) subscription.unsubscribe()
     if (stompClient) stompClient.deactivate()
     stompClient = null

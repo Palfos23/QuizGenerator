@@ -222,7 +222,7 @@ async function poll() {
 }
 
 function applyState(fresh) {
-  staleGuard.markApplied()
+  staleGuard.claim()
   error.value = ''
   state.value = fresh
   const optionsKey = fresh.answersFromSubjects ? fresh.answersSport : fresh.answersCategory
@@ -266,19 +266,36 @@ function skipReveal() {
   revealIndex.value = allAnswersList.value.length
 }
 
+// Tracks whichever key currently has a fetch in flight - applyState() calls
+// loadOptions() again every poll/broadcast until lastOptionsKey catches up
+// (see below), so without this a slow or failing request piles up duplicate
+// concurrent fetches for the exact same key, and - worse - a slower OLDER
+// key's response could resolve after a newer key's already succeeded and
+// clobber allOptions.value with the wrong round's answer list.
+let loadingOptionsKey = null
+
 async function loadOptions(fromSubjects, key) {
+  if (loadingOptionsKey === key) return
+  loadingOptionsKey = key
   try {
-    allOptions.value = fromSubjects
+    const options = fromSubjects
       ? await api.fetchTensionSubjectOptions(key)
       : await api.fetchTensionAnswerOptions(key)
-    // Only remembered once it actually succeeds - otherwise a failed fetch
-    // (a network hiccup, or this app's backend cold-starting after being
-    // idle) would permanently skip retrying for the rest of the round, since
-    // applyState() is called again every poll with this same, now-"already
-    // seen" key.
-    lastOptionsKey = key
+    // Both the result and lastOptionsKey are only committed if nothing newer
+    // has taken over this slot while the fetch was in flight.
+    if (loadingOptionsKey === key) {
+      allOptions.value = options
+      // Only remembered once it actually succeeds - otherwise a failed fetch
+      // (a network hiccup, or this app's backend cold-starting after being
+      // idle) would permanently skip retrying for the rest of the round, since
+      // applyState() is called again every poll with this same, now-"already
+      // seen" key.
+      lastOptionsKey = key
+    }
   } catch (e) {
     toast.show("Couldn't load the answer list - check your connection.", 'error')
+  } finally {
+    if (loadingOptionsKey === key) loadingOptionsKey = null
   }
 }
 
@@ -313,11 +330,12 @@ function select(option) {
 async function submit() {
   if (!validSelection.value) return
   submitting.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.submitTensionOnlineAnswer(props.roomCode, value.value.trim())
     value.value = ''
     validSelection.value = false
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that answer.'
   } finally {
@@ -327,9 +345,10 @@ async function submit() {
 
 async function nextQuestion() {
   advancing.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.advanceTensionOnlineQuestion(props.roomCode)
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not advance to the next question.'
   } finally {

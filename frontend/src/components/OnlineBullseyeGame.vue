@@ -179,7 +179,7 @@ async function poll() {
 }
 
 function applyState(fresh) {
-  staleGuard.markApplied()
+  staleGuard.claim()
   error.value = ''
   state.value = fresh
   if (fresh.roundRevealed && !wasRevealed) {
@@ -227,9 +227,10 @@ onUnmounted(() => clearTimeout(revealTimer))
 async function submit(guessedName) {
   if (submitting.value) return
   submitting.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.submitBullseyeOnlineAnswer(props.roomCode, guessedName)
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that answer.'
   } finally {
@@ -239,9 +240,10 @@ async function submit(guessedName) {
 
 async function nextRound() {
   advancing.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.advanceBullseyeOnlineRound(props.roomCode)
-    applyState(fresh)
+    if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not advance to the next round.'
   } finally {

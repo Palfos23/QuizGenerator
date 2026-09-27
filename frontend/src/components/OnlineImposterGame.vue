@@ -212,17 +212,25 @@ async function poll() {
 }
 
 async function applyState(fresh) {
-  staleGuard.markApplied()
-  error.value = ''
-  if (fresh.currentGridIndex !== lastGridIndexSeen) {
-    lastGridIndexSeen = fresh.currentGridIndex
-    revealList.value = []
-  }
+  // Claims this call's spot in the sequence *before* the async preload below,
+  // then checks it's still the latest right after - otherwise, whichever of
+  // two overlapping applyState calls (a WS push racing this poll's own
+  // response, say) happens to finish preloading last wins and clobbers
+  // state.value regardless of which one is actually newer. This is what was
+  // making the turn indicator visibly jump/skip on a real network. Nothing
+  // below this line runs (and nothing mutates) until we know we're still current.
+  const isLatest = staleGuard.claim()
   // Same "load before reveal" treatment as the pass-and-play version -
   // covers a tile another player just flipped arriving here via poll/socket.
   // Already-cached tiles (the majority, unchanged between snapshots) resolve
   // immediately.
   await preloadImages((fresh.tiles || []).map(t => fresh.displayMode === 'NAME_AND_LOGO' ? t.logoUrl : t.photoUrl))
+  if (!isLatest()) return
+  error.value = ''
+  if (fresh.currentGridIndex !== lastGridIndexSeen) {
+    lastGridIndexSeen = fresh.currentGridIndex
+    revealList.value = []
+  }
   state.value = fresh
   if (fresh.boardComplete && revealList.value.length === 0) {
     api.getImposterOnlineReveal(props.roomCode).then(list => { revealList.value = list }).catch(() => {})
@@ -238,9 +246,10 @@ const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/sta
 
 async function chooseGrid(g) {
   choosing.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.chooseImposterOnlineGrid(props.roomCode, g.id)
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not choose that board.'
   } finally {
@@ -251,6 +260,7 @@ async function chooseGrid(g) {
 async function flipTile(t) {
   if (flipping.value || t.flipped || !state.value || state.value.boardComplete || !isYourTurn.value) return
   flipping.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const before = state.value.tiles.find(x => x.id === t.id)
     const fresh = await api.flipImposterOnlineTile(props.roomCode, t.id)
@@ -258,7 +268,7 @@ async function flipTile(t) {
     if (after && after.flipped && !before.flipped) {
       showFlipOverlay(after.imposter)
     }
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not flip that tile.'
   } finally {
@@ -268,9 +278,10 @@ async function flipTile(t) {
 
 async function nextBoard() {
   advancing.value = true
+  const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.advanceImposterOnlineBoard(props.roomCode)
-    await applyState(fresh)
+    if (stillFresh()) await applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not advance to the next board.'
   } finally {
