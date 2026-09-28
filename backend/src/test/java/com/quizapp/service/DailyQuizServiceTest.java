@@ -1,18 +1,18 @@
 package com.quizapp.service;
 
-import com.quizapp.dto.WeeklyQuizPlayStateDto;
-import com.quizapp.dto.WeeklyQuizResultDto;
-import com.quizapp.dto.WeeklyQuizSetSummaryDto;
-import com.quizapp.dto.WeeklyQuizSubmitRequest;
+import com.quizapp.dto.DailyQuizPlayStateDto;
+import com.quizapp.dto.DailyQuizResultDto;
+import com.quizapp.dto.DailyQuizSetSummaryDto;
+import com.quizapp.dto.DailyQuizSubmitRequest;
 import com.quizapp.model.AppUser;
+import com.quizapp.model.DailyQuizSet;
 import com.quizapp.model.Language;
 import com.quizapp.model.Question;
-import com.quizapp.model.WeeklyQuizSet;
 import com.quizapp.repository.AppUserRepository;
+import com.quizapp.repository.DailyQuizAnswerRepository;
+import com.quizapp.repository.DailyQuizAttemptRepository;
+import com.quizapp.repository.DailyQuizSetRepository;
 import com.quizapp.repository.QuestionRepository;
-import com.quizapp.repository.WeeklyQuizAnswerRepository;
-import com.quizapp.repository.WeeklyQuizAttemptRepository;
-import com.quizapp.repository.WeeklyQuizSetRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,18 +25,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
-class WeeklyQuizServiceTest {
+class DailyQuizServiceTest {
 
     @Autowired
-    private WeeklyQuizService weeklyQuizService;
+    private DailyQuizService dailyQuizService;
     @Autowired
-    private WeeklyQuizReviewService weeklyQuizReviewService;
+    private DailyQuizReviewService dailyQuizReviewService;
     @Autowired
-    private WeeklyQuizSetRepository weeklyQuizSetRepository;
+    private DailyQuizSetRepository dailyQuizSetRepository;
     @Autowired
-    private WeeklyQuizAttemptRepository weeklyQuizAttemptRepository;
+    private DailyQuizAttemptRepository dailyQuizAttemptRepository;
     @Autowired
-    private WeeklyQuizAnswerRepository weeklyQuizAnswerRepository;
+    private DailyQuizAnswerRepository dailyQuizAnswerRepository;
     @Autowired
     private QuestionRepository questionRepository;
     @Autowired
@@ -73,25 +73,25 @@ class WeeklyQuizServiceTest {
 
     @Test
     void exactCaseInsensitiveMatchAutoGrades() {
-        // Seeds its own pool so "this week"'s set has plenty of Norwegian
+        // Seeds its own pool so "today"'s set has plenty of Norwegian
         // questions to draw from, but doesn't assume it's THESE specific 15 -
-        // other tests in this class share the same "current week" set (no
-        // per-test rollback in this suite), so whichever test happens to run
-        // first is the one that actually generates it. Look each returned
-        // question's real answer up from the DB instead.
+        // other tests in this class share the same "today" set (no per-test
+        // rollback in this suite), so whichever test happens to run first is
+        // the one that actually generates it. Look each returned question's
+        // real answer up from the DB instead.
         seedQuestions(20);
         AppUser user = newUser();
-        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
 
-        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, user.getEmail());
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(setId, user.getEmail());
         assertThat(play.getAttemptStatus()).isEqualTo("IN_PROGRESS");
         assertThat(play.getQuestions()).hasSize(15);
 
-        WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
-        List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
-        for (WeeklyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
+        DailyQuizSubmitRequest request = new DailyQuizSubmitRequest();
+        List<DailyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
+        for (DailyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
             Question original = questionRepository.findById(q.getQuestionId()).orElseThrow();
-            WeeklyQuizSubmitRequest.AnswerSubmission a = new WeeklyQuizSubmitRequest.AnswerSubmission();
+            DailyQuizSubmitRequest.AnswerSubmission a = new DailyQuizSubmitRequest.AnswerSubmission();
             a.setQuestionId(q.getQuestionId());
             // exact match, but different case + surrounding whitespace
             a.setAnswerText("  " + original.getAnswer().toUpperCase() + "  ");
@@ -99,7 +99,7 @@ class WeeklyQuizServiceTest {
         }
         request.setAnswers(answers);
 
-        WeeklyQuizPlayStateDto result = weeklyQuizService.submitAnswers(setId, user.getEmail(), request);
+        DailyQuizPlayStateDto result = dailyQuizService.submitAnswers(setId, user.getEmail(), request);
 
         assertThat(result.getAttemptStatus()).isEqualTo("GRADED");
         assertThat(result.getResult().getScore()).isEqualTo(15);
@@ -116,25 +116,25 @@ class WeeklyQuizServiceTest {
         // answered, scrambling question numbers on the reveal screen.
         seedQuestions(20);
         AppUser user = newUser();
-        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
-        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, user.getEmail());
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(setId, user.getEmail());
         List<String> playOrderQuestionTexts = play.getQuestions().stream()
-                .map(WeeklyQuizPlayStateDto.QuestionDto::getText).toList();
+                .map(DailyQuizPlayStateDto.QuestionDto::getText).toList();
 
-        WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
-        List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
-        for (WeeklyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
-            WeeklyQuizSubmitRequest.AnswerSubmission a = new WeeklyQuizSubmitRequest.AnswerSubmission();
+        DailyQuizSubmitRequest request = new DailyQuizSubmitRequest();
+        List<DailyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
+        for (DailyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
+            DailyQuizSubmitRequest.AnswerSubmission a = new DailyQuizSubmitRequest.AnswerSubmission();
             a.setQuestionId(q.getQuestionId());
             a.setAnswerText("");
             answers.add(a);
         }
         request.setAnswers(answers);
 
-        WeeklyQuizPlayStateDto result = weeklyQuizService.submitAnswers(setId, user.getEmail(), request);
+        DailyQuizPlayStateDto result = dailyQuizService.submitAnswers(setId, user.getEmail(), request);
 
         List<String> resultOrderQuestionTexts = result.getResult().getAnswers().stream()
-                .map(WeeklyQuizResultDto.AnswerResultDto::getQuestionText).toList();
+                .map(DailyQuizResultDto.AnswerResultDto::getQuestionText).toList();
         assertThat(resultOrderQuestionTexts).containsExactlyElementsOf(playOrderQuestionTexts);
         for (int i = 0; i < result.getResult().getAnswers().size(); i++) {
             assertThat(result.getResult().getAnswers().get(i).getQuestionNumber()).isEqualTo(i + 1);
@@ -145,20 +145,20 @@ class WeeklyQuizServiceTest {
     void blankAnswerAutoFailsWithoutNeedingReview() {
         seedQuestions(20);
         AppUser user = newUser();
-        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
-        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, user.getEmail());
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(setId, user.getEmail());
 
-        WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
-        List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
-        for (WeeklyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
-            WeeklyQuizSubmitRequest.AnswerSubmission a = new WeeklyQuizSubmitRequest.AnswerSubmission();
+        DailyQuizSubmitRequest request = new DailyQuizSubmitRequest();
+        List<DailyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
+        for (DailyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
+            DailyQuizSubmitRequest.AnswerSubmission a = new DailyQuizSubmitRequest.AnswerSubmission();
             a.setQuestionId(q.getQuestionId());
             a.setAnswerText("   "); // skipped
             answers.add(a);
         }
         request.setAnswers(answers);
 
-        WeeklyQuizPlayStateDto result = weeklyQuizService.submitAnswers(setId, user.getEmail(), request);
+        DailyQuizPlayStateDto result = dailyQuizService.submitAnswers(setId, user.getEmail(), request);
 
         assertThat(result.getAttemptStatus()).isEqualTo("GRADED");
         assertThat(result.getResult().getScore()).isEqualTo(0);
@@ -169,20 +169,20 @@ class WeeklyQuizServiceTest {
     void nonExactAnswerStaysPendingButYourOwnAnswerIsStillVisible() {
         seedQuestions(20);
         AppUser user = newUser();
-        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
-        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, user.getEmail());
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(setId, user.getEmail());
 
-        WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
-        List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
-        for (WeeklyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
-            WeeklyQuizSubmitRequest.AnswerSubmission a = new WeeklyQuizSubmitRequest.AnswerSubmission();
+        DailyQuizSubmitRequest request = new DailyQuizSubmitRequest();
+        List<DailyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
+        for (DailyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
+            DailyQuizSubmitRequest.AnswerSubmission a = new DailyQuizSubmitRequest.AnswerSubmission();
             a.setQuestionId(q.getQuestionId());
             a.setAnswerText("Definitely not the right answer");
             answers.add(a);
         }
         request.setAnswers(answers);
 
-        WeeklyQuizPlayStateDto submitted = weeklyQuizService.submitAnswers(setId, user.getEmail(), request);
+        DailyQuizPlayStateDto submitted = dailyQuizService.submitAnswers(setId, user.getEmail(), request);
         assertThat(submitted.getAttemptStatus()).isEqualTo("SUBMITTED");
         // Score is hidden while anything is still pending...
         assertThat(submitted.getResult()).isNotNull();
@@ -194,15 +194,15 @@ class WeeklyQuizServiceTest {
         assertThat(submitted.getResult().getAnswers()).allMatch(a -> a.getYourAnswer().equals("Definitely not the right answer"));
         assertThat(submitted.getResult().getAnswers()).allMatch(a -> a.getCorrectAnswer() == null);
 
-        WeeklyQuizPlayStateDto stillWaiting = weeklyQuizService.getPlayState(setId, user.getEmail());
+        DailyQuizPlayStateDto stillWaiting = dailyQuizService.getPlayState(setId, user.getEmail());
         assertThat(stillWaiting.getAttemptStatus()).isEqualTo("SUBMITTED");
 
-        var pendingAttempts = weeklyQuizReviewService.listPendingAttempts();
+        var pendingAttempts = dailyQuizReviewService.listPendingAttempts();
         var thisPlayersPendingAttempt = pendingAttempts.stream()
                 .filter(p -> p.getPlayerName().equals(user.getName())).findFirst().orElseThrow();
         assertThat(thisPlayersPendingAttempt.getPendingCount()).isEqualTo(15);
 
-        var attemptDetail = weeklyQuizReviewService.getAttemptDetail(thisPlayersPendingAttempt.getAttemptId());
+        var attemptDetail = dailyQuizReviewService.getAttemptDetail(thisPlayersPendingAttempt.getAttemptId());
         assertThat(attemptDetail.getPlayerName()).isEqualTo(user.getName());
         assertThat(attemptDetail.getAnswers()).hasSize(15);
         assertThat(attemptDetail.getAnswers()).allMatch(a -> a.getVerdict().equals("PENDING"));
@@ -212,14 +212,14 @@ class WeeklyQuizServiceTest {
         // Resolve all but the last one - still not graded.
         var forThisPlayer = attemptDetail.getAnswers();
         for (int i = 0; i < forThisPlayer.size() - 1; i++) {
-            weeklyQuizReviewService.resolve(forThisPlayer.get(i).getAnswerId(), i % 2 == 0);
+            dailyQuizReviewService.resolve(forThisPlayer.get(i).getAnswerId(), i % 2 == 0);
         }
-        assertThat(weeklyQuizService.getPlayState(setId, user.getEmail()).getAttemptStatus()).isEqualTo("SUBMITTED");
+        assertThat(dailyQuizService.getPlayState(setId, user.getEmail()).getAttemptStatus()).isEqualTo("SUBMITTED");
 
         // Resolving the very last pending answer flips the whole attempt to GRADED.
-        weeklyQuizReviewService.resolve(forThisPlayer.get(forThisPlayer.size() - 1).getAnswerId(), true);
+        dailyQuizReviewService.resolve(forThisPlayer.get(forThisPlayer.size() - 1).getAnswerId(), true);
 
-        WeeklyQuizPlayStateDto graded = weeklyQuizService.getPlayState(setId, user.getEmail());
+        DailyQuizPlayStateDto graded = dailyQuizService.getPlayState(setId, user.getEmail());
         assertThat(graded.getAttemptStatus()).isEqualTo("GRADED");
         assertThat(graded.getResult()).isNotNull();
         assertThat(graded.getResult().getScore()).isNotNull();
@@ -232,52 +232,51 @@ class WeeklyQuizServiceTest {
     void cannotSubmitTwice() {
         seedQuestions(20);
         AppUser user = newUser();
-        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
-        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, user.getEmail());
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(setId, user.getEmail());
 
-        WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
-        List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
-        for (WeeklyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
-            WeeklyQuizSubmitRequest.AnswerSubmission a = new WeeklyQuizSubmitRequest.AnswerSubmission();
+        DailyQuizSubmitRequest request = new DailyQuizSubmitRequest();
+        List<DailyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
+        for (DailyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
+            DailyQuizSubmitRequest.AnswerSubmission a = new DailyQuizSubmitRequest.AnswerSubmission();
             a.setQuestionId(q.getQuestionId());
             a.setAnswerText("");
             answers.add(a);
         }
         request.setAnswers(answers);
-        weeklyQuizService.submitAnswers(setId, user.getEmail(), request);
+        dailyQuizService.submitAnswers(setId, user.getEmail(), request);
 
-        assertThatThrownBy(() -> weeklyQuizService.submitAnswers(setId, user.getEmail(), request))
+        assertThatThrownBy(() -> dailyQuizService.submitAnswers(setId, user.getEmail(), request))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    void newSetAvoidsQuestionsUsedInRecentWeeks() {
+    void newSetAvoidsQuestionsUsedInRecentDays() {
         // Enough of a pool that exclusion is actually exercised rather than
         // being forced to reuse questions out of sheer scarcity.
         List<Question> pool = seedQuestions(40);
         List<Long> recentlyUsedIds = pool.stream().limit(15).map(Question::getId).toList();
 
-        // A far-future week that no other test in this class could already
+        // A far-future day that no other test in this class could already
         // have touched - calling getOrCreateCurrentSet() here would only
-        // ever race to create/reuse "this week", which every other test in
-        // the class shares (no per-test transaction rollback in this suite).
-        LocalDate futureWeek = LocalDate.now().plusYears(5)
-                .with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
-        WeeklyQuizSet lastWeek = new WeeklyQuizSet();
-        lastWeek.setWeekStartDate(futureWeek.minusWeeks(1));
-        lastWeek.setQuestionIds(recentlyUsedIds);
-        weeklyQuizSetRepository.save(lastWeek);
+        // ever race to create/reuse "today", which every other test in the
+        // class shares (no per-test transaction rollback in this suite).
+        LocalDate futureDay = LocalDate.now().plusYears(5);
+        DailyQuizSet yesterday = new DailyQuizSet();
+        yesterday.setQuizDate(futureDay.minusDays(1));
+        yesterday.setQuestionIds(recentlyUsedIds);
+        dailyQuizSetRepository.save(yesterday);
 
-        WeeklyQuizSet generated = weeklyQuizService.generateSet(futureWeek);
+        DailyQuizSet generated = dailyQuizService.generateSet(futureDay);
 
         assertThat(generated.getQuestionIds()).hasSize(15);
         assertThat(generated.getQuestionIds()).noneMatch(recentlyUsedIds::contains);
     }
 
     @Test
-    void findActiveAlwaysReturnsExactlyThisWeek() {
+    void findActiveAlwaysReturnsExactlyToday() {
         AppUser user = newUser();
-        List<WeeklyQuizSetSummaryDto> active = weeklyQuizService.findActive(user.getEmail());
+        List<DailyQuizSetSummaryDto> active = dailyQuizService.findActive(user.getEmail());
         assertThat(active).hasSize(1);
         assertThat(active.get(0).getStatus()).isEqualTo("NOT_STARTED");
     }
@@ -285,7 +284,7 @@ class WeeklyQuizServiceTest {
     @Test
     void scoreboardRanksGradedAttemptsAndRespectsOptOut() {
         seedQuestions(20);
-        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
 
         AppUser winner = newUser();
         AppUser loser = newUser();
@@ -293,29 +292,50 @@ class WeeklyQuizServiceTest {
         gradeWithAllBlank(setId, loser.getEmail());
 
         // Winner opts out - still counted in the average, excluded from the list.
-        weeklyQuizService.setLeaderboardPreference(setId, winner.getEmail(), false);
+        dailyQuizService.setLeaderboardPreference(setId, winner.getEmail(), false);
 
-        var board = weeklyQuizService.getScoreboard(setId, loser.getEmail());
+        var board = dailyQuizService.getScoreboard(setId, loser.getEmail());
         assertThat(board.getEntries()).extracting("userName").doesNotContain(winner.getName());
         assertThat(board.getEntries()).extracting("userName").contains(loser.getName());
 
         // The opted-out player can still see their own row.
-        var ownView = weeklyQuizService.getScoreboard(setId, winner.getEmail());
+        var ownView = dailyQuizService.getScoreboard(setId, winner.getEmail());
         assertThat(ownView.getEntries()).extracting("userName").contains(winner.getName());
         assertThat(ownView.getYourLeaderboardPreference()).isFalse();
     }
 
     private void gradeWithAllBlank(Long setId, String email) {
-        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, email);
-        WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
-        List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
-        for (WeeklyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
-            WeeklyQuizSubmitRequest.AnswerSubmission a = new WeeklyQuizSubmitRequest.AnswerSubmission();
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(setId, email);
+        DailyQuizSubmitRequest request = new DailyQuizSubmitRequest();
+        List<DailyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
+        for (DailyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
+            DailyQuizSubmitRequest.AnswerSubmission a = new DailyQuizSubmitRequest.AnswerSubmission();
             a.setQuestionId(q.getQuestionId());
             a.setAnswerText("");
             answers.add(a);
         }
         request.setAnswers(answers);
-        weeklyQuizService.submitAnswers(setId, email, request);
+        dailyQuizService.submitAnswers(setId, email, request);
+    }
+
+    @Test
+    void cleanupDeletesSetsOlderThanRetentionButKeepsTheBoundaryDay() {
+        // Matches the acceptance criterion exactly: a quiz exactly
+        // RETENTION_DAYS old is still kept, one day older than that is gone.
+        LocalDate today = LocalDate.now();
+        DailyQuizSet keptBoundary = new DailyQuizSet();
+        keptBoundary.setQuizDate(today.minusDays(7));
+        keptBoundary.setQuestionIds(List.of());
+        dailyQuizSetRepository.save(keptBoundary);
+
+        DailyQuizSet deleted = new DailyQuizSet();
+        deleted.setQuizDate(today.minusDays(8));
+        deleted.setQuestionIds(List.of());
+        dailyQuizSetRepository.save(deleted);
+
+        dailyQuizService.deleteOldSets();
+
+        assertThat(dailyQuizSetRepository.findById(keptBoundary.getId())).isPresent();
+        assertThat(dailyQuizSetRepository.findById(deleted.getId())).isEmpty();
     }
 }

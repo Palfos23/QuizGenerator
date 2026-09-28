@@ -3,13 +3,13 @@ package com.quizapp.dto;
 import java.time.LocalDate;
 import java.util.List;
 
-public class WeeklyQuizPlayStateDto {
+public class DailyQuizPlayStateDto {
 
     private Long setId;
-    private LocalDate weekStartDate;
+    private LocalDate quizDate;
     private String attemptStatus; // IN_PROGRESS / SUBMITTED / GRADED
     private List<QuestionDto> questions; // only set while attemptStatus == IN_PROGRESS (the form to fill in)
-    private WeeklyQuizResultDto result; // set once attemptStatus is SUBMITTED or GRADED (see WeeklyQuizResultDto)
+    private DailyQuizResultDto result; // set once attemptStatus is SUBMITTED or GRADED (see DailyQuizResultDto)
 
     public Long getSetId() {
         return setId;
@@ -19,12 +19,12 @@ public class WeeklyQuizPlayStateDto {
         this.setId = setId;
     }
 
-    public LocalDate getWeekStartDate() {
-        return weekStartDate;
+    public LocalDate getQuizDate() {
+        return quizDate;
     }
 
-    public void setWeekStartDate(LocalDate weekStartDate) {
-        this.weekStartDate = weekStartDate;
+    public void setQuizDate(LocalDate quizDate) {
+        this.quizDate = quizDate;
     }
 
     public String getAttemptStatus() {
@@ -43,11 +43,11 @@ public class WeeklyQuizPlayStateDto {
         this.questions = questions;
     }
 
-    public WeeklyQuizResultDto getResult() {
+    public DailyQuizResultDto getResult() {
         return result;
     }
 
-    public void setResult(WeeklyQuizResultDto result) {
+    public void setResult(DailyQuizResultDto result) {
         this.result = result;
     }
 

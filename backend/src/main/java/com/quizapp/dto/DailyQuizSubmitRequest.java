@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-public class WeeklyQuizSubmitRequest {
+public class DailyQuizSubmitRequest {
 
     @Valid
     private List<AnswerSubmission> answers;

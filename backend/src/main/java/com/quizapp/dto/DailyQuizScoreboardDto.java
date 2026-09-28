@@ -2,9 +2,9 @@ package com.quizapp.dto;
 
 import java.util.List;
 
-public class WeeklyQuizScoreboardDto {
+public class DailyQuizScoreboardDto {
 
-    private List<WeeklyQuizScoreboardEntryDto> entries;
+    private List<DailyQuizScoreboardEntryDto> entries;
     private double averageScore;
     private int maxScore;
 
@@ -12,13 +12,13 @@ public class WeeklyQuizScoreboardDto {
     // once they have a GRADED attempt whose preference can be shown/changed.
     private Boolean yourLeaderboardPreference;
 
-    public WeeklyQuizScoreboardDto(List<WeeklyQuizScoreboardEntryDto> entries, double averageScore, int maxScore) {
+    public DailyQuizScoreboardDto(List<DailyQuizScoreboardEntryDto> entries, double averageScore, int maxScore) {
         this.entries = entries;
         this.averageScore = averageScore;
         this.maxScore = maxScore;
     }
 
-    public List<WeeklyQuizScoreboardEntryDto> getEntries() {
+    public List<DailyQuizScoreboardEntryDto> getEntries() {
         return entries;
     }
 

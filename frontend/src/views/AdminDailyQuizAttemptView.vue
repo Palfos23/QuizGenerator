@@ -1,13 +1,13 @@
 <template>
   <div>
-    <router-link to="/admin/weekly-quiz-review" class="btn btn-secondary btn-sm">← All players</router-link>
+    <router-link to="/admin/daily-quiz-review" class="btn btn-secondary btn-sm">← All players</router-link>
 
     <div v-if="error" class="banner error" style="margin-top:16px;">{{ error }}</div>
     <div v-if="loading" style="color:var(--text-dim); margin-top:16px;">Loading…</div>
 
     <template v-else-if="attempt">
       <h1 style="margin-top:16px;">{{ attempt.playerName }}</h1>
-      <p class="page-subtitle">Week of {{ formatDate(attempt.weekStartDate) }}</p>
+      <p class="page-subtitle">{{ formatDate(attempt.quizDate) }}</p>
 
       <div class="saved-quiz-list">
         <div v-for="a in attempt.answers" :key="a.answerId" class="saved-quiz-row" style="align-items:flex-start;">
@@ -59,7 +59,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    attempt.value = await api.adminGetWeeklyQuizAttempt(attemptId)
+    attempt.value = await api.adminGetDailyQuizAttempt(attemptId)
   } catch (e) {
     error.value = 'Could not load this player\'s answers.'
   } finally {
@@ -71,7 +71,7 @@ async function resolve(answer, correct) {
   busyId.value = answer.answerId
   error.value = ''
   try {
-    await api.adminResolveWeeklyQuizAnswer(answer.answerId, correct)
+    await api.adminResolveDailyQuizAnswer(answer.answerId, correct)
     answer.verdict = correct ? 'CORRECT' : 'INCORRECT'
     toast.show(correct ? 'Marked correct.' : 'Marked incorrect.')
   } catch (e) {

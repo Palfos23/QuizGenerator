@@ -1,14 +1,14 @@
 <template>
   <div style="max-width:720px; margin:0 auto;">
     <div style="display:flex; gap:8px; margin-bottom:6px;">
-      <router-link to="/weekly-quiz" class="btn btn-secondary btn-sm">← All weekly quizzes</router-link>
+      <router-link to="/daily-quiz" class="btn btn-secondary btn-sm">← All daily quizzes</router-link>
       <button v-if="state" class="btn btn-secondary btn-sm" @click="openScoreboard">Results</button>
     </div>
-    <h1>Weekly quiz</h1>
-    <p class="page-subtitle" v-if="state">Week of {{ formatDate(state.weekStartDate) }} - 15 questions, pub-quiz style.</p>
+    <h1>Daily quiz</h1>
+    <p class="page-subtitle" v-if="state">{{ formatDate(state.quizDate) }} - 15 questions, pub-quiz style.</p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <LoadingState v-if="loading" full message="Loading this week's quiz…" />
+    <LoadingState v-if="loading" full message="Loading this quiz…" />
 
     <template v-else-if="state">
       <template v-if="state.attemptStatus === 'IN_PROGRESS'">
@@ -122,7 +122,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    state.value = await api.getWeeklyQuizPlayState(quizId)
+    state.value = await api.getDailyQuizPlayState(quizId)
   } catch (e) {
     error.value = 'Could not load this quiz.'
   } finally {
@@ -135,7 +135,7 @@ async function submit() {
   error.value = ''
   try {
     const payload = state.value.questions.map(q => ({ questionId: q.questionId, answerText: answers[q.questionId] || '' }))
-    state.value = await api.submitWeeklyQuizAnswers(quizId, payload)
+    state.value = await api.submitDailyQuizAnswers(quizId, payload)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit your answers.'
   } finally {
@@ -170,7 +170,7 @@ async function openScoreboard() {
   showScoreboard.value = true
   scoreboardLoading.value = true
   try {
-    scoreboardData.value = await api.getWeeklyQuizScoreboard(quizId)
+    scoreboardData.value = await api.getDailyQuizScoreboard(quizId)
     leaderboardOptIn.value = scoreboardData.value.yourLeaderboardPreference ?? true
   } catch (e) {
     // scoreboard is a nice-to-have - fail quietly, empty state already covers it
@@ -181,8 +181,8 @@ async function openScoreboard() {
 
 async function updateLeaderboardPreference() {
   try {
-    await api.setWeeklyQuizLeaderboardPreference(quizId, leaderboardOptIn.value)
-    scoreboardData.value = await api.getWeeklyQuizScoreboard(quizId)
+    await api.setDailyQuizLeaderboardPreference(quizId, leaderboardOptIn.value)
+    scoreboardData.value = await api.getDailyQuizScoreboard(quizId)
   } catch (e) {
     toast.show('Could not update your leaderboard preference.')
     leaderboardOptIn.value = !leaderboardOptIn.value

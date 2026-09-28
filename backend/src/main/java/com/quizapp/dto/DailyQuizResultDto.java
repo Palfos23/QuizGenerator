@@ -4,10 +4,10 @@ import java.util.List;
 
 // Doubles as both the "still under review" view (answers populated, score
 // null) and the fully "graded" view (both populated) - see
-// WeeklyQuizService.buildAnswersView. Score stays null until every answer has
+// DailyQuizService.buildAnswersView. Score stays null until every answer has
 // a final verdict, per the product decision that the whole score is withheld
 // until nothing is left pending.
-public class WeeklyQuizResultDto {
+public class DailyQuizResultDto {
 
     private Integer score;
     private int maxScore;

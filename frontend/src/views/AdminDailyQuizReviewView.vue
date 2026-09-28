@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Weekly quiz - review answers</h1>
+    <h1>Daily quiz - review answers</h1>
     <p class="page-subtitle">Players whose answers weren't an exact match to the stored answer - click one to review just their answers.</p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
@@ -12,9 +12,9 @@
       <div v-for="a in pendingAttempts" :key="a.attemptId" class="saved-quiz-row">
         <div class="saved-quiz-info">
           <div class="saved-quiz-title">{{ a.playerName }}</div>
-          <div class="saved-quiz-meta">Week of {{ formatDate(a.weekStartDate) }} · {{ a.pendingCount }} answer{{ a.pendingCount === 1 ? '' : 's' }} to review</div>
+          <div class="saved-quiz-meta">{{ formatDate(a.quizDate) }} · {{ a.pendingCount }} answer{{ a.pendingCount === 1 ? '' : 's' }} to review</div>
         </div>
-        <router-link :to="`/admin/weekly-quiz-review/${a.attemptId}`" class="btn btn-primary btn-sm">Review</router-link>
+        <router-link :to="`/admin/daily-quiz-review/${a.attemptId}`" class="btn btn-primary btn-sm">Review</router-link>
       </div>
     </div>
   </div>
@@ -34,7 +34,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    pendingAttempts.value = await api.adminListWeeklyQuizPendingAttempts()
+    pendingAttempts.value = await api.adminListDailyQuizPendingAttempts()
   } catch (e) {
     error.value = 'Could not load pending answers.'
   } finally {

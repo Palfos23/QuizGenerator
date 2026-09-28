@@ -1,6 +1,6 @@
 package com.quizapp.model;
 
-public enum WeeklyQuizAttemptStatus {
+public enum DailyQuizAttemptStatus {
     IN_PROGRESS,
     SUBMITTED,
     GRADED

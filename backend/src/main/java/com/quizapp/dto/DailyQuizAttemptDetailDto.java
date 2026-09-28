@@ -4,20 +4,20 @@ import java.time.LocalDate;
 import java.util.List;
 
 // Admin-facing view of one player's full attempt - unlike the player-facing
-// WeeklyQuizResultDto, the correct answer is always shown (there's nothing to
+// DailyQuizResultDto, the correct answer is always shown (there's nothing to
 // spoil for the admin), even for still-PENDING rows, since that's exactly
 // what they're using to judge each one.
-public class WeeklyQuizAttemptDetailDto {
+public class DailyQuizAttemptDetailDto {
 
     private Long attemptId;
     private String playerName;
-    private LocalDate weekStartDate;
+    private LocalDate quizDate;
     private List<AnswerDto> answers;
 
-    public WeeklyQuizAttemptDetailDto(Long attemptId, String playerName, LocalDate weekStartDate, List<AnswerDto> answers) {
+    public DailyQuizAttemptDetailDto(Long attemptId, String playerName, LocalDate quizDate, List<AnswerDto> answers) {
         this.attemptId = attemptId;
         this.playerName = playerName;
-        this.weekStartDate = weekStartDate;
+        this.quizDate = quizDate;
         this.answers = answers;
     }
 
@@ -29,8 +29,8 @@ public class WeeklyQuizAttemptDetailDto {
         return playerName;
     }
 
-    public LocalDate getWeekStartDate() {
-        return weekStartDate;
+    public LocalDate getQuizDate() {
+        return quizDate;
     }
 
     public List<AnswerDto> getAnswers() {

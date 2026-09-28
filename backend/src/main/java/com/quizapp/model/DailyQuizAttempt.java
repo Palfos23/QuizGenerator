@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 
+// Table/column names kept as "weekly_quiz_attempts" - see DailyQuizSet's
+// class comment for why (real production data already there).
 @Entity
 @Table(name = "weekly_quiz_attempts", uniqueConstraints = @UniqueConstraint(columnNames = {"set_id", "user_id"}))
-public class WeeklyQuizAttempt {
+public class DailyQuizAttempt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,7 +16,7 @@ public class WeeklyQuizAttempt {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "set_id", nullable = false)
-    private WeeklyQuizSet set;
+    private DailyQuizSet set;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -22,7 +24,7 @@ public class WeeklyQuizAttempt {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private WeeklyQuizAttemptStatus status = WeeklyQuizAttemptStatus.IN_PROGRESS;
+    private DailyQuizAttemptStatus status = DailyQuizAttemptStatus.IN_PROGRESS;
 
     // Only meaningful once status == GRADED - count of CORRECT answers.
     @Column(nullable = false)
@@ -54,11 +56,11 @@ public class WeeklyQuizAttempt {
         this.id = id;
     }
 
-    public WeeklyQuizSet getSet() {
+    public DailyQuizSet getSet() {
         return set;
     }
 
-    public void setSet(WeeklyQuizSet set) {
+    public void setSet(DailyQuizSet set) {
         this.set = set;
     }
 
@@ -70,11 +72,11 @@ public class WeeklyQuizAttempt {
         this.user = user;
     }
 
-    public WeeklyQuizAttemptStatus getStatus() {
+    public DailyQuizAttemptStatus getStatus() {
         return status;
     }
 
-    public void setStatus(WeeklyQuizAttemptStatus status) {
+    public void setStatus(DailyQuizAttemptStatus status) {
         this.status = status;
     }
 

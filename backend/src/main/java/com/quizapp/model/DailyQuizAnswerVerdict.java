@@ -1,6 +1,6 @@
 package com.quizapp.model;
 
-public enum WeeklyQuizAnswerVerdict {
+public enum DailyQuizAnswerVerdict {
     PENDING,
     CORRECT,
     INCORRECT

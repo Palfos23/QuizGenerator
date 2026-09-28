@@ -7,10 +7,10 @@ import HomeView from '../views/HomeView.vue'
 import AdminLoginView from '../views/AdminLoginView.vue'
 import MyQuizzesView from '../views/MyQuizzesView.vue'
 import WeeklyGridListView from '../views/WeeklyGridListView.vue'
-import WeeklyQuizListView from '../views/WeeklyQuizListView.vue'
-import WeeklyQuizPlayView from '../views/WeeklyQuizPlayView.vue'
-import AdminWeeklyQuizReviewView from '../views/AdminWeeklyQuizReviewView.vue'
-import AdminWeeklyQuizAttemptView from '../views/AdminWeeklyQuizAttemptView.vue'
+import DailyQuizListView from '../views/DailyQuizListView.vue'
+import DailyQuizPlayView from '../views/DailyQuizPlayView.vue'
+import AdminDailyQuizReviewView from '../views/AdminDailyQuizReviewView.vue'
+import AdminDailyQuizAttemptView from '../views/AdminDailyQuizAttemptView.vue'
 import WeeklyGridPlayView from '../views/WeeklyGridPlayView.vue'
 import AdminAthletesView from '../views/AdminAthletesView.vue'
 import AdminGridsView from '../views/AdminGridsView.vue'
@@ -74,8 +74,8 @@ const routes = [
   { path: '/grid-battle', name: 'grid-battle', component: MultiplayerGridView, meta: { requiresAuth: true } },
   { path: '/my-quizzes', name: 'my-quizzes', component: MyQuizzesView, meta: { requiresAuth: true } },
   { path: '/weekly-grid', name: 'weekly-grid', component: WeeklyGridListView, meta: { requiresAuth: true } },
-  { path: '/weekly-quiz', name: 'weekly-quiz', component: WeeklyQuizListView, meta: { requiresAuth: true } },
-  { path: '/weekly-quiz/:id', name: 'weekly-quiz-play', component: WeeklyQuizPlayView, meta: { requiresAuth: true } },
+  { path: '/daily-quiz', name: 'daily-quiz', component: DailyQuizListView, meta: { requiresAuth: true } },
+  { path: '/daily-quiz/:id', name: 'daily-quiz-play', component: DailyQuizPlayView, meta: { requiresAuth: true } },
   { path: '/weekly-grid/:id', name: 'weekly-grid-play', component: WeeklyGridPlayView, meta: { requiresAuth: true } },
 
   // The admin's own front door - a dedicated login landing page, separate from the
@@ -109,8 +109,8 @@ const routes = [
   { path: '/admin/tension-categories', name: 'admin-tension-categories', component: AdminTensionCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/suggest-question', name: 'suggest-question', component: SuggestQuestionView, meta: { requiresAuth: true } },
   { path: '/admin/question-submissions', name: 'admin-question-submissions', component: AdminSubmissionsView, meta: { requiresAuth: true, requiresAdmin: true } },
-  { path: '/admin/weekly-quiz-review', name: 'admin-weekly-quiz-review', component: AdminWeeklyQuizReviewView, meta: { requiresAuth: true, requiresAdmin: true } },
-  { path: '/admin/weekly-quiz-review/:id', name: 'admin-weekly-quiz-attempt', component: AdminWeeklyQuizAttemptView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/daily-quiz-review', name: 'admin-daily-quiz-review', component: AdminDailyQuizReviewView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/daily-quiz-review/:id', name: 'admin-daily-quiz-attempt', component: AdminDailyQuizAttemptView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/quiz-templates', name: 'admin-quiz-templates', component: AdminQuizTemplatesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/report-problem', name: 'report-problem', component: ReportProblemView, meta: { requiresAuth: true } },
   { path: '/admin/reports', name: 'admin-reports', component: AdminReportsView, meta: { requiresAuth: true, requiresAdmin: true } },

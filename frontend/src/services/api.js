@@ -540,35 +540,35 @@ export default {
     return client.post(`/admin/question-submissions/${id}/reject`, { reason }).then(r => r.data)
   },
 
-  // --- Weekly quiz: user-facing ---
-  getActiveWeeklyQuizzes() {
-    return client.get('/weekly-quiz/active').then(r => r.data)
+  // --- Daily quiz: user-facing ---
+  getActiveDailyQuizzes() {
+    return client.get('/daily-quiz/active').then(r => r.data)
   },
-  getArchiveWeeklyQuizzes() {
-    return client.get('/weekly-quiz/archive').then(r => r.data)
+  getArchiveDailyQuizzes() {
+    return client.get('/daily-quiz/archive').then(r => r.data)
   },
-  getWeeklyQuizPlayState(id) {
-    return client.get(`/weekly-quiz/${id}/play`).then(r => r.data)
+  getDailyQuizPlayState(id) {
+    return client.get(`/daily-quiz/${id}/play`).then(r => r.data)
   },
-  submitWeeklyQuizAnswers(id, answers) {
-    return client.post(`/weekly-quiz/${id}/submit`, { answers }).then(r => r.data)
+  submitDailyQuizAnswers(id, answers) {
+    return client.post(`/daily-quiz/${id}/submit`, { answers }).then(r => r.data)
   },
-  getWeeklyQuizScoreboard(id) {
-    return client.get(`/weekly-quiz/${id}/scoreboard`).then(r => r.data)
+  getDailyQuizScoreboard(id) {
+    return client.get(`/daily-quiz/${id}/scoreboard`).then(r => r.data)
   },
-  setWeeklyQuizLeaderboardPreference(id, include) {
-    return client.put(`/weekly-quiz/${id}/leaderboard-preference?include=${include}`)
+  setDailyQuizLeaderboardPreference(id, include) {
+    return client.put(`/daily-quiz/${id}/leaderboard-preference?include=${include}`)
   },
 
-  // --- Weekly quiz: admin review of non-exact answers ---
-  adminListWeeklyQuizPendingAttempts() {
-    return client.get('/admin/weekly-quiz/pending-attempts').then(r => r.data)
+  // --- Daily quiz: admin review of non-exact answers ---
+  adminListDailyQuizPendingAttempts() {
+    return client.get('/admin/daily-quiz/pending-attempts').then(r => r.data)
   },
-  adminGetWeeklyQuizAttempt(attemptId) {
-    return client.get(`/admin/weekly-quiz/attempts/${attemptId}`).then(r => r.data)
+  adminGetDailyQuizAttempt(attemptId) {
+    return client.get(`/admin/daily-quiz/attempts/${attemptId}`).then(r => r.data)
   },
-  adminResolveWeeklyQuizAnswer(id, correct) {
-    return client.post(`/admin/weekly-quiz/answers/${id}/resolve`, { correct }).then(r => r.data)
+  adminResolveDailyQuizAnswer(id, correct) {
+    return client.post(`/admin/daily-quiz/answers/${id}/resolve`, { correct }).then(r => r.data)
   },
 
   // --- Quiz templates: user-facing ---

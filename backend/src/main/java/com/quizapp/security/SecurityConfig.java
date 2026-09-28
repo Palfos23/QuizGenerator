@@ -75,8 +75,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/grids/**").hasAnyRole("USER", "ADMIN")
                         // browsing/playing Starting XI boards: any logged-in user (USER or ADMIN)
                         .requestMatchers("/api/lineups/**").hasAnyRole("USER", "ADMIN")
-                        // playing the weekly free-text quiz: any logged-in user (USER or ADMIN)
-                        .requestMatchers("/api/weekly-quiz/**").hasAnyRole("USER", "ADMIN")
+                        // playing the daily free-text quiz: any logged-in user (USER or ADMIN)
+                        .requestMatchers("/api/daily-quiz/**").hasAnyRole("USER", "ADMIN")
                         // fetching tension questions/autocomplete: any logged-in user (USER or ADMIN)
                         .requestMatchers("/api/tension/**").hasAnyRole("USER", "ADMIN")
                         // browsing/copying admin-published quiz templates: any logged-in user

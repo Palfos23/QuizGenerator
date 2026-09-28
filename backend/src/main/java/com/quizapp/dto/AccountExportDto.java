@@ -17,7 +17,7 @@ public class AccountExportDto {
     private List<ReportExport> reports;
     private List<GridAttemptExport> gridAttempts;
     private List<LineupAttemptExport> lineupAttempts;
-    private List<WeeklyQuizAttemptExport> weeklyQuizAttempts;
+    private List<DailyQuizAttemptExport> dailyQuizAttempts;
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -37,8 +37,8 @@ public class AccountExportDto {
     public void setGridAttempts(List<GridAttemptExport> gridAttempts) { this.gridAttempts = gridAttempts; }
     public List<LineupAttemptExport> getLineupAttempts() { return lineupAttempts; }
     public void setLineupAttempts(List<LineupAttemptExport> lineupAttempts) { this.lineupAttempts = lineupAttempts; }
-    public List<WeeklyQuizAttemptExport> getWeeklyQuizAttempts() { return weeklyQuizAttempts; }
-    public void setWeeklyQuizAttempts(List<WeeklyQuizAttemptExport> weeklyQuizAttempts) { this.weeklyQuizAttempts = weeklyQuizAttempts; }
+    public List<DailyQuizAttemptExport> getDailyQuizAttempts() { return dailyQuizAttempts; }
+    public void setDailyQuizAttempts(List<DailyQuizAttemptExport> dailyQuizAttempts) { this.dailyQuizAttempts = dailyQuizAttempts; }
 
     public static class SavedQuizExport {
         private String title;
@@ -129,18 +129,18 @@ public class AccountExportDto {
         public int getStrikesUsed() { return strikesUsed; }
     }
 
-    public static class WeeklyQuizAttemptExport {
-        private java.time.LocalDate weekStartDate;
+    public static class DailyQuizAttemptExport {
+        private java.time.LocalDate quizDate;
         private String status;
         private int score;
 
-        public WeeklyQuizAttemptExport(java.time.LocalDate weekStartDate, String status, int score) {
-            this.weekStartDate = weekStartDate;
+        public DailyQuizAttemptExport(java.time.LocalDate quizDate, String status, int score) {
+            this.quizDate = quizDate;
             this.status = status;
             this.score = score;
         }
 
-        public java.time.LocalDate getWeekStartDate() { return weekStartDate; }
+        public java.time.LocalDate getQuizDate() { return quizDate; }
         public String getStatus() { return status; }
         public int getScore() { return score; }
     }

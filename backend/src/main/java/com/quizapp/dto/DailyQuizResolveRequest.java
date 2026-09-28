@@ -2,7 +2,7 @@ package com.quizapp.dto;
 
 import jakarta.validation.constraints.NotNull;
 
-public class WeeklyQuizResolveRequest {
+public class DailyQuizResolveRequest {
 
     @NotNull
     private Boolean correct;

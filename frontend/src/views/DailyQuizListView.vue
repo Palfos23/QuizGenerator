@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Weekly quiz</h1>
+    <h1>Daily quiz</h1>
     <p class="page-subtitle">15 random questions, pub-quiz style - free text, no multiple choice.</p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
@@ -8,18 +8,18 @@
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
     <div v-else-if="!activeQuizzes.length" class="empty-state friendly">
-      No quiz this week yet - check back soon.
+      No quiz today yet - check back soon.
     </div>
 
     <div v-else class="saved-quiz-list">
       <div v-for="q in activeQuizzes" :key="q.id" class="saved-quiz-row">
         <div class="saved-quiz-info">
-          <div class="saved-quiz-title">Week of {{ formatDate(q.weekStartDate) }}</div>
+          <div class="saved-quiz-title">{{ formatDate(q.quizDate) }}</div>
           <div class="saved-quiz-meta">{{ q.questionCount }} questions</div>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
           <span class="tag" :style="statusStyle(q.status)">{{ statusLabel(q) }}</span>
-          <router-link :to="`/weekly-quiz/${q.id}`" class="btn btn-primary btn-sm">
+          <router-link :to="`/daily-quiz/${q.id}`" class="btn btn-primary btn-sm">
             {{ buttonLabel(q.status) }}
           </router-link>
         </div>
@@ -35,12 +35,12 @@
         <div v-else class="saved-quiz-list">
           <div v-for="q in archiveQuizzes" :key="q.id" class="saved-quiz-row">
             <div class="saved-quiz-info">
-              <div class="saved-quiz-title">Week of {{ formatDate(q.weekStartDate) }}</div>
+              <div class="saved-quiz-title">{{ formatDate(q.quizDate) }}</div>
               <div class="saved-quiz-meta">{{ q.questionCount }} questions</div>
             </div>
             <div style="display:flex; align-items:center; gap:12px;">
               <span class="tag" :style="statusStyle(q.status)">{{ statusLabel(q) }}</span>
-              <router-link :to="`/weekly-quiz/${q.id}`" class="btn btn-secondary btn-sm">
+              <router-link :to="`/daily-quiz/${q.id}`" class="btn btn-secondary btn-sm">
                 {{ buttonLabel(q.status) }}
               </router-link>
             </div>
@@ -63,14 +63,14 @@ const showArchive = ref(false)
 
 onMounted(async () => {
   try {
-    activeQuizzes.value = await api.getActiveWeeklyQuizzes()
+    activeQuizzes.value = await api.getActiveDailyQuizzes()
   } catch (e) {
-    error.value = 'Could not load this week\'s quiz.'
+    error.value = 'Could not load today\'s quiz.'
   } finally {
     loading.value = false
   }
   try {
-    archiveQuizzes.value = await api.getArchiveWeeklyQuizzes()
+    archiveQuizzes.value = await api.getArchiveDailyQuizzes()
   } catch (e) {
     // archive is a nice-to-have - fail quietly
   }

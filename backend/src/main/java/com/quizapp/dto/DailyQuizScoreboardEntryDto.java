@@ -1,13 +1,13 @@
 package com.quizapp.dto;
 
-public class WeeklyQuizScoreboardEntryDto {
+public class DailyQuizScoreboardEntryDto {
 
     private String userName;
     private int score;
     private int maxScore;
     private boolean isYou;
 
-    public WeeklyQuizScoreboardEntryDto(String userName, int score, int maxScore, boolean isYou) {
+    public DailyQuizScoreboardEntryDto(String userName, int score, int maxScore, boolean isYou) {
         this.userName = userName;
         this.score = score;
         this.maxScore = maxScore;

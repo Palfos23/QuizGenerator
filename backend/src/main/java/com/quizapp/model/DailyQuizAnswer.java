@@ -2,9 +2,11 @@ package com.quizapp.model;
 
 import jakarta.persistence.*;
 
+// Table name kept as "weekly_quiz_answers" - see DailyQuizSet's class
+// comment for why (real production data already there).
 @Entity
 @Table(name = "weekly_quiz_answers")
-public class WeeklyQuizAnswer {
+public class DailyQuizAnswer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,7 +14,7 @@ public class WeeklyQuizAnswer {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "attempt_id", nullable = false)
-    private WeeklyQuizAttempt attempt;
+    private DailyQuizAttempt attempt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "question_id", nullable = false)
@@ -23,7 +25,7 @@ public class WeeklyQuizAnswer {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private WeeklyQuizAnswerVerdict verdict = WeeklyQuizAnswerVerdict.PENDING;
+    private DailyQuizAnswerVerdict verdict = DailyQuizAnswerVerdict.PENDING;
 
     public Long getId() {
         return id;
@@ -33,11 +35,11 @@ public class WeeklyQuizAnswer {
         this.id = id;
     }
 
-    public WeeklyQuizAttempt getAttempt() {
+    public DailyQuizAttempt getAttempt() {
         return attempt;
     }
 
-    public void setAttempt(WeeklyQuizAttempt attempt) {
+    public void setAttempt(DailyQuizAttempt attempt) {
         this.attempt = attempt;
     }
 
@@ -57,11 +59,11 @@ public class WeeklyQuizAnswer {
         this.answerText = answerText;
     }
 
-    public WeeklyQuizAnswerVerdict getVerdict() {
+    public DailyQuizAnswerVerdict getVerdict() {
         return verdict;
     }
 
-    public void setVerdict(WeeklyQuizAnswerVerdict verdict) {
+    public void setVerdict(DailyQuizAnswerVerdict verdict) {
         this.verdict = verdict;
     }
 }

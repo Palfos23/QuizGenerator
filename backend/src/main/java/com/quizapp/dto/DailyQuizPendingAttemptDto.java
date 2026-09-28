@@ -2,19 +2,19 @@ package com.quizapp.dto;
 
 import java.time.LocalDate;
 
-// One row per player+week that still has at least one non-exact answer
-// waiting on a human decision - see WeeklyQuizReviewService.listPendingAttempts.
-public class WeeklyQuizPendingAttemptDto {
+// One row per player+day that still has at least one non-exact answer
+// waiting on a human decision - see DailyQuizReviewService.listPendingAttempts.
+public class DailyQuizPendingAttemptDto {
 
     private Long attemptId;
     private String playerName;
-    private LocalDate weekStartDate;
+    private LocalDate quizDate;
     private int pendingCount;
 
-    public WeeklyQuizPendingAttemptDto(Long attemptId, String playerName, LocalDate weekStartDate, int pendingCount) {
+    public DailyQuizPendingAttemptDto(Long attemptId, String playerName, LocalDate quizDate, int pendingCount) {
         this.attemptId = attemptId;
         this.playerName = playerName;
-        this.weekStartDate = weekStartDate;
+        this.quizDate = quizDate;
         this.pendingCount = pendingCount;
     }
 
@@ -26,8 +26,8 @@ public class WeeklyQuizPendingAttemptDto {
         return playerName;
     }
 
-    public LocalDate getWeekStartDate() {
-        return weekStartDate;
+    public LocalDate getQuizDate() {
+        return quizDate;
     }
 
     public int getPendingCount() {
