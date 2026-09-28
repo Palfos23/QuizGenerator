@@ -2,6 +2,9 @@ package com.quizapp.service;
 
 import com.quizapp.dto.WeeklyQuizPlayStateDto;
 import com.quizapp.dto.WeeklyQuizResultDto;
+import com.quizapp.dto.WeeklyQuizScoreboardDto;
+import com.quizapp.dto.WeeklyQuizScoreboardEntryDto;
+import com.quizapp.dto.WeeklyQuizSetSummaryDto;
 import com.quizapp.dto.WeeklyQuizSubmitRequest;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.*;
@@ -19,8 +22,8 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,7 +31,9 @@ import java.util.stream.Collectors;
 // Unlike Grid/Lineup (admin hand-curates each board), the week's question set
 // is generated automatically the first time anyone asks for it - no admin
 // authoring step, no scheduled job. See GridPlayService's identical
-// lazy-create-on-first-request philosophy for findOrCreateAttempt/isActive.
+// lazy-create-on-first-request philosophy for findOrCreateAttempt/isActive,
+// and its findActive/findArchive/getScoreboard for the list+leaderboard
+// conventions this class mirrors.
 @Service
 public class WeeklyQuizService {
 
@@ -95,59 +100,103 @@ public class WeeklyQuizService {
         return setRepository.save(set);
     }
 
+    // Always exactly one entry (this week's set, lazily created) - unlike
+    // Grid, where several different boards can be active at once, Weekly
+    // Quiz only ever has one set per week. Still returned as a list so the
+    // list-page frontend can treat it the same way as Grid's active/archive split.
     @Transactional
-    public WeeklyQuizPlayStateDto getPlayState(String userEmail) {
-        WeeklyQuizSet set = getOrCreateCurrentSet();
-        WeeklyQuizAttempt attempt = findOrCreateAttempt(set, userEmail);
+    public List<WeeklyQuizSetSummaryDto> findActive(String userEmail) {
+        WeeklyQuizSet current = getOrCreateCurrentSet();
+        return toSummaries(List.of(current), userEmail);
+    }
 
+    @Transactional(readOnly = true)
+    public List<WeeklyQuizSetSummaryDto> findArchive(String userEmail) {
+        List<WeeklyQuizSet> pastSets = setRepository.findByWeekStartDateBeforeOrderByWeekStartDateDesc(currentWeekStart());
+        return toSummaries(pastSets, userEmail);
+    }
+
+    private List<WeeklyQuizSetSummaryDto> toSummaries(List<WeeklyQuizSet> sets, String userEmail) {
+        List<Long> setIds = sets.stream().map(WeeklyQuizSet::getId).collect(Collectors.toList());
+        Map<Long, WeeklyQuizAttempt> attemptBySetId = setIds.isEmpty()
+                ? Map.of()
+                : attemptRepository.findBySet_IdInAndUser_Email(setIds, userEmail).stream()
+                        .collect(Collectors.toMap(a -> a.getSet().getId(), a -> a));
+
+        return sets.stream().map(set -> {
+            WeeklyQuizAttempt attempt = attemptBySetId.get(set.getId());
+            String status = attempt == null ? "NOT_STARTED" : attempt.getStatus().name();
+            Integer score = attempt != null && attempt.getStatus() == WeeklyQuizAttemptStatus.GRADED ? attempt.getScore() : null;
+            return new WeeklyQuizSetSummaryDto(set.getId(), set.getWeekStartDate(), set.getQuestionIds().size(), status, score);
+        }).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public WeeklyQuizPlayStateDto getPlayState(Long setId, String userEmail) {
+        WeeklyQuizSet set = requireSet(setId);
+        WeeklyQuizAttempt attempt = findOrCreateAttempt(set, userEmail);
+        return toPlayStateDto(set, attempt);
+    }
+
+    private WeeklyQuizSet requireSet(Long setId) {
+        return setRepository.findById(setId)
+                .orElseThrow(() -> new ResourceNotFoundException("No weekly quiz found with id " + setId));
+    }
+
+    private WeeklyQuizPlayStateDto toPlayStateDto(WeeklyQuizSet set, WeeklyQuizAttempt attempt) {
         WeeklyQuizPlayStateDto dto = new WeeklyQuizPlayStateDto();
+        dto.setSetId(set.getId());
         dto.setWeekStartDate(set.getWeekStartDate());
         dto.setAttemptStatus(attempt.getStatus().name());
 
-        List<Question> questions = questionRepository.findAllById(set.getQuestionIds());
-        java.util.Map<Long, Question> byId = questions.stream().collect(Collectors.toMap(Question::getId, q -> q));
-        List<WeeklyQuizPlayStateDto.QuestionDto> questionDtos = new ArrayList<>();
-        for (int i = 0; i < set.getQuestionIds().size(); i++) {
-            Question q = byId.get(set.getQuestionIds().get(i));
-            if (q != null) {
-                questionDtos.add(new WeeklyQuizPlayStateDto.QuestionDto(i + 1, q.getId(), q.getQuestionText()));
+        if (attempt.getStatus() == WeeklyQuizAttemptStatus.IN_PROGRESS) {
+            List<Question> questions = questionRepository.findAllById(set.getQuestionIds());
+            Map<Long, Question> byId = questions.stream().collect(Collectors.toMap(Question::getId, q -> q));
+            List<WeeklyQuizPlayStateDto.QuestionDto> questionDtos = new ArrayList<>();
+            for (int i = 0; i < set.getQuestionIds().size(); i++) {
+                Question q = byId.get(set.getQuestionIds().get(i));
+                if (q != null) {
+                    questionDtos.add(new WeeklyQuizPlayStateDto.QuestionDto(i + 1, q.getId(), q.getQuestionText()));
+                }
             }
-        }
-        dto.setQuestions(questionDtos);
-
-        if (attempt.getStatus() == WeeklyQuizAttemptStatus.GRADED) {
-            dto.setResult(buildResult(attempt));
+            dto.setQuestions(questionDtos);
+        } else {
+            // SUBMITTED or GRADED - your own answers are always visible, even
+            // while some are still "Under review" (score itself stays hidden
+            // until nothing is left pending - see buildAnswersView).
+            dto.setResult(buildAnswersView(attempt));
         }
         return dto;
     }
 
-    private WeeklyQuizResultDto buildResult(WeeklyQuizAttempt attempt) {
+    private WeeklyQuizResultDto buildAnswersView(WeeklyQuizAttempt attempt) {
         List<WeeklyQuizAnswer> answers = answerRepository.findByAttempt_Id(attempt.getId());
         WeeklyQuizResultDto result = new WeeklyQuizResultDto();
-        result.setScore(attempt.getScore());
+        result.setScore(attempt.getStatus() == WeeklyQuizAttemptStatus.GRADED ? attempt.getScore() : null);
         result.setMaxScore(answers.size());
         List<WeeklyQuizResultDto.AnswerResultDto> rows = new ArrayList<>();
         for (int i = 0; i < answers.size(); i++) {
             WeeklyQuizAnswer a = answers.get(i);
+            boolean pending = a.getVerdict() == WeeklyQuizAnswerVerdict.PENDING;
             rows.add(new WeeklyQuizResultDto.AnswerResultDto(
                     i + 1, a.getQuestion().getQuestionText(), a.getAnswerText(),
-                    a.getQuestion().getAnswer(), a.getVerdict().name()));
+                    pending ? null : a.getQuestion().getAnswer(), a.getVerdict().name()));
         }
         result.setAnswers(rows);
         return result;
     }
 
     @Transactional
-    public WeeklyQuizPlayStateDto submitAnswers(String userEmail, WeeklyQuizSubmitRequest request) {
-        WeeklyQuizSet set = getOrCreateCurrentSet();
+    public WeeklyQuizPlayStateDto submitAnswers(Long setId, String userEmail, WeeklyQuizSubmitRequest request) {
+        WeeklyQuizSet set = requireSet(setId);
         WeeklyQuizAttempt attempt = findOrCreateAttempt(set, userEmail);
         if (attempt.getStatus() != WeeklyQuizAttemptStatus.IN_PROGRESS) {
             throw new IllegalStateException("You've already submitted this week's quiz.");
         }
 
         List<Question> questions = questionRepository.findAllById(set.getQuestionIds());
-        java.util.Map<Long, Question> byId = questions.stream().collect(Collectors.toMap(Question::getId, q -> q));
-        java.util.Map<Long, String> submittedByQuestionId = (request.getAnswers() == null ? List.<WeeklyQuizSubmitRequest.AnswerSubmission>of() : request.getAnswers())
+        Map<Long, Question> byId = questions.stream().collect(Collectors.toMap(Question::getId, q -> q));
+        Map<Long, String> submittedByQuestionId = (request.getAnswers() == null ? List.<WeeklyQuizSubmitRequest.AnswerSubmission>of() : request.getAnswers())
                 .stream()
                 .collect(Collectors.toMap(WeeklyQuizSubmitRequest.AnswerSubmission::getQuestionId,
                         a -> a.getAnswerText() == null ? "" : a.getAnswerText(), (a, b) -> a));
@@ -182,7 +231,7 @@ public class WeeklyQuizService {
         }
         attemptRepository.save(attempt);
 
-        return getPlayState(userEmail);
+        return getPlayState(setId, userEmail);
     }
 
     // Called both right after submit (when nothing needs review) and by
@@ -192,6 +241,47 @@ public class WeeklyQuizService {
         long correctCount = answerRepository.countByAttempt_IdAndVerdict(attempt.getId(), WeeklyQuizAnswerVerdict.CORRECT);
         attempt.setScore((int) correctCount);
         attempt.setStatus(WeeklyQuizAttemptStatus.GRADED);
+    }
+
+    @Transactional
+    public void setLeaderboardPreference(Long setId, String userEmail, boolean includeOnLeaderboard) {
+        WeeklyQuizAttempt attempt = attemptRepository.findBySet_IdAndUser_Email(setId, userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("No attempt found for this weekly quiz."));
+        attempt.setIncludeOnLeaderboard(includeOnLeaderboard);
+        attemptRepository.save(attempt);
+    }
+
+    @Transactional(readOnly = true)
+    public WeeklyQuizScoreboardDto getScoreboard(Long setId, String requestingUserEmail) {
+        requireSet(setId); // 404s if the set doesn't exist at all
+
+        List<WeeklyQuizAttempt> gradedAttempts = attemptRepository.findBySet_Id(setId).stream()
+                .filter(a -> a.getStatus() == WeeklyQuizAttemptStatus.GRADED)
+                .collect(Collectors.toList());
+
+        List<WeeklyQuizScoreboardEntryDto> entries = gradedAttempts.stream()
+                // Opted-out players still count toward the average (just a number,
+                // doesn't reveal who they are) but are excluded from the visible
+                // ranked list - except your own row, which you can always see.
+                .filter(a -> a.isIncludeOnLeaderboard() || a.getUser().getEmail().equals(requestingUserEmail))
+                .map(a -> new WeeklyQuizScoreboardEntryDto(
+                        a.getUser().getName(), a.getScore(),
+                        answerRepository.findByAttempt_Id(a.getId()).size(),
+                        a.getUser().getEmail().equals(requestingUserEmail)))
+                .sorted((a, b) -> b.getScore() - a.getScore())
+                .collect(Collectors.toList());
+
+        double averageScore = gradedAttempts.isEmpty() ? 0
+                : gradedAttempts.stream().mapToInt(WeeklyQuizAttempt::getScore).average().orElse(0);
+        int maxScore = gradedAttempts.isEmpty() ? QUESTIONS_PER_WEEK
+                : answerRepository.findByAttempt_Id(gradedAttempts.get(0).getId()).size();
+
+        WeeklyQuizScoreboardDto dto = new WeeklyQuizScoreboardDto(entries, averageScore, maxScore);
+        gradedAttempts.stream()
+                .filter(a -> a.getUser().getEmail().equals(requestingUserEmail))
+                .findFirst()
+                .ifPresent(a -> dto.setYourLeaderboardPreference(a.isIncludeOnLeaderboard()));
+        return dto;
     }
 
     private WeeklyQuizAttempt findOrCreateAttempt(WeeklyQuizSet set, String userEmail) {

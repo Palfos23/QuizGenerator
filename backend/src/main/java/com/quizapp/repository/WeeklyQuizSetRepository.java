@@ -12,4 +12,7 @@ public interface WeeklyQuizSetRepository extends JpaRepository<WeeklyQuizSet, Lo
 
     // Repeat-avoidance when generating a new week's set - see WeeklyQuizService.
     List<WeeklyQuizSet> findByWeekStartDateAfter(LocalDate cutoff);
+
+    // Past weeks for the archive list, most recent first.
+    List<WeeklyQuizSet> findByWeekStartDateBeforeOrderByWeekStartDateDesc(LocalDate cutoff);
 }

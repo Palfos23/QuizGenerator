@@ -1,6 +1,7 @@
 package com.quizapp.service;
 
 import com.quizapp.dto.WeeklyQuizPlayStateDto;
+import com.quizapp.dto.WeeklyQuizSetSummaryDto;
 import com.quizapp.dto.WeeklyQuizSubmitRequest;
 import com.quizapp.model.AppUser;
 import com.quizapp.model.Language;
@@ -79,8 +80,9 @@ class WeeklyQuizServiceTest {
         // question's real answer up from the DB instead.
         seedQuestions(20);
         AppUser user = newUser();
+        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
 
-        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(user.getEmail());
+        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, user.getEmail());
         assertThat(play.getAttemptStatus()).isEqualTo("IN_PROGRESS");
         assertThat(play.getQuestions()).hasSize(15);
 
@@ -96,19 +98,21 @@ class WeeklyQuizServiceTest {
         }
         request.setAnswers(answers);
 
-        WeeklyQuizPlayStateDto result = weeklyQuizService.submitAnswers(user.getEmail(), request);
+        WeeklyQuizPlayStateDto result = weeklyQuizService.submitAnswers(setId, user.getEmail(), request);
 
         assertThat(result.getAttemptStatus()).isEqualTo("GRADED");
         assertThat(result.getResult().getScore()).isEqualTo(15);
         assertThat(result.getResult().getMaxScore()).isEqualTo(15);
         assertThat(result.getResult().getAnswers()).allMatch(a -> a.getVerdict().equals("CORRECT"));
+        assertThat(result.getResult().getAnswers()).allMatch(a -> a.getCorrectAnswer() != null);
     }
 
     @Test
     void blankAnswerAutoFailsWithoutNeedingReview() {
         seedQuestions(20);
         AppUser user = newUser();
-        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(user.getEmail());
+        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
+        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, user.getEmail());
 
         WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
         List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
@@ -120,7 +124,7 @@ class WeeklyQuizServiceTest {
         }
         request.setAnswers(answers);
 
-        WeeklyQuizPlayStateDto result = weeklyQuizService.submitAnswers(user.getEmail(), request);
+        WeeklyQuizPlayStateDto result = weeklyQuizService.submitAnswers(setId, user.getEmail(), request);
 
         assertThat(result.getAttemptStatus()).isEqualTo("GRADED");
         assertThat(result.getResult().getScore()).isEqualTo(0);
@@ -128,10 +132,11 @@ class WeeklyQuizServiceTest {
     }
 
     @Test
-    void nonExactAnswerStaysPendingUntilAdminResolvesIt() {
+    void nonExactAnswerStaysPendingButYourOwnAnswerIsStillVisible() {
         seedQuestions(20);
         AppUser user = newUser();
-        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(user.getEmail());
+        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
+        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, user.getEmail());
 
         WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
         List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
@@ -143,12 +148,19 @@ class WeeklyQuizServiceTest {
         }
         request.setAnswers(answers);
 
-        WeeklyQuizPlayStateDto submitted = weeklyQuizService.submitAnswers(user.getEmail(), request);
+        WeeklyQuizPlayStateDto submitted = weeklyQuizService.submitAnswers(setId, user.getEmail(), request);
         assertThat(submitted.getAttemptStatus()).isEqualTo("SUBMITTED");
-        assertThat(submitted.getResult()).isNull();
+        // Score is hidden while anything is still pending...
+        assertThat(submitted.getResult()).isNotNull();
+        assertThat(submitted.getResult().getScore()).isNull();
+        // ...but your own submitted answers are still visible, marked PENDING,
+        // with the correct answer withheld until it's resolved.
+        assertThat(submitted.getResult().getAnswers()).hasSize(15);
+        assertThat(submitted.getResult().getAnswers()).allMatch(a -> a.getVerdict().equals("PENDING"));
+        assertThat(submitted.getResult().getAnswers()).allMatch(a -> a.getYourAnswer().equals("Definitely not the right answer"));
+        assertThat(submitted.getResult().getAnswers()).allMatch(a -> a.getCorrectAnswer() == null);
 
-        // Score stays hidden entirely while anything is still pending.
-        WeeklyQuizPlayStateDto stillWaiting = weeklyQuizService.getPlayState(user.getEmail());
+        WeeklyQuizPlayStateDto stillWaiting = weeklyQuizService.getPlayState(setId, user.getEmail());
         assertThat(stillWaiting.getAttemptStatus()).isEqualTo("SUBMITTED");
 
         var pending = weeklyQuizReviewService.listPending();
@@ -160,22 +172,26 @@ class WeeklyQuizServiceTest {
         for (int i = 0; i < forThisPlayer.size() - 1; i++) {
             weeklyQuizReviewService.resolve(forThisPlayer.get(i).getId(), i % 2 == 0);
         }
-        assertThat(weeklyQuizService.getPlayState(user.getEmail()).getAttemptStatus()).isEqualTo("SUBMITTED");
+        assertThat(weeklyQuizService.getPlayState(setId, user.getEmail()).getAttemptStatus()).isEqualTo("SUBMITTED");
 
         // Resolving the very last pending answer flips the whole attempt to GRADED.
         weeklyQuizReviewService.resolve(forThisPlayer.get(forThisPlayer.size() - 1).getId(), true);
 
-        WeeklyQuizPlayStateDto graded = weeklyQuizService.getPlayState(user.getEmail());
+        WeeklyQuizPlayStateDto graded = weeklyQuizService.getPlayState(setId, user.getEmail());
         assertThat(graded.getAttemptStatus()).isEqualTo("GRADED");
         assertThat(graded.getResult()).isNotNull();
+        assertThat(graded.getResult().getScore()).isNotNull();
         assertThat(graded.getResult().getMaxScore()).isEqualTo(15);
+        assertThat(graded.getResult().getAnswers()).noneMatch(a -> a.getVerdict().equals("PENDING"));
+        assertThat(graded.getResult().getAnswers()).allMatch(a -> a.getCorrectAnswer() != null);
     }
 
     @Test
     void cannotSubmitTwice() {
         seedQuestions(20);
         AppUser user = newUser();
-        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(user.getEmail());
+        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
+        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, user.getEmail());
 
         WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
         List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
@@ -186,9 +202,9 @@ class WeeklyQuizServiceTest {
             answers.add(a);
         }
         request.setAnswers(answers);
-        weeklyQuizService.submitAnswers(user.getEmail(), request);
+        weeklyQuizService.submitAnswers(setId, user.getEmail(), request);
 
-        assertThatThrownBy(() -> weeklyQuizService.submitAnswers(user.getEmail(), request))
+        assertThatThrownBy(() -> weeklyQuizService.submitAnswers(setId, user.getEmail(), request))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -214,5 +230,50 @@ class WeeklyQuizServiceTest {
 
         assertThat(generated.getQuestionIds()).hasSize(15);
         assertThat(generated.getQuestionIds()).noneMatch(recentlyUsedIds::contains);
+    }
+
+    @Test
+    void findActiveAlwaysReturnsExactlyThisWeek() {
+        AppUser user = newUser();
+        List<WeeklyQuizSetSummaryDto> active = weeklyQuizService.findActive(user.getEmail());
+        assertThat(active).hasSize(1);
+        assertThat(active.get(0).getStatus()).isEqualTo("NOT_STARTED");
+    }
+
+    @Test
+    void scoreboardRanksGradedAttemptsAndRespectsOptOut() {
+        seedQuestions(20);
+        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
+
+        AppUser winner = newUser();
+        AppUser loser = newUser();
+        gradeWithAllBlank(setId, winner.getEmail()); // score 0 - both start at 0
+        gradeWithAllBlank(setId, loser.getEmail());
+
+        // Winner opts out - still counted in the average, excluded from the list.
+        weeklyQuizService.setLeaderboardPreference(setId, winner.getEmail(), false);
+
+        var board = weeklyQuizService.getScoreboard(setId, loser.getEmail());
+        assertThat(board.getEntries()).extracting("userName").doesNotContain(winner.getName());
+        assertThat(board.getEntries()).extracting("userName").contains(loser.getName());
+
+        // The opted-out player can still see their own row.
+        var ownView = weeklyQuizService.getScoreboard(setId, winner.getEmail());
+        assertThat(ownView.getEntries()).extracting("userName").contains(winner.getName());
+        assertThat(ownView.getYourLeaderboardPreference()).isFalse();
+    }
+
+    private void gradeWithAllBlank(Long setId, String email) {
+        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, email);
+        WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
+        List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
+        for (WeeklyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
+            WeeklyQuizSubmitRequest.AnswerSubmission a = new WeeklyQuizSubmitRequest.AnswerSubmission();
+            a.setQuestionId(q.getQuestionId());
+            a.setAnswerText("");
+            answers.add(a);
+        }
+        request.setAnswers(answers);
+        weeklyQuizService.submitAnswers(setId, email, request);
     }
 }

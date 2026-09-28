@@ -2,17 +2,22 @@ package com.quizapp.dto;
 
 import java.util.List;
 
+// Doubles as both the "still under review" view (answers populated, score
+// null) and the fully "graded" view (both populated) - see
+// WeeklyQuizService.buildAnswersView. Score stays null until every answer has
+// a final verdict, per the product decision that the whole score is withheld
+// until nothing is left pending.
 public class WeeklyQuizResultDto {
 
-    private int score;
+    private Integer score;
     private int maxScore;
     private List<AnswerResultDto> answers;
 
-    public int getScore() {
+    public Integer getScore() {
         return score;
     }
 
-    public void setScore(int score) {
+    public void setScore(Integer score) {
         this.score = score;
     }
 
@@ -36,8 +41,8 @@ public class WeeklyQuizResultDto {
         private int questionNumber;
         private String questionText;
         private String yourAnswer;
-        private String correctAnswer;
-        private String verdict; // CORRECT / INCORRECT
+        private String correctAnswer; // null while verdict is PENDING - not spoiled before it's resolved
+        private String verdict; // PENDING / CORRECT / INCORRECT
 
         public AnswerResultDto() {
         }

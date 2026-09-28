@@ -1,5 +1,9 @@
 <template>
   <div style="max-width:720px; margin:0 auto;">
+    <div style="display:flex; gap:8px; margin-bottom:6px;">
+      <router-link to="/weekly-quiz" class="btn btn-secondary btn-sm">← All weekly quizzes</router-link>
+      <button v-if="state" class="btn btn-secondary btn-sm" @click="openScoreboard">Results</button>
+    </div>
     <h1>Weekly quiz</h1>
     <p class="page-subtitle" v-if="state">Week of {{ formatDate(state.weekStartDate) }} - 15 questions, pub-quiz style.</p>
 
@@ -19,14 +23,11 @@
         </form>
       </template>
 
-      <template v-else-if="state.attemptStatus === 'SUBMITTED'">
-        <div class="empty-state friendly">
-          Thanks! An admin still needs to check a few of your answers - come back later for your score.
+      <template v-else-if="state.result">
+        <h2 v-if="state.result.score !== null" style="text-align:center;">You scored {{ state.result.score }} / {{ state.result.maxScore }}</h2>
+        <div v-else class="empty-state friendly">
+          Thanks! An admin still needs to check a few of your answers - come back later for your final score.
         </div>
-      </template>
-
-      <template v-else-if="state.attemptStatus === 'GRADED' && state.result">
-        <h2 style="text-align:center;">You scored {{ state.result.score }} / {{ state.result.maxScore }}</h2>
         <div class="saved-quiz-list">
           <div v-for="a in state.result.answers" :key="a.questionNumber" class="saved-quiz-row" style="align-items:flex-start;">
             <div class="saved-quiz-info">
@@ -36,20 +37,78 @@
                 <span v-if="a.verdict === 'INCORRECT'"> · Correct answer: {{ a.correctAnswer }}</span>
               </div>
             </div>
-            <span class="tag" :style="a.verdict === 'CORRECT' ? { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' } : { background: 'rgba(255,77,109,0.15)', color: 'var(--coral)' }">
-              {{ a.verdict === 'CORRECT' ? '✓' : '✕' }}
-            </span>
+            <span
+              v-if="a.verdict === 'PENDING'"
+              class="tag"
+              style="background:rgba(242,183,5,0.15); color:var(--gold); display:flex; align-items:center; gap:4px;"
+            >⏳ Under review</span>
+            <span
+              v-else
+              class="tag"
+              :style="a.verdict === 'CORRECT' ? { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' } : { background: 'rgba(255,77,109,0.15)', color: 'var(--coral)' }"
+            >{{ a.verdict === 'CORRECT' ? '✓' : '✕' }}</span>
           </div>
         </div>
       </template>
     </template>
+
+    <div v-if="showScoreboard" class="modal-backdrop" @click.self="showScoreboard = false">
+      <div class="modal">
+        <h2 style="margin-top:0;">Scoreboard</h2>
+
+        <div v-if="scoreboardData && scoreboardEntries.length" class="stats-panel" style="text-align:center;">
+          <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Average score</div>
+          <div style="font-size:1.5rem; font-weight:700; margin-top:2px;">{{ scoreboardData.averageScore.toFixed(1) }} / {{ scoreboardData.maxScore }}</div>
+        </div>
+
+        <div v-if="scoreboardLoading" style="color:var(--text-dim); font-size:0.9rem;">Loading…</div>
+        <div v-else-if="!scoreboardEntries.length" style="color:var(--text-dim); font-size:0.9rem;">
+          Nobody's been fully graded yet.
+        </div>
+        <table v-else class="table scoreboard-table">
+          <thead>
+            <tr><th style="width:14%;">#</th><th style="width:56%;">Player</th><th style="width:30%; text-align:right;">Score</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="(s, i) in topFive" :key="s.userName + i" :class="{ 'you-row': s.isYou }">
+              <td>{{ i + 1 }}</td>
+              <td>{{ firstName(s.userName) }}</td>
+              <td style="text-align:right;">{{ s.score }} / {{ s.maxScore }}</td>
+            </tr>
+            <tr v-if="yourRank && yourRank.rank > 5">
+              <td colspan="3" style="text-align:center; color:var(--text-dim); padding:4px 0;">···</td>
+            </tr>
+            <tr v-if="yourRank && yourRank.rank > 5" class="you-row">
+              <td>{{ yourRank.rank }}</td>
+              <td>{{ firstName(yourRank.entry.userName) }}</td>
+              <td style="text-align:right;">{{ yourRank.entry.score }} / {{ yourRank.entry.maxScore }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <label
+          v-if="scoreboardData && scoreboardData.yourLeaderboardPreference !== null"
+          style="display:flex; align-items:center; gap:8px; margin-top:16px; text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.9rem; cursor:pointer;"
+        >
+          <input type="checkbox" v-model="leaderboardOptIn" @change="updateLeaderboardPreference" style="width:auto;" />
+          Show my name on this leaderboard
+        </label>
+
+        <button class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="showScoreboard = false">Close</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '../services/api'
+import toast from '../services/toast'
 import LoadingState from '../components/LoadingState.vue'
+
+const route = useRoute()
+const quizId = route.params.id
 
 const state = ref(null)
 const loading = ref(true)
@@ -63,9 +122,9 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    state.value = await api.getWeeklyQuizPlayState()
+    state.value = await api.getWeeklyQuizPlayState(quizId)
   } catch (e) {
-    error.value = 'Could not load this week\'s quiz.'
+    error.value = 'Could not load this quiz.'
   } finally {
     loading.value = false
   }
@@ -76,7 +135,7 @@ async function submit() {
   error.value = ''
   try {
     const payload = state.value.questions.map(q => ({ questionId: q.questionId, answerText: answers[q.questionId] || '' }))
-    state.value = await api.submitWeeklyQuizAnswers(payload)
+    state.value = await api.submitWeeklyQuizAnswers(quizId, payload)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit your answers.'
   } finally {
@@ -87,5 +146,46 @@ async function submit() {
 function formatDate(dateStr) {
   if (!dateStr) return ''
   return new Date(dateStr).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function firstName(name) {
+  return (name || '').split(' ')[0]
+}
+
+// --- Scoreboard modal - same pattern as WeeklyGridPlayView ---
+const showScoreboard = ref(false)
+const scoreboardData = ref(null)
+const scoreboardLoading = ref(false)
+const leaderboardOptIn = ref(true)
+
+const scoreboardEntries = computed(() => scoreboardData.value?.entries || [])
+const topFive = computed(() => scoreboardEntries.value.slice(0, 5))
+const yourRank = computed(() => {
+  const idx = scoreboardEntries.value.findIndex(s => s.isYou)
+  if (idx === -1) return null
+  return { rank: idx + 1, entry: scoreboardEntries.value[idx] }
+})
+
+async function openScoreboard() {
+  showScoreboard.value = true
+  scoreboardLoading.value = true
+  try {
+    scoreboardData.value = await api.getWeeklyQuizScoreboard(quizId)
+    leaderboardOptIn.value = scoreboardData.value.yourLeaderboardPreference ?? true
+  } catch (e) {
+    // scoreboard is a nice-to-have - fail quietly, empty state already covers it
+  } finally {
+    scoreboardLoading.value = false
+  }
+}
+
+async function updateLeaderboardPreference() {
+  try {
+    await api.setWeeklyQuizLeaderboardPreference(quizId, leaderboardOptIn.value)
+    scoreboardData.value = await api.getWeeklyQuizScoreboard(quizId)
+  } catch (e) {
+    toast.show('Could not update your leaderboard preference.')
+    leaderboardOptIn.value = !leaderboardOptIn.value
+  }
 }
 </script>

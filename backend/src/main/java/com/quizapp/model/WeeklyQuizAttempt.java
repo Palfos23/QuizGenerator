@@ -31,6 +31,11 @@ public class WeeklyQuizAttempt {
     @Column(name = "submitted_at")
     private Instant submittedAt;
 
+    // Same idea as GridAttempt.includeOnLeaderboard - lets a player keep their
+    // own score without appearing on the shared leaderboard others see.
+    @Column(name = "include_on_leaderboard", nullable = false)
+    private boolean includeOnLeaderboard = true;
+
     public Long getId() {
         return id;
     }
@@ -77,5 +82,13 @@ public class WeeklyQuizAttempt {
 
     public void setSubmittedAt(Instant submittedAt) {
         this.submittedAt = submittedAt;
+    }
+
+    public boolean isIncludeOnLeaderboard() {
+        return includeOnLeaderboard;
+    }
+
+    public void setIncludeOnLeaderboard(boolean includeOnLeaderboard) {
+        this.includeOnLeaderboard = includeOnLeaderboard;
     }
 }

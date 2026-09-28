@@ -5,10 +5,19 @@ import java.util.List;
 
 public class WeeklyQuizPlayStateDto {
 
+    private Long setId;
     private LocalDate weekStartDate;
     private String attemptStatus; // IN_PROGRESS / SUBMITTED / GRADED
-    private List<QuestionDto> questions;
-    private WeeklyQuizResultDto result; // only set once attemptStatus == GRADED
+    private List<QuestionDto> questions; // only set while attemptStatus == IN_PROGRESS (the form to fill in)
+    private WeeklyQuizResultDto result; // set once attemptStatus is SUBMITTED or GRADED (see WeeklyQuizResultDto)
+
+    public Long getSetId() {
+        return setId;
+    }
+
+    public void setSetId(Long setId) {
+        this.setId = setId;
+    }
 
     public LocalDate getWeekStartDate() {
         return weekStartDate;

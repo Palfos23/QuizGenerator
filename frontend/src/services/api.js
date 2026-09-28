@@ -541,11 +541,23 @@ export default {
   },
 
   // --- Weekly quiz: user-facing ---
-  getWeeklyQuizPlayState() {
-    return client.get('/weekly-quiz/play').then(r => r.data)
+  getActiveWeeklyQuizzes() {
+    return client.get('/weekly-quiz/active').then(r => r.data)
   },
-  submitWeeklyQuizAnswers(answers) {
-    return client.post('/weekly-quiz/submit', { answers }).then(r => r.data)
+  getArchiveWeeklyQuizzes() {
+    return client.get('/weekly-quiz/archive').then(r => r.data)
+  },
+  getWeeklyQuizPlayState(id) {
+    return client.get(`/weekly-quiz/${id}/play`).then(r => r.data)
+  },
+  submitWeeklyQuizAnswers(id, answers) {
+    return client.post(`/weekly-quiz/${id}/submit`, { answers }).then(r => r.data)
+  },
+  getWeeklyQuizScoreboard(id) {
+    return client.get(`/weekly-quiz/${id}/scoreboard`).then(r => r.data)
+  },
+  setWeeklyQuizLeaderboardPreference(id, include) {
+    return client.put(`/weekly-quiz/${id}/leaderboard-preference?include=${include}`)
   },
 
   // --- Weekly quiz: admin review of non-exact answers ---
