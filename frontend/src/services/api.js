@@ -540,6 +540,22 @@ export default {
     return client.post(`/admin/question-submissions/${id}/reject`, { reason }).then(r => r.data)
   },
 
+  // --- Weekly quiz: user-facing ---
+  getWeeklyQuizPlayState() {
+    return client.get('/weekly-quiz/play').then(r => r.data)
+  },
+  submitWeeklyQuizAnswers(answers) {
+    return client.post('/weekly-quiz/submit', { answers }).then(r => r.data)
+  },
+
+  // --- Weekly quiz: admin review of non-exact answers ---
+  adminListWeeklyQuizPending() {
+    return client.get('/admin/weekly-quiz/pending').then(r => r.data)
+  },
+  adminResolveWeeklyQuizAnswer(id, correct) {
+    return client.post(`/admin/weekly-quiz/answers/${id}/resolve`, { correct }).then(r => r.data)
+  },
+
   // --- Quiz templates: user-facing ---
   listQuizTemplates() {
     return client.get('/quiz-templates').then(r => r.data)

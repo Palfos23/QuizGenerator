@@ -11,6 +11,8 @@ import com.quizapp.repository.LineupAttemptRepository;
 import com.quizapp.repository.ReportRepository;
 import com.quizapp.repository.SavedQuizRepository;
 import com.quizapp.repository.SubmittedQuestionRepository;
+import com.quizapp.repository.WeeklyQuizAnswerRepository;
+import com.quizapp.repository.WeeklyQuizAttemptRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,8 @@ public class AccountService {
     private final ReportRepository reportRepository;
     private final GridAttemptRepository gridAttemptRepository;
     private final LineupAttemptRepository lineupAttemptRepository;
+    private final WeeklyQuizAttemptRepository weeklyQuizAttemptRepository;
+    private final WeeklyQuizAnswerRepository weeklyQuizAnswerRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AccountService(AppUserRepository appUserRepository,
@@ -40,6 +44,8 @@ public class AccountService {
                            ReportRepository reportRepository,
                            GridAttemptRepository gridAttemptRepository,
                            LineupAttemptRepository lineupAttemptRepository,
+                           WeeklyQuizAttemptRepository weeklyQuizAttemptRepository,
+                           WeeklyQuizAnswerRepository weeklyQuizAnswerRepository,
                            PasswordEncoder passwordEncoder) {
         this.appUserRepository = appUserRepository;
         this.savedQuizRepository = savedQuizRepository;
@@ -47,6 +53,8 @@ public class AccountService {
         this.reportRepository = reportRepository;
         this.gridAttemptRepository = gridAttemptRepository;
         this.lineupAttemptRepository = lineupAttemptRepository;
+        this.weeklyQuizAttemptRepository = weeklyQuizAttemptRepository;
+        this.weeklyQuizAnswerRepository = weeklyQuizAnswerRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -81,6 +89,10 @@ public class AccountService {
                 .map(a -> new AccountExportDto.LineupAttemptExport(a.getLineup().getTitle(), a.isCompleted(), a.getStrikesUsed()))
                 .collect(Collectors.toList()));
 
+        dto.setWeeklyQuizAttempts(weeklyQuizAttemptRepository.findByUser_Email(email).stream()
+                .map(a -> new AccountExportDto.WeeklyQuizAttemptExport(a.getSet().getWeekStartDate(), a.getStatus().name(), a.getScore()))
+                .collect(Collectors.toList()));
+
         return dto;
     }
 
@@ -109,6 +121,10 @@ public class AccountService {
         savedQuizRepository.deleteAll(savedQuizRepository.findByOwner_EmailOrderByCreatedAtDesc(email));
         gridAttemptRepository.deleteAll(gridAttemptRepository.findByUser_Email(email));
         lineupAttemptRepository.deleteAll(lineupAttemptRepository.findByUser_Email(email));
+        // Answers reference their attempt with a non-nullable FK - must go first.
+        weeklyQuizAttemptRepository.findByUser_Email(email)
+                .forEach(a -> weeklyQuizAnswerRepository.deleteByAttempt_Id(a.getId()));
+        weeklyQuizAttemptRepository.deleteAll(weeklyQuizAttemptRepository.findByUser_Email(email));
 
         appUserRepository.delete(user);
     }

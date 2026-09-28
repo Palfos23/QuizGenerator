@@ -7,6 +7,8 @@ import HomeView from '../views/HomeView.vue'
 import AdminLoginView from '../views/AdminLoginView.vue'
 import MyQuizzesView from '../views/MyQuizzesView.vue'
 import WeeklyGridListView from '../views/WeeklyGridListView.vue'
+import WeeklyQuizPlayView from '../views/WeeklyQuizPlayView.vue'
+import AdminWeeklyQuizReviewView from '../views/AdminWeeklyQuizReviewView.vue'
 import WeeklyGridPlayView from '../views/WeeklyGridPlayView.vue'
 import AdminAthletesView from '../views/AdminAthletesView.vue'
 import AdminGridsView from '../views/AdminGridsView.vue'
@@ -70,6 +72,7 @@ const routes = [
   { path: '/grid-battle', name: 'grid-battle', component: MultiplayerGridView, meta: { requiresAuth: true } },
   { path: '/my-quizzes', name: 'my-quizzes', component: MyQuizzesView, meta: { requiresAuth: true } },
   { path: '/weekly-grid', name: 'weekly-grid', component: WeeklyGridListView, meta: { requiresAuth: true } },
+  { path: '/weekly-quiz', name: 'weekly-quiz', component: WeeklyQuizPlayView, meta: { requiresAuth: true } },
   { path: '/weekly-grid/:id', name: 'weekly-grid-play', component: WeeklyGridPlayView, meta: { requiresAuth: true } },
 
   // The admin's own front door - a dedicated login landing page, separate from the
@@ -103,6 +106,7 @@ const routes = [
   { path: '/admin/tension-categories', name: 'admin-tension-categories', component: AdminTensionCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/suggest-question', name: 'suggest-question', component: SuggestQuestionView, meta: { requiresAuth: true } },
   { path: '/admin/question-submissions', name: 'admin-question-submissions', component: AdminSubmissionsView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/weekly-quiz-review', name: 'admin-weekly-quiz-review', component: AdminWeeklyQuizReviewView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/quiz-templates', name: 'admin-quiz-templates', component: AdminQuizTemplatesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/report-problem', name: 'report-problem', component: ReportProblemView, meta: { requiresAuth: true } },
   { path: '/admin/reports', name: 'admin-reports', component: AdminReportsView, meta: { requiresAuth: true, requiresAdmin: true } },

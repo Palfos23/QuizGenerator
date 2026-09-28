@@ -17,6 +17,7 @@ public class AccountExportDto {
     private List<ReportExport> reports;
     private List<GridAttemptExport> gridAttempts;
     private List<LineupAttemptExport> lineupAttempts;
+    private List<WeeklyQuizAttemptExport> weeklyQuizAttempts;
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -36,6 +37,8 @@ public class AccountExportDto {
     public void setGridAttempts(List<GridAttemptExport> gridAttempts) { this.gridAttempts = gridAttempts; }
     public List<LineupAttemptExport> getLineupAttempts() { return lineupAttempts; }
     public void setLineupAttempts(List<LineupAttemptExport> lineupAttempts) { this.lineupAttempts = lineupAttempts; }
+    public List<WeeklyQuizAttemptExport> getWeeklyQuizAttempts() { return weeklyQuizAttempts; }
+    public void setWeeklyQuizAttempts(List<WeeklyQuizAttemptExport> weeklyQuizAttempts) { this.weeklyQuizAttempts = weeklyQuizAttempts; }
 
     public static class SavedQuizExport {
         private String title;
@@ -124,5 +127,21 @@ public class AccountExportDto {
         public String getLineupTitle() { return lineupTitle; }
         public boolean isCompleted() { return completed; }
         public int getStrikesUsed() { return strikesUsed; }
+    }
+
+    public static class WeeklyQuizAttemptExport {
+        private java.time.LocalDate weekStartDate;
+        private String status;
+        private int score;
+
+        public WeeklyQuizAttemptExport(java.time.LocalDate weekStartDate, String status, int score) {
+            this.weekStartDate = weekStartDate;
+            this.status = status;
+            this.score = score;
+        }
+
+        public java.time.LocalDate getWeekStartDate() { return weekStartDate; }
+        public String getStatus() { return status; }
+        public int getScore() { return score; }
     }
 }

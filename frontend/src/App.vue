@@ -21,6 +21,7 @@
           <div v-if="openPlayerMenu === 'weekly'" class="top-nav-dropdown-popup" role="menu">
             <router-link to="/weekly-grid" class="nav-link" role="menuitem" @click="closePlayerMenu">Grid</router-link>
             <router-link to="/starting-xi" class="nav-link" role="menuitem" @click="closePlayerMenu">Starting XI</router-link>
+            <router-link to="/weekly-quiz" class="nav-link" role="menuitem" @click="closePlayerMenu">Quiz</router-link>
           </div>
         </div>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/tension" class="nav-link" @click="onNavClick('/tension', 'tension')">Tension</router-link>
@@ -91,6 +92,7 @@
         <div v-if="openPlayerMenu === 'weekly'" class="games-popup" role="menu">
           <router-link to="/weekly-grid" role="menuitem" @click="closePlayerMenu">Grid</router-link>
           <router-link to="/starting-xi" role="menuitem" @click="closePlayerMenu">Starting XI</router-link>
+          <router-link to="/weekly-quiz" role="menuitem" @click="closePlayerMenu">Quiz</router-link>
         </div>
       </div>
       <div v-if="!auth.isAdmin.value && !auth.isGuest.value" style="position:relative; flex:1; display:flex;">
@@ -201,7 +203,7 @@ function closeGamesMenu(path, key) {
 // (bottom-nav popup, mirroring the existing Games dropdown). Their own
 // multiplayer Battle variants stay as separate top-level links since those
 // aren't part of "this week's board".
-const WEEKLY_QUIZ_PATH_PREFIXES = ['/weekly-grid', '/starting-xi']
+const WEEKLY_QUIZ_PATH_PREFIXES = ['/weekly-grid', '/starting-xi', '/weekly-quiz']
 const isWeeklyQuizRoute = computed(() => {
   const path = router.currentRoute.value.path
   return WEEKLY_QUIZ_PATH_PREFIXES.some(prefix => path === prefix || path.startsWith(prefix + '/'))
@@ -236,6 +238,7 @@ const ADMIN_MENUS = [
     items: [
       { to: '/admin/grids', label: 'Weekly grids' },
       { to: '/admin/lineups', label: 'Starting XI' },
+      { to: '/admin/weekly-quiz-review', label: 'Weekly quiz review' },
       { to: '/admin/tension-questions', label: 'Tension' },
       { to: '/admin/501', label: '501' },
       { to: '/admin/imposter', label: 'Imposter' },
