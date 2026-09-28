@@ -170,7 +170,7 @@ public class WeeklyQuizService {
     }
 
     private WeeklyQuizResultDto buildAnswersView(WeeklyQuizAttempt attempt) {
-        List<WeeklyQuizAnswer> answers = answerRepository.findByAttempt_Id(attempt.getId());
+        List<WeeklyQuizAnswer> answers = answerRepository.findByAttempt_IdOrderByIdAsc(attempt.getId());
         WeeklyQuizResultDto result = new WeeklyQuizResultDto();
         result.setScore(attempt.getStatus() == WeeklyQuizAttemptStatus.GRADED ? attempt.getScore() : null);
         result.setMaxScore(answers.size());
@@ -266,7 +266,7 @@ public class WeeklyQuizService {
                 .filter(a -> a.isIncludeOnLeaderboard() || a.getUser().getEmail().equals(requestingUserEmail))
                 .map(a -> new WeeklyQuizScoreboardEntryDto(
                         a.getUser().getName(), a.getScore(),
-                        answerRepository.findByAttempt_Id(a.getId()).size(),
+                        answerRepository.findByAttempt_IdOrderByIdAsc(a.getId()).size(),
                         a.getUser().getEmail().equals(requestingUserEmail)))
                 .sorted((a, b) -> b.getScore() - a.getScore())
                 .collect(Collectors.toList());
@@ -274,7 +274,7 @@ public class WeeklyQuizService {
         double averageScore = gradedAttempts.isEmpty() ? 0
                 : gradedAttempts.stream().mapToInt(WeeklyQuizAttempt::getScore).average().orElse(0);
         int maxScore = gradedAttempts.isEmpty() ? QUESTIONS_PER_WEEK
-                : answerRepository.findByAttempt_Id(gradedAttempts.get(0).getId()).size();
+                : answerRepository.findByAttempt_IdOrderByIdAsc(gradedAttempts.get(0).getId()).size();
 
         WeeklyQuizScoreboardDto dto = new WeeklyQuizScoreboardDto(entries, averageScore, maxScore);
         gradedAttempts.stream()

@@ -561,8 +561,11 @@ export default {
   },
 
   // --- Weekly quiz: admin review of non-exact answers ---
-  adminListWeeklyQuizPending() {
-    return client.get('/admin/weekly-quiz/pending').then(r => r.data)
+  adminListWeeklyQuizPendingAttempts() {
+    return client.get('/admin/weekly-quiz/pending-attempts').then(r => r.data)
+  },
+  adminGetWeeklyQuizAttempt(attemptId) {
+    return client.get(`/admin/weekly-quiz/attempts/${attemptId}`).then(r => r.data)
   },
   adminResolveWeeklyQuizAnswer(id, correct) {
     return client.post(`/admin/weekly-quiz/answers/${id}/resolve`, { correct }).then(r => r.data)

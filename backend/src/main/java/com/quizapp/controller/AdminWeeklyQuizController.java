@@ -1,6 +1,7 @@
 package com.quizapp.controller;
 
-import com.quizapp.dto.WeeklyQuizPendingAnswerDto;
+import com.quizapp.dto.WeeklyQuizAttemptDetailDto;
+import com.quizapp.dto.WeeklyQuizPendingAttemptDto;
 import com.quizapp.dto.WeeklyQuizResolveRequest;
 import com.quizapp.service.WeeklyQuizReviewService;
 import jakarta.validation.Valid;
@@ -18,9 +19,14 @@ public class AdminWeeklyQuizController {
         this.weeklyQuizReviewService = weeklyQuizReviewService;
     }
 
-    @GetMapping("/pending")
-    public List<WeeklyQuizPendingAnswerDto> pending() {
-        return weeklyQuizReviewService.listPending();
+    @GetMapping("/pending-attempts")
+    public List<WeeklyQuizPendingAttemptDto> pendingAttempts() {
+        return weeklyQuizReviewService.listPendingAttempts();
+    }
+
+    @GetMapping("/attempts/{id}")
+    public WeeklyQuizAttemptDetailDto attemptDetail(@PathVariable Long id) {
+        return weeklyQuizReviewService.getAttemptDetail(id);
     }
 
     @PostMapping("/answers/{id}/resolve")

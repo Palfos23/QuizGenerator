@@ -1,6 +1,7 @@
 package com.quizapp.service;
 
 import com.quizapp.dto.WeeklyQuizPlayStateDto;
+import com.quizapp.dto.WeeklyQuizResultDto;
 import com.quizapp.dto.WeeklyQuizSetSummaryDto;
 import com.quizapp.dto.WeeklyQuizSubmitRequest;
 import com.quizapp.model.AppUser;
@@ -108,6 +109,39 @@ class WeeklyQuizServiceTest {
     }
 
     @Test
+    void resultsPreserveTheSameQuestionOrderAsThePlayView() {
+        // Regression: findByAttempt_Id had no ORDER BY, so Postgres could
+        // (and did, in production) hand back a graded attempt's answers in a
+        // different order than the numbered list the player actually
+        // answered, scrambling question numbers on the reveal screen.
+        seedQuestions(20);
+        AppUser user = newUser();
+        Long setId = weeklyQuizService.getOrCreateCurrentSet().getId();
+        WeeklyQuizPlayStateDto play = weeklyQuizService.getPlayState(setId, user.getEmail());
+        List<String> playOrderQuestionTexts = play.getQuestions().stream()
+                .map(WeeklyQuizPlayStateDto.QuestionDto::getText).toList();
+
+        WeeklyQuizSubmitRequest request = new WeeklyQuizSubmitRequest();
+        List<WeeklyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
+        for (WeeklyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
+            WeeklyQuizSubmitRequest.AnswerSubmission a = new WeeklyQuizSubmitRequest.AnswerSubmission();
+            a.setQuestionId(q.getQuestionId());
+            a.setAnswerText("");
+            answers.add(a);
+        }
+        request.setAnswers(answers);
+
+        WeeklyQuizPlayStateDto result = weeklyQuizService.submitAnswers(setId, user.getEmail(), request);
+
+        List<String> resultOrderQuestionTexts = result.getResult().getAnswers().stream()
+                .map(WeeklyQuizResultDto.AnswerResultDto::getQuestionText).toList();
+        assertThat(resultOrderQuestionTexts).containsExactlyElementsOf(playOrderQuestionTexts);
+        for (int i = 0; i < result.getResult().getAnswers().size(); i++) {
+            assertThat(result.getResult().getAnswers().get(i).getQuestionNumber()).isEqualTo(i + 1);
+        }
+    }
+
+    @Test
     void blankAnswerAutoFailsWithoutNeedingReview() {
         seedQuestions(20);
         AppUser user = newUser();
@@ -163,19 +197,27 @@ class WeeklyQuizServiceTest {
         WeeklyQuizPlayStateDto stillWaiting = weeklyQuizService.getPlayState(setId, user.getEmail());
         assertThat(stillWaiting.getAttemptStatus()).isEqualTo("SUBMITTED");
 
-        var pending = weeklyQuizReviewService.listPending();
-        assertThat(pending).hasSizeGreaterThanOrEqualTo(15);
+        var pendingAttempts = weeklyQuizReviewService.listPendingAttempts();
+        var thisPlayersPendingAttempt = pendingAttempts.stream()
+                .filter(p -> p.getPlayerName().equals(user.getName())).findFirst().orElseThrow();
+        assertThat(thisPlayersPendingAttempt.getPendingCount()).isEqualTo(15);
+
+        var attemptDetail = weeklyQuizReviewService.getAttemptDetail(thisPlayersPendingAttempt.getAttemptId());
+        assertThat(attemptDetail.getPlayerName()).isEqualTo(user.getName());
+        assertThat(attemptDetail.getAnswers()).hasSize(15);
+        assertThat(attemptDetail.getAnswers()).allMatch(a -> a.getVerdict().equals("PENDING"));
+        // Unlike the player-facing view, the admin always sees the correct answer.
+        assertThat(attemptDetail.getAnswers()).allMatch(a -> a.getCorrectAnswer() != null);
 
         // Resolve all but the last one - still not graded.
-        var forThisPlayer = pending.stream()
-                .filter(p -> p.getPlayerName().equals(user.getName())).toList();
+        var forThisPlayer = attemptDetail.getAnswers();
         for (int i = 0; i < forThisPlayer.size() - 1; i++) {
-            weeklyQuizReviewService.resolve(forThisPlayer.get(i).getId(), i % 2 == 0);
+            weeklyQuizReviewService.resolve(forThisPlayer.get(i).getAnswerId(), i % 2 == 0);
         }
         assertThat(weeklyQuizService.getPlayState(setId, user.getEmail()).getAttemptStatus()).isEqualTo("SUBMITTED");
 
         // Resolving the very last pending answer flips the whole attempt to GRADED.
-        weeklyQuizReviewService.resolve(forThisPlayer.get(forThisPlayer.size() - 1).getId(), true);
+        weeklyQuizReviewService.resolve(forThisPlayer.get(forThisPlayer.size() - 1).getAnswerId(), true);
 
         WeeklyQuizPlayStateDto graded = weeklyQuizService.getPlayState(setId, user.getEmail());
         assertThat(graded.getAttemptStatus()).isEqualTo("GRADED");
