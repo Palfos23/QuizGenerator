@@ -33,7 +33,17 @@ public class WeeklyQuizAttempt {
 
     // Same idea as GridAttempt.includeOnLeaderboard - lets a player keep their
     // own score without appearing on the shared leaderboard others see.
-    @Column(name = "include_on_leaderboard", nullable = false)
+    //
+    // columnDefinition carries an explicit default: this column was added
+    // after weekly_quiz_attempts already had real rows in production (people
+    // had already played), so ddl-auto=update's ALTER TABLE ... ADD COLUMN
+    // needs a DEFAULT to backfill them - a bare "not null" with no default
+    // is rejected outright by Postgres on a non-empty table, which is
+    // exactly what took this feature down (column silently never created,
+    // every later query 500ing on "column does not exist"). A brand-new
+    // table's NOT NULL columns (like status/score above) never hit this,
+    // since CREATE TABLE has no existing rows to conflict with.
+    @Column(name = "include_on_leaderboard", nullable = false, columnDefinition = "boolean not null default true")
     private boolean includeOnLeaderboard = true;
 
     public Long getId() {
