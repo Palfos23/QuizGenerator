@@ -12,13 +12,17 @@ import java.util.stream.Collectors;
 
 /**
  * Online (separate-device) Flashback. Everyone active always guesses every
- * round (no elimination, unlike Bullseye), so turn rotation runs over the
- * room's full, never-shrinking participant list - closest to
- * TensionOnlineService in shape. The one real wrinkle: a hint's guessing pass
- * doesn't always end the round the way a Tension/Bullseye round always does
- * once everyone's answered - if nobody's exact and hints remain, it silently
- * advances to the next hint instead (see getState's loop) and only actually
- * "reveals" once someone's exact or the last hint's been reached, mirroring
+ * round (no elimination, unlike Bullseye) - and unlike Tension/Imposter/Grid
+ * Battle/Starting XI Battle, there's no turn order at all: anyone can submit
+ * their guess for the current hint whenever they like, in any order. A hint's
+ * guessing pass simply waits until every participant has answered it (see
+ * getState's answeredIds/allAnswered), the same "everyone answers, then
+ * reveal" shape Tension uses for a question, just without serializing who
+ * goes first. The one real wrinkle: a hint's guessing pass doesn't always end
+ * the round the way a Tension/Bullseye round always does once everyone's
+ * answered - if nobody's exact and hints remain, it silently advances to the
+ * next hint instead (see getState's loop) and only actually "reveals" once
+ * someone's exact or the last hint's been reached, mirroring
  * FlashbackGame.vue's pass-and-play advanceTurn exactly.
  *
  * Trust model: unlike Bullseye, the target year is genuinely withheld from
@@ -144,7 +148,7 @@ public class FlashbackOnlineService {
         dto.setFinished(state.isFinished());
 
         if (state.isFinished()) {
-            dto.setPlayers(toPlayerDtos(participantStates));
+            dto.setPlayers(toPlayerDtos(participantStates, Set.of()));
             return dto;
         }
 
@@ -152,8 +156,7 @@ public class FlashbackOnlineService {
                 .orElseThrow(() -> new ResourceNotFoundException("No year found for this round"));
         List<String> allHints = year.getHints();
 
-        List<GameRoomParticipant> ordered = new ArrayList<>(room.getParticipants());
-        ordered.sort(Comparator.comparingInt(GameRoomParticipant::getJoinOrder));
+        int participantCount = room.getParticipants().size();
 
         // A hint's guessing pass can resolve into "everyone answered, but
         // nobody's exact and hints remain" - that's not a reveal, just a
@@ -169,7 +172,7 @@ public class FlashbackOnlineService {
                     .filter(g -> g.getHintIndex() == state.getCurrentHintIndex())
                     .collect(Collectors.toList());
             Set<Long> answeredIds = thisHintGuesses.stream().map(g -> g.getParticipant().getId()).collect(Collectors.toSet());
-            boolean allAnswered = answeredIds.size() >= ordered.size();
+            boolean allAnswered = answeredIds.size() >= participantCount;
 
             if (!allAnswered) {
                 dto.setRoundRevealed(false);
@@ -184,16 +187,7 @@ public class FlashbackOnlineService {
                         .filter(g -> g.getHintIndex() < state.getCurrentHintIndex())
                         .map(g -> new FlashbackOnlineGuessDto(g.getParticipant().getDisplayName(), g.getGuessedYear(), g.getHintIndex()))
                         .collect(Collectors.toList()));
-                int idx = state.getCurrentTurnParticipantIndex();
-                for (int tries = 0; tries < ordered.size(); tries++) {
-                    GameRoomParticipant candidate = ordered.get(idx % ordered.size());
-                    if (!answeredIds.contains(candidate.getId())) {
-                        dto.setCurrentTurnParticipantId(candidate.getId());
-                        break;
-                    }
-                    idx++;
-                }
-                dto.setPlayers(toPlayerDtos(participantStates));
+                dto.setPlayers(toPlayerDtos(participantStates, answeredIds));
                 return dto;
             }
 
@@ -246,7 +240,7 @@ public class FlashbackOnlineService {
                 roomStateRepository.save(state);
                 participantStates = participantStateRepository.findByRoomState_Id(state.getId());
             }
-            dto.setPlayers(toPlayerDtos(participantStates));
+            dto.setPlayers(toPlayerDtos(participantStates, Set.of()));
             return dto;
         }
     }
@@ -258,8 +252,16 @@ public class FlashbackOnlineService {
 
         if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
         if (currentView.isRoundRevealed()) throw new IllegalStateException("This round is already finished.");
-        if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
-            throw new IllegalStateException("It's not your turn.");
+
+        FlashbackRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+
+        // No turn order any more - anyone can guess whenever they like. The
+        // one thing still worth guarding against is the same person
+        // submitting twice for the current hint (turn order used to prevent
+        // this as a side effect; now it needs its own explicit check).
+        if (roundGuessRepository.existsByRoomState_IdAndHintIndexAndParticipant_Id(state.getId(), state.getCurrentHintIndex(), me.getId())) {
+            throw new IllegalStateException("You've already answered this clue - wait for everyone else.");
         }
 
         // Only a year from an earlier, already-resolved hint is blocked as a
@@ -273,20 +275,12 @@ public class FlashbackOnlineService {
             throw new IllegalStateException("That year's already been guessed on an earlier clue this round.");
         }
 
-        FlashbackRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
-
         FlashbackRoundGuess guess = new FlashbackRoundGuess();
         guess.setRoomState(state);
         guess.setParticipant(me);
         guess.setGuessedYear(guessedYear);
         guess.setHintIndex(state.getCurrentHintIndex());
         roundGuessRepository.save(guess);
-
-        int participantCount = room.getParticipants().size();
-        state.setCurrentTurnParticipantIndex(state.getCurrentTurnParticipantIndex() + 1 < participantCount
-                ? state.getCurrentTurnParticipantIndex() + 1 : 0);
-        roomStateRepository.save(state);
 
         return getState(room, requestingEmail);
     }
@@ -315,18 +309,16 @@ public class FlashbackOnlineService {
             gamePlayEventService.record(BattleGameType.FLASHBACK);
         } else {
             state.setCurrentRoundIndex(state.getCurrentRoundIndex() + 1);
-            // Rotate who starts each round, same convention as Tension between
-            // questions and FlashbackGame.vue's pass-and-play rotatedActivePlayers.
-            state.setCurrentTurnParticipantIndex(state.getCurrentRoundIndex() % room.getParticipants().size());
         }
         roomStateRepository.save(state);
         return getState(room, requestingEmail);
     }
 
-    private List<FlashbackOnlinePlayerDto> toPlayerDtos(List<FlashbackParticipantState> states) {
+    private List<FlashbackOnlinePlayerDto> toPlayerDtos(List<FlashbackParticipantState> states, Set<Long> answeredCurrentHintIds) {
         return states.stream().map(ps -> new FlashbackOnlinePlayerDto(
                 ps.getParticipant().getId(), ps.getParticipant().getDisplayName(), ps.getParticipant().getColor(),
-                roomService.isConnected(ps.getParticipant()), ps.getTotalScore()
+                roomService.isConnected(ps.getParticipant()), ps.getTotalScore(),
+                answeredCurrentHintIds.contains(ps.getParticipant().getId())
         )).collect(Collectors.toList());
     }
 }

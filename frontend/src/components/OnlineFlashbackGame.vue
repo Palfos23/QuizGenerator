@@ -15,21 +15,21 @@
           v-for="p in state.players"
           :key="p.participantId"
           class="mp-player-card"
-          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId && !state.roundRevealed, disconnected: p.connected === false && p.participantId !== props.yourParticipantId }"
+          :class="{ disconnected: p.connected === false && p.participantId !== props.yourParticipantId }"
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
           <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
+          <div v-if="!state.roundRevealed" style="font-size:0.8rem; margin-top:4px;" :style="{ color: p.hasAnsweredCurrentHint ? 'var(--teal)' : 'var(--text-dim)' }">
+            {{ p.hasAnsweredCurrentHint ? '✓ answered' : '— waiting —' }}
+          </div>
           <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Score: {{ p.totalScore }}</div>
         </div>
       </div>
 
       <div v-if="!state.roundRevealed" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
-          <template v-if="isYourTurn">
-            <div class="guess-box-header">
-              <p style="margin:0; color:var(--gold); font-weight:600;">Your turn</p>
-            </div>
+          <template v-if="!haveIAnswered">
             <form @submit.prevent="submitGuess">
               <input
                 type="number"
@@ -52,7 +52,7 @@
             >Guess</button>
           </template>
           <p v-else style="text-align:center; color:var(--text-dim); margin:0;">
-            Waiting for {{ currentTurnName }}'s turn…
+            Waiting for everyone else to answer…
           </p>
         </div>
       </div>
@@ -113,7 +113,6 @@ import { computed, ref } from 'vue'
 import api from '../services/api'
 import LoadingState from './LoadingState.vue'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
-import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 
 const props = defineProps({
   roomCode: { type: String, required: true },
@@ -131,10 +130,12 @@ const guessValue = ref(null)
 const duplicateGuessError = ref(false)
 const shakeGuessBox = ref(false)
 
-const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
-useTurnTitleAlert(isYourTurn)
-const currentTurnName = computed(() =>
-  state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
+// No turn order in Flashback - anyone can guess whenever they like, as many
+// times as there are hints left this round. This just tracks whether YOU
+// specifically have already answered the current hint, to swap your own
+// input for a "waiting on the rest of the table" message.
+const haveIAnswered = computed(() =>
+  !!state.value?.players.find(p => p.participantId === props.yourParticipantId)?.hasAnsweredCurrentHint
 )
 
 function guessesForHint(hIdx) {

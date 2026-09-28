@@ -19,7 +19,6 @@ public class FlashbackOnlineStateDto {
     private List<String> visibleHints;
     private Integer year; // null until roundRevealed
     private List<FlashbackOnlinePlayerDto> players;
-    private Long currentTurnParticipantId;
     private List<FlashbackOnlineGuessDto> guesses;
     private boolean roundRevealed;
     private List<String> roundWinners;
@@ -45,8 +44,6 @@ public class FlashbackOnlineStateDto {
     public void setYear(Integer year) { this.year = year; }
     public List<FlashbackOnlinePlayerDto> getPlayers() { return players; }
     public void setPlayers(List<FlashbackOnlinePlayerDto> players) { this.players = players; }
-    public Long getCurrentTurnParticipantId() { return currentTurnParticipantId; }
-    public void setCurrentTurnParticipantId(Long currentTurnParticipantId) { this.currentTurnParticipantId = currentTurnParticipantId; }
     public List<FlashbackOnlineGuessDto> getGuesses() { return guesses; }
     public void setGuesses(List<FlashbackOnlineGuessDto> guesses) { this.guesses = guesses; }
     public boolean isRoundRevealed() { return roundRevealed; }

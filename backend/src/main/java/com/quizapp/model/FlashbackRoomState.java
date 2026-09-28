@@ -39,13 +39,6 @@ public class FlashbackRoomState {
     @Column(nullable = false)
     private int currentHintIndex = 0;
 
-    // Index into the room's full participant list (never shrinks - nobody's
-    // ever eliminated in Flashback) - continuous across the whole round,
-    // exactly like FlashbackGame.vue's currentTurnIdx: does NOT reset when a
-    // new hint reveals, only between rounds.
-    @Column(nullable = false)
-    private int currentTurnParticipantIndex = 0;
-
     @Column(nullable = false)
     private boolean finished = false;
 
@@ -93,14 +86,6 @@ public class FlashbackRoomState {
 
     public void setCurrentHintIndex(int currentHintIndex) {
         this.currentHintIndex = currentHintIndex;
-    }
-
-    public int getCurrentTurnParticipantIndex() {
-        return currentTurnParticipantIndex;
-    }
-
-    public void setCurrentTurnParticipantIndex(int currentTurnParticipantIndex) {
-        this.currentTurnParticipantIndex = currentTurnParticipantIndex;
     }
 
     public boolean isFinished() {
