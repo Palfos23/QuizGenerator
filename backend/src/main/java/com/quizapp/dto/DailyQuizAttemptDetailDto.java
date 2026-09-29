@@ -10,12 +10,14 @@ import java.util.List;
 public class DailyQuizAttemptDetailDto {
 
     private Long attemptId;
+    private Long setId;
     private String playerName;
     private LocalDate quizDate;
     private List<AnswerDto> answers;
 
-    public DailyQuizAttemptDetailDto(Long attemptId, String playerName, LocalDate quizDate, List<AnswerDto> answers) {
+    public DailyQuizAttemptDetailDto(Long attemptId, Long setId, String playerName, LocalDate quizDate, List<AnswerDto> answers) {
         this.attemptId = attemptId;
+        this.setId = setId;
         this.playerName = playerName;
         this.quizDate = quizDate;
         this.answers = answers;
@@ -23,6 +25,10 @@ public class DailyQuizAttemptDetailDto {
 
     public Long getAttemptId() {
         return attemptId;
+    }
+
+    public Long getSetId() {
+        return setId;
     }
 
     public String getPlayerName() {

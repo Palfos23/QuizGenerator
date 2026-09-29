@@ -70,7 +70,7 @@ public class DailyQuizReviewService {
                     a.getId(), i + 1, a.getQuestion().getQuestionText(), a.getAnswerText(),
                     a.getQuestion().getAnswer(), a.getVerdict().name()));
         }
-        return new DailyQuizAttemptDetailDto(attempt.getId(), attempt.getUser().getName(), attempt.getSet().getQuizDate(), rows);
+        return new DailyQuizAttemptDetailDto(attempt.getId(), attempt.getSet().getId(), attempt.getUser().getName(), attempt.getSet().getQuizDate(), rows);
     }
 
     @Transactional

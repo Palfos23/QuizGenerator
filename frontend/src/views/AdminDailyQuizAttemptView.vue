@@ -1,6 +1,9 @@
 <template>
   <div>
-    <router-link to="/admin/daily-quiz-review" class="btn btn-secondary btn-sm">← All players</router-link>
+    <div style="display:flex; gap:8px; margin-bottom:6px;">
+      <router-link to="/admin/daily-quiz-review" class="btn btn-secondary btn-sm">← All players</router-link>
+      <button v-if="attempt" class="btn btn-secondary btn-sm" @click="openScoreboard">Scoreboard</button>
+    </div>
 
     <div v-if="error" class="banner error" style="margin-top:16px;">{{ error }}</div>
     <div v-if="loading" style="color:var(--text-dim); margin-top:16px;">Loading…</div>
@@ -34,6 +37,36 @@
         All of {{ attempt.playerName }}'s answers have been resolved.
       </div>
     </template>
+
+    <div v-if="showScoreboard" class="modal-backdrop" @click.self="showScoreboard = false">
+      <div class="modal">
+        <h2 style="margin-top:0;">Scoreboard - {{ formatDate(attempt.quizDate) }}</h2>
+
+        <div v-if="scoreboardData && scoreboardEntries.length" class="stats-panel" style="text-align:center;">
+          <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Average score</div>
+          <div style="font-size:1.5rem; font-weight:700; margin-top:2px;">{{ scoreboardData.averageScore.toFixed(1) }} / {{ scoreboardData.maxScore }}</div>
+        </div>
+
+        <div v-if="scoreboardLoading" style="color:var(--text-dim); font-size:0.9rem;">Loading…</div>
+        <div v-else-if="!scoreboardEntries.length" style="color:var(--text-dim); font-size:0.9rem;">
+          Nobody's been fully graded yet.
+        </div>
+        <table v-else class="table scoreboard-table">
+          <thead>
+            <tr><th style="width:14%;">#</th><th style="width:56%;">Player</th><th style="width:30%; text-align:right;">Score</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="(s, i) in scoreboardEntries" :key="s.userName + i">
+              <td>{{ i + 1 }}</td>
+              <td>{{ s.userName }}</td>
+              <td style="text-align:right;">{{ s.score }} / {{ s.maxScore }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="showScoreboard = false">Close</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -83,5 +116,26 @@ async function resolve(answer, correct) {
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+// --- Scoreboard modal for this attempt's day - same endpoint/shape as the
+// player-facing one in DailyQuizPlayView, minus the leaderboard opt-in
+// checkbox (that's a player preference, not an admin action).
+const showScoreboard = ref(false)
+const scoreboardData = ref(null)
+const scoreboardLoading = ref(false)
+
+const scoreboardEntries = computed(() => scoreboardData.value?.entries || [])
+
+async function openScoreboard() {
+  showScoreboard.value = true
+  scoreboardLoading.value = true
+  try {
+    scoreboardData.value = await api.getDailyQuizScoreboard(attempt.value.setId)
+  } catch (e) {
+    // scoreboard is a nice-to-have - fail quietly, empty state already covers it
+  } finally {
+    scoreboardLoading.value = false
+  }
 }
 </script>
