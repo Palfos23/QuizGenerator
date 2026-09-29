@@ -6,6 +6,7 @@
       <template v-if="auth.isAuthenticated.value">
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Create a quiz</router-link>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">Daily Quiz</router-link>
         <div v-if="!auth.isAdmin.value && !auth.isGuest.value" class="top-nav-dropdown">
           <div v-if="openPlayerMenu === 'games'" class="top-nav-dropdown-backdrop" @click="closePlayerMenu"></div>
           <button
@@ -79,6 +80,7 @@
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
       <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" @click="onNavClick('/generate', 'generate')">Create</router-link>
       <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
+      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz">Daily Quiz</router-link>
       <div v-if="!auth.isAdmin.value && !auth.isGuest.value" style="position:relative; flex:1; display:flex;">
         <div v-if="openPlayerMenu === 'games'" class="bottom-nav-backdrop" @click="closePlayerMenu"></div>
         <button
@@ -157,11 +159,12 @@ import { useEscapeKey } from './composables/useEscapeKey'
 
 const router = useRouter()
 
-// Every game mode lives under one "Games ▾" dropdown - solo/pass-and-play
-// boards (Grid, Starting XI, Quiz) alongside the standalone party games and
-// their online Battle variants. `key` is only set for the ones that use
-// onNavClick's "re-click while already there" retrigger (see closeGamesMenu);
-// Grid/Starting XI/Quiz never needed that, so their key stays null.
+// Every game mode except Daily Quiz (its own standalone nav button, next to
+// Create a quiz/My quizzes) lives under one "Games ▾" dropdown -
+// solo/pass-and-play boards (Grid, Starting XI) alongside the standalone
+// party games and their online Battle variants. `key` is only set for the
+// ones that use onNavClick's "re-click while already there" retrigger (see
+// closeGamesMenu); Grid/Starting XI never needed that, so their key stays null.
 // /penalty-shootout deliberately not listed - it's not a navbar destination
 // of its own, reached only via the XI Battle page's mode choice instead (see
 // StartingXiBattleView.vue), so there's no "Games ▾" item that should read
@@ -169,7 +172,6 @@ const router = useRouter()
 const GAMES_MENU = [
   { to: '/weekly-grid', label: 'Grid', key: null },
   { to: '/starting-xi', label: 'Starting XI', key: null },
-  { to: '/daily-quiz', label: 'Quiz', key: null },
   { to: '/tension', label: 'Tension', key: 'tension' },
   { to: '/501', label: '501', key: 'fiveOhOne' },
   { to: '/imposter', label: 'Imposter', key: 'imposter' },
@@ -178,8 +180,8 @@ const GAMES_MENU = [
   { to: '/bullseye', label: 'Bullseye', key: 'bullseye' },
   { to: '/flashback', label: 'Flashback', key: 'flashback' }
 ]
-// Prefix match, not exact - Grid/Starting XI/Quiz each have a /:id play
-// sub-route beyond their own list page (e.g. /daily-quiz/5).
+// Prefix match, not exact - Grid/Starting XI each have a /:id play sub-route
+// beyond their own list page.
 const GAME_PATHS = GAMES_MENU.map(item => item.to)
 const isGameRoute = computed(() => {
   const path = router.currentRoute.value.path
