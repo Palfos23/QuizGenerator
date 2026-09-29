@@ -158,7 +158,14 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
     presencePollTimer = setInterval(poll, PRESENCE_POLL_MS)
     stompClient = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
-      reconnectDelay: 4000,
+      // Randomized per client (3-5s) rather than a fixed 4000 - a shared
+      // network blip or server restart drops every player's socket at once,
+      // and a fixed delay would have all of them retry in lockstep,
+      // repeating that same synchronized-burst-of-requests problem on every
+      // retry instead of just once. stomp.js has no built-in jitter (only
+      // fixed/exponential - see Client#reconnectTimeMode), so this picks the
+      // spread-out value itself.
+      reconnectDelay: 3000 + Math.floor(Math.random() * 2000),
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
       onConnect: () => {
