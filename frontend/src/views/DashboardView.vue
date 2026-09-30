@@ -59,12 +59,33 @@
       </div>
       <span class="btn btn-secondary">Report a problem →</span>
     </router-link>
+
+    <!-- One nudge per day, per browser (see dismissDailyQuizNudge) - not on
+         every dashboard visit, just the first one that finds today's quiz
+         still un-submitted. Guests/admins never trigger the check that would
+         show this at all (see the onMounted guard below). -->
+    <div v-if="showDailyQuizNudge" class="modal-backdrop" @click.self="dismissDailyQuizNudge">
+      <div class="modal" style="max-width:380px; text-align:center;">
+        <h2 style="margin-top:0;">Today's Daily Quiz is waiting</h2>
+        <p class="page-subtitle">
+          {{ dailyQuizNudge.questionCount }} questions, pub-quiz style -
+          {{ dailyQuizNudge.status === 'IN_PROGRESS' ? "pick up where you left off." : "takes just a few minutes." }}
+        </p>
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <button class="btn btn-secondary" style="flex:1;" @click="dismissDailyQuizNudge">Maybe later</button>
+          <router-link :to="`/daily-quiz/${dailyQuizNudge.id}`" class="btn btn-primary" style="flex:1;" @click="dismissDailyQuizNudge">
+            {{ dailyQuizNudge.status === 'IN_PROGRESS' ? 'Continue' : 'Play now' }}
+          </router-link>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import auth from '../services/auth'
+import api from '../services/api'
 
 // Cards are grouped into named sections (rendered as their own labeled block,
 // see dashboardSections below) instead of one flat 13-card grid - weekly
@@ -77,8 +98,9 @@ const QUIZ_MANAGEMENT_ACCENT = 'var(--gold)'
 
 const dashboardSectionDefs = [
   {
-    title: 'Weekly quizzes',
+    title: 'Daily & weekly quizzes',
     cards: [
+      { to: '/daily-quiz', title: 'Daily quiz', description: '15 random questions, pub-quiz style - free text, a fresh set every day.', accent: WEEKLY_QUIZ_ACCENT },
       { to: '/weekly-grid', title: 'Weekly grid', description: "Guess every answer that fits this week's theme before you run out of strikes.", accent: WEEKLY_QUIZ_ACCENT },
       { to: '/starting-xi', title: 'Starting XI', description: "Guess a full lineup, position by position, before the week's board runs out of lives.", accent: WEEKLY_QUIZ_ACCENT }
     ]
@@ -118,4 +140,42 @@ function toColumns(cards) {
 const dashboardSections = computed(() =>
   dashboardSectionDefs.map(section => ({ title: section.title, columns: toColumns(section.cards) }))
 )
+
+// --- Daily Quiz nudge - once per day, per browser, for a real (non-guest,
+// non-admin) user who hasn't finished today's quiz yet. Reuses the same
+// /daily-quiz/active endpoint the Daily Quiz list page itself calls (it
+// lazily creates today's set if it doesn't exist yet, and reports this
+// user's own attempt status against it) rather than adding a new endpoint
+// just for this check.
+const dailyQuizNudge = ref(null)
+const showDailyQuizNudge = ref(false)
+const DAILY_QUIZ_NUDGE_KEY = 'daily_quiz_nudge_dismissed_date'
+
+onMounted(async () => {
+  if (auth.isAdmin.value || auth.isGuest.value) return
+  try {
+    const [active] = await api.getActiveDailyQuizzes()
+    if (!active || (active.status !== 'NOT_STARTED' && active.status !== 'IN_PROGRESS')) return
+
+    // Keyed on the quiz's own date (a server-assigned string), not the
+    // browser's local date - sidesteps any client/server timezone mismatch
+    // and doubles as "one nudge per quiz day" regardless of how that lines
+    // up with the visitor's own clock.
+    let dismissedDate = null
+    try { dismissedDate = localStorage.getItem(DAILY_QUIZ_NUDGE_KEY) } catch (e) { /* private window etc. - just always show it */ }
+    if (dismissedDate === active.quizDate) return
+
+    dailyQuizNudge.value = active
+    showDailyQuizNudge.value = true
+  } catch (e) {
+    // the nudge is a nice-to-have, not core dashboard functionality - fail quietly
+  }
+})
+
+function dismissDailyQuizNudge() {
+  showDailyQuizNudge.value = false
+  try {
+    if (dailyQuizNudge.value) localStorage.setItem(DAILY_QUIZ_NUDGE_KEY, dailyQuizNudge.value.quizDate)
+  } catch (e) { /* ignore - worst case the nudge reappears next visit */ }
+}
 </script>
