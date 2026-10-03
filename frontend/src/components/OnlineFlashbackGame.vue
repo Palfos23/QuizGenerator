@@ -57,6 +57,18 @@
         </div>
       </div>
 
+      <!-- Host only, and only while the round is untouched (first clue, nobody's
+           answered) - swapping later would throw guesses away. -->
+      <div
+        v-if="isHost && !state.roundRevealed && state.hintIndex === 0 && !state.players.some(p => p.hasAnsweredCurrentHint)"
+        class="no-print"
+        style="text-align:center; margin-top:10px;"
+      >
+        <button type="button" class="btn btn-secondary btn-sm" :disabled="swapping" @click="swapYear">
+          {{ swapping ? 'Finding another…' : '↻ Already had this one? Pick a different year' }}
+        </button>
+      </div>
+
       <div class="tension-reveal-list" style="max-width:560px; margin:20px auto 0;">
         <div v-for="(hint, hIdx) in state.visibleHints" :key="hIdx" class="tension-reveal-row is-revealed">
           <div class="tension-reveal-rank">{{ hIdx + 1 }}</div>
@@ -111,6 +123,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 import LoadingState from './LoadingState.vue'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 
@@ -212,6 +225,20 @@ async function submitGuess() {
     }
   } finally {
     submitting.value = false
+  }
+}
+
+const swapping = ref(false)
+async function swapYear() {
+  swapping.value = true
+  const stillFresh = staleGuard.begin()
+  try {
+    const fresh = await api.rerollFlashbackOnlineYear(props.roomCode)
+    if (stillFresh()) applyState(fresh)
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not swap to another year - please try again.', 'error')
+  } finally {
+    swapping.value = false
   }
 }
 

@@ -88,6 +88,12 @@
         </div>
       </div>
 
+      <!-- Only before anything's happened - once a kick is revealed or a life's
+           been spent, swapping would throw that progress away. -->
+      <div v-if="!shootoutComplete && !revealedKickIds.length && !Object.values(livesUsed).some(n => n)" class="no-print" style="text-align:center; margin-top:10px;">
+        <button type="button" class="btn btn-secondary btn-sm" @click="emit('swap')">↻ Already had this one? Pick a different shootout</button>
+      </div>
+
       <ConfirmModal
         v-if="showSkipConfirm"
         title="Pass your turn?"
@@ -159,7 +165,7 @@ const props = defineProps({
   shootoutId: { type: [Number, String], required: true },
   players: { type: Array, required: true } // [{ name, color }] - length 1 = solo
 })
-const emit = defineEmits(['gameOver'])
+const emit = defineEmits(['gameOver', 'swap'])
 
 const loading = ref(true)
 const error = ref('')

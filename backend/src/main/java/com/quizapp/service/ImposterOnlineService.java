@@ -394,6 +394,40 @@ public class ImposterOnlineService {
         return getState(room, requestingEmail);
     }
 
+    /**
+     * "Random" mode only: the picker asks for 3 different boards instead of the
+     * ones currently offered - mirrors GridBattleOnlineService.rerollChoices
+     * (picker-only, only before a board's been committed, current options excluded).
+     */
+    @Transactional
+    public ImposterOnlineStateDto rerollChoices(GameRoom room, String requestingEmail) {
+        GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
+        ImposterRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+
+        if (state.getRandomTotalCount() == null) {
+            throw new IllegalStateException("This room isn't using random board selection.");
+        }
+        if (state.getGridIds().size() > state.getCurrentGridIndex()) {
+            throw new IllegalStateException("A board has already been chosen for this round.");
+        }
+        List<GameRoomParticipant> ordered = room.getParticipants();
+        GameRoomParticipant picker = ordered.get(state.getCurrentGridIndex() % ordered.size());
+        if (!me.getId().equals(picker.getId())) {
+            throw new IllegalStateException("It's not your turn to choose.");
+        }
+
+        List<Long> exclude = new ArrayList<>(state.getGridIds());
+        exclude.addAll(state.getPendingChoiceIds());
+        List<ImposterGridSummaryDto> fresh = imposterGridPlayService.getBattleRoundChoices(3, exclude);
+        if (fresh.isEmpty()) {
+            throw new IllegalStateException("No other boards left to show.");
+        }
+        state.setPendingChoiceIds(fresh.stream().map(ImposterGridSummaryDto::getId).collect(Collectors.toSet()));
+        roomStateRepository.save(state);
+        return getState(room, requestingEmail);
+    }
+
     private void ensurePendingChoices(ImposterRoomState state) {
         if (!state.getPendingChoiceIds().isEmpty()) return;
         List<ImposterGridSummaryDto> choices = imposterGridPlayService.getBattleRoundChoices(3, new ArrayList<>(state.getGridIds()));

@@ -1,6 +1,7 @@
 package com.quizapp.controller;
 
 import com.quizapp.dto.FiveOhOneOnlineStateDto;
+import com.quizapp.dto.FiveOhOneRoomCategoryDto;
 import com.quizapp.dto.FiveOhOneThrowRequest;
 import com.quizapp.model.GameRoom;
 import com.quizapp.service.FiveOhOneOnlineService;
@@ -31,6 +32,18 @@ public class FiveOhOneOnlineController {
     public FiveOhOneOnlineStateDto state(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);
         return fiveOhOneOnlineService.getState(room, authentication.getName());
+    }
+
+    @GetMapping("/category")
+    public FiveOhOneRoomCategoryDto category(@PathVariable String code, Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        return fiveOhOneOnlineService.getRoomCategory(room, authentication.getName());
+    }
+
+    @PostMapping("/reroll-category")
+    public FiveOhOneRoomCategoryDto rerollCategory(@PathVariable String code, Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        return fiveOhOneOnlineService.rerollCategory(room, authentication.getName());
     }
 
     @PostMapping("/throw")

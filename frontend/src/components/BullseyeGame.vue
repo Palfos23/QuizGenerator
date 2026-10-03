@@ -15,6 +15,9 @@
           </div>
         </button>
       </div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="rerolling" @click="rerollChoices">
+        {{ rerolling ? 'Finding more…' : '↻ Show 3 different questions' }}
+      </button>
     </div>
 
     <LoadingState v-else-if="loading" message="Loading the question…" full />
@@ -447,6 +450,26 @@ async function loadRoundChoices() {
     toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
   } finally {
     loadingChoices.value = false
+  }
+}
+
+// Swaps the 3 offered questions for 3 others - the ones on screen are excluded so
+// they can't come straight back. If nothing else is left, the current choices stay.
+const rerolling = ref(false)
+async function rerollChoices() {
+  rerolling.value = true
+  try {
+    const exclude = [...chosenQuestions.value.map(q => q.id), ...roundChoices.value.map(q => q.id)]
+    const fresh = await api.fetchBullseyeBattleRoundChoices(3, exclude, props.excludeCategories)
+    if (fresh.length) {
+      roundChoices.value = fresh
+    } else {
+      toast.show('No other questions left to show.', 'error')
+    }
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not load other questions - please try again.', 'error')
+  } finally {
+    rerolling.value = false
   }
 }
 

@@ -37,6 +37,14 @@ public class ImposterOnlineController {
         return imposterOnlineService.getState(room, authentication.getName());
     }
 
+    @PostMapping("/reroll-choices")
+    public ImposterOnlineStateDto rerollChoices(@PathVariable String code, Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        ImposterOnlineStateDto result = imposterOnlineService.rerollChoices(room, authentication.getName());
+        roomBroadcastService.broadcastState(code, result);
+        return result;
+    }
+
     @PostMapping("/choose-grid")
     public ImposterOnlineStateDto chooseGrid(@PathVariable String code, @Valid @RequestBody ImposterChooseRequest request,
                                               Authentication authentication) {

@@ -28,6 +28,9 @@
               <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ sportLabel(g.sport) }} · {{ g.entryCount }} to find</div>
             </button>
           </div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="choosing || rerolling" @click="rerollChoices">
+            {{ rerolling ? 'Finding more…' : '↻ Show 3 different grids' }}
+          </button>
         </template>
         <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
           Waiting for <strong style="color:var(--gold);">{{ pickerName }}</strong> to choose a grid…
@@ -195,6 +198,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 import { useDebouncedSearch } from '../composables/useDebouncedSearch'
 import { readableTextColor, formatHint, sportLabel, formatLastUpdated } from '../constants'
 import { preloadImages } from '../services/imagePreload'
@@ -362,6 +366,23 @@ async function submitGuess(athlete) {
     error.value = e.response?.data?.message || 'Could not submit that guess.'
   } finally {
     guessing.value = false
+  }
+}
+
+// Asks the server for 3 different grids than the ones on offer (picker-only,
+// and only before one's been chosen). If nothing else is left it says so and the
+// current choices stay.
+const rerolling = ref(false)
+async function rerollChoices() {
+  rerolling.value = true
+  const stillFresh = staleGuard.begin()
+  try {
+    const fresh = await api.rerollGridBattleChoices(props.roomCode)
+    if (stillFresh()) await applyState(fresh)
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not load other grids - please try again.', 'error')
+  } finally {
+    rerolling.value = false
   }
 }
 

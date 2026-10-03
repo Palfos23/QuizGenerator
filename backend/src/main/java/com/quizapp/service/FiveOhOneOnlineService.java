@@ -56,6 +56,49 @@ public class FiveOhOneOnlineService {
         roomStateRepository.save(state);
     }
 
+    /** The room's current category - lets the lobby show what's about to be played. */
+    @Transactional(readOnly = true)
+    public FiveOhOneRoomCategoryDto getRoomCategory(GameRoom room, String requestingEmail) {
+        roomService.requireParticipant(room, requestingEmail);
+        return currentCategoryDto(room);
+    }
+
+    /**
+     * Host-only, lobby only: swaps the room's category for a different random one -
+     * for when the group has already played the current one. Locked once the game
+     * starts, since 501 is a single continuous countdown with no clean point to
+     * change category after that.
+     */
+    @Transactional
+    public FiveOhOneRoomCategoryDto rerollCategory(GameRoom room, String requestingEmail) {
+        if (!room.getHostEmail().equals(requestingEmail)) {
+            throw new IllegalStateException("Only the host can change the category.");
+        }
+        if (room.getStatus() != RoomStatus.WAITING) {
+            throw new IllegalStateException("The game has already started - the category can't change now.");
+        }
+        FiveOhOneRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+
+        List<Long> candidates = categoryRepository.findAllIds().stream()
+                .filter(id -> !id.equals(state.getCategoryId()))
+                .collect(Collectors.toList());
+        if (candidates.isEmpty()) {
+            throw new IllegalStateException("There's no other category to switch to.");
+        }
+        state.setCategoryId(candidates.get(new Random().nextInt(candidates.size())));
+        roomStateRepository.save(state);
+        return currentCategoryDto(room);
+    }
+
+    private FiveOhOneRoomCategoryDto currentCategoryDto(GameRoom room) {
+        FiveOhOneRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+        String title = categoryRepository.findTitleById(state.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("That category no longer exists."));
+        return new FiveOhOneRoomCategoryDto(state.getCategoryId(), title);
+    }
+
     /**
      * "Play again" (see RoomController#restart) - tears down the finished
      * round's state and re-initializes with the same category (there's no

@@ -52,6 +52,14 @@ public class GridBattleOnlineController {
         return result;
     }
 
+    @PostMapping("/reroll-choices")
+    public GridBattleStateDto rerollChoices(@PathVariable String code, Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        GridBattleStateDto result = gridBattleOnlineService.rerollChoices(room, authentication.getName());
+        roomBroadcastService.broadcastState(code, result);
+        return result;
+    }
+
     @PostMapping("/skip")
     public GridBattleStateDto skip(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);

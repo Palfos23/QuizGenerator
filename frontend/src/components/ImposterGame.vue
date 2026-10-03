@@ -17,6 +17,9 @@
           </div>
         </button>
       </div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="rerolling" @click="rerollChoices">
+        {{ rerolling ? 'Finding more…' : '↻ Show 3 different boards' }}
+      </button>
     </div>
 
     <LoadingState v-else-if="loading" full message="Loading the board…" />
@@ -115,6 +118,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
 import LoadingState from './LoadingState.vue'
 import GameImage from './GameImage.vue'
@@ -214,6 +218,26 @@ async function loadRoundChoices() {
     loading.value = false // loadPlayState never ran to clear this - avoid a stuck spinner
   } finally {
     loadingChoices.value = false
+  }
+}
+
+// Swaps the 3 offered boards for 3 others - the ones on screen are excluded so
+// they can't come straight back. If nothing else is left, the current choices stay.
+const rerolling = ref(false)
+async function rerollChoices() {
+  rerolling.value = true
+  try {
+    const exclude = [...chosenGridIds.value, ...roundChoices.value.map(g => g.id)]
+    const fresh = await api.fetchImposterBattleRoundChoices(3, exclude)
+    if (fresh.length) {
+      roundChoices.value = fresh
+    } else {
+      toast.show('No other boards left to show.', 'error')
+    }
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not load other boards - please try again.', 'error')
+  } finally {
+    rerolling.value = false
   }
 }
 

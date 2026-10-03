@@ -106,7 +106,7 @@
       </div>
 
       <div class="field">
-        <label>Source <span class="picker-hint">optional - shown to players so they know where the data came from</span><input type="text" v-model="form.source" placeholder="e.g. Lionpopulation.com" /></label>
+        <label>Additional information <span class="picker-hint">optional - shown to players under the question (e.g. where the data came from)</span><input type="text" v-model="form.source" placeholder="e.g. Lionpopulation.com" /></label>
       </div>
 
       <div class="field">

@@ -42,6 +42,14 @@ public class FlashbackOnlineController {
         return result;
     }
 
+    @PostMapping("/reroll-year")
+    public FlashbackOnlineStateDto rerollYear(@PathVariable String code, Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        FlashbackOnlineStateDto result = flashbackOnlineService.rerollYear(room, authentication.getName());
+        roomBroadcastService.broadcastState(code, result);
+        return result;
+    }
+
     @PostMapping("/next-round")
     public FlashbackOnlineStateDto nextRound(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);

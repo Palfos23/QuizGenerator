@@ -47,7 +47,40 @@ public class TensionOnlineService {
         TensionRoomState state = new TensionRoomState();
         state.setRoom(room);
         state.setQuestionIds(questions.stream().map(TensionQuestionDto::getId).collect(Collectors.toList()));
+        state.setCategoryFilter(category != null && !category.isBlank() ? category : null);
+        state.setExcludedCategories(excludeCategories == null ? new ArrayList<>() : new ArrayList<>(excludeCategories));
         roomStateRepository.save(state);
+    }
+
+    /**
+     * Host-only: replaces this round's question with a different random one - for
+     * when the group has already played it. Draws from the same category filter the
+     * room was created with, and never picks a question already in this game. Only
+     * allowed while the round is untouched (nobody's answered yet), since swapping
+     * later would silently throw answers away.
+     */
+    @Transactional
+    public TensionOnlineStateDto rerollQuestion(GameRoom room, String requestingEmail) {
+        if (!room.getHostEmail().equals(requestingEmail)) {
+            throw new IllegalStateException("Only the host can swap the question.");
+        }
+        TensionRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+        if (room.getStatus() != RoomStatus.IN_PROGRESS || state.isFinished()) {
+            throw new IllegalStateException("There's no round in progress to swap.");
+        }
+        if (state.isRoundScored() || !roundAnswerRepository.findByRoomState_IdOrderByIdAsc(state.getId()).isEmpty()) {
+            throw new IllegalStateException("It's too late to swap - someone has already answered this round.");
+        }
+
+        List<TensionQuestionDto> fresh = tensionQuestionService.getRoundChoices(
+                1, state.getCategoryFilter(), state.getExcludedCategories(), new ArrayList<>(state.getQuestionIds()));
+        if (fresh.isEmpty()) {
+            throw new IllegalStateException("No other questions left to swap to.");
+        }
+        state.getQuestionIds().set(state.getCurrentQuestionIndex(), fresh.get(0).getId());
+        roomStateRepository.save(state);
+        return getState(room, requestingEmail);
     }
 
     /**

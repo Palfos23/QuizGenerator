@@ -287,6 +287,9 @@ export default {
   getLineupBattleState(code) {
     return client.get(`/rooms/${code}/lineup-battle/state`).then(r => r.data)
   },
+  rerollLineupBattleChoices(code) {
+    return client.post(`/rooms/${code}/lineup-battle/reroll-choices`).then(r => r.data)
+  },
   chooseLineupBattleLineup(code, lineupId) {
     return client.post(`/rooms/${code}/lineup-battle/choose-lineup`, { lineupId }).then(r => r.data)
   },
@@ -661,6 +664,9 @@ export default {
   getGridBattleState(code) {
     return client.get(`/rooms/${code}/grid-battle/state`).then(r => r.data)
   },
+  rerollGridBattleChoices(code) {
+    return client.post(`/rooms/${code}/grid-battle/reroll-choices`).then(r => r.data)
+  },
   chooseGridBattleGrid(code, gridId) {
     return client.post(`/rooms/${code}/grid-battle/choose-grid`, { gridId }).then(r => r.data)
   },
@@ -677,6 +683,9 @@ export default {
   // --- Online Imposter ---
   getImposterOnlineState(code) {
     return client.get(`/rooms/${code}/imposter/state`).then(r => r.data)
+  },
+  rerollImposterChoices(code) {
+    return client.post(`/rooms/${code}/imposter/reroll-choices`).then(r => r.data)
   },
   chooseImposterOnlineGrid(code, gridId) {
     return client.post(`/rooms/${code}/imposter/choose-grid`, { gridId }).then(r => r.data)
@@ -706,6 +715,9 @@ export default {
   submitTensionOnlineAnswer(code, answerText) {
     return client.post(`/rooms/${code}/tension/answer`, { answerText }).then(r => r.data)
   },
+  rerollTensionOnlineQuestion(code) {
+    return client.post(`/rooms/${code}/tension/reroll-question`).then(r => r.data)
+  },
   advanceTensionOnlineQuestion(code) {
     return client.post(`/rooms/${code}/tension/next-question`).then(r => r.data)
   },
@@ -716,6 +728,9 @@ export default {
   },
   submitBullseyeOnlineAnswer(code, guessedName) {
     return client.post(`/rooms/${code}/bullseye/answer`, { guessedName }).then(r => r.data)
+  },
+  rerollBullseyeOnlineQuestion(code) {
+    return client.post(`/rooms/${code}/bullseye/reroll-question`).then(r => r.data)
   },
   advanceBullseyeOnlineRound(code) {
     return client.post(`/rooms/${code}/bullseye/next-round`).then(r => r.data)
@@ -728,6 +743,9 @@ export default {
   submitFlashbackOnlineGuess(code, year) {
     return client.post(`/rooms/${code}/flashback/guess`, { year }).then(r => r.data)
   },
+  rerollFlashbackOnlineYear(code) {
+    return client.post(`/rooms/${code}/flashback/reroll-year`).then(r => r.data)
+  },
   advanceFlashbackOnlineRound(code) {
     return client.post(`/rooms/${code}/flashback/next-round`).then(r => r.data)
   },
@@ -735,6 +753,12 @@ export default {
   // --- 501: user-facing ---
   listFiveOhOneCategories() {
     return client.get('/501/categories').then(r => r.data)
+  },
+  getFiveOhOneRoomCategory(code) {
+    return client.get(`/rooms/${code}/501/category`).then(r => r.data)
+  },
+  rerollFiveOhOneRoomCategory(code) {
+    return client.post(`/rooms/${code}/501/reroll-category`).then(r => r.data)
   },
   getFiveOhOneCategory(id) {
     return client.get(`/501/categories/${id}`).then(r => r.data)

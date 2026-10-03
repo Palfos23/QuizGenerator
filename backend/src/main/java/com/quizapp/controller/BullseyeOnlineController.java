@@ -42,6 +42,14 @@ public class BullseyeOnlineController {
         return result;
     }
 
+    @PostMapping("/reroll-question")
+    public BullseyeOnlineStateDto rerollQuestion(@PathVariable String code, Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        BullseyeOnlineStateDto result = bullseyeOnlineService.rerollQuestion(room, authentication.getName());
+        roomBroadcastService.broadcastState(code, result);
+        return result;
+    }
+
     @PostMapping("/next-round")
     public BullseyeOnlineStateDto nextRound(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);

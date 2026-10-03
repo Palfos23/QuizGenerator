@@ -79,15 +79,18 @@
       <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
       <div v-else-if="!categories.length" class="empty-state friendly">No categories yet - ask an admin to add one.</div>
 
-      <div v-else class="saved-quiz-list">
-        <div v-for="c in categories" :key="c.id" class="saved-quiz-row">
-          <div class="saved-quiz-info">
-            <div class="saved-quiz-title">{{ c.title }}</div>
-            <div class="saved-quiz-meta">{{ c.entryCount }} entries<span v-if="c.description"> · {{ c.description }}</span></div>
+      <template v-else>
+        <button class="btn btn-secondary" style="margin-bottom:12px;" @click="randomCategory()">🎲 Pick a random category</button>
+        <div class="saved-quiz-list">
+          <div v-for="c in categories" :key="c.id" class="saved-quiz-row">
+            <div class="saved-quiz-info">
+              <div class="saved-quiz-title">{{ c.title }}</div>
+              <div class="saved-quiz-meta">{{ c.entryCount }} entries<span v-if="c.description"> · {{ c.description }}</span></div>
+            </div>
+            <button class="btn btn-primary btn-sm" @click="chooseCategory(c.id)">Play</button>
           </div>
-          <button class="btn btn-primary btn-sm" @click="chooseCategory(c.id)">Play</button>
         </div>
-      </div>
+      </template>
 
       <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'modeChoice'">← Back</button>
     </template>
@@ -96,6 +99,11 @@
       <h1>Name the players</h1>
       <p class="page-subtitle">501 is strictly 1v1.</p>
       <div v-if="error" class="banner error">{{ error }}</div>
+
+      <div class="field" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <span>Category: <strong>{{ chosenCategory?.title }}</strong></span>
+        <button class="btn btn-secondary btn-sm" @click="randomCategory(chosenCategory?.id)">↻ Different category</button>
+      </div>
 
       <div class="field">
         <label>Player 1<input type="text" v-model="playerNames[0]" placeholder="Player 1" /></label>
@@ -186,6 +194,15 @@
           <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">Disconnected</span>
             <span v-else class="tag" :style="{ background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }">In room</span>
         </div>
+      </div>
+
+      <!-- Host only: the lobby never showed the category before, and only the host
+           can change it (locked once the game starts). -->
+      <div v-if="isHost && lobbyCategory" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; max-width:420px; margin-top:16px;">
+        <span>Category: <strong>{{ lobbyCategory.title }}</strong></span>
+        <button class="btn btn-secondary btn-sm" :disabled="changingCategory" @click="changeLobbyCategory">
+          {{ changingCategory ? 'Finding another…' : '↻ Different category' }}
+        </button>
       </div>
 
       <p style="color:var(--text-dim); font-size:0.9rem; margin-top:16px;">
@@ -302,6 +319,17 @@ async function chooseCategory(id) {
   }
 }
 
+// Random pick from the already-loaded list - skips `excludeId` (the category
+// currently chosen) so "different category" really is different.
+async function randomCategory(excludeId = null) {
+  const pool = categories.value.filter(c => c.id !== excludeId)
+  if (!pool.length) {
+    error.value = 'There are no other categories to switch to.'
+    return
+  }
+  await chooseCategory(pool[Math.floor(Math.random() * pool.length)].id)
+}
+
 function startGame() {
   playerNames.value = [playerNames.value[0].trim(), playerNames.value[1].trim()]
   passAndPlayState.save('501', { category: chosenCategory.value, players: playerNames.value })
@@ -336,6 +364,35 @@ const startingRoom = ref(false)
 let lobbyChannel = null
 
 const isHost = computed(() => !!onlineRoom.value?.host)
+
+const lobbyCategory = ref(null)
+const changingCategory = ref(false)
+
+async function loadLobbyCategory() {
+  if (!onlineRoom.value || !isHost.value) return
+  try {
+    lobbyCategory.value = await api.getFiveOhOneRoomCategory(onlineRoom.value.roomCode)
+  } catch (e) {
+    // nice-to-have display - the lobby works without it
+  }
+}
+
+async function changeLobbyCategory() {
+  changingCategory.value = true
+  error.value = ''
+  try {
+    lobbyCategory.value = await api.rerollFiveOhOneRoomCategory(onlineRoom.value.roomCode)
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not change the category.'
+  } finally {
+    changingCategory.value = false
+  }
+}
+
+watch(stage, (s) => {
+  if (s === 'onlineLobby') loadLobbyCategory()
+  else lobbyCategory.value = null
+})
 
 // "Manage players" (kick a stuck participant / claim host) - fetches a fresh
 // room snapshot on open rather than trusting whatever onlineRoom already has,

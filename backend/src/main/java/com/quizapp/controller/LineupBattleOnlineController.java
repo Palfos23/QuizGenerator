@@ -43,6 +43,14 @@ public class LineupBattleOnlineController {
         return result;
     }
 
+    @PostMapping("/reroll-choices")
+    public LineupBattleStateDto rerollChoices(@PathVariable String code, Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        LineupBattleStateDto result = lineupBattleOnlineService.rerollChoices(room, authentication.getName());
+        roomBroadcastService.broadcastState(code, result);
+        return result;
+    }
+
     @PostMapping("/choose-lineup")
     public LineupBattleStateDto chooseLineup(@PathVariable String code, @Valid @RequestBody LineupBattleChooseRequest request,
                                               Authentication authentication) {

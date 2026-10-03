@@ -5,9 +5,11 @@ import com.quizapp.dto.FlashbackOnlineStateDto;
 import com.quizapp.dto.FlashbackYearRequest;
 import com.quizapp.model.GameRoom;
 import com.quizapp.model.RoomGameType;
+import com.quizapp.repository.FlashbackRoomStateRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 
@@ -31,6 +33,10 @@ class FlashbackOnlineServiceTest {
     private FlashbackOnlineService flashbackOnlineService;
     @Autowired
     private FlashbackAdminService flashbackAdminService;
+    @Autowired
+    private FlashbackRoomStateRepository flashbackRoomStateRepository;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     private static final String HOST = "flashback-host@example.com";
     private static final String GUEST = "flashback-guest@example.com";
@@ -107,5 +113,54 @@ class FlashbackOnlineServiceTest {
         assertThatThrownBy(() -> flashbackOnlineService.submitGuess(room, GUEST, 2001))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("already answered");
+    }
+
+    private Long currentYearId(GameRoom room) {
+        // yearIds is a lazy collection - needs a session open while it's read
+        return transactionTemplate.execute(status ->
+                flashbackRoomStateRepository.findByRoom_Id(room.getId()).orElseThrow().getYearIds().get(0));
+    }
+
+    private void addAnotherYear() {
+        FlashbackYearRequest request = new FlashbackYearRequest();
+        request.setTitle("Swap-target year " + System.nanoTime());
+        request.setYear(1986);
+        request.setHints(List.of("Other first hint", "Other second hint"));
+        flashbackAdminService.create(request);
+    }
+
+    @Test
+    void hostCanSwapTheYearBeforeAnyoneGuesses() {
+        GameRoom room = setUpTwoPlayerRoom();
+        addAnotherYear();
+        Long before = currentYearId(room);
+
+        flashbackOnlineService.rerollYear(room, HOST);
+
+        assertThat(currentYearId(room)).isNotEqualTo(before);
+        Integer yearCount = transactionTemplate.execute(status ->
+                flashbackRoomStateRepository.findByRoom_Id(room.getId()).orElseThrow().getYearIds().size());
+        assertThat(yearCount).isEqualTo(1);
+    }
+
+    @Test
+    void onlyTheHostCanSwapTheYear() {
+        GameRoom room = setUpTwoPlayerRoom();
+        addAnotherYear();
+
+        assertThatThrownBy(() -> flashbackOnlineService.rerollYear(room, GUEST))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Only the host");
+    }
+
+    @Test
+    void cannotSwapTheYearOnceSomeoneHasGuessed() {
+        GameRoom room = setUpTwoPlayerRoom();
+        addAnotherYear();
+        flashbackOnlineService.submitGuess(room, GUEST, 2000);
+
+        assertThatThrownBy(() -> flashbackOnlineService.rerollYear(room, HOST))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("too late");
     }
 }

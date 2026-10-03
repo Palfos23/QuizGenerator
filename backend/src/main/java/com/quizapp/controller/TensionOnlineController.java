@@ -42,6 +42,14 @@ public class TensionOnlineController {
         return result;
     }
 
+    @PostMapping("/reroll-question")
+    public TensionOnlineStateDto rerollQuestion(@PathVariable String code, Authentication authentication) {
+        GameRoom room = roomService.findByCode(code);
+        TensionOnlineStateDto result = tensionOnlineService.rerollQuestion(room, authentication.getName());
+        roomBroadcastService.broadcastState(code, result);
+        return result;
+    }
+
     @PostMapping("/next-question")
     public TensionOnlineStateDto nextQuestion(@PathVariable String code, Authentication authentication) {
         GameRoom room = roomService.findByCode(code);

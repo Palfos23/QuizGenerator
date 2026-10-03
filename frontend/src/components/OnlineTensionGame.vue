@@ -11,7 +11,7 @@
     <template v-if="state && !state.finished">
       <h1 style="text-align:center; margin:6px 0 4px;">{{ state.questionTitle }}</h1>
       <p v-if="state.source" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
-        Source: {{ state.source }}
+        Additional information: {{ state.source }}
       </p>
       <p v-if="state.tiebreaker" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
         Tiebreaker: {{ state.tiebreaker }}
@@ -34,12 +34,19 @@
               <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
               <div class="tension-player-answer">{{ p.answered ? '✓ answered' : '— waiting —' }}</div>
             </div>
-            <div style="text-align:right; font-size:0.8rem; color:var(--text-dim);">Total: {{ p.totalScore }}</div>
+            <div style="text-align:right; font-size:0.8rem; color:var(--text-dim);">Total: {{ shownTotal(p) }}</div>
           </div>
         </div>
 
         <div class="tension-answers-panel">
           <template v-if="!state.roundRevealed">
+            <!-- Host only, and only while nobody's answered yet - swapping later would
+                 throw answers away. -->
+            <div v-if="isHost && !(state.answersSoFar && state.answersSoFar.length)" style="text-align:center; margin-bottom:16px;">
+              <button type="button" class="btn btn-secondary btn-sm" :disabled="swapping" @click="swapQuestion">
+                {{ swapping ? 'Finding another…' : '↻ Already had this one? Pick a different question' }}
+              </button>
+            </div>
             <div v-if="state.answersSoFar && state.answersSoFar.length" style="text-align:left; margin-bottom:16px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 14px;">
               <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
                 Answered so far this round
@@ -189,6 +196,18 @@ const allAnswersList = computed(() => {
     ...state.value.tensionAnswers.map(a => ({ text: a.text, rank: a.rank, tension: true }))
   ]
 })
+
+// The server adds this round's points to totalScore the instant the last answer
+// comes in (before the reveal animation even starts), so showing p.totalScore
+// as-is would give the result away. Until the reveal has finished, show the
+// total as it was before this round.
+const revealFinished = computed(() => revealIndex.value >= allAnswersList.value.length)
+
+function shownTotal(p) {
+  if (!state.value?.roundRevealed || revealFinished.value) return p.totalScore
+  const roundScore = state.value.roundResults?.find(r => r.participantId === p.participantId)?.score ?? 0
+  return p.totalScore - roundScore
+}
 
 // One chip per player who landed on this exact answer, each with their own
 // round score - a trap answer can still be guessed by more than one player.
@@ -340,6 +359,20 @@ async function submit() {
     error.value = e.response?.data?.message || 'Could not submit that answer.'
   } finally {
     submitting.value = false
+  }
+}
+
+const swapping = ref(false)
+async function swapQuestion() {
+  swapping.value = true
+  const stillFresh = staleGuard.begin()
+  try {
+    const fresh = await api.rerollTensionOnlineQuestion(props.roomCode)
+    if (stillFresh()) applyState(fresh)
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not swap to another question - please try again.', 'error')
+  } finally {
+    swapping.value = false
   }
 }
 

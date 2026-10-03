@@ -53,6 +53,12 @@
             @click="submitCurrentGuess"
           >Guess</button>
         </div>
+        <!-- Only before anyone's guessed - once a guess is in, swapping would throw it away -->
+        <div v-if="hintIndex === 0 && !roundGuesses.length" style="text-align:center; margin-top:10px;">
+          <button type="button" class="btn btn-secondary btn-sm" :disabled="swapping" @click="swapRound">
+            {{ swapping ? 'Finding another…' : '↻ Already had this one? Pick a different year' }}
+          </button>
+        </div>
       </div>
 
       <!-- Hints revealed so far, and who's guessed what on each - visible
@@ -248,7 +254,7 @@ async function startRound() {
   loading.value = true
   roundState.value = null
   try {
-    const picks = await api.fetchFlashbackRoundChoices(1, chosenQuestions.value.map(q => q.id))
+    const picks = await api.fetchFlashbackRoundChoices(1, [...chosenQuestions.value.map(q => q.id), ...skippedQuestionIds.value])
     if (!picks.length) {
       toast.show('No more years left to play - ask an admin to add more.', 'error')
       return
@@ -269,6 +275,33 @@ async function startRound() {
     toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
   } finally {
     loading.value = false
+  }
+}
+
+// Replaces this round's year with a different one, before any guess has been
+// made. The skipped year stays excluded for the rest of the game, so it can't
+// come back in a later round. Fetches first and only swaps if something else
+// is actually available - otherwise the current round carries on untouched.
+const skippedQuestionIds = ref([])
+const swapping = ref(false)
+async function swapRound() {
+  swapping.value = true
+  try {
+    const exclude = [...chosenQuestions.value.map(q => q.id), ...skippedQuestionIds.value]
+    const picks = await api.fetchFlashbackRoundChoices(1, exclude)
+    if (!picks.length) {
+      toast.show('No other years left to swap to.', 'error')
+      return
+    }
+    skippedQuestionIds.value = [...skippedQuestionIds.value, roundState.value.id]
+    chosenQuestions.value = [...chosenQuestions.value.slice(0, -1), picks[0]]
+    roundState.value = picks[0]
+    guessValue.value = null
+    duplicateGuessError.value = false
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not load another year - please try again.', 'error')
+  } finally {
+    swapping.value = false
   }
 }
 

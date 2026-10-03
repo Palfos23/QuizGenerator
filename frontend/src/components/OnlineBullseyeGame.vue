@@ -25,6 +25,13 @@
       </div>
 
       <template v-if="!state.roundRevealed">
+        <!-- Host only, and only while nobody's answered yet - swapping later would
+             throw answers away. -->
+        <div v-if="isHost && !(state.answersSoFar && state.answersSoFar.length)" class="no-print" style="text-align:center; margin-top:10px;">
+          <button type="button" class="btn btn-secondary btn-sm" :disabled="swapping" @click="swapQuestion">
+            {{ swapping ? 'Finding another…' : '↻ Already had this one? Pick a different question' }}
+          </button>
+        </div>
         <div v-if="state.answersSoFar && state.answersSoFar.length" style="max-width:420px; margin:16px auto 0; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 14px;">
           <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
             Answered so far this round
@@ -124,6 +131,7 @@
 <script setup>
 import { computed, onUnmounted, ref } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 import LoadingState from './LoadingState.vue'
 import BullseyeAnswerModal from './BullseyeAnswerModal.vue'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
@@ -235,6 +243,20 @@ async function submit(guessedName) {
     error.value = e.response?.data?.message || 'Could not submit that answer.'
   } finally {
     submitting.value = false
+  }
+}
+
+const swapping = ref(false)
+async function swapQuestion() {
+  swapping.value = true
+  const stillFresh = staleGuard.begin()
+  try {
+    const fresh = await api.rerollBullseyeOnlineQuestion(props.roomCode)
+    if (stillFresh()) applyState(fresh)
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not swap to another question - please try again.', 'error')
+  } finally {
+    swapping.value = false
   }
 }
 

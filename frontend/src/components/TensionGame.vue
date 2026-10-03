@@ -12,6 +12,9 @@
           {{ q.title }}
         </button>
       </div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="rerolling" @click="rerollChoices">
+        {{ rerolling ? 'Finding more…' : '↻ Show 3 different questions' }}
+      </button>
     </div>
 
     <div v-else-if="!question" class="empty-state">
@@ -27,7 +30,7 @@
 
     <h1 style="text-align:center; margin:6px 0 4px;">{{ question.title }}</h1>
     <p v-if="question.source" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
-      Source: {{ question.source }}
+      Additional information: {{ question.source }}
     </p>
     <p v-if="question.tiebreaker" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
       Tiebreaker: {{ question.tiebreaker }}
@@ -406,6 +409,27 @@ async function loadRoundChoices() {
     toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
   } finally {
     loadingChoices.value = false
+  }
+}
+
+// Swaps the 3 offered questions for 3 others - the ones currently on screen are
+// added to the exclude list so they can't come straight back. If nothing else is
+// left in the pool, the current choices stay as they are.
+const rerolling = ref(false)
+async function rerollChoices() {
+  rerolling.value = true
+  try {
+    const exclude = [...chosenQuestions.value.map(q => q.id), ...roundChoices.value.map(q => q.id)]
+    const fresh = await api.fetchTensionRoundChoices(3, props.category, props.excludeCategories, exclude)
+    if (fresh.length) {
+      roundChoices.value = fresh
+    } else {
+      toast.show('No other questions left to show.', 'error')
+    }
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not load other questions - please try again.', 'error')
+  } finally {
+    rerolling.value = false
   }
 }
 

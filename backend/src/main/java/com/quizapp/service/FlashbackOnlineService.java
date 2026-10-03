@@ -314,6 +314,38 @@ public class FlashbackOnlineService {
         return getState(room, requestingEmail);
     }
 
+    /**
+     * Host-only: replaces this round's year with a different random one - for when
+     * the group has already seen the current clues. Only allowed while the round is
+     * untouched (first hint showing, nobody's guessed), since swapping later would
+     * silently throw guesses away. A year already used in this game is never picked.
+     */
+    @Transactional
+    public FlashbackOnlineStateDto rerollYear(GameRoom room, String requestingEmail) {
+        if (!room.getHostEmail().equals(requestingEmail)) {
+            throw new IllegalStateException("Only the host can swap the year.");
+        }
+        FlashbackRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+        if (room.getStatus() != RoomStatus.IN_PROGRESS || state.isFinished()) {
+            throw new IllegalStateException("There's no round in progress to swap.");
+        }
+        if (state.isRoundResolved() || state.getCurrentHintIndex() > 0
+                || !roundGuessRepository.findByRoomState_IdOrderByIdAsc(state.getId()).isEmpty()) {
+            throw new IllegalStateException("It's too late to swap - someone has already guessed this round.");
+        }
+
+        List<Long> candidates = new ArrayList<>(flashbackYearRepository.findEligibleIds());
+        candidates.removeAll(state.getYearIds());
+        if (candidates.isEmpty()) {
+            throw new IllegalStateException("No other years left to swap to.");
+        }
+        Collections.shuffle(candidates);
+        state.getYearIds().set(state.getCurrentRoundIndex(), candidates.get(0));
+        roomStateRepository.save(state);
+        return getState(room, requestingEmail);
+    }
+
     private List<FlashbackOnlinePlayerDto> toPlayerDtos(List<FlashbackParticipantState> states, Set<Long> answeredCurrentHintIds) {
         return states.stream().map(ps -> new FlashbackOnlinePlayerDto(
                 ps.getParticipant().getId(), ps.getParticipant().getDisplayName(), ps.getParticipant().getColor(),

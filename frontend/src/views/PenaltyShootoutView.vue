@@ -99,9 +99,11 @@
 
     <PenaltyShootoutGame
       v-else-if="stage === 'game'"
+      :key="gameShootoutId"
       :shootout-id="gameShootoutId"
       :players="setupPlayers"
       @game-over="onGameOver"
+      @swap="swapShootout"
     />
 
     <template v-else-if="stage === 'done'">
@@ -140,6 +142,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import passAndPlayState from '../services/passAndPlayState'
+import toast from '../services/toast'
 import navTrigger from '../services/navTrigger'
 import PenaltyShootoutGame from '../components/PenaltyShootoutGame.vue'
 import LoadingState from '../components/LoadingState.vue'
@@ -260,6 +263,22 @@ async function goToShootoutChoice() {
 
 function chooseShootout(s) {
   startGame(s.id)
+}
+
+// Swaps the shootout currently on screen for a different random one (the key
+// on <PenaltyShootoutGame> remounts it fresh). If there's nothing else, the
+// current one stays.
+async function swapShootout() {
+  try {
+    const pool = await api.fetchPenaltyShootoutRoundChoices(1, [gameShootoutId.value])
+    if (pool.length) {
+      startGame(pool[0].id)
+    } else {
+      toast.show('No other shootouts available.', 'error')
+    }
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not load another shootout.', 'error')
+  }
 }
 
 function startGame(id) {

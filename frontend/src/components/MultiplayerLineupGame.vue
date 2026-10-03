@@ -13,6 +13,9 @@
           <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ l.teamName }} vs {{ l.opponentName }} · {{ l.formation }}</div>
         </button>
       </div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="rerolling" @click="rerollChoices">
+        {{ rerolling ? 'Finding more…' : '↻ Show 3 different boards' }}
+      </button>
     </div>
 
     <template v-else>
@@ -305,6 +308,26 @@ async function loadRoundChoices() {
     toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
   } finally {
     loadingChoices.value = false
+  }
+}
+
+// Swaps the 3 offered boards for 3 others - the ones on screen are excluded so
+// they can't come straight back. If nothing else is left, the current choices stay.
+const rerolling = ref(false)
+async function rerollChoices() {
+  rerolling.value = true
+  try {
+    const exclude = [...chosenLineups.value.map(l => l.id), ...roundChoices.value.map(l => l.id)]
+    const fresh = await api.fetchLineupBattleRoundChoices(3, exclude)
+    if (fresh.length) {
+      roundChoices.value = fresh
+    } else {
+      toast.show('No other boards left to show.', 'error')
+    }
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not load other boards - please try again.', 'error')
+  } finally {
+    rerolling.value = false
   }
 }
 

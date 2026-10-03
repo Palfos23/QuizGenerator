@@ -25,6 +25,34 @@ public class TensionRoomState {
     @OrderColumn(name = "seq_order")
     private List<Long> questionIds = new ArrayList<>();
 
+    // The host's category filter from room creation, kept so a mid-game question
+    // swap (TensionOnlineService#rerollQuestion) draws from the same pool the host
+    // originally picked instead of the whole bank. Both nullable/empty-by-default -
+    // rooms created before this existed simply have no filter stored.
+    @Column(name = "category_filter")
+    private String categoryFilter;
+
+    @ElementCollection
+    @CollectionTable(name = "tension_room_excluded_categories", joinColumns = @JoinColumn(name = "state_id"))
+    @Column(name = "category_name")
+    private List<String> excludedCategories = new ArrayList<>();
+
+    public String getCategoryFilter() {
+        return categoryFilter;
+    }
+
+    public void setCategoryFilter(String categoryFilter) {
+        this.categoryFilter = categoryFilter;
+    }
+
+    public List<String> getExcludedCategories() {
+        return excludedCategories;
+    }
+
+    public void setExcludedCategories(List<String> excludedCategories) {
+        this.excludedCategories = excludedCategories;
+    }
+
     @Column(nullable = false)
     private int currentQuestionIndex = 0;
 

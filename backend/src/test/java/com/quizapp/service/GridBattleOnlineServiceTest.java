@@ -225,4 +225,41 @@ class GridBattleOnlineServiceTest {
         assertThat(freshRound.getPickerParticipantId()).isEqualTo(hostParticipantId);
         assertThat(gridBattleOnlineService.getState(room, GUEST).getYourParticipantId()).isEqualTo(guestParticipantId);
     }
+
+    @Test
+    void pickerCanRerollToThreeDifferentChoicesAndTheyStayStable() {
+        GameRoom room = setUpTwoPlayerRandomRoom(2);
+        List<Long> before = gridBattleOnlineService.getState(room, HOST).getGridChoices().stream().map(g -> g.getId()).toList();
+
+        GridBattleStateDto rerolled = gridBattleOnlineService.rerollChoices(room, HOST);
+
+        List<Long> after = rerolled.getGridChoices().stream().map(g -> g.getId()).toList();
+        assertThat(after).hasSize(3);
+        assertThat(after).as("none of the previously offered grids may come straight back").doesNotContainAnyElementsOf(before);
+
+        // Same "stable between polls" guarantee as the original choices - a later poll
+        // must not reshuffle the new options out from under the picker.
+        List<Long> laterPoll = gridBattleOnlineService.getState(room, GUEST).getGridChoices().stream().map(g -> g.getId()).toList();
+        assertThat(laterPoll).containsExactlyInAnyOrderElementsOf(after);
+    }
+
+    @Test
+    void onlyThePickerCanReroll() {
+        GameRoom room = setUpTwoPlayerRandomRoom(2);
+
+        assertThatThrownBy(() -> gridBattleOnlineService.rerollChoices(room, GUEST))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("not your turn");
+    }
+
+    @Test
+    void cannotRerollOnceAGridHasBeenChosen() {
+        GameRoom room = setUpTwoPlayerRandomRoom(2);
+        Long offeredId = gridBattleOnlineService.getState(room, HOST).getGridChoices().get(0).getId();
+        gridBattleOnlineService.chooseGrid(room, HOST, offeredId);
+
+        assertThatThrownBy(() -> gridBattleOnlineService.rerollChoices(room, HOST))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("already been chosen");
+    }
 }

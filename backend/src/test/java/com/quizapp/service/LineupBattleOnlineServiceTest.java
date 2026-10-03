@@ -223,4 +223,20 @@ class LineupBattleOnlineServiceTest {
         }
         return last;
     }
+
+    @Test
+    void pickerCanRerollToThreeDifferentChoicesButNobodyElseCan() {
+        GameRoom room = setUpTwoPlayerRandomRoom(2);
+        List<Long> before = lineupBattleOnlineService.getState(room, HOST).getLineupChoices().stream().map(c -> c.getId()).toList();
+
+        assertThatThrownBy(() -> lineupBattleOnlineService.rerollChoices(room, GUEST))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("not your turn");
+
+        LineupBattleStateDto rerolled = lineupBattleOnlineService.rerollChoices(room, HOST);
+
+        List<Long> after = rerolled.getLineupChoices().stream().map(c -> c.getId()).toList();
+        assertThat(after).hasSize(3);
+        assertThat(after).as("none of the previously offered boards may come straight back").doesNotContainAnyElementsOf(before);
+    }
 }

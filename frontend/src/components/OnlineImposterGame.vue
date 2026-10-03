@@ -32,6 +32,9 @@
               </div>
             </button>
           </div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="choosing || rerolling" @click="rerollChoices">
+            {{ rerolling ? 'Finding more…' : '↻ Show 3 different boards' }}
+          </button>
         </template>
         <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
           Waiting for <strong style="color:var(--gold);">{{ pickerName }}</strong> to choose a board…
@@ -131,6 +134,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import api from '../services/api'
+import toast from '../services/toast'
 import LoadingState from './LoadingState.vue'
 import GameImage from './GameImage.vue'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
@@ -243,6 +247,23 @@ async function applyState(fresh) {
 }
 
 const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/state`, { poll, onMessage: applyState })
+
+// Asks the server for 3 different boards than the ones on offer (picker-only,
+// and only before one's been chosen). If nothing else is left it says so and the
+// current choices stay.
+const rerolling = ref(false)
+async function rerollChoices() {
+  rerolling.value = true
+  const stillFresh = staleGuard.begin()
+  try {
+    const fresh = await api.rerollImposterChoices(props.roomCode)
+    if (stillFresh()) await applyState(fresh)
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not load other boards - please try again.', 'error')
+  } finally {
+    rerolling.value = false
+  }
+}
 
 async function chooseGrid(g) {
   choosing.value = true

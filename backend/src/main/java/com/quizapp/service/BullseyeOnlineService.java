@@ -333,6 +333,37 @@ public class BullseyeOnlineService {
         return out;
     }
 
+    /**
+     * Host-only: replaces this round's question with a different random one - for
+     * when the group has already played it. Only allowed while the round is
+     * untouched (nobody's answered yet), since swapping later would silently throw
+     * answers away. A question already used in this game is never picked.
+     */
+    @Transactional
+    public BullseyeOnlineStateDto rerollQuestion(GameRoom room, String requestingEmail) {
+        if (!room.getHostEmail().equals(requestingEmail)) {
+            throw new IllegalStateException("Only the host can swap the question.");
+        }
+        BullseyeRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+        if (room.getStatus() != RoomStatus.IN_PROGRESS || state.isFinished()) {
+            throw new IllegalStateException("There's no round in progress to swap.");
+        }
+        if (state.isRoundResolved() || !roundAnswerRepository.findByRoomState_IdOrderByIdAsc(state.getId()).isEmpty()) {
+            throw new IllegalStateException("It's too late to swap - someone has already answered this round.");
+        }
+
+        List<Long> candidates = new ArrayList<>(bullseyeQuestionRepository.findBattleEligibleIds());
+        candidates.removeAll(state.getQuestionIds());
+        if (candidates.isEmpty()) {
+            throw new IllegalStateException("No other questions left to swap to.");
+        }
+        Collections.shuffle(candidates);
+        state.getQuestionIds().set(state.getCurrentQuestionIndex(), candidates.get(0));
+        roomStateRepository.save(state);
+        return getState(room, requestingEmail);
+    }
+
     private List<BullseyeOnlinePlayerDto> toPlayerDtos(List<BullseyeParticipantState> states, Set<Long> answeredIds) {
         return states.stream().map(ps -> new BullseyeOnlinePlayerDto(
                 ps.getParticipant().getId(), ps.getParticipant().getDisplayName(), ps.getParticipant().getColor(),

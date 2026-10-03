@@ -57,17 +57,20 @@ public class DailyQuizService {
     private final DailyQuizAnswerRepository answerRepository;
     private final QuestionRepository questionRepository;
     private final AppUserRepository appUserRepository;
+    private final AdminNotificationService adminNotificationService;
 
     public DailyQuizService(DailyQuizSetRepository setRepository,
                              DailyQuizAttemptRepository attemptRepository,
                              DailyQuizAnswerRepository answerRepository,
                              QuestionRepository questionRepository,
-                             AppUserRepository appUserRepository) {
+                             AppUserRepository appUserRepository,
+                             AdminNotificationService adminNotificationService) {
         this.setRepository = setRepository;
         this.attemptRepository = attemptRepository;
         this.answerRepository = answerRepository;
         this.questionRepository = questionRepository;
         this.appUserRepository = appUserRepository;
+        this.adminNotificationService = adminNotificationService;
     }
 
     @Transactional
@@ -235,7 +238,7 @@ public class DailyQuizService {
                 .collect(Collectors.toMap(DailyQuizSubmitRequest.AnswerSubmission::getQuestionId,
                         a -> a.getAnswerText() == null ? "" : a.getAnswerText(), (a, b) -> a));
 
-        boolean anyPending = false;
+        int pendingCount = 0;
         for (Long questionId : set.getQuestionIds()) {
             Question question = byId.get(questionId);
             if (question == null) continue; // question deleted since the set was generated - skip rather than fail the whole submission
@@ -252,14 +255,19 @@ public class DailyQuizService {
                 answer.setVerdict(DailyQuizAnswerVerdict.CORRECT);
             } else {
                 answer.setVerdict(DailyQuizAnswerVerdict.PENDING);
-                anyPending = true;
+                pendingCount++;
             }
             answerRepository.save(answer);
         }
 
         attempt.setSubmittedAt(java.time.Instant.now());
-        if (anyPending) {
+        if (pendingCount > 0) {
             attempt.setStatus(DailyQuizAttemptStatus.SUBMITTED);
+            adminNotificationService.notifyAdmin(
+                    "Daily quiz needs review",
+                    attempt.getUser().getName() + " submitted the daily quiz - "
+                            + pendingCount + " answer" + (pendingCount == 1 ? "" : "s") + " to review.",
+                    "/admin/daily-quiz-review");
         } else {
             gradeAttempt(attempt);
         }

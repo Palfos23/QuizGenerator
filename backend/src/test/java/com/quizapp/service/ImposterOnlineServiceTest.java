@@ -199,4 +199,20 @@ class ImposterOnlineServiceTest {
         assertThat(freshRound.getPickerParticipantId()).isEqualTo(hostParticipantId);
         assertThat(imposterOnlineService.getState(room, GUEST).getYourParticipantId()).isEqualTo(guestParticipantId);
     }
+
+    @Test
+    void pickerCanRerollToThreeDifferentChoicesButNobodyElseCan() {
+        GameRoom room = setUpTwoPlayerRandomRoom(2);
+        List<Long> before = imposterOnlineService.getState(room, HOST).getGridChoices().stream().map(c -> c.getId()).toList();
+
+        assertThatThrownBy(() -> imposterOnlineService.rerollChoices(room, GUEST))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("not your turn");
+
+        ImposterOnlineStateDto rerolled = imposterOnlineService.rerollChoices(room, HOST);
+
+        List<Long> after = rerolled.getGridChoices().stream().map(c -> c.getId()).toList();
+        assertThat(after).hasSize(3);
+        assertThat(after).as("none of the previously offered boards may come straight back").doesNotContainAnyElementsOf(before);
+    }
 }

@@ -382,6 +382,42 @@ public class GridBattleOnlineService {
         return getState(room, requestingEmail);
     }
 
+    /**
+     * "Random" mode only: the picker asks for 3 different grids instead of the ones
+     * currently offered (e.g. the group has already played them). Same gating as
+     * chooseGrid - picker-only, and only while no grid's been committed yet - and the
+     * ones on offer now are excluded so they can't come straight back. If the pool has
+     * nothing else left, the current choices stay and the caller gets an error.
+     */
+    @Transactional
+    public GridBattleStateDto rerollChoices(GameRoom room, String requestingEmail) {
+        GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
+        GridBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+
+        if (state.getRandomTotalCount() == null) {
+            throw new IllegalStateException("This room isn't using random grid selection.");
+        }
+        if (state.getGridIds().size() > state.getCurrentGridIndex()) {
+            throw new IllegalStateException("A grid has already been chosen for this round.");
+        }
+        List<GameRoomParticipant> ordered = room.getParticipants();
+        GameRoomParticipant picker = ordered.get(state.getCurrentGridIndex() % ordered.size());
+        if (!me.getId().equals(picker.getId())) {
+            throw new IllegalStateException("It's not your turn to choose.");
+        }
+
+        List<Long> exclude = new ArrayList<>(state.getGridIds());
+        exclude.addAll(state.getPendingChoiceIds());
+        List<GridSummaryDto> fresh = gridPlayService.getBattleRoundChoices(3, exclude);
+        if (fresh.isEmpty()) {
+            throw new IllegalStateException("No other grids left to show.");
+        }
+        state.setPendingChoiceIds(fresh.stream().map(GridSummaryDto::getId).collect(Collectors.toSet()));
+        roomStateRepository.save(state);
+        return getState(room, requestingEmail);
+    }
+
     // Generates this round's 3 candidates the first time they're needed, then
     // leaves them alone on every subsequent poll until chooseGrid() clears them -
     // otherwise every poll would silently reshuffle the options out from under
