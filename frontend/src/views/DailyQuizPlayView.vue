@@ -12,7 +12,7 @@
 
     <template v-else-if="state">
       <template v-if="state.attemptStatus === 'IN_PROGRESS'">
-        <form @submit.prevent="submit">
+        <form @submit.prevent="showSubmitConfirm = true">
           <div v-for="q in state.questions" :key="q.questionId" class="field">
             <label>{{ q.questionNumber }}. {{ q.text }}</label>
             <input type="text" v-model="answers[q.questionId]" autocomplete="off" />
@@ -51,6 +51,28 @@
         </div>
       </template>
     </template>
+
+    <!-- Submitting is final (the backend rejects a second submission), so this
+         asks first - and calls out any blank boxes, which are auto-marked
+         wrong rather than skipped. Not ConfirmModal: that one's confirm
+         button is hard-wired to the destructive red style. -->
+    <div v-if="showSubmitConfirm" class="modal-backdrop" @click.self="!submitting && (showSubmitConfirm = false)">
+      <div class="modal" role="alertdialog" aria-modal="true" aria-label="Submit your answers?" style="max-width:400px;">
+        <h2 style="margin-top:0;">Submit your answers?</h2>
+        <p class="page-subtitle" style="margin-bottom:8px;">You can't change them once they're submitted.</p>
+        <p v-if="blankCount" style="color:var(--coral); font-size:0.9rem; margin:0 0 8px;">
+          {{ blankCount }} question{{ blankCount === 1 ? ' is' : 's are' }} still blank - blank answers count as wrong.
+        </p>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+          <button class="btn btn-secondary" :disabled="submitting" @click="showSubmitConfirm = false">
+            {{ blankCount ? 'Keep answering' : 'Go back' }}
+          </button>
+          <button class="btn btn-primary" :disabled="submitting" @click="submit">
+            {{ submitting ? 'Submitting…' : 'Submit' }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <div v-if="showScoreboard" class="modal-backdrop" @click.self="showScoreboard = false">
       <div class="modal">
@@ -106,6 +128,7 @@ import { useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
 import LoadingState from '../components/LoadingState.vue'
+import { useEscapeKey } from '../composables/useEscapeKey'
 
 const route = useRoute()
 const quizId = route.params.id
@@ -115,6 +138,13 @@ const loading = ref(true)
 const error = ref('')
 const answers = reactive({})
 const submitting = ref(false)
+const showSubmitConfirm = ref(false)
+
+useEscapeKey(() => { if (showSubmitConfirm.value && !submitting.value) showSubmitConfirm.value = false })
+
+const blankCount = computed(() =>
+  (state.value?.questions || []).filter(q => !(answers[q.questionId] || '').trim()).length
+)
 
 onMounted(load)
 
@@ -140,6 +170,7 @@ async function submit() {
     error.value = e.response?.data?.message || 'Could not submit your answers.'
   } finally {
     submitting.value = false
+    showSubmitConfirm.value = false
   }
 }
 
