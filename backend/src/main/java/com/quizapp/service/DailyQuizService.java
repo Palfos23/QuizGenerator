@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 public class DailyQuizService {
 
     private static final int QUESTIONS_PER_DAY = 15;
+    private static final String LOGO_CATEGORY = "Logo";
     // A quiz stops being reachable once it's this many days old - e.g. with
     // RETENTION_DAYS = 7, a quiz from exactly 7 days ago is still the oldest
     // one kept, and one from 8 days ago is gone (deleteOldSets below deletes
@@ -103,15 +105,49 @@ public class DailyQuizService {
                 .stream()
                 .flatMap(s -> s.getQuestionIds().stream())
                 .collect(Collectors.toSet());
-        candidates.removeIf(q -> recentlyUsed.contains(q.getId()));
+        // The quiz always opens with exactly ONE picture question from the Logo
+        // category - never more, never fewer - and the other 14 are drawn from
+        // everything that isn't a Logo question at all. A Logo question without a
+        // photo is useless here (the question text is just "which airline?"), so only
+        // ones with a photo qualify as the opener.
+        List<Question> logoPool = candidates.stream()
+                .filter(DailyQuizService::isLogoQuestionWithPhoto)
+                .collect(Collectors.toList());
+        List<Question> freshLogos = logoPool.stream()
+                .filter(q -> !recentlyUsed.contains(q.getId()))
+                .collect(Collectors.toList());
+        // If every Logo question has been used within the retention window, repeating
+        // one beats a quiz with no picture round at all.
+        List<Question> logoChoices = freshLogos.isEmpty() ? logoPool : freshLogos;
+        Question logoQuestion = logoChoices.isEmpty() ? null : logoChoices.get(new Random().nextInt(logoChoices.size()));
 
-        Collections.shuffle(candidates);
-        int wanted = Math.min(QUESTIONS_PER_DAY, candidates.size());
+        List<Question> others = candidates.stream()
+                .filter(q -> !isLogoCategory(q))
+                .filter(q -> !recentlyUsed.contains(q.getId()))
+                .collect(Collectors.toList());
+        Collections.shuffle(others);
+
+        List<Long> questionIds = new ArrayList<>();
+        if (logoQuestion != null) {
+            questionIds.add(logoQuestion.getId());
+        }
+        others.stream()
+                .limit(QUESTIONS_PER_DAY - questionIds.size())
+                .map(Question::getId)
+                .forEach(questionIds::add);
 
         DailyQuizSet set = new DailyQuizSet();
         set.setQuizDate(quizDate);
-        set.setQuestionIds(candidates.stream().limit(wanted).map(Question::getId).collect(Collectors.toList()));
+        set.setQuestionIds(questionIds);
         return setRepository.save(set);
+    }
+
+    private static boolean isLogoCategory(Question q) {
+        return q.getCategory() != null && LOGO_CATEGORY.equalsIgnoreCase(q.getCategory().trim());
+    }
+
+    private static boolean isLogoQuestionWithPhoto(Question q) {
+        return isLogoCategory(q) && q.getPhotoUrl() != null && !q.getPhotoUrl().isBlank();
     }
 
     // Runs hourly, same cadence as RoomCleanupService - deletes any quiz set
@@ -193,7 +229,7 @@ public class DailyQuizService {
             for (int i = 0; i < set.getQuestionIds().size(); i++) {
                 Question q = byId.get(set.getQuestionIds().get(i));
                 if (q != null) {
-                    questionDtos.add(new DailyQuizPlayStateDto.QuestionDto(i + 1, q.getId(), q.getQuestionText()));
+                    questionDtos.add(new DailyQuizPlayStateDto.QuestionDto(i + 1, q.getId(), q.getQuestionText(), q.getPhotoUrl()));
                 }
             }
             dto.setQuestions(questionDtos);
@@ -217,7 +253,7 @@ public class DailyQuizService {
             boolean pending = a.getVerdict() == DailyQuizAnswerVerdict.PENDING;
             rows.add(new DailyQuizResultDto.AnswerResultDto(
                     i + 1, a.getQuestion().getQuestionText(), a.getAnswerText(),
-                    pending ? null : a.getQuestion().getAnswer(), a.getVerdict().name()));
+                    pending ? null : a.getQuestion().getAnswer(), a.getVerdict().name(), a.getQuestion().getPhotoUrl()));
         }
         result.setAnswers(rows);
         return result;

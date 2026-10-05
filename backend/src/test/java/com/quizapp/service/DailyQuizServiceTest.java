@@ -338,4 +338,75 @@ class DailyQuizServiceTest {
         assertThat(dailyQuizSetRepository.findById(keptBoundary.getId())).isPresent();
         assertThat(dailyQuizSetRepository.findById(deleted.getId())).isEmpty();
     }
+
+    private Question newLogoQuestion(String answer, boolean withPhoto) {
+        Question q = new Question();
+        q.setQuestionText("Hvilket selskap? " + System.nanoTime());
+        q.setCategory("Logo");
+        q.setDifficultyLevel(5);
+        q.setLanguage(Language.NO);
+        q.setAnswer(answer);
+        if (withPhoto) q.setPhotoUrl("https://example.com/logo-" + System.nanoTime() + ".png");
+        return questionRepository.save(q);
+    }
+
+    @Test
+    void quizOpensWithExactlyOneLogoQuestionThatHasAPhoto() {
+        seedQuestions(40);
+        for (int i = 0; i < 5; i++) newLogoQuestion("Logo answer " + i, true);
+        // A Logo question with no picture can never be the opener, and - like every
+        // other Logo question - must not show up anywhere else in the quiz either.
+        for (int i = 0; i < 3; i++) newLogoQuestion("Pictureless logo " + i, false);
+
+        DailyQuizSet generated = dailyQuizService.generateSet(LocalDate.now().plusYears(6));
+
+        assertThat(generated.getQuestionIds()).hasSize(15);
+        List<Question> inOrder = generated.getQuestionIds().stream()
+                .map(id -> questionRepository.findById(id).orElseThrow())
+                .toList();
+        assertThat(inOrder.get(0).getCategory()).isEqualTo("Logo");
+        assertThat(inOrder.get(0).getPhotoUrl()).isNotBlank();
+        assertThat(inOrder.stream().filter(q -> "Logo".equalsIgnoreCase(q.getCategory())).count())
+                .as("exactly one Logo question per daily quiz").isEqualTo(1);
+    }
+
+    @Test
+    void reusesALogoQuestionRatherThanDroppingThePictureRoundWhenAllWereRecentlyUsed() {
+        seedQuestions(40);
+        newLogoQuestion("Only logo", true);
+        List<Long> everyLogoWithPhoto = questionRepository.findByLanguage(Language.NO).stream()
+                .filter(q -> "Logo".equalsIgnoreCase(q.getCategory()) && q.getPhotoUrl() != null && !q.getPhotoUrl().isBlank())
+                .map(Question::getId)
+                .toList();
+
+        LocalDate day = LocalDate.now().plusYears(7);
+        DailyQuizSet yesterday = new DailyQuizSet();
+        yesterday.setQuizDate(day.minusDays(1));
+        yesterday.setQuestionIds(everyLogoWithPhoto);
+        dailyQuizSetRepository.save(yesterday);
+
+        DailyQuizSet generated = dailyQuizService.generateSet(day);
+
+        Question opener = questionRepository.findById(generated.getQuestionIds().get(0)).orElseThrow();
+        assertThat(opener.getCategory()).isEqualTo("Logo");
+        assertThat(everyLogoWithPhoto).contains(opener.getId());
+    }
+
+    @Test
+    void playStateCarriesThePhotoUrlForQuestionsThatHaveOne() {
+        seedQuestions(40);
+        Question logo = newLogoQuestion("Photo answer", true);
+        AppUser user = newUser();
+        // Hand-build a set so the logo is guaranteed to be in it (today's set is shared
+        // with every other test in this class, so can't rely on what it contains).
+        DailyQuizSet set = new DailyQuizSet();
+        set.setQuizDate(LocalDate.now().plusYears(8));
+        set.setQuestionIds(List.of(logo.getId()));
+        set = dailyQuizSetRepository.save(set);
+
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(set.getId(), user.getEmail());
+
+        assertThat(play.getQuestions()).hasSize(1);
+        assertThat(play.getQuestions().get(0).getPhotoUrl()).isEqualTo(logo.getPhotoUrl());
+    }
 }

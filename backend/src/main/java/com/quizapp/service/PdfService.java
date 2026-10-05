@@ -1,6 +1,8 @@
 package com.quizapp.service;
 
 import com.lowagie.text.*;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.quizapp.dto.QuestionDto;
 import com.quizapp.dto.QuizDto;
@@ -43,21 +45,7 @@ public class PdfService {
 
             int number = 1;
             for (QuestionDto question : quiz.getQuestions()) {
-                document.add(new Paragraph(number + ". " + question.getQuestionText(), QUESTION_FONT));
-                document.add(new Paragraph(
-                        question.getCategory() + " - Difficulty " + question.getDifficultyLevel() + "/10", META_FONT));
-
-                if (question.getPhotoUrl() != null && !question.getPhotoUrl().isBlank()) {
-                    addPhoto(document, question.getPhotoUrl());
-                }
-
-                if (includeAnswers) {
-                    document.add(new Paragraph("Answer: " + question.getAnswer(), ANSWER_FONT));
-                } else {
-                    document.add(new Paragraph("Answer: _______________________________", BLANK_FONT));
-                }
-
-                document.add(Chunk.NEWLINE);
+                document.add(questionBlock(number, question, includeAnswers));
                 number++;
             }
 
@@ -68,19 +56,59 @@ public class PdfService {
         return out.toByteArray();
     }
 
-    // Fetches and embeds a question's photo. Deliberately swallows failures
-    // (dead link, host down, not actually an image) rather than letting one
-    // bad URL crash the whole quiz download - the question text and answer
-    // still print fine either way, just without the picture.
-    private void addPhoto(Document document, String photoUrl) {
+    // One question's heading, category line, photo and answer line as a single
+    // one-cell table, so the whole block always stays together: if it doesn't fit
+    // in what's left of the page, the entire block moves to the next page instead of
+    // the photo alone jumping ahead (leaving it orphaned from its own question) or
+    // the heading being stranded at the bottom of a page with its photo on the next.
+    // setSplitRows(false) is what stops iText cutting the cell across a page boundary;
+    // setKeepTogether(true) covers the table as a whole. A block is never taller than
+    // a page (the photo is capped at MAX_IMAGE_HEIGHT), so this can't loop or overflow.
+    private PdfPTable questionBlock(int number, QuestionDto question, boolean includeAnswers) {
+        PdfPCell cell = new PdfPCell();
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPadding(0f);
+        cell.setPaddingBottom(14f);
+
+        cell.addElement(new Paragraph(number + ". " + question.getQuestionText(), QUESTION_FONT));
+        cell.addElement(new Paragraph(
+                question.getCategory() + " - Difficulty " + question.getDifficultyLevel() + "/10", META_FONT));
+
+        if (question.getPhotoUrl() != null && !question.getPhotoUrl().isBlank()) {
+            Image photo = loadPhoto(question.getPhotoUrl());
+            if (photo != null) {
+                cell.addElement(photo);
+            }
+        }
+
+        if (includeAnswers) {
+            cell.addElement(new Paragraph("Answer: " + question.getAnswer(), ANSWER_FONT));
+        } else {
+            cell.addElement(new Paragraph("Answer: _______________________________", BLANK_FONT));
+        }
+
+        PdfPTable table = new PdfPTable(1);
+        table.setWidthPercentage(100f);
+        table.setSplitRows(false);
+        table.setKeepTogether(true);
+        table.addCell(cell);
+        return table;
+    }
+
+    // Fetches a question's photo. Deliberately swallows failures (dead link, host
+    // down, not actually an image) rather than letting one bad URL crash the whole
+    // quiz download - the question text and answer still print fine either way, just
+    // without the picture.
+    private Image loadPhoto(String photoUrl) {
         try {
             Image image = Image.getInstance(new URL(photoUrl));
             image.scaleToFit(MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT);
             image.setSpacingBefore(6f);
             image.setSpacingAfter(6f);
-            document.add(image);
+            return image;
         } catch (Exception e) {
             log.warn("Could not embed question photo '{}' in PDF: {}", photoUrl, e.getMessage());
+            return null;
         }
     }
 }

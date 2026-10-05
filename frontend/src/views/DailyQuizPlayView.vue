@@ -15,6 +15,7 @@
         <form @submit.prevent="showSubmitConfirm = true">
           <div v-for="q in state.questions" :key="q.questionId" class="field">
             <label>{{ q.questionNumber }}. {{ q.text }}</label>
+            <img v-if="q.photoUrl" :src="q.photoUrl" alt="" class="daily-quiz-photo" @error="e => e.target.style.display = 'none'" />
             <input type="text" v-model="answers[q.questionId]" autocomplete="off" />
           </div>
           <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;" :disabled="submitting">
@@ -32,6 +33,7 @@
           <div v-for="a in state.result.answers" :key="a.questionNumber" class="saved-quiz-row" style="align-items:flex-start;">
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ a.questionNumber }}. {{ a.questionText }}</div>
+              <img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="daily-quiz-photo small" @error="e => e.target.style.display = 'none'" />
               <div class="saved-quiz-meta">
                 Your answer: {{ a.yourAnswer || '(blank)' }}
                 <span v-if="a.verdict === 'INCORRECT'"> · Correct answer: {{ a.correctAnswer }}</span>
@@ -220,3 +222,21 @@ async function updateLeaderboardPreference() {
   }
 }
 </script>
+
+<style scoped>
+/* A question's picture (the daily Logo question) - sits between the question text
+   and the answer box, capped so a large source image can't push the form off screen. */
+.daily-quiz-photo {
+  display: block;
+  max-width: 100%;
+  max-height: 260px;
+  margin: 8px 0 12px;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  object-fit: contain;
+}
+.daily-quiz-photo.small {
+  max-height: 120px;
+  margin: 6px 0 8px;
+}
+</style>

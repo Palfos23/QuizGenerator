@@ -43,16 +43,18 @@ public class DailyQuizResultDto {
         private String yourAnswer;
         private String correctAnswer; // null while verdict is PENDING - not spoiled before it's resolved
         private String verdict; // PENDING / CORRECT / INCORRECT
+        private String photoUrl; // null for questions without a picture
 
         public AnswerResultDto() {
         }
 
-        public AnswerResultDto(int questionNumber, String questionText, String yourAnswer, String correctAnswer, String verdict) {
+        public AnswerResultDto(int questionNumber, String questionText, String yourAnswer, String correctAnswer, String verdict, String photoUrl) {
             this.questionNumber = questionNumber;
             this.questionText = questionText;
             this.yourAnswer = yourAnswer;
             this.correctAnswer = correctAnswer;
             this.verdict = verdict;
+            this.photoUrl = photoUrl;
         }
 
         public int getQuestionNumber() {
@@ -93,6 +95,14 @@ public class DailyQuizResultDto {
 
         public void setVerdict(String verdict) {
             this.verdict = verdict;
+        }
+
+        public String getPhotoUrl() {
+            return photoUrl;
+        }
+
+        public void setPhotoUrl(String photoUrl) {
+            this.photoUrl = photoUrl;
         }
     }
 }

@@ -7,29 +7,31 @@
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Create a quiz</router-link>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">Daily Quiz</router-link>
-        <div v-if="!auth.isAdmin.value && !auth.isGuest.value" class="top-nav-dropdown">
-          <div v-if="openPlayerMenu === 'games'" class="top-nav-dropdown-backdrop" @click="closePlayerMenu"></div>
-          <button
-            type="button"
-            class="nav-link top-nav-dropdown-toggle"
-            :class="{ 'router-link-exact-active': isGameRoute }"
-            aria-haspopup="true"
-            :aria-expanded="openPlayerMenu === 'games'"
-            @click="togglePlayerMenu('games')"
-          >
-            Games ▾
-          </button>
-          <div v-if="openPlayerMenu === 'games'" class="top-nav-dropdown-popup" role="menu">
-            <router-link
-              v-for="item in GAMES_MENU"
-              :key="item.to"
-              :to="item.to"
-              class="nav-link"
-              role="menuitem"
-              @click="closeGamesMenu(item.to, item.key)"
-            >{{ item.label }}</router-link>
+        <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
+          <div v-for="menu in PLAYER_MENUS" :key="menu.key" class="top-nav-dropdown">
+            <div v-if="openPlayerMenu === menu.key" class="top-nav-dropdown-backdrop" @click="closePlayerMenu"></div>
+            <button
+              type="button"
+              class="nav-link top-nav-dropdown-toggle"
+              :class="{ 'router-link-exact-active': playerMenuActive(menu) }"
+              aria-haspopup="true"
+              :aria-expanded="openPlayerMenu === menu.key"
+              @click="togglePlayerMenu(menu.key)"
+            >
+              {{ menu.label }} ▾
+            </button>
+            <div v-if="openPlayerMenu === menu.key" class="top-nav-dropdown-popup" role="menu">
+              <router-link
+                v-for="item in menu.items"
+                :key="item.to"
+                :to="item.to"
+                class="nav-link"
+                role="menuitem"
+                @click="closePlayerMenuItem(item.to, item.key)"
+              >{{ item.label }}</router-link>
+            </div>
           </div>
-        </div>
+        </template>
         <template v-if="auth.isAdmin.value">
           <div v-for="menu in ADMIN_MENUS" :key="menu.label" class="top-nav-dropdown">
             <div v-if="openAdminMenu === menu.label" class="top-nav-dropdown-backdrop" @click="closeAdminMenu"></div>
@@ -81,24 +83,26 @@
       <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" @click="onNavClick('/generate', 'generate')">Create</router-link>
       <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
       <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz">Daily Quiz</router-link>
-      <div v-if="!auth.isAdmin.value && !auth.isGuest.value" style="position:relative; flex:1; display:flex;">
-        <div v-if="openPlayerMenu === 'games'" class="bottom-nav-backdrop" @click="closePlayerMenu"></div>
-        <button
-          aria-haspopup="true"
-          :aria-expanded="openPlayerMenu === 'games'"
-          @click="togglePlayerMenu('games')"
-          :class="{ active: isGameRoute }"
-        >Games ▾</button>
-        <div v-if="openPlayerMenu === 'games'" class="games-popup" role="menu">
-          <router-link
-            v-for="item in GAMES_MENU"
-            :key="item.to"
-            :to="item.to"
-            role="menuitem"
-            @click="closeGamesMenu(item.to, item.key)"
-          >{{ item.label }}</router-link>
+      <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
+        <div v-for="menu in PLAYER_MENUS" :key="menu.key" style="position:relative; flex:1; display:flex;">
+          <div v-if="openPlayerMenu === menu.key" class="bottom-nav-backdrop" @click="closePlayerMenu"></div>
+          <button
+            aria-haspopup="true"
+            :aria-expanded="openPlayerMenu === menu.key"
+            @click="togglePlayerMenu(menu.key)"
+            :class="{ active: playerMenuActive(menu) }"
+          >{{ menu.label }} ▾</button>
+          <div v-if="openPlayerMenu === menu.key" class="games-popup" role="menu">
+            <router-link
+              v-for="item in menu.items"
+              :key="item.to"
+              :to="item.to"
+              role="menuitem"
+              @click="closePlayerMenuItem(item.to, item.key)"
+            >{{ item.label }}</router-link>
+          </div>
         </div>
-      </div>
+      </template>
       <template v-if="auth.isAdmin.value">
         <div v-for="menu in ADMIN_MENUS" :key="menu.label" style="position:relative; flex:1; display:flex;">
           <div v-if="openAdminMenu === menu.label" class="bottom-nav-backdrop" @click="closeAdminMenu"></div>
@@ -159,39 +163,50 @@ import { useEscapeKey } from './composables/useEscapeKey'
 
 const router = useRouter()
 
-// Every game mode except Daily Quiz (its own standalone nav button, next to
-// Create a quiz/My quizzes) lives under one "Games ▾" dropdown -
-// solo/pass-and-play boards (Grid, Starting XI) alongside the standalone
-// party games and their online Battle variants. `key` is only set for the
+// Player dropdowns, config-driven like ADMIN_MENUS below and used for both the
+// desktop top nav and the mobile bottom-nav popup. Daily Quiz is deliberately not
+// in either - it has its own standalone nav button, next to Create a quiz/My quizzes.
+//
+// "Weekly" holds only the two weekly boards (Grid, Starting XI); "Games" holds every
+// party game and its online Battle variants. `key` on an item is only set for the
 // ones that use onNavClick's "re-click while already there" retrigger (see
-// closeGamesMenu); Grid/Starting XI never needed that, so their key stays null.
-// /penalty-shootout deliberately not listed - it's not a navbar destination
-// of its own, reached only via the XI Battle page's mode choice instead (see
-// StartingXiBattleView.vue), so there's no "Games ▾" item that should read
-// as active while on it.
-const GAMES_MENU = [
-  { to: '/weekly-grid', label: 'Grid', key: null },
-  { to: '/starting-xi', label: 'Starting XI', key: null },
-  { to: '/tension', label: 'Tension', key: 'tension' },
-  { to: '/501', label: '501', key: 'fiveOhOne' },
-  { to: '/imposter', label: 'Imposter', key: 'imposter' },
-  { to: '/grid-battle', label: 'Grid Battle', key: 'gridBattle' },
-  { to: '/starting-xi-battle', label: 'XI Battle', key: 'startingXiBattle' },
-  { to: '/bullseye', label: 'Bullseye', key: 'bullseye' },
-  { to: '/flashback', label: 'Flashback', key: 'flashback' }
+// closePlayerMenuItem); Grid/Starting XI never needed that, so theirs stay null.
+// /penalty-shootout deliberately not listed - it's not a navbar destination of its
+// own, reached only via the XI Battle page's mode choice instead (see
+// StartingXiBattleView.vue), so there's no menu item that should read as active
+// while on it.
+const PLAYER_MENUS = [
+  {
+    key: 'weekly',
+    label: 'Weekly',
+    items: [
+      { to: '/weekly-grid', label: 'Grid', key: null },
+      { to: '/starting-xi', label: 'Starting XI', key: null }
+    ]
+  },
+  {
+    key: 'games',
+    label: 'Games',
+    items: [
+      { to: '/tension', label: 'Tension', key: 'tension' },
+      { to: '/501', label: '501', key: 'fiveOhOne' },
+      { to: '/imposter', label: 'Imposter', key: 'imposter' },
+      { to: '/grid-battle', label: 'Grid Battle', key: 'gridBattle' },
+      { to: '/starting-xi-battle', label: 'XI Battle', key: 'startingXiBattle' },
+      { to: '/bullseye', label: 'Bullseye', key: 'bullseye' },
+      { to: '/flashback', label: 'Flashback', key: 'flashback' }
+    ]
+  }
 ]
 // Prefix match, not exact - Grid/Starting XI each have a /:id play sub-route
 // beyond their own list page.
-const GAME_PATHS = GAMES_MENU.map(item => item.to)
-const isGameRoute = computed(() => {
+function playerMenuActive(menu) {
   const path = router.currentRoute.value.path
-  return GAME_PATHS.some(prefix => path === prefix || path.startsWith(prefix + '/'))
-})
+  return menu.items.some(item => path === item.to || path.startsWith(item.to + '/'))
+}
 
-// Single "which player dropdown is open" ref (null | 'games') - only one
-// dropdown today, but kept as a named-key ref rather than a plain boolean,
-// same one-at-a-time pattern as openAdminMenu below, in case a second
-// player-facing dropdown ever joins it.
+// Single "which player dropdown is open" ref (null | 'weekly' | 'games') - one at a
+// time, same pattern as openAdminMenu below.
 const openPlayerMenu = ref(null)
 function togglePlayerMenu(key) {
   openPlayerMenu.value = openPlayerMenu.value === key ? null : key
@@ -200,7 +215,7 @@ function closePlayerMenu() {
   openPlayerMenu.value = null
 }
 
-function closeGamesMenu(path, key) {
+function closePlayerMenuItem(path, key) {
   closePlayerMenu()
   if (key) onNavClick(path, key)
 }

@@ -50,14 +50,16 @@ public class DailyQuizAttemptDetailDto {
         private String submittedAnswer;
         private String correctAnswer;
         private String verdict; // PENDING / CORRECT / INCORRECT
+        private String photoUrl; // null for questions without a picture - the admin judging a logo answer needs to see it
 
-        public AnswerDto(Long answerId, int questionNumber, String questionText, String submittedAnswer, String correctAnswer, String verdict) {
+        public AnswerDto(Long answerId, int questionNumber, String questionText, String submittedAnswer, String correctAnswer, String verdict, String photoUrl) {
             this.answerId = answerId;
             this.questionNumber = questionNumber;
             this.questionText = questionText;
             this.submittedAnswer = submittedAnswer;
             this.correctAnswer = correctAnswer;
             this.verdict = verdict;
+            this.photoUrl = photoUrl;
         }
 
         public Long getAnswerId() {
@@ -82,6 +84,10 @@ public class DailyQuizAttemptDetailDto {
 
         public String getVerdict() {
             return verdict;
+        }
+
+        public String getPhotoUrl() {
+            return photoUrl;
         }
     }
 }

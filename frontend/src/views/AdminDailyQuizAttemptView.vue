@@ -16,6 +16,7 @@
         <div v-for="a in attempt.answers" :key="a.answerId" class="saved-quiz-row" style="align-items:flex-start;">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ a.questionNumber }}. {{ a.questionText }}</div>
+            <img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="daily-quiz-photo" @error="e => e.target.style.display = 'none'" />
             <div class="saved-quiz-meta">Correct answer: <strong>{{ a.correctAnswer }}</strong></div>
             <div style="color:var(--text-dim); font-size:0.85rem; margin-top:6px;">
               Answered: <strong>{{ a.submittedAnswer || '(blank)' }}</strong>
@@ -139,3 +140,17 @@ async function openScoreboard() {
   }
 }
 </script>
+
+<style scoped>
+/* The question's picture (e.g. a logo) - the admin needs to see it to judge a
+   non-exact answer. */
+.daily-quiz-photo {
+  display: block;
+  max-width: 100%;
+  max-height: 140px;
+  margin: 6px 0 8px;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  object-fit: contain;
+}
+</style>

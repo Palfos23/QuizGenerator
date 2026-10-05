@@ -56,14 +56,16 @@ public class DailyQuizPlayStateDto {
         private int questionNumber;
         private Long questionId;
         private String text;
+        private String photoUrl; // null for the (many) questions without a picture
 
         public QuestionDto() {
         }
 
-        public QuestionDto(int questionNumber, Long questionId, String text) {
+        public QuestionDto(int questionNumber, Long questionId, String text, String photoUrl) {
             this.questionNumber = questionNumber;
             this.questionId = questionId;
             this.text = text;
+            this.photoUrl = photoUrl;
         }
 
         public int getQuestionNumber() {
@@ -88,6 +90,14 @@ public class DailyQuizPlayStateDto {
 
         public void setText(String text) {
             this.text = text;
+        }
+
+        public String getPhotoUrl() {
+            return photoUrl;
+        }
+
+        public void setPhotoUrl(String photoUrl) {
+            this.photoUrl = photoUrl;
         }
     }
 }

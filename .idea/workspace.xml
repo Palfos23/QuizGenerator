@@ -5,17 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/service/DailyQuizService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/service/DailyQuizService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-Ch6yeFfw.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/dist/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/BullseyeGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/BullseyeGame.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ImposterGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ImposterGame.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/MultiplayerGridGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MultiplayerGridGame.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/MultiplayerLineupGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MultiplayerLineupGame.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/OnlineTensionGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/OnlineTensionGame.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/TensionGame.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/TensionGame.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/AdminTensionQuestionsView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/AdminTensionQuestionsView.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

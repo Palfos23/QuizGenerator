@@ -68,7 +68,7 @@ public class DailyQuizReviewService {
             DailyQuizAnswer a = answers.get(i);
             rows.add(new DailyQuizAttemptDetailDto.AnswerDto(
                     a.getId(), i + 1, a.getQuestion().getQuestionText(), a.getAnswerText(),
-                    a.getQuestion().getAnswer(), a.getVerdict().name()));
+                    a.getQuestion().getAnswer(), a.getVerdict().name(), a.getQuestion().getPhotoUrl()));
         }
         return new DailyQuizAttemptDetailDto(attempt.getId(), attempt.getSet().getId(), attempt.getUser().getName(), attempt.getSet().getQuizDate(), rows);
     }
