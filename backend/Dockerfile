@@ -13,6 +13,13 @@ RUN mvn -B clean package -DskipTests
 # --- Runtime stage: a slim JRE with just the built jar ---
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+
+# The slim Alpine JRE ships without the font libraries Java's 2D graphics needs. PDF
+# downloads rasterize SVG logos (see PdfPhotoLoader), and an SVG containing text - or
+# any Java2D font initialisation - fails with a "libfreetype"/fontconfig error without
+# these. Small, standard fix for Java imaging on Alpine.
+RUN apk add --no-cache fontconfig freetype ttf-dejavu
+
 COPY --from=build /app/target/*.jar app.jar
 
 # Render injects PORT at runtime; application.properties already reads
@@ -34,4 +41,4 @@ EXPOSE 8080
 # together with that thread count - see this repo's README "Memory on
 # Starter" callout for the OOM-kill symptom that shows up if they're too high
 # for the container they're actually running in.
-ENTRYPOINT ["java", "-Xmx1200m", "-XX:MaxMetaspaceSize=256m", "-XX:+UseContainerSupport", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx1200m", "-XX:MaxMetaspaceSize=256m", "-XX:+UseContainerSupport", "-Djava.awt.headless=true", "-jar", "app.jar"]

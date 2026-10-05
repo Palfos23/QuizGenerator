@@ -100,6 +100,20 @@
             <version>1.3.39</version>
         </dependency>
 
+        <!-- Question photos are admin-pasted links to any host, and logos in particular are
+             very often SVG (Wikipedia) or WebP - neither of which OpenPDF can embed on its
+             own. PdfPhotoLoader rasterizes SVG with jsvg and reads WebP through ImageIO. -->
+        <dependency>
+            <groupId>com.github.weisj</groupId>
+            <artifactId>jsvg</artifactId>
+            <version>1.7.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-webp</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+
         <!-- CSV parsing for bulk question import -->
         <dependency>
             <groupId>org.apache.commons</groupId>

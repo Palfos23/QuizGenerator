@@ -11,12 +11,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.net.URL;
 
 @Service
 public class PdfService {
 
     private static final Logger log = LoggerFactory.getLogger(PdfService.class);
+
+    private final PdfPhotoLoader photoLoader;
+
+    public PdfService(PdfPhotoLoader photoLoader) {
+        this.photoLoader = photoLoader;
+    }
 
     private static final Font TITLE_FONT = new Font(Font.HELVETICA, 22, Font.BOLD);
     private static final Font QUESTION_FONT = new Font(Font.HELVETICA, 13, Font.BOLD);
@@ -78,6 +83,11 @@ public class PdfService {
             Image photo = loadPhoto(question.getPhotoUrl());
             if (photo != null) {
                 cell.addElement(photo);
+            } else {
+                // Better a visible note than a silently missing picture: a question like
+                // "which team?" is unanswerable without it, and the host needs to see this
+                // before quiz night so they can fix the link.
+                cell.addElement(new Paragraph("[Picture could not be loaded]", BLANK_FONT));
             }
         }
 
@@ -95,19 +105,19 @@ public class PdfService {
         return table;
     }
 
-    // Fetches a question's photo. Deliberately swallows failures (dead link, host
-    // down, not actually an image) rather than letting one bad URL crash the whole
-    // quiz download - the question text and answer still print fine either way, just
-    // without the picture.
+    // Loads a question's photo for embedding. Deliberately swallows failures (dead link,
+    // host down, blocked, not actually an image) rather than letting one bad URL crash the
+    // whole quiz download - the question text and answer still print fine either way, with
+    // a note in place of the picture (see questionBlock).
     private Image loadPhoto(String photoUrl) {
         try {
-            Image image = Image.getInstance(new URL(photoUrl));
+            Image image = photoLoader.load(photoUrl);
             image.scaleToFit(MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT);
             image.setSpacingBefore(6f);
             image.setSpacingAfter(6f);
             return image;
         } catch (Exception e) {
-            log.warn("Could not embed question photo '{}' in PDF: {}", photoUrl, e.getMessage());
+            log.warn("Could not embed question photo '{}' in PDF: {}: {}", photoUrl, e.getClass().getSimpleName(), e.getMessage());
             return null;
         }
     }
