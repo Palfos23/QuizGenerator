@@ -45,7 +45,7 @@ const tiles = [
   height: 58px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255,255,255,0.07);
   display: flex;
   align-items: center;
   justify-content: center;

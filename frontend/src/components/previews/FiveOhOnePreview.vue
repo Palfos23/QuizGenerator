@@ -75,7 +75,7 @@
   justify-content: center;
   background:
     radial-gradient(circle, transparent 34%, rgba(242, 183, 5, 0.14) 35% 44%, transparent 45%),
-    conic-gradient(from 0deg, rgba(255,255,255,0.05) 0 25%, rgba(255,255,255,0.02) 25% 50%, rgba(255,255,255,0.05) 50% 75%, rgba(255,255,255,0.02) 75% 100%);
+    conic-gradient(from 0deg, rgba(255,255,255,0.05) 0 25%, rgba(255,255,255,0.06) 25% 50%, rgba(255,255,255,0.05) 50% 75%, rgba(255,255,255,0.06) 75% 100%);
   border: 1px solid var(--border);
 }
 .fp-score {
@@ -115,7 +115,7 @@
   gap: 10px;
   padding: 5px 10px;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255,255,255,0.06);
   font-size: 0.74rem;
 }
 .fp-p { color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

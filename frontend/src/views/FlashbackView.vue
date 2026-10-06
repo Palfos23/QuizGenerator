@@ -48,7 +48,7 @@
 
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>Not sure how it works? See an example</summary>
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.02);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.06);">
           <p style="margin-top:0;">
             Each round hides a real year behind up to 5 clues, shown one at a time - hardest first,
             easiest last. After the first clue, players take turns guessing a year each. You have

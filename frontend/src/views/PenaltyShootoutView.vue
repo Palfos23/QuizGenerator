@@ -42,7 +42,7 @@
 
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>Not sure how it works? See an example</summary>
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.02);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.06);">
           <p style="margin-top:0;">
             A shootout board shows every kick in the real order it happened, split by side - a small badge already
             shows whether each one was <strong style="color:var(--teal);">scored</strong> or

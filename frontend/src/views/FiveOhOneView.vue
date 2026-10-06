@@ -49,7 +49,7 @@
 
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>Not sure how it works? See an example</summary>
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.02);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.06);">
           <p style="margin-top:0;">
             Say the category is "Premier League appearances." You're on 501, and you search for a player -
             say one with <strong>136</strong> appearances. That's under 180 and not one of the unreachable numbers,

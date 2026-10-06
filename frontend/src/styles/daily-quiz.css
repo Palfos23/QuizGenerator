@@ -1,25 +1,11 @@
 /* =====================================================================
-   Daily quiz - "dusk" theme and components
-   ---------------------------------------------------------------------
-   The rest of the app is near-black. The daily quiz pages (player and admin) opt into a
-   lighter, softer look with `meta: { theme: 'dusk' }` on their routes - the router puts
-   `theme-dusk` on <html> (see router/index.js). It keeps the same fonts, gold primary and
-   teal / coral / violet accents; it lifts the dark base to an indigo-slate, brightens the dim
-   text, and gives surfaces real depth so the page reads as clean rather than murky.
-
-   Everything below that isn't a variable override is prefixed `dq-`, so none of it can leak into
-   the rest of the app.
+   Daily quiz components (`dq-` prefixed) plus the dusk accent variables they use.
+   The app-wide "dusk" palette (indigo-slate base, brighter text) is in style.css.
    ===================================================================== */
 
-/* ---------- Theme: lifts the base colours every existing component is built from ---------- */
+/* ---------- Dusk accents (the base palette itself lives in style.css) ---------- */
 
-:root.theme-dusk {
-  --ink: #232b4d;
-  --ink-raised: #2f3a66;
-  --text: #f7f8ff;
-  --text-dim: #bcc3de;
-  --border: rgba(255, 255, 255, 0.17);
-
+:root {
   --dq-card: rgba(255, 255, 255, 0.085);
   --dq-card-hover: rgba(255, 255, 255, 0.125);
   --dq-line: rgba(255, 255, 255, 0.17);
@@ -33,43 +19,6 @@
   --dq-wait-bg: rgba(255, 212, 92, 0.17);
   --dq-year: #b5a9ff;
   --dq-year-bg: rgba(139, 124, 255, 0.24);
-}
-
-html.theme-dusk body {
-  background-image:
-    radial-gradient(720px circle at 6% -10%, rgba(139, 124, 255, 0.34), transparent 62%),
-    radial-gradient(780px circle at 104% 10%, rgba(242, 183, 5, 0.20), transparent 58%),
-    radial-gradient(900px circle at 50% 118%, rgba(61, 220, 151, 0.12), transparent 60%);
-}
-
-.theme-dusk .top-nav {
-  background: rgba(47, 58, 102, 0.78);
-}
-@media (prefers-reduced-transparency: reduce) {
-  .theme-dusk .top-nav { background: var(--ink-raised); }
-}
-
-/* Existing shared controls, tuned for the lighter surface */
-.theme-dusk .btn-secondary {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: var(--dq-line);
-}
-.theme-dusk .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-.theme-dusk .modal {
-  background: var(--ink-raised);
-  box-shadow: 0 24px 70px rgba(6, 9, 30, 0.55);
-}
-.theme-dusk .modal-backdrop {
-  background: rgba(14, 18, 48, 0.62);
-}
-.theme-dusk .banner.error {
-  background: var(--dq-bad-bg);
-}
-.theme-dusk .empty-state {
-  color: var(--text-dim);
 }
 
 /* ---------- Page frame ---------- */

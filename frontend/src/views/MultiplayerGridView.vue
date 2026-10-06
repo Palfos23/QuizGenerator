@@ -50,7 +50,7 @@
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>Not sure how it works? See an example</summary>
 
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.02);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.06);">
           <p style="margin-top:0;">
             Say the grid's theme is <em>"Top scorers for a football club last season."</em> It's a board of hidden tiles,
             each one showing a small hint before it's solved - like <strong>"FW | 14"</strong> for a forward with 14 goals.

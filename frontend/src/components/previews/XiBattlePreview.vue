@@ -63,7 +63,7 @@ const rows = [
   padding: 16px 12px;
   border-radius: var(--radius-md);
   background:
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 22px, transparent 22px 44px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.07) 0 22px, transparent 22px 44px),
     linear-gradient(180deg, #123f22, #0e3319);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }

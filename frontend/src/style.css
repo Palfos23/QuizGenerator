@@ -59,16 +59,16 @@
 :root {
   --nav-height: 64px; /* used by sticky elements positioned just below the top nav - keep in sync with .top-nav's actual rendered height per breakpoint. Redefined for the mobile nav's shorter height in the @media (max-width: 760px) block below. */
   --bottom-nav-height: 0px; /* the fixed mobile .bottom-nav is hidden above 760px, so anything sticky to the viewport bottom can sit flush at 0 by default - redefined below for the breakpoint where that bar actually covers the bottom of the screen. */
-  --ink: #101119;
-  --ink-raised: #1a1c28;
+  --ink: #232b4d;
+  --ink-raised: #2f3a66;
   --gold: #f2b705;
   --gold-soft: rgba(242, 183, 5, 0.14);
   --coral: #ff4d6d;
   --teal: #3ddc97;
   --violet: #8b7cff;
-  --text: #f1efe7;
-  --text-dim: #9a9dae;
-  --border: rgba(241, 239, 231, 0.12);
+  --text: #f7f8ff;
+  --text-dim: #bcc3de;
+  --border: rgba(255, 255, 255, 0.17);
 
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -101,8 +101,9 @@ html, body {
 body {
   /* soft glow blobs for depth - fixed so they don't scroll with content */
   background-image:
-    radial-gradient(600px circle at 8% -5%, rgba(139, 124, 255, 0.16), transparent 60%),
-    radial-gradient(700px circle at 105% 15%, rgba(242, 183, 5, 0.12), transparent 55%);
+    radial-gradient(720px circle at 6% -10%, rgba(139, 124, 255, 0.34), transparent 62%),
+    radial-gradient(780px circle at 104% 10%, rgba(242, 183, 5, 0.20), transparent 58%),
+    radial-gradient(900px circle at 50% 118%, rgba(61, 220, 151, 0.12), transparent 60%);
   background-attachment: fixed;
 }
 
@@ -156,7 +157,7 @@ input[type="radio"] {
   align-items: center;
   gap: 4px;
   padding: 14px 32px;
-  background: rgba(26, 28, 40, 0.72);
+  background: rgba(47, 58, 102, 0.78);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 1px solid var(--border);
@@ -322,7 +323,7 @@ h2 { font-size: 1.35rem; }
   padding: 11px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
   color: var(--text);
   font-size: 0.95rem;
   font-family: var(--font-body);
@@ -346,7 +347,7 @@ h2 { font-size: 1.35rem; }
   padding: 12px 16px 12px 42px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background-color: rgba(255,255,255,0.03);
+  background-color: rgba(255,255,255,0.07);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239a9dae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: 16px center;
@@ -607,8 +608,8 @@ input[type="range"]::-moz-range-progress {
   .btn-ready-pulse { animation: none; box-shadow: 0 4px 24px rgba(242, 183, 5, 0.45); }
 }
 
-.btn-secondary { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text); }
-.btn-secondary:hover { border-color: var(--text-dim); background: rgba(255,255,255,0.06); }
+.btn-secondary { background: rgba(255,255,255,0.07); border: 1px solid var(--border); color: var(--text); }
+.btn-secondary:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.14); }
 
 .btn-danger { background: transparent; border: 1px solid rgba(255, 77, 109, 0.4); color: var(--coral); }
 .btn-danger:hover { background: rgba(255, 77, 109, 0.1); }
@@ -765,7 +766,7 @@ input[type="range"]::-moz-range-progress {
 .title-edit-input:hover,
 .title-edit-input:focus {
   border-color: var(--border);
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
 }
 
 .toast {
@@ -862,7 +863,7 @@ mark {
   padding: 16px 18px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255,255,255,0.06);
 }
 .add-panel-header {
   display: flex;
@@ -891,7 +892,7 @@ mark {
   padding: 10px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
   color: var(--text);
   font-size: 0.9rem;
   font-family: var(--font-body);
@@ -991,7 +992,7 @@ mark {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1014,7 +1015,7 @@ mark {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 6px;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
 }
 
 .additional-photo-row {
@@ -1027,7 +1028,7 @@ mark {
   padding: 10px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
   color: var(--text);
   font-size: 0.9rem;
   font-family: var(--font-body);
@@ -1104,7 +1105,7 @@ mark {
   aspect-ratio: 1 / 1;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: rgba(26, 28, 40, 0.62);
+  background: rgba(47, 58, 102, 0.55);
   transition: border-color 0.25s ease, background 0.25s ease;
 }
 .grid-tile.correct {
@@ -1205,7 +1206,7 @@ mark {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(8, 9, 14, 0.9);
+  background: rgba(14, 18, 48, 0.9);
   padding: 10px 8px;
   text-align: center;
   font-weight: 600;
@@ -1409,7 +1410,7 @@ mark {
 .guess-box input:focus {
   outline: none;
   border-color: var(--gold);
-  background-color: rgba(255,255,255,0.04);
+  background-color: rgba(255,255,255,0.08);
   box-shadow: 0 0 0 3px rgba(242,183,5,0.15);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23f2b705' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
 }
@@ -1525,7 +1526,7 @@ mark {
 .tension-player-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
   padding: 10px 14px;
   display: flex;
   justify-content: space-between;
@@ -1547,7 +1548,7 @@ mark {
 .tension-round-score.negative { color: var(--coral); }
 
 .tension-answers-panel {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
@@ -1592,7 +1593,7 @@ mark {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 10px 14px;
@@ -1698,7 +1699,7 @@ mark {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 10px 14px;
@@ -1941,7 +1942,7 @@ mark {
   justify-content: center;
   text-align: center;
   padding: 0 24px;
-  background: rgba(8, 9, 14, 0.94);
+  background: rgba(14, 18, 48, 0.94);
   backdrop-filter: blur(4px);
 }
 
@@ -1962,7 +1963,7 @@ mark {
   padding: 16px 20px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.06);
   color: var(--text);
   font-size: 1rem;
   font-weight: 600;
@@ -2117,7 +2118,7 @@ mark {
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.06);
 }
 
 .stat-low {
@@ -2133,7 +2134,7 @@ mark {
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.06);
 }
 
 .pagination-bar {
@@ -2178,7 +2179,7 @@ mark {
   padding: 10px 16px;
   min-width: 140px;
   text-align: center;
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.06);
   transition: all 0.2s ease;
 }
 /* Shared by every turn-based multiplayer game (Grid/XI Battle, Bullseye,
@@ -2311,13 +2312,13 @@ table.scoreboard-table {
 /* Helps track a row across many columns while scanning - most of these
    tables are wide enough to need .table-scroll's horizontal scroll. */
 .table tbody tr:hover td {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
 }
 
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(8, 9, 14, 0.72);
+  background: rgba(14, 18, 48, 0.72);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: flex-start;
@@ -2399,7 +2400,7 @@ table.scoreboard-table {
   padding: 28px;
   width: 100%;
   max-width: 560px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  box-shadow: 0 24px 70px rgba(6, 9, 30, 0.55);
 }
 
 .saved-quiz-list {
@@ -2416,7 +2417,7 @@ table.scoreboard-table {
   padding: 16px 18px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.06);
   flex-wrap: wrap;
 }
 
@@ -2496,7 +2497,7 @@ table.scoreboard-table {
   padding: 40px 32px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.02));
+  background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.06));
 }
 .dashboard-hero h1 { margin: 0 0 10px; }
 .dashboard-hero .landing-lede { max-width: 640px; margin-bottom: 24px; }
@@ -2516,7 +2517,7 @@ table.scoreboard-table {
   padding: 28px;
   border: 1px solid rgba(139, 124, 255, 0.3);
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(139,124,255,0.12), rgba(255,255,255,0.02));
+  background: linear-gradient(135deg, rgba(139,124,255,0.12), rgba(255,255,255,0.06));
 }
 .dashboard-join-card h2 { margin: 0 0 8px; }
 .dashboard-join-card .page-subtitle { margin: 0 0 18px; }
@@ -2556,7 +2557,7 @@ table.scoreboard-table {
   border: 1px solid var(--border);
   border-left: 3px solid var(--card-accent, var(--border));
   border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.06);
   color: var(--text);
   text-decoration: none;
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
@@ -2564,7 +2565,7 @@ table.scoreboard-table {
 .dashboard-feature-card:hover {
   border-color: var(--card-accent, var(--gold));
   border-left-color: var(--card-accent, var(--gold));
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.08);
   transform: translateY(-2px);
 }
 .dashboard-feature-card h3 { font-size: 1rem; margin: 0 0 6px; }
@@ -2596,14 +2597,14 @@ table.scoreboard-table {
   border: 1px solid var(--border);
   border-left: 3px solid var(--coral);
   border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.06);
   color: var(--text);
   text-decoration: none;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 .dashboard-report-callout:hover {
   border-color: var(--coral);
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.08);
 }
 .dashboard-report-callout h3 { margin: 0 0 4px; font-size: 1rem; }
 .dashboard-report-callout p { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
@@ -2676,7 +2677,7 @@ table.scoreboard-table {
   border: 1px solid var(--border);
   border-left: 3px solid var(--card-accent, var(--border));
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255,255,255,0.06);
   color: var(--text);
   text-decoration: none; /* also used as a <router-link> now (XI Battle's Penalty
                              Shootout card), not just a <button> */
@@ -2765,7 +2766,7 @@ table.scoreboard-table {
   padding: 18px 20px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.06);
 }
 
 .feature-card h3 {
@@ -2784,7 +2785,7 @@ table.scoreboard-table {
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.02));
+  background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.06));
   text-align: center;
 }
 
@@ -3006,7 +3007,7 @@ table.scoreboard-table {
   inset: 0;
   z-index: 200;
   padding: 0 24px;
-  background: rgba(8, 9, 14, 0.94);
+  background: rgba(14, 18, 48, 0.94);
   backdrop-filter: blur(4px);
 }
 .loading-state-full .spinner {
@@ -3187,7 +3188,7 @@ table.scoreboard-table {
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(26, 28, 40, 0.78);
+    background: rgba(47, 58, 102, 0.86);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     border-top: 1px solid var(--border);
@@ -3481,7 +3482,7 @@ table.scoreboard-table {
   border-radius: var(--radius-md);
   padding: 14px 10px 12px;
   text-align: center;
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.06);
 }
 .score-square.leader {
   border-color: var(--gold);
@@ -3787,7 +3788,7 @@ table.scoreboard-table {
   padding: 10px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(26, 28, 40, 0.62);
+  background: rgba(47, 58, 102, 0.55);
   transition: border-color 0.25s ease, background 0.25s ease;
 }
 /* Same "correct/revealed-only" color language as .grid-tile - green for a

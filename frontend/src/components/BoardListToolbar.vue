@@ -70,7 +70,7 @@ defineEmits(['update:search', 'update:sortKey', 'update:sortDir'])
   padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255,255,255,0.06);
 }
 .board-toolbar .field { margin-bottom: 0; }
 .board-toolbar-search { flex: 2; min-width: 200px; }
@@ -90,7 +90,7 @@ defineEmits(['update:search', 'update:sortKey', 'update:sortDir'])
   justify-content: center;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255,255,255,0.07);
   color: var(--text-dim);
 }
 .board-toolbar-dir:hover {

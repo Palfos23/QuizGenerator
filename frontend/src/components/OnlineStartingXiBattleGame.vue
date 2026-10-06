@@ -48,7 +48,7 @@
             {{ rerolling ? 'Finding more…' : '↻ Show 3 different boards' }}
           </button>
         </template>
-        <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
+        <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.07);">
           Waiting for <strong style="color:var(--gold);">{{ pickerName }}</strong> to choose a board…
         </div>
       </div>
@@ -109,7 +109,7 @@
         @cancel="showSkipConfirm = false"
       />
 
-      <div v-if="!state.lineupComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(255,255,255,0.03);">
+      <div v-if="!state.lineupComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(255,255,255,0.07);">
         Waiting for {{ currentTurnName }}'s turn…
       </div>
 

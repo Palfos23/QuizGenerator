@@ -184,7 +184,7 @@
 
         <div
           v-if="showFiveOhOnePicker"
-          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:12px 14px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.02);"
+          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:12px 14px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.06);"
         >
           <span v-if="loadingFiveOhOneCategories" style="color:var(--text-dim);">Loading 501 quizzes…</span>
           <span v-else-if="!fiveOhOneCategories.length" style="color:var(--text-dim);">No 501 quizzes exist yet.</span>
