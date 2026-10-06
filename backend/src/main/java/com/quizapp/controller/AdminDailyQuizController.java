@@ -1,6 +1,7 @@
 package com.quizapp.controller;
 
 import com.quizapp.dto.DailyQuizAttemptDetailDto;
+import com.quizapp.dto.DailyQuizDayAttemptsDto;
 import com.quizapp.dto.DailyQuizPendingAttemptDto;
 import com.quizapp.dto.DailyQuizResolveRequest;
 import com.quizapp.service.DailyQuizReviewService;
@@ -22,6 +23,11 @@ public class AdminDailyQuizController {
     @GetMapping("/pending-attempts")
     public List<DailyQuizPendingAttemptDto> pendingAttempts() {
         return dailyQuizReviewService.listPendingAttempts();
+    }
+
+    @GetMapping("/sets/{id}/attempts")
+    public DailyQuizDayAttemptsDto attemptsForSet(@PathVariable Long id) {
+        return dailyQuizReviewService.listAttemptsForSet(id);
     }
 
     @GetMapping("/attempts/{id}")

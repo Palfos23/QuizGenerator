@@ -13,14 +13,33 @@ public class DailyQuizAttemptDetailDto {
     private Long setId;
     private String playerName;
     private LocalDate quizDate;
+    private String status; // SUBMITTED (still has answers waiting) / GRADED
+    private Integer score; // only once GRADED - shown to the admin so a changed decision visibly moves it
+    private int maxScore;
     private List<AnswerDto> answers;
 
-    public DailyQuizAttemptDetailDto(Long attemptId, Long setId, String playerName, LocalDate quizDate, List<AnswerDto> answers) {
+    public DailyQuizAttemptDetailDto(Long attemptId, Long setId, String playerName, LocalDate quizDate,
+                                     String status, Integer score, int maxScore, List<AnswerDto> answers) {
         this.attemptId = attemptId;
         this.setId = setId;
         this.playerName = playerName;
         this.quizDate = quizDate;
+        this.status = status;
+        this.score = score;
+        this.maxScore = maxScore;
         this.answers = answers;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public Integer getScore() {
+        return score;
+    }
+
+    public int getMaxScore() {
+        return maxScore;
     }
 
     public Long getAttemptId() {
@@ -53,9 +72,10 @@ public class DailyQuizAttemptDetailDto {
         private String photoUrl; // null for questions without a picture - the admin judging a logo answer needs to see it
         private boolean yearQuestion; // auto-graded (2 / 1 / 0 points) - never needs a decision
         private int points; // what a CORRECT verdict is worth
+        private boolean reviewable; // an admin can (re)decide this one - false for auto-graded answers
 
         public AnswerDto(Long answerId, int questionNumber, String questionText, String submittedAnswer, String correctAnswer, String verdict,
-                         String photoUrl, boolean yearQuestion, int points) {
+                         String photoUrl, boolean yearQuestion, int points, boolean reviewable) {
             this.answerId = answerId;
             this.questionNumber = questionNumber;
             this.questionText = questionText;
@@ -65,6 +85,7 @@ public class DailyQuizAttemptDetailDto {
             this.photoUrl = photoUrl;
             this.yearQuestion = yearQuestion;
             this.points = points;
+            this.reviewable = reviewable;
         }
 
         public Long getAnswerId() {
@@ -101,6 +122,10 @@ public class DailyQuizAttemptDetailDto {
 
         public int getPoints() {
             return points;
+        }
+
+        public boolean isReviewable() {
+            return reviewable;
         }
     }
 }

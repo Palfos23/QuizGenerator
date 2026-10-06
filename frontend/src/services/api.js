@@ -576,6 +576,9 @@ export default {
   adminListDailyQuizPendingAttempts() {
     return client.get('/admin/daily-quiz/pending-attempts').then(r => r.data)
   },
+  adminListDailyQuizSetAttempts(setId) {
+    return client.get(`/admin/daily-quiz/sets/${setId}/attempts`).then(r => r.data)
+  },
   adminGetDailyQuizAttempt(attemptId) {
     return client.get(`/admin/daily-quiz/attempts/${attemptId}`).then(r => r.data)
   },

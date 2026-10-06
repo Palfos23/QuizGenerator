@@ -19,7 +19,7 @@
     </div>
 
     <h2 style="margin-top:40px;">Scoreboards</h2>
-    <p class="page-subtitle">Pick a day to see how everyone scored - not tied to whether anything's still waiting for review above.</p>
+    <p class="page-subtitle">Pick a day to see how everyone scored, or open "Players" to go back into anyone's answers and fix a decision - not tied to whether anything's still waiting for review above.</p>
 
     <div v-if="quizzesLoading" style="color:var(--text-dim);">Loading…</div>
     <div v-else-if="!allQuizzes.length" class="empty-state friendly">No daily quizzes yet.</div>
@@ -28,7 +28,10 @@
         <div class="saved-quiz-info">
           <div class="saved-quiz-title">{{ formatDate(q.quizDate) }}</div>
         </div>
-        <button class="btn btn-secondary btn-sm" @click="openScoreboard(q)">Scoreboard</button>
+        <div style="display:flex; gap:8px;">
+          <router-link :to="`/admin/daily-quiz-day/${q.id}`" class="btn btn-secondary btn-sm">Players</router-link>
+          <button class="btn btn-secondary btn-sm" @click="openScoreboard(q)">Scoreboard</button>
+        </div>
       </div>
     </div>
 

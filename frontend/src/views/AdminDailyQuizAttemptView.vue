@@ -2,6 +2,7 @@
   <div>
     <div style="display:flex; gap:8px; margin-bottom:6px;">
       <router-link to="/admin/daily-quiz-review" class="btn btn-secondary btn-sm">← All players</router-link>
+      <router-link v-if="attempt" :to="`/admin/daily-quiz-day/${attempt.setId}`" class="btn btn-secondary btn-sm">This day's players</router-link>
       <button v-if="attempt" class="btn btn-secondary btn-sm" @click="openScoreboard">Scoreboard</button>
     </div>
 
@@ -10,7 +11,11 @@
 
     <template v-else-if="attempt">
       <h1 style="margin-top:16px;">{{ attempt.playerName }}</h1>
-      <p class="page-subtitle">{{ formatDate(attempt.quizDate) }}</p>
+      <p class="page-subtitle">
+        {{ formatDate(attempt.quizDate) }} ·
+        <template v-if="attempt.status === 'GRADED'"><strong>Score {{ attempt.score }} / {{ attempt.maxScore }}</strong></template>
+        <template v-else>not graded yet - {{ pendingCount }} answer{{ pendingCount === 1 ? '' : 's' }} waiting</template>
+      </p>
 
       <div class="saved-quiz-list">
         <div v-for="a in attempt.answers" :key="a.answerId" class="saved-quiz-row" style="align-items:flex-start;">
@@ -26,16 +31,25 @@
             <button class="btn btn-primary btn-sm" :disabled="busyId === a.answerId" @click="resolve(a, true)">Mark correct</button>
             <button class="btn btn-danger btn-sm" :disabled="busyId === a.answerId" @click="resolve(a, false)">Mark incorrect</button>
           </div>
-          <span
-            v-else
-            class="tag"
-            :style="a.verdict === 'CORRECT' ? { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' } : { background: 'rgba(255,77,109,0.15)', color: 'var(--coral)' }"
-          >{{ a.yearQuestion ? (a.verdict === 'CORRECT' ? `✓ +${a.points}` : '✕ 0') : (a.verdict === 'CORRECT' ? '✓' : '✕') }}</span>
+          <div v-else style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+            <span
+              class="tag"
+              :style="a.verdict === 'CORRECT' ? { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' } : { background: 'rgba(255,77,109,0.15)', color: 'var(--coral)' }"
+            >{{ a.yearQuestion ? (a.verdict === 'CORRECT' ? `✓ +${a.points}` : '✕ 0') : (a.verdict === 'CORRECT' ? '✓' : '✕') }}</span>
+            <!-- A decision is never final - a mis-click is one click to undo, and the score above updates. -->
+            <button
+              v-if="a.reviewable"
+              class="btn btn-secondary btn-sm"
+              :disabled="busyId === a.answerId"
+              @click="resolve(a, a.verdict !== 'CORRECT')"
+            >Change to {{ a.verdict === 'CORRECT' ? 'incorrect' : 'correct' }}</button>
+            <span v-else style="color:var(--text-dim); font-size:0.75rem;">Graded automatically</span>
+          </div>
         </div>
       </div>
 
       <div v-if="!pendingCount" class="empty-state friendly" style="margin-top:20px;">
-        All of {{ attempt.playerName }}'s answers have been resolved.
+        All of {{ attempt.playerName }}'s answers have been resolved - you can still change any decision above.
       </div>
     </template>
 
@@ -106,10 +120,13 @@ async function resolve(answer, correct) {
   error.value = ''
   try {
     await api.adminResolveDailyQuizAnswer(answer.answerId, correct)
-    answer.verdict = correct ? 'CORRECT' : 'INCORRECT'
     toast.show(correct ? 'Marked correct.' : 'Marked incorrect.')
+    // Re-read from the server rather than patching the row locally: deciding or changing an answer
+    // can grade the attempt or move its score, and the page shows that. Quietly - no loading
+    // state, so the list doesn't blank out under the admin's cursor.
+    attempt.value = await api.adminGetDailyQuizAttempt(attemptId)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not resolve that answer.'
+    error.value = e.response?.data?.message || 'Could not update that answer.'
   } finally {
     busyId.value = null
   }
