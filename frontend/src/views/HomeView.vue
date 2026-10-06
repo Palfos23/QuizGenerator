@@ -15,6 +15,10 @@
       </div>
 
       <template v-if="!loggingIn">
+        <div class="landing-login-head">
+          <h2>Welcome</h2>
+          <p>Sign in to save your scores and quizzes.</p>
+        </div>
         <div v-if="loadingScript" style="color:var(--text-dim); font-size:0.9rem; text-align:center;">Loading sign-in…</div>
 
         <!-- Google's own rendered button keeps changing appearance out from under us (a
@@ -151,30 +155,55 @@
     </section>
 
     <section class="landing-hero">
-      <h1>Quizzes, party games, and trivia - all in one place</h1>
+      <span class="landing-eyebrow">
+        <span class="landing-eyebrow-dot"></span>
+        A new daily quiz, every day
+      </span>
+      <h1>Quizzes, party games and trivia - <span class="landing-hero-accent">all in one place</span></h1>
       <p class="page-subtitle landing-lede">
-        Build a custom quiz from a shared question bank, play a themed weekly guessing
-        grid, or run a pass-the-device party game with friends.
+        Build a custom quiz from a shared question bank, take on the daily quiz, or gather
+        friends for a party game - on one screen or each on your own phone.
       </p>
     </section>
 
     <section class="landing-features">
-      <div class="feature-card">
+      <article class="feature-card feature-card--wide feature-card--gold">
+        <span class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4M8 15h3" /></svg>
+        </span>
+        <div>
+          <h3>Daily quiz</h3>
+          <p>15 pub-quiz questions, fresh every day. Type your answers, see how you scored, and compete for the weekly win.</p>
+        </div>
+      </article>
+      <article class="feature-card feature-card--violet">
+        <span class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7" /><path d="M17 15l2 2 3-4" /></svg>
+        </span>
         <h3>Create a quiz</h3>
-        <p>Mix categories, set a difficulty, then reorder, search in specific questions, or swap out anything before you print it.</p>
-      </div>
-      <div class="feature-card">
+        <p>Mix categories, set a difficulty, then reorder or swap out anything before you print it.</p>
+      </article>
+      <article class="feature-card feature-card--teal">
+        <span class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+        </span>
         <h3>Weekly grid</h3>
         <p>Guess every answer that fits the week's theme before you run out of strikes.</p>
-      </div>
-      <div class="feature-card">
-        <h3>Tension</h3>
-        <p>A pass-the-device party quiz - push for a high-value guess, or play it safe.</p>
-      </div>
-      <div class="feature-card">
+      </article>
+      <article class="feature-card feature-card--coral">
+        <span class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><circle cx="17.5" cy="9.5" r="2.5" /><path d="M16.5 14.2c2.7.2 4.5 2.3 4.5 5" /></svg>
+        </span>
+        <h3>Party games</h3>
+        <p>Tension, Imposter, Bullseye and more - pass the device around, or play together online with a room code.</p>
+      </article>
+      <article class="feature-card feature-card--gold">
+        <span class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+        </span>
         <h3>Suggest a question</h3>
         <p>Add to the shared bank yourself - admin-reviewed, and usable in your own quizzes either way.</p>
-      </div>
+      </article>
     </section>
     </div>
   </div>
