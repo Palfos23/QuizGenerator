@@ -8,8 +8,11 @@ import com.quizapp.repository.AthletePoolRepository;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.BullseyeQuestionRepository;
 import com.quizapp.repository.ClubRepository;
+import com.quizapp.repository.FiveOhOneCategoryRepository;
 import com.quizapp.repository.GridCategoryRepository;
 import com.quizapp.repository.GridRepository;
+import com.quizapp.repository.ImposterGridRepository;
+import com.quizapp.repository.TensionQuestionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,17 +28,26 @@ public class GridCategoryService {
     private final GridRepository gridRepository;
     private final AthletePoolRepository athletePoolRepository;
     private final BullseyeQuestionRepository bullseyeQuestionRepository;
+    private final TensionQuestionRepository tensionQuestionRepository;
+    private final FiveOhOneCategoryRepository fiveOhOneCategoryRepository;
+    private final ImposterGridRepository imposterGridRepository;
 
     public GridCategoryService(GridCategoryRepository categoryRepository, AthleteRepository athleteRepository,
                                 ClubRepository clubRepository, GridRepository gridRepository,
                                 AthletePoolRepository athletePoolRepository,
-                                BullseyeQuestionRepository bullseyeQuestionRepository) {
+                                BullseyeQuestionRepository bullseyeQuestionRepository,
+                                TensionQuestionRepository tensionQuestionRepository,
+                                FiveOhOneCategoryRepository fiveOhOneCategoryRepository,
+                                ImposterGridRepository imposterGridRepository) {
         this.categoryRepository = categoryRepository;
         this.athleteRepository = athleteRepository;
         this.clubRepository = clubRepository;
         this.gridRepository = gridRepository;
         this.athletePoolRepository = athletePoolRepository;
         this.bullseyeQuestionRepository = bullseyeQuestionRepository;
+        this.tensionQuestionRepository = tensionQuestionRepository;
+        this.fiveOhOneCategoryRepository = fiveOhOneCategoryRepository;
+        this.imposterGridRepository = imposterGridRepository;
     }
 
     @Transactional(readOnly = true)
@@ -86,6 +98,11 @@ public class GridCategoryService {
             gridRepository.renameSport(oldName, newName);
             athletePoolRepository.renameSport(oldName, newName);
             bullseyeQuestionRepository.renameSport(oldName, newName);
+            // These store the category name as plain text too - leaving them on the old name made a
+            // Tension answer box (or 501 live category, or Imposter board) silently lose its athletes.
+            tensionQuestionRepository.renameAnswersSport(oldName, newName);
+            fiveOhOneCategoryRepository.renameSport(oldName, newName);
+            imposterGridRepository.renameSport(oldName, newName);
         }
 
         return toDto(category);
@@ -104,10 +121,13 @@ public class GridCategoryService {
                 || clubRepository.existsBySport(name)
                 || gridRepository.existsBySport(name)
                 || athletePoolRepository.existsBySport(name)
-                || bullseyeQuestionRepository.existsBySport(name);
+                || bullseyeQuestionRepository.existsBySport(name)
+                || tensionQuestionRepository.existsByAnswersSport(name)
+                || fiveOhOneCategoryRepository.existsBySport(name)
+                || imposterGridRepository.existsBySport(name);
         if (inUse) {
             throw new IllegalArgumentException(
-                    "This category is still used by at least one athlete, club, grid, pool, or bullseye question - reassign those first.");
+                    "This category is still used by at least one athlete, club, grid, pool, bullseye, tension, 501 or imposter item - reassign those first.");
         }
         categoryRepository.deleteById(id);
     }

@@ -2,11 +2,22 @@ package com.quizapp.repository;
 
 import com.quizapp.model.TensionQuestion;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface TensionQuestionRepository extends JpaRepository<TensionQuestion, Long> {
+
+    boolean existsByAnswersSport(String answersSport);
+
+    // For cascading a Subjects category rename - see GridCategoryService#update.
+    @Modifying
+    @Transactional
+    @Query("UPDATE TensionQuestion q SET q.answersSport = :newName WHERE q.answersSport = :oldName")
+    int renameAnswersSport(String oldName, String newName);
+
     List<TensionQuestion> findByMainCategoryIgnoreCase(String mainCategory);
 
     @Query("SELECT DISTINCT q.mainCategory FROM TensionQuestion q " +

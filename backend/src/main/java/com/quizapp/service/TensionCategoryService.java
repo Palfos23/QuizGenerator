@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 @Service
 public class TensionCategoryService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TensionCategoryService.class);
+
     private final TensionCategoryRepository categoryRepository;
 
     public TensionCategoryService(TensionCategoryRepository categoryRepository) {
@@ -44,9 +46,18 @@ public class TensionCategoryService {
      */
     @Transactional(readOnly = true)
     public List<String> getOptions(String categoryName) {
-        return categoryRepository.findByNameIgnoreCase(categoryName)
-                .<List<String>>map(c -> new ArrayList<>(c.getOptions()))
-                .orElse(Collections.emptyList());
+        java.util.Optional<TensionAnswerCategory> category = categoryRepository.findByNameIgnoreCase(categoryName);
+        if (category.isEmpty()) {
+            // A question pointing at a category that doesn't exist (renamed or deleted) leaves
+            // the answer box silently suggestion-less - say so in the logs.
+            log.warn("Tension category options: no category named '{}' exists", categoryName);
+            return Collections.emptyList();
+        }
+        List<String> options = new ArrayList<>(category.get().getOptions());
+        if (options.isEmpty()) {
+            log.warn("Tension category options: category '{}' exists but has NO options", categoryName);
+        }
+        return options;
     }
 
     @Transactional

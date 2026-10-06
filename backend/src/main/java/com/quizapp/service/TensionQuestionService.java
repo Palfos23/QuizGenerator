@@ -3,11 +3,12 @@ package com.quizapp.service;
 import com.quizapp.dto.TensionAnswerEntryDto;
 import com.quizapp.dto.TensionQuestionDto;
 import com.quizapp.exception.ResourceNotFoundException;
-import com.quizapp.model.Athlete;
 import com.quizapp.model.TensionAnswerEntry;
 import com.quizapp.model.TensionQuestion;
 import com.quizapp.repository.AthleteRepository;
 import com.quizapp.repository.TensionQuestionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +16,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
 public class TensionQuestionService {
+
+    private static final Logger log = LoggerFactory.getLogger(TensionQuestionService.class);
 
     private final TensionQuestionRepository questionRepository;
     private final AthleteRepository athleteRepository;
@@ -98,12 +103,49 @@ public class TensionQuestionService {
     // is true - the player-facing equivalent of TensionCategoryService.getOptions,
     // just sourced from Subjects (athletes) in a sport instead of a hand-curated
     // TensionCategory word list.
+    // Cached for a short while per sport: every player in a room asks for this same list the
+    // instant a round starts, and it's reference data that barely ever changes - so a room of
+    // N players is one database read instead of N. Short enough that a newly added athlete
+    // shows up within a couple of minutes.
+    private static final long SUBJECT_OPTIONS_TTL_MS = 2 * 60 * 1000;
+    private record CachedOptions(List<String> names, long loadedAt) { }
+    private final Map<String, CachedOptions> subjectOptionsCache = new ConcurrentHashMap<>();
+
     @Transactional(readOnly = true)
     public List<String> getSubjectOptions(String sport) {
-        return athleteRepository.findBySport(sport).stream()
-                .map(Athlete::getName)
-                .sorted(Comparator.naturalOrder())
-                .collect(Collectors.toList());
+        String requested = sport == null ? "" : sport.trim();
+        String cacheKey = requested.toLowerCase();
+        CachedOptions cached = subjectOptionsCache.get(cacheKey);
+        if (cached != null && System.currentTimeMillis() - cached.loadedAt() < SUBJECT_OPTIONS_TTL_MS) {
+            return cached.names();
+        }
+
+        long startedAt = System.currentTimeMillis();
+        List<String> names = athleteRepository.findNamesBySport(requested);
+        boolean usedLooseMatch = false;
+        if (names.isEmpty()) {
+            names = athleteRepository.findNamesBySportLoose(requested);
+            usedLooseMatch = !names.isEmpty();
+        }
+        long tookMs = System.currentTimeMillis() - startedAt;
+
+        if (names.isEmpty()) {
+            // The answer box would be silently suggestion-less - name what WAS asked for and
+            // what actually exists, which is almost always enough to spot a mismatch.
+            log.warn("Tension subject-options: NO athletes found for sport '{}' (took {} ms). Known sports: {}",
+                    requested, tookMs, athleteRepository.findDistinctSports());
+            // Deliberately not cached: an empty result should be re-checked on the next request.
+            return names;
+        }
+        if (usedLooseMatch) {
+            log.warn("Tension subject-options: sport '{}' only matched ignoring case/whitespace - a question or "
+                    + "category is storing a slightly different name than the athletes use. Served {} names anyway.",
+                    requested, names.size());
+        } else {
+            log.info("Tension subject-options: sport '{}' -> {} names in {} ms", requested, names.size(), tookMs);
+        }
+        subjectOptionsCache.put(cacheKey, new CachedOptions(names, System.currentTimeMillis()));
+        return names;
     }
 
     @Transactional

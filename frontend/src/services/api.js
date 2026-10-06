@@ -6,6 +6,10 @@ const client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 })
 
+// A suggestion-list request that hangs would otherwise leave an answer box on "Loading…"
+// forever (axios has no timeout by default) - past this it fails, and the loader retries.
+const OPTIONS_TIMEOUT_MS = 15000
+
 client.interceptors.request.use(config => {
   if (auth.state.token) {
     config.headers.Authorization = `Bearer ${auth.state.token}`
@@ -472,13 +476,18 @@ export default {
   },
   fetchTensionAnswerOptions(categoryName) {
     if (!categoryName) return Promise.resolve([])
-    return client.get(`/tension/categories/${encodeURIComponent(categoryName)}/options`).then(r => r.data)
+    return client.get(`/tension/categories/${encodeURIComponent(categoryName)}/options`, { timeout: OPTIONS_TIMEOUT_MS }).then(r => r.data)
   },
   // Answer-box autocomplete for a question whose answers come from Subjects
   // (athletes) in a sport, instead of a Tension answer category's word list.
   fetchTensionSubjectOptions(sport) {
     if (!sport) return Promise.resolve([])
-    return client.get(`/tension/questions/subject-options?sport=${encodeURIComponent(sport)}`).then(r => r.data)
+    return client.get(`/tension/questions/subject-options?sport=${encodeURIComponent(sport)}`, { timeout: OPTIONS_TIMEOUT_MS }).then(r => r.data)
+  },
+  // Fire-and-forget report of a problem only the browser can see (e.g. a suggestion list that
+  // never loaded) - lands in the server log, see ClientDiagnosticsController.
+  reportClientEvent(event) {
+    return client.post('/diagnostics/client-event', event)
   },
   fetchTensionMainCategories() {
     return client.get('/tension/questions/categories').then(r => r.data)

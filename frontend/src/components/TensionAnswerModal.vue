@@ -38,6 +38,19 @@
             That answer's already been used by another player this round.
           </div>
 
+          <!-- Say what's going on with the suggestion list instead of just showing nothing -->
+          <div v-if="optionsStatus === 'loading'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px;">
+            Loading suggestions…
+          </div>
+          <div v-else-if="optionsStatus === 'error'" style="color:var(--coral); font-size:0.85rem; margin-top:8px;">
+            Couldn't load the suggestions.
+            <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryOptions">Try again</button>
+            <div style="color:var(--text-dim); margin-top:4px;">You can still type your answer exactly and submit it.</div>
+          </div>
+          <div v-else-if="optionsStatus === 'empty'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px;">
+            No suggestions are available for this question - type your answer exactly and submit it.
+          </div>
+
           <div v-if="showDropdown" class="guess-results" style="position:absolute; bottom:100%; left:0; right:0; margin-bottom:6px; max-height:220px; overflow-y:auto;">
             <button
               v-for="opt in filteredOptions"
@@ -49,7 +62,7 @@
             <div v-if="!filteredOptions.length" class="guess-result-row" style="opacity:0.6; font-style:italic;">No matches</div>
           </div>
 
-          <button type="submit" class="btn btn-primary" :disabled="!validSelection" style="margin-top:16px; width:100%;">
+          <button type="submit" class="btn btn-primary" :disabled="!canSubmit" style="margin-top:16px; width:100%;">
             Submit
           </button>
         </form>
@@ -69,9 +82,8 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import api from '../services/api'
-import toast from '../services/toast'
+import { computed, onMounted, ref } from 'vue'
+import { useAnswerOptions } from '../composables/useAnswerOptions'
 
 const props = defineProps({
   currentPlayer: { type: String, required: true },
@@ -87,50 +99,58 @@ const props = defineProps({
 const emit = defineEmits(['submit'])
 
 const value = ref('')
-const allOptions = ref([])
-const filteredOptions = ref([])
-const showDropdown = ref(false)
+const dropdownOpen = ref(false)
 const validSelection = ref(false)
 const duplicateError = ref(false)
 
-onMounted(async () => {
-  const key = props.answersFromSubjects ? props.answersSport : props.category
-  if (!key) return
-  try {
-    allOptions.value = props.answersFromSubjects
-      ? await api.fetchTensionSubjectOptions(key)
-      : await api.fetchTensionAnswerOptions(key)
-  } catch (e) {
-    // Unlike the other games' per-keystroke search, this is a single fetch
-    // for the whole round - if it fails (a network hiccup, or this app's
-    // backend cold-starting after being idle), the suggestion list would
-    // otherwise stay silently empty all round with no indication why.
-    toast.show("Couldn't load the answer list - check your connection and try refreshing.", 'error')
-  }
+const { options: allOptions, status: optionsStatus, unavailable: optionsUnavailable, load: loadOptions, retry: retryOptions } = useAnswerOptions()
+
+onMounted(() => {
+  loadOptions(props.answersFromSubjects, props.answersFromSubjects ? props.answersSport : props.category)
 })
+
+// Computed from what's typed AND what's loaded, so suggestions appear the moment a list
+// that was still loading arrives - not only on the next keystroke.
+const filteredOptions = computed(() => {
+  const term = value.value.trim().toLowerCase()
+  if (term.length >= 3) {
+    return allOptions.value.filter(o => o.toLowerCase().includes(term)).slice(0, 8)
+  }
+  if (term.length === 2) {
+    // Below the normal "contains" threshold (too noisy at 2 characters across
+    // a big answer list), but a short answer that's an exact match - like
+    // "MG" - needs to still be reachable, not just prefix/substring matches.
+    return allOptions.value.filter(o => o.toLowerCase() === term)
+  }
+  return []
+})
+
+const showDropdown = computed(() => {
+  if (!dropdownOpen.value) return false
+  const length = value.value.trim().length
+  // While the list is still loading, or unavailable, the status line below the box already
+  // says so - a dropdown reading "No matches" there would be misleading.
+  if (length >= 3) return optionsStatus.value === 'ready'
+  if (length === 2) return filteredOptions.value.length > 0
+  return false
+})
+
+// Normally the answer has to be picked from the list. When there's no list to pick from
+// (failed to load, or empty) typing is all there is - blocking the player there would
+// stall the whole game over a lookup problem.
+const canSubmit = computed(() =>
+  validSelection.value || (optionsUnavailable.value && value.value.trim().length > 0)
+)
 
 function onInput() {
   validSelection.value = false
   duplicateError.value = false
-  const term = value.value.trim().toLowerCase()
-  if (term.length >= 3) {
-    filteredOptions.value = allOptions.value.filter(o => o.toLowerCase().includes(term)).slice(0, 8)
-    showDropdown.value = true
-  } else if (term.length === 2) {
-    // Below the normal "contains" threshold (too noisy at 2 characters across
-    // a big answer list), but a short answer that's an exact match - like
-    // "MG" - needs to still be reachable, not just prefix/substring matches.
-    filteredOptions.value = allOptions.value.filter(o => o.toLowerCase() === term)
-    showDropdown.value = filteredOptions.value.length > 0
-  } else {
-    filteredOptions.value = []
-    showDropdown.value = false
-  }
+  dropdownOpen.value = true
 }
 
 function select(option) {
   value.value = option
-  showDropdown.value = false
+  dropdownOpen.value = false
   validSelection.value = true
   duplicateError.value = false
 }
@@ -141,9 +161,10 @@ function submit() {
     duplicateError.value = true
     return
   }
-  if (!validSelection.value) return
+  if (!canSubmit.value) return
   emit('submit', value.value.trim())
   value.value = ''
   validSelection.value = false
+  dropdownOpen.value = false
 }
 </script>

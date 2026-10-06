@@ -57,7 +57,18 @@ public class TensionQuestionController {
     // /categories/{name}/options.
     @GetMapping("/subject-options")
     public List<String> subjectOptions(@RequestParam String sport, Authentication authentication) {
-        playAccessService.requireTensionAccess(authentication);
+        // A guest has no AppUser row to check canPlayTension against - same exemption
+        // FiveOhOneCategoryController applies for its in-room lookup: the host already
+        // passed this check when creating the room, and this is that guest reading
+        // the answer list for a question they're already validly sitting in.
+        if (!isGuest(authentication)) {
+            playAccessService.requireTensionAccess(authentication);
+        }
         return questionService.getSubjectOptions(sport);
+    }
+
+    private boolean isGuest(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_GUEST"));
     }
 }

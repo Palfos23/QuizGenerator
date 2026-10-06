@@ -10,6 +10,18 @@ import java.util.List;
 
 public interface AthleteRepository extends JpaRepository<Athlete, Long> {
     List<Athlete> findBySport(String sport);
+
+    // Names only - answer-box suggestions never need the full Athlete rows, and a sport can
+    // have thousands of them. The ignore-case/trim variant is only a fallback for when the
+    // exact lookup finds nothing (a stored sport name that's drifted from the athletes' own).
+    @Query("SELECT a.name FROM Athlete a WHERE a.sport = :sport ORDER BY a.name")
+    List<String> findNamesBySport(@org.springframework.data.repository.query.Param("sport") String sport);
+
+    @Query("SELECT a.name FROM Athlete a WHERE lower(trim(a.sport)) = lower(:sport) ORDER BY a.name")
+    List<String> findNamesBySportLoose(@org.springframework.data.repository.query.Param("sport") String sport);
+
+    @Query("SELECT DISTINCT a.sport FROM Athlete a WHERE a.sport IS NOT NULL ORDER BY a.sport")
+    List<String> findDistinctSports();
     List<Athlete> findBySportAndTeamIgnoreCase(String sport, String team);
     List<Athlete> findBySportAndNameContainingIgnoreCase(String sport, String namePart);
 

@@ -2,12 +2,23 @@ package com.quizapp.repository;
 
 import com.quizapp.model.ImposterGrid;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
 
 public interface ImposterGridRepository extends JpaRepository<ImposterGrid, Long> {
+
+    boolean existsBySport(String sport);
+
+    // For cascading a Subjects category rename - see GridCategoryService#update.
+    @Modifying
+    @Transactional
+    @Query("UPDATE ImposterGrid g SET g.sport = :newName WHERE g.sport = :oldName")
+    int renameSport(String oldName, String newName);
+
     List<ImposterGrid> findBySportOrderByCreatedAtDesc(String sport);
 
     List<ImposterGrid> findAllByOrderByCreatedAtDesc();

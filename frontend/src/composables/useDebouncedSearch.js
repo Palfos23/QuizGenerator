@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { createStaleGuard } from './useRoomChannel'
 import toast from '../services/toast'
+import { reportClientEvent } from '../services/diagnostics'
 
 // The shared "type into a box, get an autocomplete dropdown" behavior used by
 // every game's guess box and several admin search boxes - previously copied
@@ -49,6 +50,15 @@ export function useDebouncedSearch(fetcher, { delay = 250, minLength = 2, postFi
       } catch (e) {
         if (!stillFresh()) return
         staleGuard.markApplied()
+        // The server never sees a search that fails in transit, so tell it - keyed by the page
+        // (e.g. /grid-battle) the player was on, which is what narrows down which game.
+        reportClientEvent({
+          area: 'guess-search',
+          kind: 'FETCH_FAILED',
+          key: window.location.pathname,
+          httpStatus: e.response?.status,
+          detail: e.response?.data?.message || e.message
+        })
         // Once per run of failures, not once per keystroke - typing several
         // letters while offline shouldn't re-trigger the same toast each time.
         if (!toastShownForThisFailureStreak) {

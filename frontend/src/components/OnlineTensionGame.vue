@@ -72,6 +72,19 @@
                     spellcheck="false"
                   />
                 </div>
+                <!-- Say what's going on with the suggestion list instead of just showing nothing -->
+                <div v-if="optionsStatus === 'loading'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px;">
+                  Loading suggestions…
+                </div>
+                <div v-else-if="optionsStatus === 'error'" style="color:var(--coral); font-size:0.85rem; margin-top:8px;">
+                  Couldn't load the suggestions.
+                  <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryOptions">Try again</button>
+                  <div style="color:var(--text-dim); margin-top:4px;">You can still type your answer exactly and submit it.</div>
+                </div>
+                <div v-else-if="optionsStatus === 'empty'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px;">
+                  No suggestions are available for this question - type your answer exactly and submit it.
+                </div>
+
                 <div v-if="showDropdown" class="guess-results" style="margin-top:6px; max-height:220px; overflow-y:auto;">
                   <button
                     v-for="opt in filteredOptions"
@@ -80,8 +93,9 @@
                     class="guess-result-row"
                     @click="select(opt)"
                   >{{ opt }}</button>
+                  <div v-if="!filteredOptions.length" class="guess-result-row" style="opacity:0.6; font-style:italic;">No matches</div>
                 </div>
-                <button type="submit" class="btn btn-primary" :disabled="!validSelection || submitting" style="margin-top:16px; width:100%;">
+                <button type="submit" class="btn btn-primary" :disabled="!canSubmit || submitting" style="margin-top:16px; width:100%;">
                   {{ submitting ? 'Submitting…' : 'Submit' }}
                 </button>
               </form>
@@ -155,6 +169,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import LoadingState from './LoadingState.vue'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
+import { useAnswerOptions } from '../composables/useAnswerOptions'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatLastUpdated } from '../constants'
 
@@ -173,12 +188,44 @@ const submitting = ref(false)
 const advancing = ref(false)
 
 const value = ref('')
-const allOptions = ref([])
-const filteredOptions = ref([])
-const showDropdown = ref(false)
+const dropdownOpen = ref(false)
 const validSelection = ref(false)
 
-let lastOptionsKey = null
+const { options: allOptions, status: optionsStatus, unavailable: optionsUnavailable, load: loadOptions, retry: retryOptions } = useAnswerOptions()
+
+// Computed from what's typed AND what's loaded, so suggestions appear the moment a list that
+// was still loading arrives - not only on the next keystroke.
+const filteredOptions = computed(() => {
+  const term = value.value.trim().toLowerCase()
+  if (term.length >= 3) {
+    return allOptions.value.filter(o => o.toLowerCase().includes(term)).slice(0, 8)
+  }
+  if (term.length === 2) {
+    // Below the normal "contains" threshold (too noisy at 2 characters across
+    // a big answer list), but a short answer that's an exact match - like
+    // "MG" - needs to still be reachable, not just prefix/substring matches.
+    return allOptions.value.filter(o => o.toLowerCase() === term)
+  }
+  return []
+})
+
+const showDropdown = computed(() => {
+  if (!dropdownOpen.value) return false
+  const length = value.value.trim().length
+  // While the list is still loading, or unavailable, the status line already says so - a
+  // dropdown reading "No matches" there would be misleading.
+  if (length >= 3) return optionsStatus.value === 'ready'
+  if (length === 2) return filteredOptions.value.length > 0
+  return false
+})
+
+// Normally the answer has to be picked from the list. When there's no list to pick from
+// (failed to load, or empty) typing is all there is - blocking the player there would stall
+// the whole room over a lookup problem.
+const canSubmit = computed(() =>
+  validSelection.value || (optionsUnavailable.value && value.value.trim().length > 0)
+)
+
 let wasRevealed = false
 let revealTimer = null
 const revealIndex = ref(0)
@@ -244,10 +291,9 @@ function applyState(fresh) {
   staleGuard.claim()
   error.value = ''
   state.value = fresh
-  const optionsKey = fresh.answersFromSubjects ? fresh.answersSport : fresh.answersCategory
-  if (optionsKey && optionsKey !== lastOptionsKey) {
-    loadOptions(fresh.answersFromSubjects, optionsKey)
-  }
+  // Idempotent - called on every poll/broadcast, only actually fetches when the question's
+  // list source changes (see useAnswerOptions).
+  loadOptions(fresh.answersFromSubjects, fresh.answersFromSubjects ? fresh.answersSport : fresh.answersCategory)
   if (fresh.roundRevealed && !wasRevealed) {
     revealIndex.value = 0
     scheduleReveal()
@@ -285,75 +331,30 @@ function skipReveal() {
   revealIndex.value = allAnswersList.value.length
 }
 
-// Tracks whichever key currently has a fetch in flight - applyState() calls
-// loadOptions() again every poll/broadcast until lastOptionsKey catches up
-// (see below), so without this a slow or failing request piles up duplicate
-// concurrent fetches for the exact same key, and - worse - a slower OLDER
-// key's response could resolve after a newer key's already succeeded and
-// clobber allOptions.value with the wrong round's answer list.
-let loadingOptionsKey = null
-
-async function loadOptions(fromSubjects, key) {
-  if (loadingOptionsKey === key) return
-  loadingOptionsKey = key
-  try {
-    const options = fromSubjects
-      ? await api.fetchTensionSubjectOptions(key)
-      : await api.fetchTensionAnswerOptions(key)
-    // Both the result and lastOptionsKey are only committed if nothing newer
-    // has taken over this slot while the fetch was in flight.
-    if (loadingOptionsKey === key) {
-      allOptions.value = options
-      // Only remembered once it actually succeeds - otherwise a failed fetch
-      // (a network hiccup, or this app's backend cold-starting after being
-      // idle) would permanently skip retrying for the rest of the round, since
-      // applyState() is called again every poll with this same, now-"already
-      // seen" key.
-      lastOptionsKey = key
-    }
-  } catch (e) {
-    toast.show("Couldn't load the answer list - check your connection.", 'error')
-  } finally {
-    if (loadingOptionsKey === key) loadingOptionsKey = null
-  }
-}
-
 const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/state`, { poll, onMessage: applyState })
 
 onUnmounted(() => clearTimeout(revealTimer))
 
 function onInput() {
   validSelection.value = false
-  const term = value.value.trim().toLowerCase()
-  if (term.length >= 3) {
-    filteredOptions.value = allOptions.value.filter(o => o.toLowerCase().includes(term)).slice(0, 8)
-    showDropdown.value = true
-  } else if (term.length === 2) {
-    // Below the normal "contains" threshold (too noisy at 2 characters across
-    // a big answer list), but a short answer that's an exact match - like
-    // "MG" - needs to still be reachable, not just prefix/substring matches.
-    filteredOptions.value = allOptions.value.filter(o => o.toLowerCase() === term)
-    showDropdown.value = filteredOptions.value.length > 0
-  } else {
-    filteredOptions.value = []
-    showDropdown.value = false
-  }
+  dropdownOpen.value = true
 }
 
 function select(option) {
   value.value = option
-  showDropdown.value = false
+  dropdownOpen.value = false
   validSelection.value = true
 }
 
 async function submit() {
-  if (!validSelection.value) return
+  if (!canSubmit.value) return
   submitting.value = true
   const stillFresh = staleGuard.begin()
   try {
     const fresh = await api.submitTensionOnlineAnswer(props.roomCode, value.value.trim())
     value.value = ''
     validSelection.value = false
+    dropdownOpen.value = false
     if (stillFresh()) applyState(fresh)
   } catch (e) {
     error.value = e.response?.data?.message || 'Could not submit that answer.'

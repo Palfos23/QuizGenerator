@@ -68,6 +68,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/grids/*/candidates", "/api/grids/*/reveal-all").authenticated()
                         .requestMatchers("/api/lineups/*/candidates", "/api/lineups/*/reveal-all").authenticated()
                         .requestMatchers("/api/tension/categories/*/options").authenticated()
+                        // Same need, other source: a Tension question whose answers come from
+                        // Subjects (athletes) rather than a hand-made category. Was missing here, so
+                        // a GUEST got 403 and had no suggestions at all on those questions - and,
+                        // since submitting requires picking one, couldn't answer.
+                        .requestMatchers("/api/tension/questions/subject-options").authenticated()
+                        // Client-side problem reports (e.g. "my suggestion list never loaded") -
+                        // a guest hitting the problem is exactly who needs to be able to report it.
+                        .requestMatchers("/api/diagnostics/**").authenticated()
                         .requestMatchers("/api/501/categories/*").authenticated()
                         // generating/exporting quizzes: any logged-in user (USER or ADMIN)
                         .requestMatchers("/api/quiz/**").hasAnyRole("USER", "ADMIN")
