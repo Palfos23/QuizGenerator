@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 // authoring step. See GridPlayService's identical lazy-create-on-first-request
 // philosophy for findOrCreateAttempt/isActive, and its
 // findActive/findArchive/getScoreboard for the list+leaderboard conventions
-// this class mirrors. A set older than RETENTION_DAYS is deleted by
+// this class mirrors. A set that has reached MAX_AGE_DAYS is deleted by
 // deleteOldSets below, same @Scheduled pattern as RoomCleanupService.
 //
 // This feature used to be "Weekly Quiz" (one set per calendar week) before
@@ -48,11 +48,11 @@ public class DailyQuizService {
     private static final String LOGO_CATEGORY = "Logo";
     // 0-based, so index 9 is the 10th question.
     private static final int YEAR_QUESTION_INDEX = 9;
-    // A quiz stops being reachable once it's this many days old - e.g. with
-    // RETENTION_DAYS = 7, a quiz from exactly 7 days ago is still the oldest
-    // one kept, and one from 8 days ago is gone (deleteOldSets below deletes
-    // anything strictly older than "today minus RETENTION_DAYS").
-    private static final int RETENTION_DAYS = 7;
+    // A quiz is gone once it is this many days old: a quiz from 7 days ago (or older) is deleted, so
+    // today and the 6 days before it are what's left - 7 quizzes in all. Its heavy data (every
+    // player's per-question answers) is deleted with it; only the compact per-player result
+    // records survive (see DailyQuizResult), which is what the weekly winner is worked out from.
+    private static final int MAX_AGE_DAYS = 7;
 
     private static final Logger log = LoggerFactory.getLogger(DailyQuizService.class);
 
@@ -62,19 +62,22 @@ public class DailyQuizService {
     private final QuestionRepository questionRepository;
     private final AppUserRepository appUserRepository;
     private final AdminNotificationService adminNotificationService;
+    private final DailyQuizResultService resultService;
 
     public DailyQuizService(DailyQuizSetRepository setRepository,
                              DailyQuizAttemptRepository attemptRepository,
                              DailyQuizAnswerRepository answerRepository,
                              QuestionRepository questionRepository,
                              AppUserRepository appUserRepository,
-                             AdminNotificationService adminNotificationService) {
+                             AdminNotificationService adminNotificationService,
+                             DailyQuizResultService resultService) {
         this.setRepository = setRepository;
         this.attemptRepository = attemptRepository;
         this.answerRepository = answerRepository;
         this.questionRepository = questionRepository;
         this.appUserRepository = appUserRepository;
         this.adminNotificationService = adminNotificationService;
+        this.resultService = resultService;
     }
 
     @Transactional
@@ -96,14 +99,9 @@ public class DailyQuizService {
         // multi-language daily quiz is ever wanted.
         List<Question> candidates = new ArrayList<>(questionRepository.findByLanguage(Language.NO));
 
-        // Excludes questions from every set still within the retention
-        // window - which in practice is every set still in the database,
-        // since deleteOldSets purges anything older. +1 so the oldest
-        // still-retained day (age == RETENTION_DAYS, per deleteOldSets'
-        // boundary below) is included in the exclusion, not just the ones
-        // newer than it. No separate "how far back" knob needed the way the
-        // weekly version had one.
-        Set<Long> recentlyUsed = setRepository.findByQuizDateAfter(quizDate.minusDays(RETENTION_DAYS + 1L))
+        // Excludes questions from every set still in storage (ages 0-6, since a quiz that has reached
+        // MAX_AGE_DAYS is deleted) - so a question doesn't come round again within the week.
+        Set<Long> recentlyUsed = setRepository.findByQuizDateAfter(quizDate.minusDays(MAX_AGE_DAYS))
                 .stream()
                 .flatMap(s -> s.getQuestionIds().stream())
                 .collect(Collectors.toSet());
@@ -165,13 +163,26 @@ public class DailyQuizService {
         return isLogoCategory(q) && q.getPhotoUrl() != null && !q.getPhotoUrl().isBlank();
     }
 
-    // Runs hourly, same cadence as RoomCleanupService - deletes any quiz set
-    // (and its attempts/answers) once it's more than RETENTION_DAYS days old.
+    /** The newest quiz date that's already too old to keep: a quiz from this day (or earlier) is expired. */
+    static LocalDate expiryCutoff() {
+        return LocalDate.now().minusDays(MAX_AGE_DAYS);
+    }
+
+    /** True once a quiz is MAX_AGE_DAYS old - it's hidden from everyone from that moment, even before the cleanup job below gets round to deleting it. */
+    public static boolean isExpired(LocalDate quizDate) {
+        return !quizDate.isAfter(expiryCutoff());
+    }
+
+    // Runs hourly, same cadence as RoomCleanupService - deletes every quiz that has reached
+    // MAX_AGE_DAYS (with its attempts and answers), and prunes the compact result records that are
+    // much older still. The result records are NOT deleted with the quiz: they're what the weekly
+    // winner is calculated from, and a week's first day is exactly this old when the week ends.
     @Scheduled(fixedRate = 60 * 60 * 1000)
     @Transactional
     public void deleteOldSets() {
-        LocalDate cutoff = LocalDate.now().minusDays(RETENTION_DAYS);
-        List<DailyQuizSet> stale = setRepository.findByQuizDateBefore(cutoff);
+        resultService.pruneOld(LocalDate.now());
+
+        List<DailyQuizSet> stale = setRepository.findByQuizDateLessThanEqual(expiryCutoff());
         if (stale.isEmpty()) {
             return;
         }
@@ -185,7 +196,7 @@ public class DailyQuizService {
         }
         attemptRepository.deleteAll(attempts);
         setRepository.deleteAll(stale);
-        log.info("Daily quiz cleanup: removed {} stale quiz(zes) older than {} day(s)", stale.size(), RETENTION_DAYS);
+        log.info("Daily quiz cleanup: removed {} quiz(zes) that reached {} days old", stale.size(), MAX_AGE_DAYS);
     }
 
     // Always exactly one entry (today's set, lazily created) - unlike Grid,
@@ -200,7 +211,10 @@ public class DailyQuizService {
 
     @Transactional(readOnly = true)
     public List<DailyQuizSetSummaryDto> findArchive(String userEmail) {
-        List<DailyQuizSet> pastSets = setRepository.findByQuizDateBeforeOrderByQuizDateDesc(LocalDate.now());
+        // Bounded below as well as above: a quiz that's reached MAX_AGE_DAYS must disappear at once,
+        // not whenever the hourly cleanup next runs.
+        List<DailyQuizSet> pastSets = setRepository.findByQuizDateAfterAndQuizDateBeforeOrderByQuizDateDesc(
+                expiryCutoff(), LocalDate.now());
         return toSummaries(pastSets, userEmail);
     }
 
@@ -240,6 +254,7 @@ public class DailyQuizService {
 
     private DailyQuizSet requireSet(Long setId) {
         return setRepository.findById(setId)
+                .filter(set -> !isExpired(set.getQuizDate())) // expired = gone, even if the cleanup job hasn't deleted it yet
                 .orElseThrow(() -> new ResourceNotFoundException("No daily quiz found with id " + setId));
     }
 
@@ -357,6 +372,8 @@ public class DailyQuizService {
         long score = answerRepository.sumPointsByAttemptAndVerdict(attempt.getId(), DailyQuizAnswerVerdict.CORRECT);
         attempt.setScore((int) score);
         attempt.setStatus(DailyQuizAttemptStatus.GRADED);
+        // Also keep the compact record the weekly standings use - it outlives this quiz.
+        resultService.record(attempt);
     }
 
     @Transactional
@@ -365,6 +382,7 @@ public class DailyQuizService {
                 .orElseThrow(() -> new ResourceNotFoundException("No attempt found for this daily quiz."));
         attempt.setIncludeOnLeaderboard(includeOnLeaderboard);
         attemptRepository.save(attempt);
+        resultService.setIncludeOnLeaderboard(attempt, includeOnLeaderboard);
     }
 
     @Transactional(readOnly = true)

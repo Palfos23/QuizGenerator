@@ -1,87 +1,100 @@
 <template>
-  <div>
-    <div style="display:flex; gap:8px; margin-bottom:6px;">
-      <router-link to="/admin/daily-quiz-review" class="btn btn-secondary btn-sm">← All players</router-link>
-      <router-link v-if="attempt" :to="`/admin/daily-quiz-day/${attempt.setId}`" class="btn btn-secondary btn-sm">This day's players</router-link>
-      <button v-if="attempt" class="btn btn-secondary btn-sm" @click="openScoreboard">Scoreboard</button>
+  <div class="dq-page dq-page--wide">
+    <div class="dq-topbar">
+      <router-link to="/admin/daily-quiz-review" class="dq-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+        Daily quiz review
+      </router-link>
+      <div v-if="attempt" class="dq-topbar-actions">
+        <router-link :to="`/admin/daily-quiz-day/${attempt.setId}`" class="dq-chip-btn">This day's players</router-link>
+        <button class="dq-chip-btn" @click="openScoreboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
+          Leaderboard
+        </button>
+      </div>
     </div>
 
-    <div v-if="error" class="banner error" style="margin-top:16px;">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim); margin-top:16px;">Loading…</div>
+    <div v-if="error" class="banner error">{{ error }}</div>
+    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
     <template v-else-if="attempt">
-      <h1 style="margin-top:16px;">{{ attempt.playerName }}</h1>
-      <p class="page-subtitle">
-        {{ formatDate(attempt.quizDate) }} ·
-        <template v-if="attempt.status === 'GRADED'"><strong>Score {{ attempt.score }} / {{ attempt.maxScore }}</strong></template>
-        <template v-else>not graded yet - {{ pendingCount }} answer{{ pendingCount === 1 ? '' : 's' }} waiting</template>
-      </p>
+      <header class="dq-attempt-head">
+        <span class="dq-avatar dq-avatar--lg">{{ initials(attempt.playerName) }}</span>
+        <div class="dq-hero-text">
+          <span class="dq-eyebrow">{{ formatLong(attempt.quizDate) }}</span>
+          <h1 class="dq-title" style="margin:2px 0 0;">{{ attempt.playerName }}</h1>
+        </div>
+        <span v-if="attempt.status === 'GRADED'" class="dq-pill dq-pill--ok" style="font-size:1rem; padding:7px 16px;">{{ attempt.score }} / {{ attempt.maxScore }}</span>
+        <span v-else class="dq-pill dq-pill--wait" style="font-size:0.9rem; padding:7px 16px;">{{ pendingCount }} to review</span>
+      </header>
 
-      <div class="saved-quiz-list">
-        <div v-for="a in attempt.answers" :key="a.answerId" class="saved-quiz-row" style="align-items:flex-start;">
-          <div class="saved-quiz-info">
-            <div class="saved-quiz-title">{{ a.questionNumber }}. {{ a.questionText }}</div>
-            <img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="daily-quiz-photo" @error="e => e.target.style.display = 'none'" />
-            <div class="saved-quiz-meta">Correct answer: <strong>{{ a.correctAnswer }}</strong></div>
-            <div style="color:var(--text-dim); font-size:0.85rem; margin-top:6px;">
-              Answered: <strong>{{ a.submittedAnswer || '(blank)' }}</strong>
+      <div class="dq-list" style="gap:14px;">
+        <article v-for="a in attempt.answers" :key="a.answerId" class="dq-review" :class="{ 'is-wait': a.verdict === 'PENDING' }">
+          <div class="dq-review-top">
+            <span class="dq-q-num">{{ a.questionNumber }}</span>
+            <div class="dq-review-q">{{ a.questionText }}</div>
+            <span v-if="a.yearQuestion" class="dq-pill dq-pill--year">Year</span>
+          </div>
+
+          <img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="dq-photo dq-photo--small" @error="e => e.target.style.display = 'none'" />
+
+          <div class="dq-compare">
+            <div class="dq-compare-cell dq-compare-cell--theirs">
+              <span>Their answer</span>
+              <b>{{ a.submittedAnswer || '(blank)' }}</b>
+            </div>
+            <div class="dq-compare-cell dq-compare-cell--answer">
+              <span>Correct answer</span>
+              <b>{{ a.correctAnswer }}</b>
             </div>
           </div>
-          <div v-if="a.verdict === 'PENDING'" style="display:flex; gap:8px;">
-            <button class="btn btn-primary btn-sm" :disabled="busyId === a.answerId" @click="resolve(a, true)">Mark correct</button>
-            <button class="btn btn-danger btn-sm" :disabled="busyId === a.answerId" @click="resolve(a, false)">Mark incorrect</button>
-          </div>
-          <div v-else style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-            <span
-              class="tag"
-              :style="a.verdict === 'CORRECT' ? { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' } : { background: 'rgba(255,77,109,0.15)', color: 'var(--coral)' }"
-            >{{ a.yearQuestion ? (a.verdict === 'CORRECT' ? `✓ +${a.points}` : '✕ 0') : (a.verdict === 'CORRECT' ? '✓' : '✕') }}</span>
+
+          <div class="dq-review-foot">
             <!-- A decision is never final - a mis-click is one click to undo, and the score above updates. -->
-            <button
-              v-if="a.reviewable"
-              class="btn btn-secondary btn-sm"
-              :disabled="busyId === a.answerId"
-              @click="resolve(a, a.verdict !== 'CORRECT')"
-            >Change to {{ a.verdict === 'CORRECT' ? 'incorrect' : 'correct' }}</button>
-            <span v-else style="color:var(--text-dim); font-size:0.75rem;">Graded automatically</span>
+            <div v-if="a.verdict === 'PENDING' || a.reviewable" class="dq-segment" role="group" aria-label="Decision">
+              <button
+                type="button"
+                class="ok"
+                :class="{ 'is-on': a.verdict === 'CORRECT' }"
+                :disabled="busyId === a.answerId"
+                @click="decide(a, true)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                Correct
+              </button>
+              <button
+                type="button"
+                class="bad"
+                :class="{ 'is-on': a.verdict === 'INCORRECT' }"
+                :disabled="busyId === a.answerId"
+                @click="decide(a, false)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                Incorrect
+              </button>
+            </div>
+            <span v-else class="dq-row-meta" style="margin:0;">Graded automatically</span>
+
+            <span class="spacer"></span>
+            <span v-if="a.verdict === 'CORRECT'" class="dq-pill dq-pill--ok">{{ a.yearQuestion ? `+${a.points} ${a.points === 1 ? 'point' : 'points'}` : 'Correct' }}</span>
+            <span v-else-if="a.verdict === 'INCORRECT'" class="dq-pill dq-pill--bad">{{ a.yearQuestion ? '0 points' : 'Incorrect' }}</span>
+            <span v-else class="dq-pill dq-pill--wait">Needs a decision</span>
           </div>
-        </div>
+        </article>
       </div>
 
-      <div v-if="!pendingCount" class="empty-state friendly" style="margin-top:20px;">
-        All of {{ attempt.playerName }}'s answers have been resolved - you can still change any decision above.
+      <div v-if="!pendingCount" class="dq-card dq-card--flat dq-empty" style="margin-top:18px; padding:22px;">
+        All of {{ attempt.playerName }}'s answers have been decided - you can still change any of them above.
       </div>
     </template>
 
-    <div v-if="showScoreboard" class="modal-backdrop" @click.self="showScoreboard = false">
-      <div class="modal">
-        <h2 style="margin-top:0;">Scoreboard - {{ formatDate(attempt.quizDate) }}</h2>
-
-        <div v-if="scoreboardData && scoreboardEntries.length" class="stats-panel" style="text-align:center;">
-          <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Average score</div>
-          <div style="font-size:1.5rem; font-weight:700; margin-top:2px;">{{ scoreboardData.averageScore.toFixed(1) }} / {{ scoreboardData.maxScore }}</div>
-        </div>
-
-        <div v-if="scoreboardLoading" style="color:var(--text-dim); font-size:0.9rem;">Loading…</div>
-        <div v-else-if="!scoreboardEntries.length" style="color:var(--text-dim); font-size:0.9rem;">
-          Nobody's been fully graded yet.
-        </div>
-        <table v-else class="table scoreboard-table">
-          <thead>
-            <tr><th style="width:14%;">#</th><th style="width:56%;">Player</th><th style="width:30%; text-align:right;">Score</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="(s, i) in scoreboardEntries" :key="s.userName + i">
-              <td>{{ i + 1 }}</td>
-              <td>{{ s.userName }}</td>
-              <td style="text-align:right;">{{ s.score }} / {{ s.maxScore }}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <button class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="showScoreboard = false">Close</button>
-      </div>
-    </div>
+    <DailyQuizScoreboardModal
+      v-if="showScoreboard"
+      :title="`Leaderboard - ${formatDate(attempt.quizDate)}`"
+      :data="scoreboardData"
+      :loading="scoreboardLoading"
+      @close="showScoreboard = false"
+    />
   </div>
 </template>
 
@@ -90,6 +103,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
+import DailyQuizScoreboardModal from '../components/DailyQuizScoreboardModal.vue'
 
 const route = useRoute()
 const attemptId = route.params.id
@@ -115,6 +129,12 @@ async function load() {
   }
 }
 
+// Clicking the side that's already selected is a no-op - nothing to save.
+function decide(answer, correct) {
+  if ((answer.verdict === 'CORRECT') === correct && answer.verdict !== 'PENDING') return
+  resolve(answer, correct)
+}
+
 async function resolve(answer, correct) {
   busyId.value = answer.answerId
   error.value = ''
@@ -132,18 +152,23 @@ async function resolve(answer, correct) {
   }
 }
 
+function initials(name) {
+  return (name || '?').split(' ').filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('')
+}
+
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-// --- Scoreboard modal for this attempt's day - same endpoint/shape as the
-// player-facing one in DailyQuizPlayView, minus the leaderboard opt-in
-// checkbox (that's a player preference, not an admin action).
+function formatLong(iso) {
+  return new Date(iso).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+// --- Leaderboard for this attempt's day - same endpoint/shape as the player-facing one, shown in
+// the shared modal without the "show my name" switch (that's a player preference, not an admin action).
 const showScoreboard = ref(false)
 const scoreboardData = ref(null)
 const scoreboardLoading = ref(false)
-
-const scoreboardEntries = computed(() => scoreboardData.value?.entries || [])
 
 async function openScoreboard() {
   showScoreboard.value = true
@@ -151,23 +176,9 @@ async function openScoreboard() {
   try {
     scoreboardData.value = await api.getDailyQuizScoreboard(attempt.value.setId)
   } catch (e) {
-    // scoreboard is a nice-to-have - fail quietly, empty state already covers it
+    // a nice-to-have - fail quietly, the modal's empty state covers it
   } finally {
     scoreboardLoading.value = false
   }
 }
 </script>
-
-<style scoped>
-/* The question's picture (e.g. a logo) - the admin needs to see it to judge a
-   non-exact answer. */
-.daily-quiz-photo {
-  display: block;
-  max-width: 100%;
-  max-height: 140px;
-  margin: 6px 0 8px;
-  border-radius: var(--radius-sm);
-  background: #fff;
-  object-fit: contain;
-}
-</style>

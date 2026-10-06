@@ -48,6 +48,9 @@ public class DailyQuizReviewService {
     @Transactional(readOnly = true)
     public List<DailyQuizPendingAttemptDto> listPendingAttempts() {
         Map<Long, List<DailyQuizAnswer>> byAttemptId = answerRepository.findByVerdict(DailyQuizAnswerVerdict.PENDING).stream()
+                // A quiz that has reached its maximum age is gone for admins too, not just players -
+                // even in the gap before the hourly cleanup actually deletes it.
+                .filter(a -> !DailyQuizService.isExpired(a.getAttempt().getSet().getQuizDate()))
                 .collect(Collectors.groupingBy(a -> a.getAttempt().getId()));
 
         return byAttemptId.values().stream()
@@ -67,6 +70,7 @@ public class DailyQuizReviewService {
     @Transactional(readOnly = true)
     public DailyQuizAttemptDetailDto getAttemptDetail(Long attemptId) {
         DailyQuizAttempt attempt = attemptRepository.findById(attemptId)
+                .filter(a -> !DailyQuizService.isExpired(a.getSet().getQuizDate()))
                 .orElseThrow(() -> new ResourceNotFoundException("No attempt found with id " + attemptId));
         List<DailyQuizAnswer> answers = answerRepository.findByAttempt_IdOrderByIdAsc(attemptId);
 
@@ -89,6 +93,7 @@ public class DailyQuizReviewService {
     @Transactional(readOnly = true)
     public DailyQuizDayAttemptsDto listAttemptsForSet(Long setId) {
         DailyQuizSet set = setRepository.findById(setId)
+                .filter(found -> !DailyQuizService.isExpired(found.getQuizDate()))
                 .orElseThrow(() -> new ResourceNotFoundException("No daily quiz found with id " + setId));
         List<DailyQuizAttempt> attempts = attemptRepository.findBySet_Id(setId).stream()
                 .filter(a -> a.getStatus() != DailyQuizAttemptStatus.IN_PROGRESS)
@@ -132,6 +137,7 @@ public class DailyQuizReviewService {
     @Transactional
     public void resolve(Long answerId, boolean correct) {
         DailyQuizAnswer answer = answerRepository.findById(answerId)
+                .filter(a -> !DailyQuizService.isExpired(a.getAttempt().getSet().getQuizDate()))
                 .orElseThrow(() -> new ResourceNotFoundException("No answer found with id " + answerId));
         if (!isReviewable(answer)) {
             throw new IllegalStateException("This answer is graded automatically and can't be changed.");

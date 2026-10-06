@@ -559,6 +559,9 @@ export default {
   getArchiveDailyQuizzes() {
     return client.get('/daily-quiz/archive').then(r => r.data)
   },
+  getDailyQuizWeekly() {
+    return client.get('/daily-quiz/weekly').then(r => r.data)
+  },
   getDailyQuizPlayState(id) {
     return client.get(`/daily-quiz/${id}/play`).then(r => r.data)
   },

@@ -1,8 +1,10 @@
 package com.quizapp.repository;
 
 import com.quizapp.model.DailyQuizAttempt;
+import com.quizapp.model.DailyQuizAttemptStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,4 +21,12 @@ public interface DailyQuizAttemptRepository extends JpaRepository<DailyQuizAttem
 
     // For the retention cleanup job.
     List<DailyQuizAttempt> findBySet_IdIn(List<Long> setIds);
+
+    // Every attempt in a given state - used to back-fill the compact result records for attempts that
+    // were graded before those existed.
+    List<DailyQuizAttempt> findByStatus(DailyQuizAttemptStatus status);
+
+    // Attempts in a state within a span of quiz days - the weekly standings use it to flag a week as
+    // provisional while some of its answers are still waiting for an admin.
+    List<DailyQuizAttempt> findByStatusAndSet_QuizDateBetween(DailyQuizAttemptStatus status, LocalDate from, LocalDate to);
 }

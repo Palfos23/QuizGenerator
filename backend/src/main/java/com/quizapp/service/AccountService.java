@@ -8,6 +8,7 @@ import com.quizapp.model.SubmittedQuestion;
 import com.quizapp.repository.AppUserRepository;
 import com.quizapp.repository.DailyQuizAnswerRepository;
 import com.quizapp.repository.DailyQuizAttemptRepository;
+import com.quizapp.repository.DailyQuizResultRepository;
 import com.quizapp.repository.GridAttemptRepository;
 import com.quizapp.repository.LineupAttemptRepository;
 import com.quizapp.repository.ReportRepository;
@@ -36,6 +37,7 @@ public class AccountService {
     private final LineupAttemptRepository lineupAttemptRepository;
     private final DailyQuizAttemptRepository dailyQuizAttemptRepository;
     private final DailyQuizAnswerRepository dailyQuizAnswerRepository;
+    private final DailyQuizResultRepository dailyQuizResultRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AccountService(AppUserRepository appUserRepository,
@@ -46,6 +48,7 @@ public class AccountService {
                            LineupAttemptRepository lineupAttemptRepository,
                            DailyQuizAttemptRepository dailyQuizAttemptRepository,
                            DailyQuizAnswerRepository dailyQuizAnswerRepository,
+                           DailyQuizResultRepository dailyQuizResultRepository,
                            PasswordEncoder passwordEncoder) {
         this.appUserRepository = appUserRepository;
         this.savedQuizRepository = savedQuizRepository;
@@ -55,6 +58,7 @@ public class AccountService {
         this.lineupAttemptRepository = lineupAttemptRepository;
         this.dailyQuizAttemptRepository = dailyQuizAttemptRepository;
         this.dailyQuizAnswerRepository = dailyQuizAnswerRepository;
+        this.dailyQuizResultRepository = dailyQuizResultRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -93,6 +97,12 @@ public class AccountService {
                 .map(a -> new AccountExportDto.DailyQuizAttemptExport(a.getSet().getQuizDate(), a.getStatus().name(), a.getScore()))
                 .collect(Collectors.toList()));
 
+        // The compact per-day results behind the weekly standings - kept for weeks after the quiz
+        // itself (and its attempt, above) has been deleted, so they're part of "everything tied to you".
+        dto.setDailyQuizResults(dailyQuizResultRepository.findByUserIdOrderByQuizDateDesc(user.getId()).stream()
+                .map(r -> new AccountExportDto.DailyQuizResultExport(r.getQuizDate(), r.getScore(), r.getMaxScore(), r.isIncludeOnLeaderboard()))
+                .collect(Collectors.toList()));
+
         return dto;
     }
 
@@ -125,6 +135,8 @@ public class AccountService {
         dailyQuizAttemptRepository.findByUser_Email(email)
                 .forEach(a -> dailyQuizAnswerRepository.deleteByAttempt_Id(a.getId()));
         dailyQuizAttemptRepository.deleteAll(dailyQuizAttemptRepository.findByUser_Email(email));
+        // Keyed by user id with no foreign key (see DailyQuizResult), so nothing cleans these up for us.
+        dailyQuizResultRepository.deleteByUserId(user.getId());
 
         appUserRepository.delete(user);
     }

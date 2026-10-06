@@ -1,5 +1,7 @@
 package com.quizapp.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class LineupScoreboardEntryDto {
 
     private String userName;
@@ -32,6 +34,10 @@ public class LineupScoreboardEntryDto {
         return completed;
     }
 
+    // Jackson would otherwise name this property "you" (it drops the "is" from a boolean getter),
+    // but the frontend's leaderboards read `isYou` - with the mismatch, a player's own row was never
+    // highlighted and the "your rank" row below the top 5 never appeared.
+    @JsonProperty("isYou")
     public boolean isYou() {
         return isYou;
     }

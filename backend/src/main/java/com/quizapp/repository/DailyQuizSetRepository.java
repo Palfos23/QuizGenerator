@@ -13,9 +13,10 @@ public interface DailyQuizSetRepository extends JpaRepository<DailyQuizSet, Long
     // Repeat-avoidance when generating a new day's set - see DailyQuizService.
     List<DailyQuizSet> findByQuizDateAfter(LocalDate cutoff);
 
-    // Past days for the archive list, most recent first.
-    List<DailyQuizSet> findByQuizDateBeforeOrderByQuizDateDesc(LocalDate cutoff);
+    // Past days for the archive list, most recent first - only those still within the retention
+    // window (strictly after `oldest`, strictly before today).
+    List<DailyQuizSet> findByQuizDateAfterAndQuizDateBeforeOrderByQuizDateDesc(LocalDate oldest, LocalDate today);
 
-    // For the retention cleanup job - anything older than the cutoff gets deleted.
-    List<DailyQuizSet> findByQuizDateBefore(LocalDate cutoff);
+    // For the retention cleanup job - every quiz that has reached the maximum age.
+    List<DailyQuizSet> findByQuizDateLessThanEqual(LocalDate cutoff);
 }

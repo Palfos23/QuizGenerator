@@ -4,7 +4,9 @@ import com.quizapp.dto.DailyQuizPlayStateDto;
 import com.quizapp.dto.DailyQuizScoreboardDto;
 import com.quizapp.dto.DailyQuizSetSummaryDto;
 import com.quizapp.dto.DailyQuizSubmitRequest;
+import com.quizapp.dto.DailyQuizWeeklyDto;
 import com.quizapp.service.DailyQuizService;
+import com.quizapp.service.DailyQuizWeeklyService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +18,11 @@ import java.util.List;
 public class DailyQuizController {
 
     private final DailyQuizService dailyQuizService;
+    private final DailyQuizWeeklyService dailyQuizWeeklyService;
 
-    public DailyQuizController(DailyQuizService dailyQuizService) {
+    public DailyQuizController(DailyQuizService dailyQuizService, DailyQuizWeeklyService dailyQuizWeeklyService) {
         this.dailyQuizService = dailyQuizService;
+        this.dailyQuizWeeklyService = dailyQuizWeeklyService;
     }
 
     @GetMapping("/active")
@@ -29,6 +33,11 @@ public class DailyQuizController {
     @GetMapping("/archive")
     public List<DailyQuizSetSummaryDto> archive(Authentication authentication) {
         return dailyQuizService.findArchive(authentication.getName());
+    }
+
+    @GetMapping("/weekly")
+    public DailyQuizWeeklyDto weekly(Authentication authentication) {
+        return dailyQuizWeeklyService.getWeekly(authentication.getName());
     }
 
     @GetMapping("/{id}/play")

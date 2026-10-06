@@ -319,24 +319,30 @@ class DailyQuizServiceTest {
     }
 
     @Test
-    void cleanupDeletesSetsOlderThanRetentionButKeepsTheBoundaryDay() {
-        // Matches the acceptance criterion exactly: a quiz exactly
-        // RETENTION_DAYS old is still kept, one day older than that is gone.
+    void cleanupDeletesAQuizOnceItIsSevenDaysOldButKeepsTheDayBefore() {
+        // A quiz from 7 days ago (or older) is gone; a quiz from 6 days ago is the oldest one left -
+        // so today and the 6 days before it, 7 quizzes in all.
         LocalDate today = LocalDate.now();
-        DailyQuizSet keptBoundary = new DailyQuizSet();
-        keptBoundary.setQuizDate(today.minusDays(7));
-        keptBoundary.setQuestionIds(List.of());
-        dailyQuizSetRepository.save(keptBoundary);
+        DailyQuizSet keptOldest = new DailyQuizSet();
+        keptOldest.setQuizDate(today.minusDays(6));
+        keptOldest.setQuestionIds(List.of());
+        dailyQuizSetRepository.save(keptOldest);
 
-        DailyQuizSet deleted = new DailyQuizSet();
-        deleted.setQuizDate(today.minusDays(8));
-        deleted.setQuestionIds(List.of());
-        dailyQuizSetRepository.save(deleted);
+        DailyQuizSet deletedAtSeven = new DailyQuizSet();
+        deletedAtSeven.setQuizDate(today.minusDays(7));
+        deletedAtSeven.setQuestionIds(List.of());
+        dailyQuizSetRepository.save(deletedAtSeven);
+
+        DailyQuizSet deletedLongAgo = new DailyQuizSet();
+        deletedLongAgo.setQuizDate(today.minusDays(12));
+        deletedLongAgo.setQuestionIds(List.of());
+        dailyQuizSetRepository.save(deletedLongAgo);
 
         dailyQuizService.deleteOldSets();
 
-        assertThat(dailyQuizSetRepository.findById(keptBoundary.getId())).isPresent();
-        assertThat(dailyQuizSetRepository.findById(deleted.getId())).isEmpty();
+        assertThat(dailyQuizSetRepository.findById(keptOldest.getId())).isPresent();
+        assertThat(dailyQuizSetRepository.findById(deletedAtSeven.getId())).isEmpty();
+        assertThat(dailyQuizSetRepository.findById(deletedLongAgo.getId())).isEmpty();
     }
 
     private Question newLogoQuestion(String answer, boolean withPhoto) {

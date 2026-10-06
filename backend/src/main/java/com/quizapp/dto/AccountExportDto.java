@@ -18,6 +18,7 @@ public class AccountExportDto {
     private List<GridAttemptExport> gridAttempts;
     private List<LineupAttemptExport> lineupAttempts;
     private List<DailyQuizAttemptExport> dailyQuizAttempts;
+    private List<DailyQuizResultExport> dailyQuizResults;
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -37,6 +38,8 @@ public class AccountExportDto {
     public void setGridAttempts(List<GridAttemptExport> gridAttempts) { this.gridAttempts = gridAttempts; }
     public List<LineupAttemptExport> getLineupAttempts() { return lineupAttempts; }
     public void setLineupAttempts(List<LineupAttemptExport> lineupAttempts) { this.lineupAttempts = lineupAttempts; }
+    public List<DailyQuizResultExport> getDailyQuizResults() { return dailyQuizResults; }
+    public void setDailyQuizResults(List<DailyQuizResultExport> dailyQuizResults) { this.dailyQuizResults = dailyQuizResults; }
     public List<DailyQuizAttemptExport> getDailyQuizAttempts() { return dailyQuizAttempts; }
     public void setDailyQuizAttempts(List<DailyQuizAttemptExport> dailyQuizAttempts) { this.dailyQuizAttempts = dailyQuizAttempts; }
 
@@ -143,5 +146,24 @@ public class AccountExportDto {
         public java.time.LocalDate getQuizDate() { return quizDate; }
         public String getStatus() { return status; }
         public int getScore() { return score; }
+    }
+
+    public static class DailyQuizResultExport {
+        private java.time.LocalDate quizDate;
+        private int score;
+        private int maxScore;
+        private boolean shownOnLeaderboard;
+
+        public DailyQuizResultExport(java.time.LocalDate quizDate, int score, int maxScore, boolean shownOnLeaderboard) {
+            this.quizDate = quizDate;
+            this.score = score;
+            this.maxScore = maxScore;
+            this.shownOnLeaderboard = shownOnLeaderboard;
+        }
+
+        public java.time.LocalDate getQuizDate() { return quizDate; }
+        public int getScore() { return score; }
+        public int getMaxScore() { return maxScore; }
+        public boolean isShownOnLeaderboard() { return shownOnLeaderboard; }
     }
 }
