@@ -6,6 +6,7 @@ import com.quizapp.dto.FlashbackYearRequest;
 import com.quizapp.model.GameRoom;
 import com.quizapp.model.RoomGameType;
 import com.quizapp.repository.FlashbackRoomStateRepository;
+import com.quizapp.repository.FlashbackYearRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,6 +38,8 @@ class FlashbackOnlineServiceTest {
     private FlashbackRoomStateRepository flashbackRoomStateRepository;
     @Autowired
     private TransactionTemplate transactionTemplate;
+    @Autowired
+    private FlashbackYearRepository flashbackYearRepository;
 
     private static final String HOST = "flashback-host@example.com";
     private static final String GUEST = "flashback-guest@example.com";
@@ -121,12 +124,24 @@ class FlashbackOnlineServiceTest {
                 flashbackRoomStateRepository.findByRoom_Id(room.getId()).orElseThrow().getYearIds().get(0));
     }
 
+    // Years added just so a swap has somewhere to go. They MUST be removed again afterwards: this
+    // class's other tests start a room with initializeYearSequence, which draws a RANDOM year from
+    // everything in the shared database and then assumes it's the 1994 one - so a stray extra year
+    // makes those tests fail whenever it happens to be drawn.
+    private final List<Long> extraYearIds = new java.util.ArrayList<>();
+
+    @org.junit.jupiter.api.AfterEach
+    void removeExtraYears() {
+        flashbackYearRepository.deleteAllById(extraYearIds);
+        extraYearIds.clear();
+    }
+
     private void addAnotherYear() {
         FlashbackYearRequest request = new FlashbackYearRequest();
         request.setTitle("Swap-target year " + System.nanoTime());
         request.setYear(1986);
         request.setHints(List.of("Other first hint", "Other second hint"));
-        flashbackAdminService.create(request);
+        extraYearIds.add(flashbackAdminService.create(request).getId());
     }
 
     @Test

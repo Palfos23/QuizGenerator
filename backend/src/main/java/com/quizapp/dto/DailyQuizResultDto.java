@@ -44,17 +44,22 @@ public class DailyQuizResultDto {
         private String correctAnswer; // null while verdict is PENDING - not spoiled before it's resolved
         private String verdict; // PENDING / CORRECT / INCORRECT
         private String photoUrl; // null for questions without a picture
+        private boolean yearQuestion;
+        private Integer pointsAwarded; // null while PENDING; 0 for a wrong answer
 
         public AnswerResultDto() {
         }
 
-        public AnswerResultDto(int questionNumber, String questionText, String yourAnswer, String correctAnswer, String verdict, String photoUrl) {
+        public AnswerResultDto(int questionNumber, String questionText, String yourAnswer, String correctAnswer, String verdict,
+                               String photoUrl, boolean yearQuestion, Integer pointsAwarded) {
             this.questionNumber = questionNumber;
             this.questionText = questionText;
             this.yourAnswer = yourAnswer;
             this.correctAnswer = correctAnswer;
             this.verdict = verdict;
             this.photoUrl = photoUrl;
+            this.yearQuestion = yearQuestion;
+            this.pointsAwarded = pointsAwarded;
         }
 
         public int getQuestionNumber() {
@@ -103,6 +108,22 @@ public class DailyQuizResultDto {
 
         public void setPhotoUrl(String photoUrl) {
             this.photoUrl = photoUrl;
+        }
+
+        public boolean isYearQuestion() {
+            return yearQuestion;
+        }
+
+        public void setYearQuestion(boolean yearQuestion) {
+            this.yearQuestion = yearQuestion;
+        }
+
+        public Integer getPointsAwarded() {
+            return pointsAwarded;
+        }
+
+        public void setPointsAwarded(Integer pointsAwarded) {
+            this.pointsAwarded = pointsAwarded;
         }
     }
 }

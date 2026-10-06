@@ -51,8 +51,11 @@ public class DailyQuizAttemptDetailDto {
         private String correctAnswer;
         private String verdict; // PENDING / CORRECT / INCORRECT
         private String photoUrl; // null for questions without a picture - the admin judging a logo answer needs to see it
+        private boolean yearQuestion; // auto-graded (2 / 1 / 0 points) - never needs a decision
+        private int points; // what a CORRECT verdict is worth
 
-        public AnswerDto(Long answerId, int questionNumber, String questionText, String submittedAnswer, String correctAnswer, String verdict, String photoUrl) {
+        public AnswerDto(Long answerId, int questionNumber, String questionText, String submittedAnswer, String correctAnswer, String verdict,
+                         String photoUrl, boolean yearQuestion, int points) {
             this.answerId = answerId;
             this.questionNumber = questionNumber;
             this.questionText = questionText;
@@ -60,6 +63,8 @@ public class DailyQuizAttemptDetailDto {
             this.correctAnswer = correctAnswer;
             this.verdict = verdict;
             this.photoUrl = photoUrl;
+            this.yearQuestion = yearQuestion;
+            this.points = points;
         }
 
         public Long getAnswerId() {
@@ -88,6 +93,14 @@ public class DailyQuizAttemptDetailDto {
 
         public String getPhotoUrl() {
             return photoUrl;
+        }
+
+        public boolean isYearQuestion() {
+            return yearQuestion;
+        }
+
+        public int getPoints() {
+            return points;
         }
     }
 }

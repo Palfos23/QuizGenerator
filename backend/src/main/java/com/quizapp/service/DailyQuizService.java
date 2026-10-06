@@ -46,6 +46,8 @@ public class DailyQuizService {
 
     private static final int QUESTIONS_PER_DAY = 15;
     private static final String LOGO_CATEGORY = "Logo";
+    // 0-based, so index 9 is the 10th question.
+    private static final int YEAR_QUESTION_INDEX = 9;
     // A quiz stops being reachable once it's this many days old - e.g. with
     // RETENTION_DAYS = 7, a quiz from exactly 7 days ago is still the oldest
     // one kept, and one from 8 days ago is gone (deleteOldSets below deletes
@@ -105,41 +107,54 @@ public class DailyQuizService {
                 .stream()
                 .flatMap(s -> s.getQuestionIds().stream())
                 .collect(Collectors.toSet());
-        // The quiz always opens with exactly ONE picture question from the Logo
-        // category - never more, never fewer - and the other 14 are drawn from
-        // everything that isn't a Logo question at all. A Logo question without a
-        // photo is useless here (the question text is just "which airline?"), so only
-        // ones with a photo qualify as the opener.
-        List<Question> logoPool = candidates.stream()
-                .filter(DailyQuizService::isLogoQuestionWithPhoto)
-                .collect(Collectors.toList());
-        List<Question> freshLogos = logoPool.stream()
-                .filter(q -> !recentlyUsed.contains(q.getId()))
-                .collect(Collectors.toList());
-        // If every Logo question has been used within the retention window, repeating
-        // one beats a quiz with no picture round at all.
-        List<Question> logoChoices = freshLogos.isEmpty() ? logoPool : freshLogos;
-        Question logoQuestion = logoChoices.isEmpty() ? null : logoChoices.get(new Random().nextInt(logoChoices.size()));
+        // The quiz has two fixed "feature" slots, each filled by exactly ONE question from its own
+        // category - never more, never fewer - with every other question drawn from outside both:
+        //   position 1  : a Logo question (with a photo - the text alone is just "which airline?")
+        //   position 10 : a Year question (several events from one year; answered with that year)
+        Question logoQuestion = pickFeatureQuestion(candidates, recentlyUsed, DailyQuizService::isLogoQuestionWithPhoto);
+        Question yearQuestion = pickFeatureQuestion(candidates, recentlyUsed, DailyQuizService::isYearQuestionWithYearAnswer);
 
         List<Question> others = candidates.stream()
-                .filter(q -> !isLogoCategory(q))
+                .filter(q -> !isLogoCategory(q) && !DailyQuizScoring.isYearQuestion(q))
                 .filter(q -> !recentlyUsed.contains(q.getId()))
                 .collect(Collectors.toList());
         Collections.shuffle(others);
 
+        int featureCount = (logoQuestion != null ? 1 : 0) + (yearQuestion != null ? 1 : 0);
         List<Long> questionIds = new ArrayList<>();
         if (logoQuestion != null) {
             questionIds.add(logoQuestion.getId());
         }
         others.stream()
-                .limit(QUESTIONS_PER_DAY - questionIds.size())
+                .limit(QUESTIONS_PER_DAY - featureCount)
                 .map(Question::getId)
                 .forEach(questionIds::add);
+        if (yearQuestion != null) {
+            // Slot 10 (index 9) - or the end, if there somehow aren't enough questions to reach it.
+            questionIds.add(Math.min(YEAR_QUESTION_INDEX, questionIds.size()), yearQuestion.getId());
+        }
 
         DailyQuizSet set = new DailyQuizSet();
         set.setQuizDate(quizDate);
         set.setQuestionIds(questionIds);
         return setRepository.save(set);
+    }
+
+    // A random question matching `eligible`, preferring ones not used within the retention window.
+    // If every eligible one HAS been used recently, repeating one beats a quiz with that slot
+    // missing altogether. Null only if nothing eligible exists at all.
+    private static Question pickFeatureQuestion(List<Question> candidates, Set<Long> recentlyUsed,
+                                                java.util.function.Predicate<Question> eligible) {
+        List<Question> pool = candidates.stream().filter(eligible).collect(Collectors.toList());
+        List<Question> fresh = pool.stream().filter(q -> !recentlyUsed.contains(q.getId())).collect(Collectors.toList());
+        List<Question> choices = fresh.isEmpty() ? pool : fresh;
+        return choices.isEmpty() ? null : choices.get(new Random().nextInt(choices.size()));
+    }
+
+    // A Year question needs a stored answer that actually contains a year - otherwise it couldn't be
+    // scored, so it's not eligible to be the daily one (it's still kept out of the ordinary slots).
+    private static boolean isYearQuestionWithYearAnswer(Question q) {
+        return DailyQuizScoring.isYearQuestion(q) && DailyQuizScoring.parseYear(q.getAnswer()) != null;
     }
 
     private static boolean isLogoCategory(Question q) {
@@ -196,11 +211,23 @@ public class DailyQuizService {
                 : attemptRepository.findBySet_IdInAndUser_Email(setIds, userEmail).stream()
                         .collect(Collectors.toMap(a -> a.getSet().getId(), a -> a));
 
+        // One lookup for every question across all these sets, to work out each set's max score
+        // (a Year question is worth 2, so "number of questions" is no longer the max).
+        List<Long> allQuestionIds = sets.stream().flatMap(set -> set.getQuestionIds().stream()).distinct().collect(Collectors.toList());
+        Map<Long, Question> questionsById = allQuestionIds.isEmpty()
+                ? Map.of()
+                : questionRepository.findAllById(allQuestionIds).stream().collect(Collectors.toMap(Question::getId, q -> q));
+
         return sets.stream().map(set -> {
             DailyQuizAttempt attempt = attemptBySetId.get(set.getId());
             String status = attempt == null ? "NOT_STARTED" : attempt.getStatus().name();
             Integer score = attempt != null && attempt.getStatus() == DailyQuizAttemptStatus.GRADED ? attempt.getScore() : null;
-            return new DailyQuizSetSummaryDto(set.getId(), set.getQuizDate(), set.getQuestionIds().size(), status, score);
+            int maxScore = set.getQuestionIds().stream()
+                    .map(questionsById::get)
+                    .filter(java.util.Objects::nonNull)
+                    .mapToInt(DailyQuizScoring::maxPoints)
+                    .sum();
+            return new DailyQuizSetSummaryDto(set.getId(), set.getQuizDate(), set.getQuestionIds().size(), maxScore, status, score);
         }).collect(Collectors.toList());
     }
 
@@ -229,7 +256,7 @@ public class DailyQuizService {
             for (int i = 0; i < set.getQuestionIds().size(); i++) {
                 Question q = byId.get(set.getQuestionIds().get(i));
                 if (q != null) {
-                    questionDtos.add(new DailyQuizPlayStateDto.QuestionDto(i + 1, q.getId(), q.getQuestionText(), q.getPhotoUrl()));
+                    questionDtos.add(new DailyQuizPlayStateDto.QuestionDto(i + 1, q.getId(), q.getQuestionText(), q.getPhotoUrl(), DailyQuizScoring.isScoredAsYear(q)));
                 }
             }
             dto.setQuestions(questionDtos);
@@ -246,14 +273,17 @@ public class DailyQuizService {
         List<DailyQuizAnswer> answers = answerRepository.findByAttempt_IdOrderByIdAsc(attempt.getId());
         DailyQuizResultDto result = new DailyQuizResultDto();
         result.setScore(attempt.getStatus() == DailyQuizAttemptStatus.GRADED ? attempt.getScore() : null);
-        result.setMaxScore(answers.size());
+        // Not simply "number of answers": the Year question is worth up to 2.
+        result.setMaxScore(answers.stream().mapToInt(a -> DailyQuizScoring.maxPoints(a.getQuestion())).sum());
         List<DailyQuizResultDto.AnswerResultDto> rows = new ArrayList<>();
         for (int i = 0; i < answers.size(); i++) {
             DailyQuizAnswer a = answers.get(i);
             boolean pending = a.getVerdict() == DailyQuizAnswerVerdict.PENDING;
+            Integer pointsAwarded = pending ? null : (a.getVerdict() == DailyQuizAnswerVerdict.CORRECT ? a.getPoints() : 0);
             rows.add(new DailyQuizResultDto.AnswerResultDto(
                     i + 1, a.getQuestion().getQuestionText(), a.getAnswerText(),
-                    pending ? null : a.getQuestion().getAnswer(), a.getVerdict().name(), a.getQuestion().getPhotoUrl()));
+                    pending ? null : a.getQuestion().getAnswer(), a.getVerdict().name(), a.getQuestion().getPhotoUrl(),
+                    DailyQuizScoring.isScoredAsYear(a.getQuestion()), pointsAwarded));
         }
         result.setAnswers(rows);
         return result;
@@ -287,6 +317,13 @@ public class DailyQuizService {
             answer.setAnswerText(trimmed);
             if (trimmed.isEmpty()) {
                 answer.setVerdict(DailyQuizAnswerVerdict.INCORRECT);
+                answer.setPoints(0);
+            } else if (DailyQuizScoring.isScoredAsYear(question)) {
+                // Graded by how close the year is (2 / 1 / 0) - purely arithmetic, so it never
+                // goes to an admin and never sits in PENDING.
+                int points = DailyQuizScoring.yearPoints(trimmed, question.getAnswer());
+                answer.setVerdict(points > 0 ? DailyQuizAnswerVerdict.CORRECT : DailyQuizAnswerVerdict.INCORRECT);
+                answer.setPoints(points);
             } else if (trimmed.equalsIgnoreCase(question.getAnswer().trim())) {
                 answer.setVerdict(DailyQuizAnswerVerdict.CORRECT);
             } else {
@@ -316,8 +353,9 @@ public class DailyQuizService {
     // DailyQuizReviewService.resolve (once the last pending answer for this
     // attempt is resolved).
     void gradeAttempt(DailyQuizAttempt attempt) {
-        long correctCount = answerRepository.countByAttempt_IdAndVerdict(attempt.getId(), DailyQuizAnswerVerdict.CORRECT);
-        attempt.setScore((int) correctCount);
+        // Sum of points, not a head-count: a CORRECT Year answer can be worth 2.
+        long score = answerRepository.sumPointsByAttemptAndVerdict(attempt.getId(), DailyQuizAnswerVerdict.CORRECT);
+        attempt.setScore((int) score);
         attempt.setStatus(DailyQuizAttemptStatus.GRADED);
     }
 
@@ -337,6 +375,15 @@ public class DailyQuizService {
                 .filter(a -> a.getStatus() == DailyQuizAttemptStatus.GRADED)
                 .collect(Collectors.toList());
 
+        // Each attempt's max points (a Year question is worth 2, so it isn't just "number of answers"),
+        // from one query for all of them rather than one per leaderboard row.
+        List<Long> attemptIds = gradedAttempts.stream().map(DailyQuizAttempt::getId).collect(Collectors.toList());
+        Map<Long, Integer> maxByAttemptId = attemptIds.isEmpty()
+                ? Map.of()
+                : answerRepository.findByAttempt_IdIn(attemptIds).stream()
+                        .collect(Collectors.groupingBy(a -> a.getAttempt().getId(),
+                                Collectors.summingInt(a -> DailyQuizScoring.maxPoints(a.getQuestion()))));
+
         List<DailyQuizScoreboardEntryDto> entries = gradedAttempts.stream()
                 // Opted-out players still count toward the average (just a number,
                 // doesn't reveal who they are) but are excluded from the visible
@@ -344,7 +391,7 @@ public class DailyQuizService {
                 .filter(a -> a.isIncludeOnLeaderboard() || a.getUser().getEmail().equals(requestingUserEmail))
                 .map(a -> new DailyQuizScoreboardEntryDto(
                         a.getUser().getName(), a.getScore(),
-                        answerRepository.findByAttempt_IdOrderByIdAsc(a.getId()).size(),
+                        maxByAttemptId.getOrDefault(a.getId(), QUESTIONS_PER_DAY),
                         a.getUser().getEmail().equals(requestingUserEmail)))
                 .sorted((a, b) -> b.getScore() - a.getScore())
                 .collect(Collectors.toList());
@@ -352,7 +399,7 @@ public class DailyQuizService {
         double averageScore = gradedAttempts.isEmpty() ? 0
                 : gradedAttempts.stream().mapToInt(DailyQuizAttempt::getScore).average().orElse(0);
         int maxScore = gradedAttempts.isEmpty() ? QUESTIONS_PER_DAY
-                : answerRepository.findByAttempt_IdOrderByIdAsc(gradedAttempts.get(0).getId()).size();
+                : maxByAttemptId.getOrDefault(gradedAttempts.get(0).getId(), QUESTIONS_PER_DAY);
 
         DailyQuizScoreboardDto dto = new DailyQuizScoreboardDto(entries, averageScore, maxScore);
         gradedAttempts.stream()

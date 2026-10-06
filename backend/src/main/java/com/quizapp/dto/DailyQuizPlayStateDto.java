@@ -57,15 +57,17 @@ public class DailyQuizPlayStateDto {
         private Long questionId;
         private String text;
         private String photoUrl; // null for the (many) questions without a picture
+        private boolean yearQuestion; // the daily "Year" question - answered with a year, partial credit
 
         public QuestionDto() {
         }
 
-        public QuestionDto(int questionNumber, Long questionId, String text, String photoUrl) {
+        public QuestionDto(int questionNumber, Long questionId, String text, String photoUrl, boolean yearQuestion) {
             this.questionNumber = questionNumber;
             this.questionId = questionId;
             this.text = text;
             this.photoUrl = photoUrl;
+            this.yearQuestion = yearQuestion;
         }
 
         public int getQuestionNumber() {
@@ -98,6 +100,14 @@ public class DailyQuizPlayStateDto {
 
         public void setPhotoUrl(String photoUrl) {
             this.photoUrl = photoUrl;
+        }
+
+        public boolean isYearQuestion() {
+            return yearQuestion;
+        }
+
+        public void setYearQuestion(boolean yearQuestion) {
+            this.yearQuestion = yearQuestion;
         }
     }
 }

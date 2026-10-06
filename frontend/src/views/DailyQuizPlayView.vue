@@ -16,7 +16,16 @@
           <div v-for="q in state.questions" :key="q.questionId" class="field">
             <label>{{ q.questionNumber }}. {{ q.text }}</label>
             <img v-if="q.photoUrl" :src="q.photoUrl" alt="" class="daily-quiz-photo" @error="e => e.target.style.display = 'none'" />
-            <input type="text" v-model="answers[q.questionId]" autocomplete="off" />
+            <p v-if="q.yearQuestion" class="daily-quiz-year-hint">
+              Guess the year - spot on is 2 points, one year off is 1 point.
+            </p>
+            <input
+              type="text"
+              v-model="answers[q.questionId]"
+              autocomplete="off"
+              :inputmode="q.yearQuestion ? 'numeric' : undefined"
+              :placeholder="q.yearQuestion ? 'Year, e.g. 1994' : undefined"
+            />
           </div>
           <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;" :disabled="submitting">
             {{ submitting ? 'Submitting…' : 'Submit answers' }}
@@ -36,7 +45,7 @@
               <img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="daily-quiz-photo small" @error="e => e.target.style.display = 'none'" />
               <div class="saved-quiz-meta">
                 Your answer: {{ a.yourAnswer || '(blank)' }}
-                <span v-if="a.verdict === 'INCORRECT'"> · Correct answer: {{ a.correctAnswer }}</span>
+                <span v-if="a.verdict === 'INCORRECT' || (a.yearQuestion && a.pointsAwarded === 1)"> · Correct answer: {{ a.correctAnswer }}</span>
               </div>
             </div>
             <span
@@ -48,7 +57,7 @@
               v-else
               class="tag"
               :style="a.verdict === 'CORRECT' ? { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' } : { background: 'rgba(255,77,109,0.15)', color: 'var(--coral)' }"
-            >{{ a.verdict === 'CORRECT' ? '✓' : '✕' }}</span>
+            >{{ resultLabel(a) }}</span>
           </div>
         </div>
       </template>
@@ -176,6 +185,15 @@ async function submit() {
   }
 }
 
+// A tick or cross for an ordinary question; for the Year question, the points it earned
+// (2 = spot on, 1 = one year off) since it isn't simply right or wrong.
+function resultLabel(a) {
+  if (a.yearQuestion) {
+    return a.pointsAwarded > 0 ? `✓ +${a.pointsAwarded}` : '✕ 0'
+  }
+  return a.verdict === 'CORRECT' ? '✓' : '✕'
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return ''
   return new Date(dateStr).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
@@ -234,6 +252,11 @@ async function updateLeaderboardPreference() {
   border-radius: var(--radius-sm);
   background: #fff;
   object-fit: contain;
+}
+.daily-quiz-year-hint {
+  margin: 2px 0 8px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
 }
 .daily-quiz-photo.small {
   max-height: 120px;

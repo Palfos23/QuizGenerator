@@ -87,7 +87,7 @@ function buttonLabel(status) {
 }
 
 function statusLabel(q) {
-  if (q.status === 'GRADED') return `Graded · ${q.score}/${q.questionCount}`
+  if (q.status === 'GRADED') return `Graded · ${q.score}/${q.maxScore}`
   if (q.status === 'SUBMITTED') return 'Under review'
   if (q.status === 'IN_PROGRESS') return 'In progress'
   return 'Not started'

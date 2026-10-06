@@ -4,6 +4,8 @@ import com.quizapp.model.DailyQuizAnswer;
 import com.quizapp.model.DailyQuizAnswerVerdict;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -19,6 +21,14 @@ public interface DailyQuizAnswerRepository extends JpaRepository<DailyQuizAnswer
     List<DailyQuizAnswer> findByVerdict(DailyQuizAnswerVerdict verdict);
 
     long countByAttempt_IdAndVerdict(Long attemptId, DailyQuizAnswerVerdict verdict);
+
+    // An attempt's score: the points of every answer judged CORRECT (a Year question can be
+    // worth 2, everything else 1).
+    @Query("SELECT COALESCE(SUM(a.points), 0) FROM DailyQuizAnswer a WHERE a.attempt.id = :attemptId AND a.verdict = :verdict")
+    long sumPointsByAttemptAndVerdict(@Param("attemptId") Long attemptId, @Param("verdict") DailyQuizAnswerVerdict verdict);
+
+    // One query for a whole batch of attempts (the scoreboard) instead of one per row.
+    List<DailyQuizAnswer> findByAttempt_IdIn(List<Long> attemptIds);
 
     // For account deletion - child rows must go before their parent attempt.
     @Modifying

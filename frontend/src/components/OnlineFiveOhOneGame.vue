@@ -54,6 +54,18 @@
             autocapitalize="off"
             spellcheck="false"
           />
+          <!-- A throw has to be a picked entry, so unlike Tension there's no typing-it-anyway fallback -
+               the player needs to see why the list isn't there and be able to retry it. -->
+          <div v-if="entriesStatus === 'loading'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px; text-align:center;">
+            Loading the answer list…
+          </div>
+          <div v-else-if="entriesStatus === 'error'" style="color:var(--coral); font-size:0.85rem; margin-top:8px; text-align:center;">
+            Couldn't load the answer list.
+            <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryEntries">Try again</button>
+          </div>
+          <div v-else-if="entriesStatus === 'empty'" style="color:var(--coral); font-size:0.85rem; margin-top:8px; text-align:center;">
+            This category has no answers to pick from - ask the host to start a different one.
+          </div>
           <div v-if="searchResults.length" class="guess-results">
             <button
               v-for="e in searchResults"
@@ -120,6 +132,7 @@
 import { computed, ref } from 'vue'
 import api from '../services/api'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
+import { useReferenceList } from '../composables/useReferenceList'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatLastUpdated } from '../constants'
 
@@ -137,8 +150,14 @@ const emit = defineEmits(['finished', 'restart', 'leave'])
 
 const state = ref(null)
 const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.categoryUpdatedAt))
-const categoryEntries = ref([]) // fetched once, from the existing category endpoint - not part of the polled state
-let loadedCategoryId = null
+// The category's entries, fetched from the existing category endpoint - not part of the polled
+// state. Loaded by its own loader (tracked, retried, reported), deliberately NOT inside
+// applyState: state updates overlap and get discarded as stale, and tying this to them once meant
+// a single failed or discarded fetch left the answer list empty for the entire game.
+const { items: categoryEntries, status: entriesStatus, load: loadEntries, retry: retryEntries } = useReferenceList({
+  area: '501-answers',
+  failureToast: "Couldn't load the answer list - retrying."
+})
 const loading = ref(true)
 const error = ref('')
 const throwing = ref(false)
@@ -195,26 +214,15 @@ async function poll() {
 }
 
 async function applyState(fresh) {
-  // Claims this call's spot before the async category fetch below, then
-  // checks it's still the latest right after - otherwise two overlapping
-  // applyState calls (a WS push racing this poll's own response, or your own
-  // throw's response racing another player's broadcast) apply in whichever
-  // order they finish, not in the order they actually happened. Nothing
-  // below mutates until we know we're still current.
-  const isLatest = staleGuard.claim()
-  let entriesForNewCategory = null
-  if (fresh.categoryId && fresh.categoryId !== loadedCategoryId) {
-    loadedCategoryId = fresh.categoryId
-    try {
-      const category = await api.getFiveOhOneCategory(fresh.categoryId)
-      entriesForNewCategory = category.entries
-    } catch (e) {
-      // search just won't have results if this fails - the next poll will retry
-    }
+  // Claims this call's spot so an older poll still in flight can't land after it and overwrite
+  // fresher state (a WS push racing this poll's own response, or your own throw's response racing
+  // another player's broadcast).
+  staleGuard.claim()
+  // Idempotent - called on every update, only actually fetches when the category changes.
+  if (fresh.categoryId) {
+    loadEntries(`category:${fresh.categoryId}`, () => api.getFiveOhOneCategory(fresh.categoryId).then(c => c.entries))
   }
-  if (!isLatest()) return
   error.value = ''
-  if (entriesForNewCategory) categoryEntries.value = entriesForNewCategory
   if (fresh.throwHistory && fresh.throwHistory.length) {
     lastThrow.value = fresh.throwHistory[fresh.throwHistory.length - 1]
   }

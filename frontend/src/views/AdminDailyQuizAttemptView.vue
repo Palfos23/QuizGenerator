@@ -30,7 +30,7 @@
             v-else
             class="tag"
             :style="a.verdict === 'CORRECT' ? { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' } : { background: 'rgba(255,77,109,0.15)', color: 'var(--coral)' }"
-          >{{ a.verdict === 'CORRECT' ? '✓' : '✕' }}</span>
+          >{{ a.yearQuestion ? (a.verdict === 'CORRECT' ? `✓ +${a.points}` : '✕ 0') : (a.verdict === 'CORRECT' ? '✓' : '✕') }}</span>
         </div>
       </div>
 

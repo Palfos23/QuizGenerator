@@ -27,8 +27,24 @@ public class DailyQuizAnswer {
     @Column(nullable = false)
     private DailyQuizAnswerVerdict verdict = DailyQuizAnswerVerdict.PENDING;
 
+    // Points this answer earns IF its verdict is CORRECT - 1 for an ordinary question, 1 or 2 for the
+    // daily Year question (see DailyQuizScoring). The database-level default of 1 matters: this
+    // column was added to a table that already held rows, and under ddl-auto=update a NOT NULL
+    // column with no default can't be added to a populated table (it's what took production down
+    // once before). Every existing CORRECT answer was worth exactly 1, so 1 is also the right value.
+    @Column(name = "points", nullable = false, columnDefinition = "integer not null default 1")
+    private int points = 1;
+
     public Long getId() {
         return id;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
     }
 
     public void setId(Long id) {
