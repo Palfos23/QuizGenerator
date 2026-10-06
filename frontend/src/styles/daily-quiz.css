@@ -251,7 +251,8 @@ a.dq-row:hover, .dq-row--link:hover {
 }
 .dq-progress-label {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   font-size: 0.82rem;
   font-weight: 650;
   color: var(--text-dim);
@@ -343,6 +344,26 @@ a.dq-row:hover, .dq-row--link:hover {
 
 .dq-submit { margin: 26px 0 8px; }
 .dq-submit .btn { width: 100%; min-height: 54px; font-size: 1rem; border-radius: 14px; }
+.dq-save-btn { margin-top: 10px; }
+.dq-submit .btn.dq-save-btn { min-height: 48px; font-size: 0.95rem; }
+.dq-save-chip {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--dq-line);
+  background: rgba(255, 255, 255, 0.10);
+  color: var(--text);
+  font-weight: 650;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.dq-save-chip svg { width: 14px; height: 14px; }
+.dq-save-chip:hover:not(:disabled) { background: rgba(255, 255, 255, 0.18); }
+.dq-save-chip:disabled { cursor: default; opacity: 0.7; }
+.dq-save-chip.is-saved { color: var(--dq-ok); border-color: rgba(85, 232, 172, 0.45); background: var(--dq-ok-bg); opacity: 1; }
 .dq-submit-note { text-align: center; color: var(--text-dim); font-size: 0.85rem; margin-top: 10px; }
 
 /* ---------- Results ---------- */

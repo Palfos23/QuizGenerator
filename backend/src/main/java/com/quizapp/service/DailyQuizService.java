@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -55,6 +56,9 @@ public class DailyQuizService {
     private static final int MAX_AGE_DAYS = 7;
 
     private static final Logger log = LoggerFactory.getLogger(DailyQuizService.class);
+
+    private static final int MAX_ANSWER_LENGTH = 1000; // matches the answer_text column
+    private static final com.fasterxml.jackson.databind.ObjectMapper DRAFT_MAPPER = new com.fasterxml.jackson.databind.ObjectMapper();
 
     private final DailyQuizSetRepository setRepository;
     private final DailyQuizAttemptRepository attemptRepository;
@@ -275,6 +279,7 @@ public class DailyQuizService {
                 }
             }
             dto.setQuestions(questionDtos);
+            dto.setDraftAnswers(readDraft(attempt));
         } else {
             // SUBMITTED or GRADED - your own answers are always visible, even
             // while some are still "Under review" (score itself stays hidden
@@ -349,6 +354,7 @@ public class DailyQuizService {
         }
 
         attempt.setSubmittedAt(java.time.Instant.now());
+        attempt.setDraftAnswers(null);
         if (pendingCount > 0) {
             attempt.setStatus(DailyQuizAttemptStatus.SUBMITTED);
             adminNotificationService.notifyAdmin(
@@ -362,6 +368,44 @@ public class DailyQuizService {
         attemptRepository.save(attempt);
 
         return getPlayState(setId, userEmail);
+    }
+
+    // "Save for later": keeps what the player has typed so far, server-side so it follows them to
+    // another device. Nothing is graded and nothing reaches the admin queue - that only happens on
+    // submit. Only answers to this quiz's own questions are kept, and blanks are dropped.
+    @Transactional
+    public void saveDraft(Long setId, String userEmail, DailyQuizSubmitRequest request) {
+        DailyQuizSet set = requireSet(setId);
+        DailyQuizAttempt attempt = findOrCreateAttempt(set, userEmail);
+        if (attempt.getStatus() != DailyQuizAttemptStatus.IN_PROGRESS) {
+            throw new IllegalStateException("You've already submitted this quiz.");
+        }
+        Set<Long> allowed = Set.copyOf(set.getQuestionIds());
+        Map<Long, String> draft = new LinkedHashMap<>();
+        if (request.getAnswers() != null) {
+            for (DailyQuizSubmitRequest.AnswerSubmission a : request.getAnswers()) {
+                if (a.getQuestionId() == null || !allowed.contains(a.getQuestionId()) || a.getAnswerText() == null) continue;
+                String text = a.getAnswerText().strip();
+                if (text.isEmpty()) continue;
+                draft.put(a.getQuestionId(), text.length() > MAX_ANSWER_LENGTH ? text.substring(0, MAX_ANSWER_LENGTH) : text);
+            }
+        }
+        try {
+            attempt.setDraftAnswers(draft.isEmpty() ? null : DRAFT_MAPPER.writeValueAsString(draft));
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new IllegalStateException("Could not save your answers.", e);
+        }
+        attemptRepository.save(attempt);
+    }
+
+    private Map<Long, String> readDraft(DailyQuizAttempt attempt) {
+        if (attempt.getDraftAnswers() == null || attempt.getDraftAnswers().isBlank()) return Map.of();
+        try {
+            return DRAFT_MAPPER.readValue(attempt.getDraftAnswers(), new com.fasterxml.jackson.core.type.TypeReference<LinkedHashMap<Long, String>>() {});
+        } catch (java.io.IOException e) {
+            log.warn("Unreadable daily quiz draft on attempt {} - ignoring it", attempt.getId(), e);
+            return Map.of();
+        }
     }
 
     // Called both right after submit (when nothing needs review) and by

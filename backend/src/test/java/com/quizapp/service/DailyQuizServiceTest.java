@@ -71,6 +71,60 @@ class DailyQuizServiceTest {
         return questions;
     }
 
+    private DailyQuizSubmitRequest requestOf(Long questionId, String text) {
+        DailyQuizSubmitRequest request = new DailyQuizSubmitRequest();
+        DailyQuizSubmitRequest.AnswerSubmission a = new DailyQuizSubmitRequest.AnswerSubmission();
+        a.setQuestionId(questionId);
+        a.setAnswerText(text);
+        request.setAnswers(new ArrayList<>(List.of(a)));
+        return request;
+    }
+
+    @Test
+    void savedDraftComesBackOnTheNextLoadAndIsClearedBySubmit() {
+        seedQuestions(20);
+        AppUser user = newUser();
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(setId, user.getEmail());
+        assertThat(play.getDraftAnswers()).isEmpty();
+
+        Long q1 = play.getQuestions().get(0).getQuestionId();
+        DailyQuizSubmitRequest draft = requestOf(q1, "  half-done answer ");
+        DailyQuizSubmitRequest.AnswerSubmission blank = new DailyQuizSubmitRequest.AnswerSubmission();
+        blank.setQuestionId(play.getQuestions().get(1).getQuestionId());
+        blank.setAnswerText("   ");
+        draft.getAnswers().add(blank);
+        DailyQuizSubmitRequest.AnswerSubmission foreign = new DailyQuizSubmitRequest.AnswerSubmission();
+        foreign.setQuestionId(-5L); // not one of this quiz's questions
+        foreign.setAnswerText("nope");
+        draft.getAnswers().add(foreign);
+        dailyQuizService.saveDraft(setId, user.getEmail(), draft);
+
+        DailyQuizPlayStateDto reloaded = dailyQuizService.getPlayState(setId, user.getEmail());
+        assertThat(reloaded.getAttemptStatus()).isEqualTo("IN_PROGRESS");
+        assertThat(reloaded.getDraftAnswers()).containsOnlyKeys(q1).containsEntry(q1, "half-done answer");
+
+        // Saving again replaces the draft (here: emptied out).
+        dailyQuizService.saveDraft(setId, user.getEmail(), requestOf(q1, ""));
+        assertThat(dailyQuizService.getPlayState(setId, user.getEmail()).getDraftAnswers()).isEmpty();
+
+        dailyQuizService.saveDraft(setId, user.getEmail(), requestOf(q1, "again"));
+        dailyQuizService.submitAnswers(setId, user.getEmail(), requestOf(q1, "again"));
+        assertThat(dailyQuizAttemptRepository.findBySet_IdAndUser_Email(setId, user.getEmail()).orElseThrow().getDraftAnswers()).isNull();
+    }
+
+    @Test
+    void cannotSaveADraftAfterSubmitting() {
+        seedQuestions(20);
+        AppUser user = newUser();
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+        Long q1 = dailyQuizService.getPlayState(setId, user.getEmail()).getQuestions().get(0).getQuestionId();
+        dailyQuizService.submitAnswers(setId, user.getEmail(), requestOf(q1, "x"));
+
+        assertThatThrownBy(() -> dailyQuizService.saveDraft(setId, user.getEmail(), requestOf(q1, "late")))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
     @Test
     void exactCaseInsensitiveMatchAutoGrades() {
         // Seeds its own pool so "today"'s set has plenty of Norwegian

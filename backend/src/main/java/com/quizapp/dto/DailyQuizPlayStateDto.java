@@ -2,6 +2,7 @@ package com.quizapp.dto;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public class DailyQuizPlayStateDto {
 
@@ -10,6 +11,17 @@ public class DailyQuizPlayStateDto {
     private String attemptStatus; // IN_PROGRESS / SUBMITTED / GRADED
     private List<QuestionDto> questions; // only set while attemptStatus == IN_PROGRESS (the form to fill in)
     private DailyQuizResultDto result; // set once attemptStatus is SUBMITTED or GRADED (see DailyQuizResultDto)
+
+    // Only while IN_PROGRESS: what the player saved earlier with "Save for later" (questionId -> text).
+    private Map<Long, String> draftAnswers;
+
+    public Map<Long, String> getDraftAnswers() {
+        return draftAnswers;
+    }
+
+    public void setDraftAnswers(Map<Long, String> draftAnswers) {
+        this.draftAnswers = draftAnswers;
+    }
 
     public Long getSetId() {
         return setId;

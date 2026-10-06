@@ -50,6 +50,11 @@ public class DailyQuizController {
         return dailyQuizService.submitAnswers(id, authentication.getName(), request);
     }
 
+    @PutMapping("/{id}/draft")
+    public void saveDraft(@PathVariable Long id, @Valid @RequestBody DailyQuizSubmitRequest request, Authentication authentication) {
+        dailyQuizService.saveDraft(id, authentication.getName(), request);
+    }
+
     @GetMapping("/{id}/scoreboard")
     public DailyQuizScoreboardDto scoreboard(@PathVariable Long id, Authentication authentication) {
         return dailyQuizService.getScoreboard(id, authentication.getName());

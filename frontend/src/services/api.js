@@ -568,6 +568,9 @@ export default {
   submitDailyQuizAnswers(id, answers) {
     return client.post(`/daily-quiz/${id}/submit`, { answers }).then(r => r.data)
   },
+  saveDailyQuizDraft(id, answers) {
+    return client.put(`/daily-quiz/${id}/draft`, { answers }).then(r => r.data)
+  },
   getDailyQuizScoreboard(id) {
     return client.get(`/daily-quiz/${id}/scoreboard`).then(r => r.data)
   },

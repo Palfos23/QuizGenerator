@@ -59,8 +59,8 @@
 :root {
   --nav-height: 64px; /* used by sticky elements positioned just below the top nav - keep in sync with .top-nav's actual rendered height per breakpoint. Redefined for the mobile nav's shorter height in the @media (max-width: 760px) block below. */
   --bottom-nav-height: 0px; /* the fixed mobile .bottom-nav is hidden above 760px, so anything sticky to the viewport bottom can sit flush at 0 by default - redefined below for the breakpoint where that bar actually covers the bottom of the screen. */
-  --ink: #232b4d;
-  --ink-raised: #2f3a66;
+  --ink: #1e2545;
+  --ink-raised: #29325c;
   --gold: #f2b705;
   --gold-soft: rgba(242, 183, 5, 0.14);
   --coral: #ff4d6d;
@@ -101,8 +101,8 @@ html, body {
 body {
   /* soft glow blobs for depth - fixed so they don't scroll with content */
   background-image:
-    radial-gradient(720px circle at 6% -10%, rgba(139, 124, 255, 0.34), transparent 62%),
-    radial-gradient(780px circle at 104% 10%, rgba(242, 183, 5, 0.20), transparent 58%),
+    radial-gradient(720px circle at 6% -10%, rgba(139, 124, 255, 0.30), transparent 62%),
+    radial-gradient(780px circle at 104% 10%, rgba(242, 183, 5, 0.17), transparent 58%),
     radial-gradient(900px circle at 50% 118%, rgba(61, 220, 151, 0.12), transparent 60%);
   background-attachment: fixed;
 }
@@ -157,7 +157,7 @@ input[type="radio"] {
   align-items: center;
   gap: 4px;
   padding: 14px 32px;
-  background: rgba(47, 58, 102, 0.78);
+  background: rgba(41, 50, 92, 0.80);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 1px solid var(--border);
@@ -1105,7 +1105,7 @@ mark {
   aspect-ratio: 1 / 1;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: rgba(47, 58, 102, 0.55);
+  background: rgba(41, 50, 92, 0.58);
   transition: border-color 0.25s ease, background 0.25s ease;
 }
 .grid-tile.correct {
@@ -3188,7 +3188,7 @@ table.scoreboard-table {
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(47, 58, 102, 0.86);
+    background: rgba(41, 50, 92, 0.88);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     border-top: 1px solid var(--border);
@@ -3788,7 +3788,7 @@ table.scoreboard-table {
   padding: 10px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(47, 58, 102, 0.55);
+  background: rgba(41, 50, 92, 0.58);
   transition: border-color 0.25s ease, background 0.25s ease;
 }
 /* Same "correct/revealed-only" color language as .grid-tile - green for a

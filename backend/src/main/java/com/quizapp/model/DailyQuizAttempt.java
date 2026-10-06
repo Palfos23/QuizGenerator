@@ -48,6 +48,20 @@ public class DailyQuizAttempt {
     @Column(name = "include_on_leaderboard", nullable = false, columnDefinition = "boolean not null default true")
     private boolean includeOnLeaderboard = true;
 
+    // A not-yet-submitted "save for later": the player's typed answers as a JSON object of
+    // questionId -> text. Nullable on purpose (no default needed to add it to the populated table) and
+    // cleared on submit - once submitted, the real DailyQuizAnswer rows are the record.
+    @Column(name = "draft_answers", columnDefinition = "text")
+    private String draftAnswers;
+
+    public String getDraftAnswers() {
+        return draftAnswers;
+    }
+
+    public void setDraftAnswers(String draftAnswers) {
+        this.draftAnswers = draftAnswers;
+    }
+
     public Long getId() {
         return id;
     }

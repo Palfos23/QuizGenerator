@@ -29,6 +29,10 @@
           <div class="dq-progress-label">
             <span><strong>{{ answeredCount }}</strong> of {{ state.questions.length }} answered</span>
             <span v-if="answeredCount === state.questions.length">All done - ready to submit</span>
+            <button type="button" class="dq-save-chip" :class="{ 'is-saved': !dirty && savedAt }" :disabled="saving || submitting || !dirty" @click="saveDraft">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" v-if="!dirty && savedAt" /><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2zM17 21v-8H7v8M7 3v5h8" v-else /></svg>
+              {{ saving ? 'Saving…' : (!dirty && savedAt ? 'Saved' : 'Save') }}
+            </button>
           </div>
           <div class="dq-progress-track"><div class="dq-progress-fill" :style="{ width: progressPct + '%' }"></div></div>
         </div>
@@ -74,7 +78,13 @@
           <button type="submit" class="btn btn-primary" :disabled="submitting">
             {{ submitting ? 'Submitting…' : 'Submit answers' }}
           </button>
-          <p class="dq-submit-note">You can't change your answers once they're submitted.</p>
+          <button type="button" class="btn btn-secondary dq-save-btn" :disabled="saving || submitting || !dirty" @click="saveDraft">
+            {{ saving ? 'Saving…' : (!dirty && savedAt ? 'Progress saved' : 'Save for later') }}
+          </button>
+          <p class="dq-submit-note">
+            Not ready to hand in? Save your answers and pick this up again later - on any device.<br />
+            You can't change your answers once they're submitted.
+          </p>
         </div>
       </form>
 
@@ -190,8 +200,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
 import LoadingState from '../components/LoadingState.vue'
@@ -230,6 +240,53 @@ const subtitle = computed(() => {
   return state.value.result?.score == null ? 'Submitted - waiting for an admin to finish checking.' : 'Here\'s how you did.'
 })
 
+// ---- save for later ----
+// What's on the server (as a snapshot string) - anything different from it is an unsaved change.
+const saving = ref(false)
+const savedAt = ref(null)
+const savedSnapshot = ref('{}')
+
+function currentAnswers() {
+  const out = {}
+  for (const q of state.value?.questions || []) {
+    const text = (answers[q.questionId] || '').trim()
+    if (text) out[q.questionId] = text
+  }
+  return out
+}
+const dirty = computed(() => state.value?.attemptStatus === 'IN_PROGRESS' && JSON.stringify(currentAnswers()) !== savedSnapshot.value)
+
+async function saveDraft() {
+  saving.value = true
+  try {
+    const snapshot = JSON.stringify(currentAnswers())
+    const payload = state.value.questions.map(q => ({ questionId: q.questionId, answerText: answers[q.questionId] || '' }))
+    await api.saveDailyQuizDraft(quizId, payload)
+    savedSnapshot.value = snapshot
+    savedAt.value = Date.now()
+    toast.show('Saved - you can pick this up again later.')
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Could not save your answers. Try again.')
+  } finally {
+    saving.value = false
+  }
+}
+
+// Leaving with unsaved typing would lose it - ask first (in-app navigation and tab close/reload).
+function warnBeforeUnload(e) {
+  if (dirty.value) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+}
+window.addEventListener('beforeunload', warnBeforeUnload)
+onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnload))
+onBeforeRouteLeave(() => {
+  if (dirty.value && !submitting.value) {
+    return window.confirm('You have answers that aren\'t saved. Leave without saving?')
+  }
+})
+
 onMounted(load)
 
 async function load() {
@@ -237,6 +294,11 @@ async function load() {
   error.value = ''
   try {
     state.value = await api.getDailyQuizPlayState(quizId)
+    if (state.value.attemptStatus === 'IN_PROGRESS' && state.value.draftAnswers) {
+      for (const [questionId, text] of Object.entries(state.value.draftAnswers)) answers[questionId] = text
+      savedSnapshot.value = JSON.stringify(currentAnswers())
+      if (Object.keys(state.value.draftAnswers).length) savedAt.value = Date.now()
+    }
   } catch (e) {
     error.value = 'Could not load this quiz.'
   } finally {
