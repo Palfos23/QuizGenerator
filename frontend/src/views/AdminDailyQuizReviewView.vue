@@ -53,10 +53,18 @@
         </div>
         <div class="dq-row-end">
           <router-link :to="`/admin/daily-quiz-day/${q.id}`" class="dq-chip-btn">Players</router-link>
+          <button class="dq-chip-btn" @click="questionsFor = q">Questions</button>
           <button class="dq-chip-btn" @click="openScoreboard(q)">Leaderboard</button>
         </div>
       </div>
     </div>
+
+    <AdminDailyQuizQuestionsModal
+      v-if="questionsFor"
+      :set-id="questionsFor.id"
+      :title="`Questions - ${formatDate(questionsFor.quizDate)}`"
+      @close="questionsFor = null"
+    />
 
     <DailyQuizScoreboardModal
       v-if="showScoreboard"
@@ -73,6 +81,7 @@ import { onMounted, ref } from 'vue'
 import api from '../services/api'
 import DailyQuizWeeklyPanel from '../components/DailyQuizWeeklyPanel.vue'
 import DailyQuizScoreboardModal from '../components/DailyQuizScoreboardModal.vue'
+import AdminDailyQuizQuestionsModal from '../components/AdminDailyQuizQuestionsModal.vue'
 
 const pendingAttempts = ref([])
 const loading = ref(true)
@@ -125,6 +134,7 @@ async function loadQuizzes() {
   }
 }
 
+const questionsFor = ref(null)
 const showScoreboard = ref(false)
 const scoreboardData = ref(null)
 const scoreboardLoading = ref(false)

@@ -30,6 +30,11 @@ public class AdminDailyQuizController {
         return dailyQuizReviewService.listAttemptsForSet(id);
     }
 
+    @GetMapping("/sets/{id}/questions")
+    public List<com.quizapp.dto.QuestionDto> questionsForSet(@PathVariable Long id) {
+        return dailyQuizReviewService.listQuestionsForSet(id);
+    }
+
     @GetMapping("/attempts/{id}")
     public DailyQuizAttemptDetailDto attemptDetail(@PathVariable Long id) {
         return dailyQuizReviewService.getAttemptDetail(id);

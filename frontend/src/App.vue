@@ -9,7 +9,6 @@
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">Daily Quiz</router-link>
         <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
           <div v-for="menu in PLAYER_MENUS" :key="menu.key" class="top-nav-dropdown">
-            <div v-if="openPlayerMenu === menu.key" class="top-nav-dropdown-backdrop" @click="closePlayerMenu"></div>
             <button
               type="button"
               class="nav-link top-nav-dropdown-toggle"
@@ -34,7 +33,6 @@
         </template>
         <template v-if="auth.isAdmin.value">
           <div v-for="menu in ADMIN_MENUS" :key="menu.label" class="top-nav-dropdown">
-            <div v-if="openAdminMenu === menu.label" class="top-nav-dropdown-backdrop" @click="closeAdminMenu"></div>
             <button
               type="button"
               class="nav-link top-nav-dropdown-toggle"
@@ -84,8 +82,7 @@
       <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
       <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz">Daily Quiz</router-link>
       <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
-        <div v-for="menu in PLAYER_MENUS" :key="menu.key" style="position:relative; flex:1; display:flex;">
-          <div v-if="openPlayerMenu === menu.key" class="bottom-nav-backdrop" @click="closePlayerMenu"></div>
+        <div v-for="menu in PLAYER_MENUS" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
           <button
             aria-haspopup="true"
             :aria-expanded="openPlayerMenu === menu.key"
@@ -104,8 +101,7 @@
         </div>
       </template>
       <template v-if="auth.isAdmin.value">
-        <div v-for="menu in ADMIN_MENUS" :key="menu.label" style="position:relative; flex:1; display:flex;">
-          <div v-if="openAdminMenu === menu.label" class="bottom-nav-backdrop" @click="closeAdminMenu"></div>
+        <div v-for="menu in ADMIN_MENUS" :key="menu.label" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
           <button
             aria-haspopup="true"
             :aria-expanded="openAdminMenu === menu.label"
@@ -247,9 +243,9 @@ const ADMIN_MENUS = [
   {
     label: 'Games',
     items: [
+      { to: '/admin/daily-quiz-review', label: 'Daily quiz review' },
       { to: '/admin/grids', label: 'Weekly grids' },
       { to: '/admin/lineups', label: 'Starting XI' },
-      { to: '/admin/daily-quiz-review', label: 'Daily quiz review' },
       { to: '/admin/tension-questions', label: 'Tension' },
       { to: '/admin/501', label: '501' },
       { to: '/admin/imposter', label: 'Imposter' },
@@ -296,6 +292,17 @@ useEscapeKey(() => {
   closePlayerMenu()
   openAdminMenu.value = null
 })
+
+// Clicking anywhere outside an open dropdown closes it. (A full-screen backdrop used to do this, but
+// the nav bars' backdrop-filter makes `position: fixed` children cover only the bar itself, so a
+// click on the page below never reached it.) Taps on a menu's own toggle or popup are left alone -
+// they handle themselves, including switching straight from one menu to another.
+function closeMenusOnOutsidePress(e) {
+  if (openPlayerMenu.value === null && openAdminMenu.value === null) return
+  if (e.target instanceof Element && e.target.closest('.top-nav-dropdown, .bottom-nav-menu')) return
+  closePlayerMenu()
+  openAdminMenu.value = null
+}
 
 function onNavClick(path, key) {
   if (router.currentRoute.value.path === path) {
@@ -458,6 +465,7 @@ onMounted(() => {
   activityEvents.forEach(evt => window.addEventListener(evt, resetActivity, { passive: true }))
   inactivityTimer = setInterval(checkSessionTimers, 1000)
   document.addEventListener('visibilitychange', checkTokenOnResume)
+  document.addEventListener('pointerdown', closeMenusOnOutsidePress)
   checkTokenOnResume()
 })
 
@@ -465,5 +473,6 @@ onUnmounted(() => {
   activityEvents.forEach(evt => window.removeEventListener(evt, resetActivity))
   clearInterval(inactivityTimer)
   document.removeEventListener('visibilitychange', checkTokenOnResume)
+  document.removeEventListener('pointerdown', closeMenusOnOutsidePress)
 })
 </script>

@@ -3,6 +3,9 @@ package com.quizapp.service;
 import com.quizapp.dto.DailyQuizAttemptDetailDto;
 import com.quizapp.dto.DailyQuizDayAttemptsDto;
 import com.quizapp.dto.DailyQuizPendingAttemptDto;
+import com.quizapp.dto.QuestionDto;
+import com.quizapp.model.Question;
+import com.quizapp.repository.QuestionRepository;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.DailyQuizAnswer;
 import com.quizapp.model.DailyQuizAnswerVerdict;
@@ -32,15 +35,35 @@ public class DailyQuizReviewService {
     private final DailyQuizAttemptRepository attemptRepository;
     private final DailyQuizSetRepository setRepository;
     private final DailyQuizService dailyQuizService;
+    private final QuestionRepository questionRepository;
 
     public DailyQuizReviewService(DailyQuizAnswerRepository answerRepository,
                                    DailyQuizAttemptRepository attemptRepository,
                                    DailyQuizSetRepository setRepository,
-                                   DailyQuizService dailyQuizService) {
+                                   DailyQuizService dailyQuizService,
+                                   QuestionRepository questionRepository) {
         this.answerRepository = answerRepository;
         this.attemptRepository = attemptRepository;
         this.setRepository = setRepository;
         this.dailyQuizService = dailyQuizService;
+        this.questionRepository = questionRepository;
+    }
+
+    // The day's questions in the order players see them, with their stored answers - so an admin can
+    // spot and fix a wrong question or answer without hunting for it in the question bank. A question
+    // that has since been deleted from the bank is simply left out.
+    @Transactional(readOnly = true)
+    public List<QuestionDto> listQuestionsForSet(Long setId) {
+        DailyQuizSet set = setRepository.findById(setId)
+                .filter(found -> !DailyQuizService.isExpired(found.getQuizDate()))
+                .orElseThrow(() -> new ResourceNotFoundException("No daily quiz found with id " + setId));
+        Map<Long, Question> byId = questionRepository.findAllById(set.getQuestionIds()).stream()
+                .collect(Collectors.toMap(Question::getId, q -> q));
+        return set.getQuestionIds().stream()
+                .map(byId::get)
+                .filter(java.util.Objects::nonNull)
+                .map(com.quizapp.service.QuestionMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     // One row per player+day that still has at least one PENDING answer -

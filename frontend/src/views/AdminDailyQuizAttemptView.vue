@@ -7,6 +7,7 @@
       </router-link>
       <div v-if="attempt" class="dq-topbar-actions">
         <router-link :to="`/admin/daily-quiz-day/${attempt.setId}`" class="dq-chip-btn">This day's players</router-link>
+        <button class="dq-chip-btn" @click="showQuestions = true">Questions</button>
         <button class="dq-chip-btn" @click="openScoreboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
           Leaderboard
@@ -88,6 +89,13 @@
       </div>
     </template>
 
+    <AdminDailyQuizQuestionsModal
+      v-if="showQuestions && attempt"
+      :set-id="attempt.setId"
+      :title="`Questions - ${formatDate(attempt.quizDate)}`"
+      @close="closeQuestions"
+    />
+
     <DailyQuizScoreboardModal
       v-if="showScoreboard"
       :title="`Leaderboard - ${formatDate(attempt.quizDate)}`"
@@ -104,6 +112,7 @@ import { useRoute } from 'vue-router'
 import api from '../services/api'
 import toast from '../services/toast'
 import DailyQuizScoreboardModal from '../components/DailyQuizScoreboardModal.vue'
+import AdminDailyQuizQuestionsModal from '../components/AdminDailyQuizQuestionsModal.vue'
 
 const route = useRoute()
 const attemptId = route.params.id
@@ -112,6 +121,7 @@ const attempt = ref(null)
 const loading = ref(true)
 const error = ref('')
 const busyId = ref(null)
+const showQuestions = ref(false)
 
 const pendingCount = computed(() => attempt.value?.answers.filter(a => a.verdict === 'PENDING').length || 0)
 
@@ -149,6 +159,17 @@ async function resolve(answer, correct) {
     error.value = e.response?.data?.message || 'Could not update that answer.'
   } finally {
     busyId.value = null
+  }
+}
+
+// Questions may have been edited while the list was open - reload so the answers shown here
+// (the correct answer next to each player's) reflect the fix.
+async function closeQuestions() {
+  showQuestions.value = false
+  try {
+    attempt.value = await api.adminGetDailyQuizAttempt(attemptId)
+  } catch (e) {
+    // keep showing what we had
   }
 }
 

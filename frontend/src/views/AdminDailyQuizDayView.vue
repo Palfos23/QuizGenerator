@@ -5,6 +5,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
         Daily quiz review
       </router-link>
+      <div v-if="day" class="dq-topbar-actions">
+        <button class="dq-chip-btn" @click="showQuestions = true">Questions</button>
+      </div>
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
@@ -37,6 +40,13 @@
         </router-link>
       </div>
     </template>
+
+    <AdminDailyQuizQuestionsModal
+      v-if="showQuestions"
+      :set-id="route.params.id"
+      :title="`Questions - ${formatLong(day.quizDate)}`"
+      @close="showQuestions = false"
+    />
   </div>
 </template>
 
@@ -44,9 +54,11 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
+import AdminDailyQuizQuestionsModal from '../components/AdminDailyQuizQuestionsModal.vue'
 
 const route = useRoute()
 const day = ref(null)
+const showQuestions = ref(false)
 const loading = ref(true)
 const error = ref('')
 

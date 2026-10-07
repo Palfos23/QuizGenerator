@@ -126,6 +126,22 @@ class DailyQuizServiceTest {
     }
 
     @Test
+    void adminCanListTheDaysQuestionsWithAnswersInPlayOrder() {
+        seedQuestions(20);
+        AppUser user = newUser();
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(setId, user.getEmail());
+
+        var questions = dailyQuizReviewService.listQuestionsForSet(setId);
+
+        assertThat(questions).extracting(com.quizapp.dto.QuestionDto::getId)
+                .containsExactlyElementsOf(play.getQuestions().stream().map(DailyQuizPlayStateDto.QuestionDto::getQuestionId).toList());
+        assertThat(questions).allMatch(q -> q.getAnswer() != null && !q.getAnswer().isBlank());
+        assertThatThrownBy(() -> dailyQuizReviewService.listQuestionsForSet(-1L))
+                .isInstanceOf(com.quizapp.exception.ResourceNotFoundException.class);
+    }
+
+    @Test
     void exactCaseInsensitiveMatchAutoGrades() {
         // Seeds its own pool so "today"'s set has plenty of Norwegian
         // questions to draw from, but doesn't assume it's THESE specific 15 -

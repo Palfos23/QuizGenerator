@@ -674,6 +674,24 @@ a.dq-row:hover, .dq-row--link:hover {
 .dq-segment button.is-on.ok { background: var(--dq-ok); color: #06301f; }
 .dq-segment button.is-on.bad { background: var(--dq-bad); color: #3b0614; }
 
+/* Admin: a day's questions, editable in place */
+.dq-modal--wide { max-width: 680px; }
+.dq-qlist { display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; margin: 0 -4px; padding: 2px 4px; }
+.dq-qrow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+}
+.dq-qrow .dq-q-num { margin-top: 1px; flex-shrink: 0; }
+.dq-qrow-body { flex: 1; min-width: 0; }
+.dq-qrow-text { font-weight: 600; line-height: 1.4; }
+.dq-qrow-answer { margin-top: 6px; font-size: 0.9rem; color: var(--text-dim); display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.dq-qrow-answer span { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+.dq-qrow-answer b { color: var(--dq-ok); font-weight: 650; overflow-wrap: anywhere; }
+
 /* ---------- Small screens ---------- */
 
 @media (max-width: 640px) {
