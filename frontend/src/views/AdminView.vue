@@ -1,22 +1,23 @@
 <template>
   <div>
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+    <header class="admin-head">
       <div>
-        <h1>Question bank</h1>
-        <p class="page-subtitle">
-          Every question here is available to the quiz generator. Add, edit or remove them.
+        <span class="dq-eyebrow">Questions</span>
+        <h1 class="dq-title">Question bank</h1>
+        <p class="dq-sub">
+          Every question here is available to the quiz generator.
           <router-link to="/admin/question-submissions">Review user submissions →</router-link> ·
           <router-link to="/admin/quiz-templates">Manage quiz templates →</router-link>
         </p>
       </div>
-      <div style="display:flex; gap:10px;">
+      <div class="admin-head-actions">
         <button class="btn btn-secondary" @click="triggerImport" :disabled="importing">
           {{ importing ? 'Importing…' : 'Import CSV' }}
         </button>
         <input ref="fileInput" type="file" accept=".csv,text/csv" style="display:none;" @change="onFileChosen" />
         <button class="btn btn-primary" @click="openCreate">+ Add question</button>
       </div>
-    </div>
+    </header>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 

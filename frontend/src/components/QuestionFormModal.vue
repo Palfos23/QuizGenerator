@@ -71,7 +71,7 @@
         </div>
       </div>
 
-      <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
+      <div class="field option-card">
         <input type="checkbox" id="couldChange" v-model="local.couldChange" style="width:auto; margin-top:3px;" />
         <label for="couldChange" style="margin:0; text-transform:none; font-weight:400;">
           Answer could change over time
@@ -82,7 +82,7 @@
         </label>
       </div>
 
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px;">
+      <div class="modal-actions">
         <button class="btn btn-secondary" @click="$emit('close')">Cancel</button>
         <button class="btn btn-primary" :disabled="saving" @click="save">
           {{ saving ? 'Saving…' : 'Save' }}

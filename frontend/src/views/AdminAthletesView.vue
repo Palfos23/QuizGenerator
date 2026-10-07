@@ -1,17 +1,18 @@
 <template>
   <div>
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+    <header class="admin-head">
       <div>
-        <h1>Subjects</h1>
-        <p class="page-subtitle">Whoever or whatever a grid is about - people, movies, countries, anything - used to build weekly grid candidate pools.</p>
+        <span class="dq-eyebrow">Content</span>
+        <h1 class="dq-title">Subjects</h1>
+        <p class="dq-sub">Whoever or whatever a grid is about - people, movies, countries, anything - used to build weekly grid candidate pools.</p>
       </div>
-      <div style="display:flex; gap:8px;">
+      <div class="admin-head-actions">
         <button class="btn btn-secondary" @click="downloadCsv">Download CSV</button>
         <button class="btn btn-secondary" @click="triggerFilePicker">Import CSV</button>
         <button class="btn btn-primary" @click="openCreate">+ Add subject</button>
       </div>
       <input ref="fileInput" type="file" accept=".csv,text/csv" style="display:none;" @change="onFileSelected" />
-    </div>
+    </header>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 

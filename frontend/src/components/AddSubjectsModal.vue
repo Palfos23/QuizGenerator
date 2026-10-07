@@ -22,7 +22,7 @@
         </label>
       </div>
 
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+      <div class="modal-actions">
         <button class="btn btn-secondary" @click="$emit('close')">Cancel</button>
         <button class="btn btn-primary" :disabled="!includedCount || submitting" @click="submit">
           {{ submitting ? 'Adding…' : `Add ${includedCount} subject${includedCount === 1 ? '' : 's'}` }}

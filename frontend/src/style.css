@@ -4362,3 +4362,182 @@ table.scoreboard-table {
   line-height: 1.15;
   min-height: 0;
 }
+
+/* =====================================================================
+   Admin lists, forms and modals - shared polish
+   ---------------------------------------------------------------------
+   Later rules override the base ones above on purpose: tables, filter bars, inputs, tags,
+   segmented controls and modals all get the same rounded, soft-glass look as the redesigned
+   pages, everywhere they're used (question bank, subjects, and the other admin lists).
+   ===================================================================== */
+
+.btn { border-radius: 12px; }
+
+/* Page header for admin lists: eyebrow + title + blurb on the left, actions on the right. */
+.admin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.admin-head .dq-sub a { color: var(--gold); text-decoration: none; font-weight: 600; }
+.admin-head .dq-sub a:hover { text-decoration: underline; }
+.admin-head-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Inputs */
+.field label {
+  font-size: 0.76rem;
+  letter-spacing: 0.07em;
+  margin-bottom: 7px;
+}
+.field input[type="text"],
+.field input[type="number"],
+.field input[type="email"],
+.field input[type="password"],
+.field input[type="date"],
+.field select,
+.field textarea {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: 0 0 0 4px rgba(242, 183, 5, 0.16);
+}
+.field input::placeholder, .field textarea::placeholder { color: rgba(188, 195, 222, 0.6); }
+
+/* Filter bar / stats panel: one soft glass card */
+.filter-bar,
+.stats-panel {
+  border-radius: 18px;
+  border-color: rgba(255, 255, 255, 0.16);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 10px 28px rgba(9, 13, 40, 0.18);
+}
+.filter-bar { align-items: flex-end; padding: 18px; }
+.filter-bar .field { margin-bottom: 0; }
+
+/* Tables live in a rounded card; the header is a quiet band, rows breathe */
+.table-scroll {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
+  box-shadow: 0 10px 28px rgba(9, 13, 40, 0.18);
+}
+.stats-panel .table-scroll {
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+.table th {
+  padding: 12px 14px;
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
+}
+.table td {
+  padding: 13px 14px;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  vertical-align: middle;
+}
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: rgba(255, 255, 255, 0.07); }
+.table th.sortable:hover { color: var(--gold); }
+.table-scroll .pagination-bar { margin: 0; padding: 14px; border-top: 1px solid rgba(255, 255, 255, 0.10); }
+
+.pagination-bar { gap: 14px; }
+
+/* Tags are pills */
+.tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+}
+.tag.category { background: rgba(255, 255, 255, 0.12); }
+.tag.changeable { background: rgba(255, 212, 92, 0.18); color: var(--dq-wait); }
+
+/* Segmented controls (language / category pickers, view tabs) become a row of pills */
+.language-row,
+.view-tabs {
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+  gap: 6px;
+}
+.language-btn,
+.view-tab {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-right: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 8px 15px;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.language-btn:hover:not(.active),
+.view-tab:hover:not(.active) { background: rgba(255, 255, 255, 0.12); color: var(--text); }
+.language-btn.active,
+.view-tab.active {
+  background: linear-gradient(135deg, #8b7cff, #6f61e8);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(111, 97, 232, 0.35);
+}
+.team-chip { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.16); }
+
+/* Empty / banner polish */
+.empty-state { border-radius: 18px; border-color: rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.04); }
+.banner { border-radius: 14px; }
+
+/* Modals: rounder, roomier, with a clear title */
+.modal {
+  padding: 30px;
+  border-radius: 24px;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.modal > h2:first-child {
+  font-size: 1.45rem;
+  margin: 0 0 18px;
+}
+.modal .field:last-of-type { margin-bottom: 8px; }
+.modal-backdrop { background: rgba(12, 16, 44, 0.66); }
+@media (max-width: 760px) {
+  .filter-bar { align-items: stretch; }
+}
+@media (max-width: 640px) {
+  .modal { padding: 22px 18px; border-radius: 20px; }
+  .modal-backdrop { padding: 20px 12px; }
+}
+
+/* A modal's Save / Cancel row stays in view while a long form scrolls underneath it. */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 14px;
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(41, 50, 92, 0), var(--ink-raised) 38%);
+}
+/* A checkbox row with a description (e.g. "Answer could change over time") reads as one option card. */
+.modal input[type="checkbox"] { width: 18px; height: 18px; }
+
+.option-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+.option-card input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
+.option-card label { font-size: 0.92rem !important; letter-spacing: 0 !important; color: var(--text) !important; }

@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <div class="modal-actions">
         <button class="btn btn-secondary" @click="$emit('close')">Cancel</button>
         <button class="btn btn-primary" :disabled="saving" @click="save">
           {{ saving ? 'Saving…' : 'Save' }}
