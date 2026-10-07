@@ -2,13 +2,13 @@
   <div class="modal-backdrop" @click.self="emit('close')">
     <div class="modal dq-modal" role="dialog" aria-modal="true" :aria-label="title">
       <h2 class="dq-modal-title">{{ title }}</h2>
-      <p class="dq-modal-sub">How everyone did on this quiz.</p>
+      <p class="dq-modal-sub">{{ subtitle }}</p>
 
       <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
       <div v-else-if="!entries.length" class="dq-empty" style="padding:22px 0;">
         <strong>No scores yet</strong>
-        Nobody's been fully graded yet.
+        {{ emptyText }}
       </div>
 
       <template v-else>
@@ -16,6 +16,10 @@
           <span>Average</span>
           <strong>{{ data.averageScore.toFixed(1) }} / {{ data.maxScore }}</strong>
         </div>
+        <!-- Only for a viewer who is on the board - hidden for admins and anyone who hasn't played. -->
+        <p v-if="yourDelta !== null" class="dq-delta" :class="{ 'is-up': yourDelta > 0, 'is-down': yourDelta < 0 }">
+          {{ yourDelta === 0 ? 'Right at the average' : `You're ${Math.abs(yourDelta)} ${yourDelta > 0 ? 'above' : 'below'} average` }}
+        </p>
 
         <div class="dq-board">
           <div v-for="(s, i) in shown" :key="s.userName + i" class="dq-board-row" :class="{ 'is-you': s.isYou }">
@@ -70,7 +74,9 @@ const props = defineProps({
   data: { type: Object, default: null },
   loading: { type: Boolean, default: false },
   compact: { type: Boolean, default: false },
-  preference: { type: Boolean, default: null }
+  preference: { type: Boolean, default: null },
+  subtitle: { type: String, default: 'How everyone did on this quiz.' },
+  emptyText: { type: String, default: 'Nobody\'s been fully graded yet.' }
 })
 const emit = defineEmits(['close', 'update:preference'])
 
@@ -82,6 +88,13 @@ const yourRank = computed(() => {
   if (!props.compact) return null
   const idx = entries.value.findIndex(s => s.isYou)
   return idx === -1 ? null : { rank: idx + 1, entry: entries.value[idx] }
+})
+
+// How far the viewer's own score is from the average - null when they aren't on the board.
+const yourDelta = computed(() => {
+  const mine = entries.value.find(s => s.isYou)
+  if (!mine || !props.data) return null
+  return Math.round((mine.score - props.data.averageScore) * 10) / 10
 })
 
 function displayName(name) {

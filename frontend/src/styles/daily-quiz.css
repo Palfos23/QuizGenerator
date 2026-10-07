@@ -443,6 +443,16 @@ a.dq-row:hover, .dq-row--link:hover {
 
 /* ---------- Leaderboard (shared by the modal and the weekly panel) ---------- */
 
+.dq-delta {
+  text-align: center;
+  margin: -4px 0 14px;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: var(--text-dim);
+}
+.dq-delta.is-up { color: var(--dq-ok); }
+.dq-delta.is-down { color: var(--dq-bad); }
+
 .dq-board { display: flex; flex-direction: column; gap: 8px; }
 .dq-board-row {
   display: grid;

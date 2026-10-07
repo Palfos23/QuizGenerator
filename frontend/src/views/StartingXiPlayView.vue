@@ -7,7 +7,10 @@
       <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;" class="no-print">
         <div style="display:flex; gap:8px;">
           <router-link to="/starting-xi" class="btn btn-secondary btn-sm">← All boards</router-link>
-          <button class="btn btn-secondary btn-sm" @click="openScoreboard" title="Scoreboard">Results</button>
+          <button class="dq-chip-btn" @click="openScoreboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
+            Leaderboard
+          </button>
         </div>
         <div class="grid-progress">{{ guessedCount }} / {{ state.slots.length }} found</div>
       </div>
@@ -30,61 +33,19 @@
         </div>
       </div>
 
-      <div v-if="showScoreboard" class="modal-backdrop no-print" @click.self="showScoreboard = false">
-        <div class="modal">
-          <h2 style="margin-top:0;">Scoreboard</h2>
-
-          <div v-if="scoreboardData && scoreboardEntries.length" class="stats-panel" style="text-align:center;">
-            <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Average score</div>
-            <div style="font-size:1.5rem; font-weight:700; margin-top:2px;">{{ averageScore.toFixed(1) }} / {{ scoreboardData.entryCount }}</div>
-            <div
-              v-if="averageDelta"
-              style="margin-top:6px; font-weight:600; font-size:0.9rem;"
-              :style="{ color: averageDelta > 0 ? 'var(--teal)' : 'var(--coral)' }"
-            >{{ averageDelta > 0 ? '▲' : '▼' }} You're {{ Math.abs(averageDelta) }} {{ averageDelta > 0 ? 'above' : 'below' }} average</div>
-            <div v-else-if="yourRank" style="margin-top:6px; color:var(--text-dim); font-size:0.9rem;">Right at the average</div>
-          </div>
-
-          <div v-if="scoreboardLoading" style="color:var(--text-dim); font-size:0.9rem;">Loading…</div>
-          <div v-else-if="!scoreboardEntries.length" style="color:var(--text-dim); font-size:0.9rem;">
-            Nobody has completed this board yet.
-          </div>
-          <table v-else class="table scoreboard-table">
-            <thead>
-              <tr><th style="width:14%;">#</th><th style="width:56%;">Player</th><th style="width:30%; text-align:right;">Score</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="(s, i) in topFive" :key="s.userName + i" :class="{ 'you-row': s.isYou }">
-                <td>{{ i + 1 }}</td>
-                <td>{{ firstName(s.userName) }}</td>
-                <td style="text-align:right;">
-                  {{ s.guessedCount }} / {{ s.entryCount }}
-                </td>
-              </tr>
-              <tr v-if="yourRank && yourRank.rank > 5">
-                <td colspan="3" style="text-align:center; color:var(--text-dim); padding:4px 0;">···</td>
-              </tr>
-              <tr v-if="yourRank && yourRank.rank > 5" class="you-row">
-                <td>{{ yourRank.rank }}</td>
-                <td>{{ firstName(yourRank.entry.userName) }}</td>
-                <td style="text-align:right;">
-                  {{ yourRank.entry.guessedCount }} / {{ yourRank.entry.entryCount }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <label
-            v-if="scoreboardData && scoreboardData.yourLeaderboardPreference !== null"
-            style="display:flex; align-items:center; gap:8px; margin-top:16px; text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.9rem; cursor:pointer;"
-          >
-            <input type="checkbox" v-model="leaderboardOptIn" @change="updateLeaderboardPreference" style="width:auto;" />
-            Show my name on this leaderboard
-          </label>
-
-          <button class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="showScoreboard = false">Close</button>
-        </div>
-      </div>
+      <DailyQuizScoreboardModal
+        v-if="showScoreboard"
+        class="no-print"
+        title="Leaderboard"
+        subtitle="How everyone did on this board."
+        empty-text="Nobody has completed this board yet."
+        compact
+        :data="boardForModal"
+        :loading="scoreboardLoading"
+        :preference="preferenceShown"
+        @update:preference="updateLeaderboardPreference"
+        @close="showScoreboard = false"
+      />
 
       <div class="grid-status-bar" style="justify-content:center; gap:20px;">
         <LivesHearts :max="state.maxStrikes" :used="state.strikesUsed" />
@@ -161,6 +122,7 @@ import { preloadImage, preloadImages } from '../services/imagePreload'
 import PitchMarkings from '../components/PitchMarkings.vue'
 import LivesHearts from '../components/LivesHearts.vue'
 import GameImage from '../components/GameImage.vue'
+import DailyQuizScoreboardModal from '../components/DailyQuizScoreboardModal.vue'
 
 const DEFAULT_KIT_COLOR = '#d92332'
 const DEFAULT_GK_KIT_COLOR = '#f2c230'
@@ -258,22 +220,20 @@ const showScoreboard = ref(false)
 const scoreboardData = ref(null)
 const scoreboardLoading = ref(false)
 
-const scoreboardEntries = computed(() => scoreboardData.value?.entries || [])
-const topFive = computed(() => scoreboardEntries.value.slice(0, 5))
-const yourRank = computed(() => {
-  const idx = scoreboardEntries.value.findIndex(s => s.isYou)
-  if (idx === -1) return null
-  return { rank: idx + 1, entry: scoreboardEntries.value[idx] }
+// The shared leaderboard modal wants { averageScore, maxScore, entries: [{ userName, score, maxScore, isYou }] }.
+const boardForModal = computed(() => {
+  const d = scoreboardData.value
+  if (!d) return null
+  return {
+    averageScore: d.averageScore ?? 0,
+    maxScore: d.entryCount,
+    entries: (d.entries || []).map(e => ({ userName: e.userName, score: e.guessedCount, maxScore: e.entryCount, isYou: e.isYou }))
+  }
 })
-const averageScore = computed(() => scoreboardData.value?.averageScore ?? 0)
-const averageDelta = computed(() => {
-  if (!yourRank.value) return null
-  return Math.round((yourRank.value.entry.guessedCount - averageScore.value) * 10) / 10
-})
-
-function firstName(fullName) {
-  return fullName ? fullName.trim().split(/\s+/)[0] : fullName
-}
+// null hides the switch: only a player who has finished (and so has a score on the board) can choose.
+const preferenceShown = computed(() =>
+  scoreboardData.value && scoreboardData.value.yourLeaderboardPreference !== null ? leaderboardOptIn.value : null
+)
 
 async function openScoreboard() {
   showScoreboard.value = true
@@ -291,13 +251,15 @@ async function openScoreboard() {
 }
 
 const leaderboardOptIn = ref(true)
-async function updateLeaderboardPreference() {
+async function updateLeaderboardPreference(include) {
+  const previous = leaderboardOptIn.value
+  leaderboardOptIn.value = include
   try {
-    await api.setLineupLeaderboardPreference(lineupId.value, leaderboardOptIn.value)
+    await api.setLineupLeaderboardPreference(lineupId.value, include)
     scoreboardData.value = await api.getLineupScoreboard(lineupId.value)
   } catch (e) {
     toast.show('Could not update your leaderboard preference.')
-    leaderboardOptIn.value = !leaderboardOptIn.value
+    leaderboardOptIn.value = previous
   }
 }
 
