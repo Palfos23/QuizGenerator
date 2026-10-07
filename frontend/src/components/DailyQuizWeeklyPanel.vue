@@ -7,7 +7,7 @@
         </span>
         <div>
           <h2 style="margin:0; font-size:1.2rem;">Weekly winner</h2>
-          <div class="dq-row-meta" style="margin:0;">Every day's score adds up Monday to Sunday - the highest total wins.</div>
+          <div class="dq-row-meta" style="margin:0;">{{ blurb }}</div>
         </div>
       </div>
 
@@ -20,7 +20,7 @@
           <div style="min-width:0;">
             <div class="dq-board-name">
               {{ firstName(s.playerName) }}
-              <small>{{ s.isYou ? 'That\'s you · ' : '' }}{{ s.daysPlayed }} {{ s.daysPlayed === 1 ? 'day' : 'days' }} played</small>
+              <small>{{ s.isYou ? 'That\'s you · ' : '' }}{{ s.daysPlayed }} {{ s.daysPlayed === 1 ? unit : unit + 's' }} played</small>
             </div>
             <div class="dq-board-bar"><i :style="{ width: barWidth(s) }"></i></div>
           </div>
@@ -34,7 +34,7 @@
             <div style="min-width:0;">
               <div class="dq-board-name">
                 {{ firstName(yourRank.entry.playerName) }}
-                <small>That's you · {{ yourRank.entry.daysPlayed }} {{ yourRank.entry.daysPlayed === 1 ? 'day' : 'days' }} played</small>
+                <small>That's you · {{ yourRank.entry.daysPlayed }} {{ yourRank.entry.daysPlayed === 1 ? unit : unit + 's' }} played</small>
               </div>
               <div class="dq-board-bar"><i :style="{ width: barWidth(yourRank.entry) }"></i></div>
             </div>
@@ -63,11 +63,19 @@
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
 
+// Shared by the daily quiz (the default) and the two weekly games, which pass their own endpoint:
+// every endpoint returns the same { current, pastWeeks } shape.
+const props = defineProps({
+  fetcher: { type: Function, default: () => api.getDailyQuizWeekly() },
+  unit: { type: String, default: 'day' }, // what one "played" is - 'day' for the daily quiz, 'board' for the weekly games
+  blurb: { type: String, default: 'Every day\'s score adds up Monday to Sunday - the highest total wins.' }
+})
+
 const weekly = ref(null)
 
 onMounted(async () => {
   try {
-    weekly.value = await api.getDailyQuizWeekly()
+    weekly.value = await props.fetcher()
   } catch (e) {
     // a nice-to-have next to the quizzes themselves - if it can't load, the panel just isn't shown
   }

@@ -23,8 +23,11 @@ public class LineupController {
 
     private final LineupPlayService lineupPlayService;
     private final PlayAccessService playAccessService;
+    private final com.quizapp.service.WeeklyBoardStandingsService weeklyBoardStandingsService;
 
-    public LineupController(LineupPlayService lineupPlayService, PlayAccessService playAccessService) {
+    public LineupController(LineupPlayService lineupPlayService, PlayAccessService playAccessService,
+                             com.quizapp.service.WeeklyBoardStandingsService weeklyBoardStandingsService) {
+        this.weeklyBoardStandingsService = weeklyBoardStandingsService;
         this.lineupPlayService = lineupPlayService;
         this.playAccessService = playAccessService;
     }
@@ -42,6 +45,11 @@ public class LineupController {
             Authentication authentication) {
         playAccessService.requireStartingXiBattleAccess(authentication);
         return lineupPlayService.getBattleRoundChoices(count, excludeIds);
+    }
+
+    @GetMapping("/weekly-standings")
+    public com.quizapp.dto.DailyQuizWeeklyDto weeklyStandings(Authentication authentication) {
+        return weeklyBoardStandingsService.getLineupWeekly(authentication.getName());
     }
 
     @GetMapping("/{id}/scoreboard")

@@ -22,9 +22,12 @@ public class GridController {
     private final GridPlayService gridPlayService;
     private final GridCategoryService gridCategoryService;
     private final PlayAccessService playAccessService;
+    private final com.quizapp.service.WeeklyBoardStandingsService weeklyBoardStandingsService;
 
     public GridController(GridPlayService gridPlayService, GridCategoryService gridCategoryService,
-                           PlayAccessService playAccessService) {
+                           PlayAccessService playAccessService,
+                           com.quizapp.service.WeeklyBoardStandingsService weeklyBoardStandingsService) {
+        this.weeklyBoardStandingsService = weeklyBoardStandingsService;
         this.gridPlayService = gridPlayService;
         this.gridCategoryService = gridCategoryService;
         this.playAccessService = playAccessService;
@@ -38,6 +41,11 @@ public class GridController {
     @GetMapping("/active")
     public List<GridSummaryDto> active(Authentication authentication) {
         return gridPlayService.findActive(authentication.getName());
+    }
+
+    @GetMapping("/weekly-standings")
+    public com.quizapp.dto.DailyQuizWeeklyDto weeklyStandings(Authentication authentication) {
+        return weeklyBoardStandingsService.getGridWeekly(authentication.getName());
     }
 
     @GetMapping("/{id}/scoreboard")

@@ -207,6 +207,9 @@ export default {
   revealGrid(id) {
     return client.post(`/grids/${id}/reveal`).then(r => r.data)
   },
+  getGridWeeklyStandings() {
+    return client.get('/grids/weekly-standings').then(r => r.data)
+  },
   getGridScoreboard(id) {
     return client.get(`/grids/${id}/scoreboard`).then(r => r.data)
   },
@@ -243,6 +246,9 @@ export default {
   },
   revealLineup(id) {
     return client.post(`/lineups/${id}/reveal`).then(r => r.data)
+  },
+  getLineupWeeklyStandings() {
+    return client.get('/lineups/weekly-standings').then(r => r.data)
   },
   getLineupScoreboard(id) {
     return client.get(`/lineups/${id}/scoreboard`).then(r => r.data)

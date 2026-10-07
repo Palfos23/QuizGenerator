@@ -10,6 +10,10 @@ public interface GridAttemptRepository extends JpaRepository<GridAttempt, Long> 
     Optional<GridAttempt> findByGrid_IdAndUser_Email(Long gridId, String email);
     List<GridAttempt> findByGrid_IdInAndUser_Email(List<Long> gridIds, String email);
     List<GridAttempt> findByGrid_Id(Long gridId);
+    // For the weekly standings: every attempt on a board that went live in the window, with what the
+    // standings need loaded up front (one query, not one per attempt).
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"user", "grid", "solvedEntryIds", "overtimeSolvedEntryIds"})
+    List<GridAttempt> findByGrid_WeekStartDateBetween(java.time.LocalDate from, java.time.LocalDate to);
     // For account export/deletion - every attempt this user has, across all grids.
     List<GridAttempt> findByUser_Email(String email);
 
