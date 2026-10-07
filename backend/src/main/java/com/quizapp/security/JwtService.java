@@ -16,26 +16,36 @@ import java.util.Date;
 public class JwtService {
 
     private final SecretKey key;
+    // Admins and guests: short-lived (12h by default) - an admin session can change anything, and a
+    // guest token only has to outlast one game night.
     private final long expirationMinutes;
+    // Regular players: a long, sliding session (30 days by default). The frontend renews the token
+    // whenever the app is opened, so in practice a player who comes back at least once a month never
+    // sees a sign-in screen; the 12h cap used to log out anyone who skipped a day (the daily quiz
+    // habit - play in the evening, come back the next morning).
+    private final long userExpirationMinutes;
 
     public JwtService(
             @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.expiration-minutes:720}") long expirationMinutes
+            @Value("${app.jwt.expiration-minutes:720}") long expirationMinutes,
+            @Value("${app.jwt.user-expiration-minutes:43200}") long userExpirationMinutes
     ) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMinutes = expirationMinutes;
+        this.userExpirationMinutes = userExpirationMinutes;
     }
 
     /** subject = a stable identifier (email for users, username for admins), role = USER or ADMIN */
     public String generateToken(String subject, String role, Long userId, String displayName) {
         Instant now = Instant.now();
+        long lifetimeMinutes = "USER".equals(role) ? userExpirationMinutes : expirationMinutes;
         return Jwts.builder()
                 .subject(subject)
                 .claim("role", role)
                 .claim("uid", userId)
                 .claim("name", displayName)
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plus(expirationMinutes, ChronoUnit.MINUTES)))
+                .expiration(Date.from(now.plus(lifetimeMinutes, ChronoUnit.MINUTES)))
                 .signWith(key)
                 .compact();
     }
@@ -58,7 +68,7 @@ public class JwtService {
      * over the same subject/role/uid/name - the sliding-session half of fixing
      * "logged out too often": an actively-used tab keeps renewing itself well before
      * its token would actually expire (see AuthController#refresh, called from
-     * App.vue's checkSessionTimers), so expirationMinutes effectively only matters
+     * App.vue's checkSessionTimers), so the expiry only matters
      * for a session that's genuinely gone unused. The separate, much shorter
      * inactivity timeout in App.vue still logs out a truly abandoned/shared-device
      * tab regardless of this.

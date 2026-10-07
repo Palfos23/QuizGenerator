@@ -47,6 +47,18 @@ function msUntilTokenExpiry() {
   }
 }
 
+// Milliseconds since the token was issued (its own iat claim), or null if unreadable. Lets the app
+// renew a long-lived token well before it gets near expiry, not only in the last few minutes.
+function msSinceTokenIssued() {
+  if (!state.token) return null
+  try {
+    const payload = JSON.parse(atob(state.token.split('.')[1]))
+    return payload.iat ? Date.now() - payload.iat * 1000 : null
+  } catch (e) {
+    return null
+  }
+}
+
 // Swaps in a freshly-issued token from /auth/refresh without the rest of a full
 // login (no navigation, no "welcome back" side effects) - role/displayName are
 // included in the refresh response too and reapplied here mostly for safety
@@ -87,5 +99,6 @@ export default {
   isAdmin,
   isGuest,
   isTokenExpired,
-  msUntilTokenExpiry
+  msUntilTokenExpiry,
+  msSinceTokenIssued
 }

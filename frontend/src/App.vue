@@ -308,15 +308,17 @@ function logout() {
   router.push('/')
 }
 
-// Logs out after a period of no interaction, separate from the JWT's own
-// (much longer) expiry - the JWT expiring handles "closed the laptop for a
-// week", this handles "left a tab open and walked away for a while". Was 60
-// minutes, which turned out to be the main source of "logged out too often"
-// complaints - a slow party-game round, or someone quietly building a quiz
-// between distractions, routinely clears an hour of zero clicks/scrolls. 4
-// hours still protects a forgotten tab on a shared/borrowed device within
-// the same day, without punishing normal unhurried use.
-const INACTIVITY_LIMIT_MS = 4 * 60 * 60 * 1000 // 4 hours
+// Logs out after a period of no interaction, separate from the JWT's own expiry - the JWT expiring
+// handles "stayed away for a month", this handles "left a tab open and walked away". Regular players
+// get 24 hours: the limit used to be 60 minutes, then 4 hours, and both were the main source of
+// "logged out too often" - a slow party-game round or an unhurried quiz routinely outlasts them.
+// Admins (and guests) keep the tighter 4 hours, since an admin session can change anything and a
+// forgotten tab on a shared device is the case this exists for.
+const USER_INACTIVITY_LIMIT_MS = 24 * 60 * 60 * 1000
+const STRICT_INACTIVITY_LIMIT_MS = 4 * 60 * 60 * 1000
+function inactivityLimitMs() {
+  return auth.state.role === 'USER' ? USER_INACTIVITY_LIMIT_MS : STRICT_INACTIVITY_LIMIT_MS
+}
 // How long before either cutoff to show a heads-up, so a hard logout never
 // just appears out of nowhere mid-game.
 const INACTIVITY_WARNING_MS = 60 * 1000
@@ -327,6 +329,10 @@ const EXPIRY_WARNING_MS = 2 * 60 * 1000
 // gives an active tab several retries if the first attempt hits a network
 // blip, well before EXPIRY_WARNING_MS would ever need to show.
 const REFRESH_BEFORE_EXPIRY_MS = 30 * 60 * 1000
+// Sliding session: while the app is open, swap in a fresh token once the current one is this old, so
+// a player's 30-day token keeps moving forward every time they come back (admins/guests have a 12h
+// token and get renewed at the same age, leaving them plenty of runway).
+const REFRESH_AFTER_AGE_MS = 6 * 60 * 60 * 1000
 let lastActivity = Date.now()
 let inactivityTimer = null
 let refreshInFlight = false
@@ -378,7 +384,7 @@ watch(() => auth.state.token, () => {
 function checkSessionTimers() {
   if (!auth.isAuthenticated.value) return
 
-  const idleRemaining = INACTIVITY_LIMIT_MS - (Date.now() - lastActivity)
+  const idleRemaining = inactivityLimitMs() - (Date.now() - lastActivity)
   if (idleRemaining <= 0) {
     showInactivityWarning.value = false
     auth.logout()
@@ -397,7 +403,10 @@ function checkSessionTimers() {
   // EXPIRY_WARNING_MS. That warning stays as the fallback for whenever the
   // swap itself can't happen (offline, server hiccup, ...).
   const tokenRemaining = auth.msUntilTokenExpiry()
-  if (tokenRemaining !== null && tokenRemaining > 0 && tokenRemaining <= REFRESH_BEFORE_EXPIRY_MS && !refreshInFlight) {
+  const tokenAge = auth.msSinceTokenIssued()
+  const dueByAge = tokenAge !== null && tokenAge >= REFRESH_AFTER_AGE_MS
+  const dueByExpiry = tokenRemaining !== null && tokenRemaining <= REFRESH_BEFORE_EXPIRY_MS
+  if (tokenRemaining !== null && tokenRemaining > 0 && (dueByAge || dueByExpiry) && !refreshInFlight && Date.now() - lastRefreshAttempt > 5 * 60 * 1000) {
     attemptSilentRefresh()
   }
   if (!expiryWarningDismissed && tokenRemaining !== null && tokenRemaining > 0 && tokenRemaining <= EXPIRY_WARNING_MS) {
@@ -405,8 +414,10 @@ function checkSessionTimers() {
   }
 }
 
+let lastRefreshAttempt = 0
 async function attemptSilentRefresh() {
   refreshInFlight = true
+  lastRefreshAttempt = Date.now() // a failed attempt isn't retried every second - wait a few minutes
   try {
     const result = await api.refreshToken()
     auth.updateToken(result)
