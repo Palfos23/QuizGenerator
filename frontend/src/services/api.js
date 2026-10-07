@@ -232,6 +232,12 @@ export default {
   },
 
   // --- Starting XI: user-facing (solo/weekly - persisted server-side) ---
+  getActiveLineups() {
+    return client.get('/lineups/active').then(r => r.data)
+  },
+  getArchiveLineups() {
+    return client.get('/lineups/archive').then(r => r.data)
+  },
   listLineups() {
     return client.get('/lineups').then(r => r.data)
   },

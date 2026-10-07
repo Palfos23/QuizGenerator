@@ -94,6 +94,33 @@ class LineupPlayServiceTest {
     }
 
     @Test
+    void thisWeeksBoardIsActiveAndEarlierWeeksAreArchived() {
+        Lineup old = new Lineup();
+        old.setTitle("Old Board " + System.nanoTime());
+        old.setTeamName("Arsenal");
+        old.setOpponentName("Chelsea");
+        old.setWeekStartDate(LocalDate.now().minusWeeks(3));
+        old.setFormation("4-3-3");
+        old.setMaxStrikes(3);
+        old.setExcludedFromBattle(true); // keep it out of the battle modes' shared pool
+        LineupEntry entry = new LineupEntry();
+        entry.setAthlete(correctPlayer);
+        entry.setSlotIndex(0);
+        entry.setShirtNumber(1);
+        old.setEntries(new HashSet<>(Set.of(entry)));
+        old = lineupRepository.save(old);
+        try {
+            List<Long> active = lineupPlayService.findActive(userEmail).stream().map(LineupSummaryDto::getId).toList();
+            List<Long> archive = lineupPlayService.findArchive(userEmail).stream().map(LineupSummaryDto::getId).toList();
+
+            assertThat(active).contains(lineup.getId()).doesNotContain(old.getId());
+            assertThat(archive).contains(old.getId()).doesNotContain(lineup.getId());
+        } finally {
+            lineupRepository.deleteById(old.getId());
+        }
+    }
+
+    @Test
     void freshAttemptStartsWithNothingSolved() {
         LineupPlayStateDto state = lineupPlayService.getPlayState(lineup.getId(), userEmail);
         assertThat(state.getStrikesUsed()).isZero();

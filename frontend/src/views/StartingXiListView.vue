@@ -5,12 +5,12 @@
 
     <div v-if="error" class="banner error">{{ error }}</div>
     <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
-    <div v-else-if="!lineups.length" class="empty-state friendly">
-      No Starting XI boards yet - check back soon, or ask an admin to publish one.
+    <div v-else-if="!activeLineups.length" class="empty-state friendly">
+      No Starting XI board this week yet - check back soon, or ask an admin to publish one.
     </div>
 
     <div v-else class="saved-quiz-list">
-      <div v-for="l in lineups" :key="l.id" class="saved-quiz-row">
+      <div v-for="l in activeLineups" :key="l.id" class="saved-quiz-row">
         <div class="saved-quiz-info">
           <div class="saved-quiz-title">{{ l.title }}</div>
           <div class="saved-quiz-meta">
@@ -27,6 +27,36 @@
           </button>
           <span class="tag" :style="statusStyle(l.status)">{{ statusLabel(l) }}</span>
           <router-link :to="`/starting-xi/${l.id}`" class="btn btn-primary btn-sm">{{ buttonLabel(l.status) }}</router-link>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:32px;">
+      <label style="cursor:pointer;" @click="showArchive = !showArchive">
+        {{ showArchive ? 'Hide' : 'Show' }} previous boards
+      </label>
+      <div v-if="showArchive">
+        <div v-if="!archiveLineups.length" style="color:var(--text-dim); font-size:0.9rem;">No previous boards yet.</div>
+        <div v-else class="saved-quiz-list">
+        <div v-for="l in archiveLineups" :key="l.id" class="saved-quiz-row">
+          <div class="saved-quiz-info">
+            <div class="saved-quiz-title">{{ l.title }}</div>
+            <div class="saved-quiz-meta">
+              {{ l.teamName }} vs {{ l.opponentName }}
+              <template v-if="l.scoreFor != null && l.scoreAgainst != null"> ({{ l.scoreFor }}-{{ l.scoreAgainst }})</template>
+              <template v-if="l.matchDate"> · {{ formatDate(l.matchDate) }}</template>
+              · {{ l.formation }}
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <button class="dq-chip-btn" @click="board.open(l.id, l.title)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
+              Leaderboard
+            </button>
+            <span class="tag" :style="statusStyle(l.status)">{{ statusLabel(l) }}</span>
+            <router-link :to="`/starting-xi/${l.id}`" class="btn btn-secondary btn-sm">{{ buttonLabel(l.status) }}</router-link>
+          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -60,18 +90,25 @@ import DailyQuizWeeklyPanel from '../components/DailyQuizWeeklyPanel.vue'
 import DailyQuizScoreboardModal from '../components/DailyQuizScoreboardModal.vue'
 import { useBoardLeaderboard } from '../composables/useBoardLeaderboard'
 
-const lineups = ref([])
+const activeLineups = ref([])
+const archiveLineups = ref([])
+const showArchive = ref(false)
 const board = useBoardLeaderboard(id => api.getLineupScoreboard(id), (id, include) => api.setLineupLeaderboardPreference(id, include))
 const loading = ref(true)
 const error = ref('')
 
 onMounted(async () => {
   try {
-    lineups.value = await api.listLineups()
+    activeLineups.value = await api.getActiveLineups()
   } catch (e) {
-    error.value = 'Could not load Starting XI boards.'
+    error.value = 'Could not load this week\'s Starting XI boards.'
   } finally {
     loading.value = false
+  }
+  try {
+    archiveLineups.value = await api.getArchiveLineups()
+  } catch (e) {
+    // archive is a nice-to-have - fail quietly
   }
 })
 

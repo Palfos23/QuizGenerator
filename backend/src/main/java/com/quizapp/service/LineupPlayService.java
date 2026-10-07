@@ -64,6 +64,33 @@ public class LineupPlayService {
         return toSummariesWithStatus(rows, userEmail);
     }
 
+    // This week's boards (more than one Starting XI can go live the same week) - same Monday-to-Sunday
+    // window as the weekly grid.
+    @Transactional(readOnly = true)
+    public List<LineupSummaryDto> findActive(String userEmail) {
+        LocalDate today = LocalDate.now();
+        List<LineupSummaryProjection> rows = lineupRepository.findSummariesByWeekStartDateLessThanEqual(today).stream()
+                .filter(row -> isActive(row.getWeekStartDate(), today))
+                .collect(Collectors.toList());
+        return toSummariesWithStatus(rows, userEmail);
+    }
+
+    // Everything from earlier weeks, newest first. Unlike the weekly grid's archive there's no cap:
+    // a Starting XI board's attempts are never cleaned up, so every past board is still playable.
+    @Transactional(readOnly = true)
+    public List<LineupSummaryDto> findArchive(String userEmail) {
+        LocalDate today = LocalDate.now();
+        List<LineupSummaryProjection> rows = lineupRepository.findSummariesByWeekStartDateLessThanEqual(today).stream()
+                .filter(row -> !isActive(row.getWeekStartDate(), today))
+                .sorted((a, b) -> b.getWeekStartDate().compareTo(a.getWeekStartDate()))
+                .collect(Collectors.toList());
+        return toSummariesWithStatus(rows, userEmail);
+    }
+
+    private static boolean isActive(LocalDate weekStart, LocalDate today) {
+        return !today.isBefore(weekStart) && !today.isAfter(weekStart.plusDays(6));
+    }
+
     /**
      * For "Random" Starting XI Battle's round-start picker (mirrors
      * GridPlayService.getBattleRoundChoices / TensionQuestionService
