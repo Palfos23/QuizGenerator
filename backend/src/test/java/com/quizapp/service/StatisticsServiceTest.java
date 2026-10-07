@@ -57,6 +57,25 @@ class StatisticsServiceTest {
     }
 
     @Test
+    void reportsActivityAndWorkQueueFigures() {
+        AdminStatisticsDto before = statisticsService.build();
+        appUserRepository.save(newUser());
+        Grid grid = saveActiveGridWithEntries(uniqueCategory(), 3);
+        saveCompletedAttempt(grid, List.of(grid.getEntries().iterator().next().getId()), Set.of());
+
+        AdminStatisticsDto after = statisticsService.build();
+
+        assertThat(after.getNewUsersLast7Days()).isGreaterThanOrEqualTo(before.getNewUsersLast7Days() + 2); // the two new users above
+        assertThat(after.getActivePlayersThisWeek()).isEqualTo(before.getActivePlayersThisWeek() + 1);    // only the one who played
+        assertThat(after.getQuestionsByLanguage().stream().mapToLong(AdminStatisticsDto.CountEntry::getCount).sum())
+                .isEqualTo(after.getTotalQuestions());
+        assertThat(after.getDailyQuizActivity()).hasSize(14);
+        assertThat(after.getDailyQuizActivity().get(13).getDate()).isEqualTo(LocalDate.now());
+        assertThat(after.getPendingSubmissions()).isGreaterThanOrEqualTo(0);
+        assertThat(after.getWeeklyLineups()).isNotNull();
+    }
+
+    @Test
     void groupsSubjectsByCategory() {
         String category = uniqueCategory();
         athleteRepository.save(newAthlete(category));

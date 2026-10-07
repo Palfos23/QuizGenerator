@@ -4,7 +4,7 @@
     <div v-for="i in items" :key="i.label" class="stat-barlist-row">
       <div class="stat-barlist-label" :title="i.label">{{ i.label }}</div>
       <div class="stat-barlist-track">
-        <div class="stat-barlist-fill" :style="{ width: (i.count / max * 100) + '%', background: color }"></div>
+        <div class="stat-barlist-fill" :style="{ width: (i.count / max * 100) + '%', backgroundColor: color }"></div>
       </div>
       <div class="stat-barlist-value">{{ i.count.toLocaleString() }}</div>
     </div>
@@ -28,7 +28,7 @@ const max = computed(() => Math.max(...props.items.map(i => i.count), 1))
 .stat-barlist {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .stat-barlist-row {
   display: grid;
@@ -37,16 +37,16 @@ const max = computed(() => Math.max(...props.items.map(i => i.count), 1))
   gap: 12px;
 }
 .stat-barlist-label {
-  color: var(--text-dim);
-  font-size: 0.85rem;
+  color: var(--text);
+  font-size: 0.86rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .stat-barlist-track {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.10);
   border-radius: 999px;
-  height: 12px;
+  height: 10px;
   overflow: hidden;
 }
 .stat-barlist-fill {
@@ -54,6 +54,8 @@ const max = computed(() => Math.max(...props.items.map(i => i.count), 1))
   border-radius: 999px;
   min-width: 2px;
   transition: width 0.4s ease;
+  /* the accent colour, brightened toward the right end */
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.22));
 }
 .stat-barlist-value {
   font-family: var(--font-mono);

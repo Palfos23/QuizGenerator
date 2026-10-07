@@ -2,6 +2,19 @@ package com.quizapp.service;
 
 import com.quizapp.dto.AdminStatisticsDto;
 import com.quizapp.dto.AdminStatisticsDto.CountEntry;
+import com.quizapp.dto.AdminStatisticsDto.DailyQuizDayStat;
+import com.quizapp.model.DailyQuizAttemptStatus;
+import com.quizapp.model.DailyQuizResult;
+import com.quizapp.model.LineupAttempt;
+import com.quizapp.model.ReportStatus;
+import com.quizapp.model.SubmissionStatus;
+import com.quizapp.repository.DailyQuizAttemptRepository;
+import com.quizapp.repository.DailyQuizResultRepository;
+import com.quizapp.repository.LineupAttemptRepository;
+import com.quizapp.repository.LineupSummaryProjection;
+import com.quizapp.repository.QuestionRepository;
+import com.quizapp.repository.ReportRepository;
+import com.quizapp.repository.SubmittedQuestionRepository;
 import com.quizapp.dto.AdminStatisticsDto.WeeklyGridStat;
 import com.quizapp.model.Athlete;
 import com.quizapp.model.BattleGameType;
@@ -55,6 +68,12 @@ public class StatisticsService {
     private final PenaltyShootoutRepository penaltyShootoutRepository;
     private final FlashbackYearRepository flashbackYearRepository;
     private final GamePlayEventService gamePlayEventService;
+    private final QuestionRepository questionRepository;
+    private final SubmittedQuestionRepository submittedQuestionRepository;
+    private final ReportRepository reportRepository;
+    private final DailyQuizResultRepository dailyQuizResultRepository;
+    private final DailyQuizAttemptRepository dailyQuizAttemptRepository;
+    private final LineupAttemptRepository lineupAttemptRepository;
 
     public StatisticsService(AppUserRepository appUserRepository,
                              AthleteRepository athleteRepository,
@@ -68,7 +87,13 @@ public class StatisticsService {
                              TensionQuestionRepository tensionQuestionRepository,
                              PenaltyShootoutRepository penaltyShootoutRepository,
                              FlashbackYearRepository flashbackYearRepository,
-                             GamePlayEventService gamePlayEventService) {
+                             GamePlayEventService gamePlayEventService,
+                             QuestionRepository questionRepository,
+                             SubmittedQuestionRepository submittedQuestionRepository,
+                             ReportRepository reportRepository,
+                             DailyQuizResultRepository dailyQuizResultRepository,
+                             DailyQuizAttemptRepository dailyQuizAttemptRepository,
+                             LineupAttemptRepository lineupAttemptRepository) {
         this.appUserRepository = appUserRepository;
         this.athleteRepository = athleteRepository;
         this.gridCategoryRepository = gridCategoryRepository;
@@ -82,6 +107,12 @@ public class StatisticsService {
         this.penaltyShootoutRepository = penaltyShootoutRepository;
         this.flashbackYearRepository = flashbackYearRepository;
         this.gamePlayEventService = gamePlayEventService;
+        this.questionRepository = questionRepository;
+        this.submittedQuestionRepository = submittedQuestionRepository;
+        this.reportRepository = reportRepository;
+        this.dailyQuizResultRepository = dailyQuizResultRepository;
+        this.dailyQuizAttemptRepository = dailyQuizAttemptRepository;
+        this.lineupAttemptRepository = lineupAttemptRepository;
     }
 
     @Transactional(readOnly = true)
@@ -99,6 +130,18 @@ public class StatisticsService {
         dto.setGridsByCategory(gridsByCategory());
         dto.setTensionQuestionsByCategory(tensionQuestionsByCategory());
         dto.setWeeklyGrids(weeklyGridStats());
+        dto.setWeeklyLineups(weeklyLineupStats());
+
+        dto.setTotalQuestions(questionRepository.count());
+        dto.setQuestionsByLanguage(questionsByLanguage());
+        dto.setPendingSubmissions(submittedQuestionRepository.findAll().stream()
+                .filter(q -> q.getStatus() == SubmissionStatus.PENDING).count());
+        dto.setOpenReports(reportRepository.findAll().stream()
+                .filter(r -> r.getStatus() == ReportStatus.OPEN).count());
+        dto.setDailyQuizPendingReviews(dailyQuizAttemptRepository.findByStatus(DailyQuizAttemptStatus.SUBMITTED).size());
+        dto.setActivePlayersThisWeek(activePlayersThisWeek());
+        dto.setNewUsersLast7Days(newUsersLast7Days());
+        dto.setDailyQuizActivity(dailyQuizActivity());
 
         return dto;
     }
@@ -207,6 +250,68 @@ public class StatisticsService {
 
             out.add(new WeeklyGridStat(grid.getId(), grid.getTitle(), grid.getSport(), grid.getWeekStartDate(),
                     entryCount, players, average, lowest, highest));
+        }
+        return out;
+    }
+
+    private List<WeeklyGridStat> weeklyLineupStats() {
+        LocalDate today = LocalDate.now();
+        List<LineupSummaryProjection> active = lineupRepository.findSummariesByWeekStartDateLessThanEqual(today).stream()
+                .filter(l -> !today.isAfter(l.getWeekStartDate().plusDays(6)))
+                .collect(Collectors.toList());
+
+        List<WeeklyGridStat> out = new ArrayList<>();
+        for (LineupSummaryProjection l : active) {
+            List<Integer> scores = lineupAttemptRepository.findByLineup_Id(l.getId()).stream()
+                    .filter(LineupAttempt::isCompleted)
+                    .map(a -> a.getSolvedEntryIds().size())
+                    .collect(Collectors.toList());
+            int players = scores.size();
+            double average = players == 0 ? 0 : scores.stream().mapToInt(Integer::intValue).average().orElse(0);
+            out.add(new WeeklyGridStat(l.getId(), l.getTitle(), l.getTeamName() + " vs " + l.getOpponentName(),
+                    l.getWeekStartDate(), l.getEntryCount().intValue(), players, average,
+                    scores.stream().mapToInt(Integer::intValue).min().orElse(0),
+                    scores.stream().mapToInt(Integer::intValue).max().orElse(0)));
+        }
+        return out;
+    }
+
+    private List<CountEntry> questionsByLanguage() {
+        Map<String, Long> byLanguage = questionRepository.findAll().stream()
+                .collect(Collectors.groupingBy(q -> q.getLanguage().name(), Collectors.counting()));
+        return toSortedEntries(byLanguage);
+    }
+
+    // Anyone who finished a daily quiz this week, or started a weekly grid / Starting XI board.
+    private long activePlayersThisWeek() {
+        LocalDate monday = LocalDate.now().with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+        java.time.Instant since = monday.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        java.util.Set<Long> ids = new java.util.HashSet<>();
+        dailyQuizResultRepository.findByQuizDateBetween(monday, LocalDate.now()).forEach(r -> ids.add(r.getUserId()));
+        ids.addAll(gridAttemptRepository.findUserIdsActiveSince(since));
+        ids.addAll(lineupAttemptRepository.findUserIdsActiveSince(since));
+        return ids.size();
+    }
+
+    private long newUsersLast7Days() {
+        java.time.Instant cutoff = java.time.Instant.now().minus(7, java.time.temporal.ChronoUnit.DAYS);
+        return appUserRepository.findAll().stream()
+                .filter(u -> u.getCreatedAt() != null && u.getCreatedAt().isAfter(cutoff))
+                .count();
+    }
+
+    // The last 14 days, oldest first, including days nobody played (so the chart shows the gaps).
+    private List<DailyQuizDayStat> dailyQuizActivity() {
+        LocalDate today = LocalDate.now();
+        LocalDate from = today.minusDays(13);
+        Map<LocalDate, List<DailyQuizResult>> byDay = dailyQuizResultRepository.findByQuizDateBetween(from, today).stream()
+                .collect(Collectors.groupingBy(DailyQuizResult::getQuizDate));
+        List<DailyQuizDayStat> out = new ArrayList<>();
+        for (LocalDate d = from; !d.isAfter(today); d = d.plusDays(1)) {
+            List<DailyQuizResult> day = byDay.getOrDefault(d, List.of());
+            double pct = day.stream().filter(r -> r.getMaxScore() > 0)
+                    .mapToDouble(r -> 100.0 * r.getScore() / r.getMaxScore()).average().orElse(0);
+            out.add(new DailyQuizDayStat(d, day.size(), pct));
         }
         return out;
     }

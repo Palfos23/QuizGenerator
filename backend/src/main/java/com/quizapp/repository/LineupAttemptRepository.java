@@ -10,6 +10,9 @@ public interface LineupAttemptRepository extends JpaRepository<LineupAttempt, Lo
     Optional<LineupAttempt> findByLineup_IdAndUser_Email(Long lineupId, String email);
     List<LineupAttempt> findByLineup_IdInAndUser_Email(List<Long> lineupIds, String email);
     List<LineupAttempt> findByLineup_Id(Long lineupId);
+    // Distinct players who started any board since the given moment (admin statistics).
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT a.user.id FROM LineupAttempt a WHERE a.createdAt >= :since")
+    List<Long> findUserIdsActiveSince(java.time.Instant since);
     // For the weekly standings - see GridAttemptRepository#findByGrid_WeekStartDateBetween.
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"user", "lineup", "solvedEntryIds"})
     List<LineupAttempt> findByLineup_WeekStartDateBetween(java.time.LocalDate from, java.time.LocalDate to);

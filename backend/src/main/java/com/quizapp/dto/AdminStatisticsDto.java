@@ -40,6 +40,63 @@ public class AdminStatisticsDto {
     // category. Empty when nothing is running this week.
     private List<WeeklyGridStat> weeklyGrids;
 
+    // --- Added with the Statistics redesign ---
+
+    private long totalQuestions;
+    // Questions in the shared bank per language, biggest first.
+    private List<CountEntry> questionsByLanguage;
+
+    // "Needs attention": things waiting on an admin.
+    private long pendingSubmissions;
+    private long openReports;
+    private long dailyQuizPendingReviews;
+
+    // Distinct players who did anything this week (Monday to now): a daily quiz result, or started a
+    // weekly grid / Starting XI board. And sign-ups in the last 7 days.
+    private long activePlayersThisWeek;
+    private long newUsersLast7Days;
+
+    // The last 14 days of the daily quiz, oldest first: how many players finished and their average.
+    private List<DailyQuizDayStat> dailyQuizActivity;
+
+    // Same shape as weeklyGrids, for the Starting XI boards live this week (category = "Team vs Opponent").
+    private List<WeeklyGridStat> weeklyLineups;
+
+    public long getTotalQuestions() { return totalQuestions; }
+    public void setTotalQuestions(long totalQuestions) { this.totalQuestions = totalQuestions; }
+    public List<CountEntry> getQuestionsByLanguage() { return questionsByLanguage; }
+    public void setQuestionsByLanguage(List<CountEntry> questionsByLanguage) { this.questionsByLanguage = questionsByLanguage; }
+    public long getPendingSubmissions() { return pendingSubmissions; }
+    public void setPendingSubmissions(long pendingSubmissions) { this.pendingSubmissions = pendingSubmissions; }
+    public long getOpenReports() { return openReports; }
+    public void setOpenReports(long openReports) { this.openReports = openReports; }
+    public long getDailyQuizPendingReviews() { return dailyQuizPendingReviews; }
+    public void setDailyQuizPendingReviews(long dailyQuizPendingReviews) { this.dailyQuizPendingReviews = dailyQuizPendingReviews; }
+    public long getActivePlayersThisWeek() { return activePlayersThisWeek; }
+    public void setActivePlayersThisWeek(long activePlayersThisWeek) { this.activePlayersThisWeek = activePlayersThisWeek; }
+    public long getNewUsersLast7Days() { return newUsersLast7Days; }
+    public void setNewUsersLast7Days(long newUsersLast7Days) { this.newUsersLast7Days = newUsersLast7Days; }
+    public List<DailyQuizDayStat> getDailyQuizActivity() { return dailyQuizActivity; }
+    public void setDailyQuizActivity(List<DailyQuizDayStat> dailyQuizActivity) { this.dailyQuizActivity = dailyQuizActivity; }
+    public List<WeeklyGridStat> getWeeklyLineups() { return weeklyLineups; }
+    public void setWeeklyLineups(List<WeeklyGridStat> weeklyLineups) { this.weeklyLineups = weeklyLineups; }
+
+    public static class DailyQuizDayStat {
+        private final LocalDate date;
+        private final int players;
+        private final double averagePercent; // average score as a percentage of the maximum, 0 when nobody played
+
+        public DailyQuizDayStat(LocalDate date, int players, double averagePercent) {
+            this.date = date;
+            this.players = players;
+            this.averagePercent = averagePercent;
+        }
+
+        public LocalDate getDate() { return date; }
+        public int getPlayers() { return players; }
+        public double getAveragePercent() { return averagePercent; }
+    }
+
     public long getTotalUsers() {
         return totalUsers;
     }
