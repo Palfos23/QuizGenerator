@@ -113,7 +113,7 @@
         <label>Tiebreaker <span class="picker-hint">optional - shown to players, describes how to resolve a tie</span><input type="text" v-model="form.tiebreaker" placeholder="e.g. If tied, the country founded first wins" /></label>
       </div>
 
-      <div class="field" style="display:flex; align-items:flex-start; gap:8px;">
+      <div class="field option-card">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
           Can expire

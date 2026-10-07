@@ -4541,3 +4541,52 @@ table.scoreboard-table {
 }
 .option-card input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
 .option-card label { font-size: 0.92rem !important; letter-spacing: 0 !important; color: var(--text) !important; }
+
+/* ---------- Spacing between a label and its control ----------
+   Most forms wrap the control inside its <label> (label text, then the input), so the label's own
+   margin never separates the two - the text sat directly on top of the box. Give the control the gap. */
+.field label > input[type="text"],
+.field label > input[type="number"],
+.field label > input[type="email"],
+.field label > input[type="password"],
+.field label > input[type="date"],
+.field label > input[type="url"],
+.field label > input[type="search"],
+.field label > select,
+.field label > textarea,
+.field label > .searchable-select,
+.field label > .difficulty-slider-row {
+  margin-top: 8px;
+}
+
+/* "Checkbox + title, then a description underneath" toggles: breathing room, and the description
+   lines up under the title instead of under the checkbox. */
+.field > label:has(> input[type="checkbox"]) { gap: 10px !important; }
+.field > label:has(> input[type="checkbox"]) + .page-subtitle {
+  margin: 6px 0 0 30px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+.field + .field > label:has(> input[type="checkbox"]),
+.option-card + .field > label:has(> input[type="checkbox"]) { margin-top: 2px; }
+
+/* A line of text sitting right under a table / list (counts, hints) shouldn't touch it. */
+.table-scroll + p, .table-scroll + .pagination-bar { margin-top: 14px; }
+
+/* A label that only titles a control placed after it (pickers, chip rows, search boxes) */
+.field > label { margin-bottom: 10px; }
+.field > label:has(> input[type="checkbox"]) { margin-bottom: 0; }
+
+/* Every "checkbox + title (+ description)" toggle reads as the same option card. */
+.field:has(> label > input[type="checkbox"]) {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+.field:has(> label > input[type="checkbox"]) > .page-subtitle { margin-bottom: 0; }
+.field:has(> label > input[type="checkbox"]) > label {
+  font-size: 0.92rem;
+  letter-spacing: 0;
+  color: var(--text);
+}
