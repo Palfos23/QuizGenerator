@@ -32,9 +32,18 @@
             <div>
               <strong>{{ p.name }}</strong>
               <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
-              <div class="tension-player-answer">{{ p.answered ? '✓ answered' : '— waiting —' }}</div>
+              <!-- Once the reveal starts, each box shows what that player actually answered. -->
+              <div v-if="state.roundRevealed && resultFor(p)" class="tension-player-answer">{{ resultFor(p).answerText }}</div>
+              <div v-else class="tension-player-answer">{{ p.answered ? '✓ answered' : '— waiting —' }}</div>
             </div>
-            <div style="text-align:right; font-size:0.8rem; color:var(--text-dim);">Total: {{ shownTotal(p) }}</div>
+            <div style="text-align:right;">
+              <div
+                v-if="roundScoreShown(p)"
+                class="tension-round-score"
+                :class="{ positive: resultFor(p).score > 0, negative: resultFor(p).score < 0 }"
+              >{{ formatScore(resultFor(p).score) }}</div>
+              <div style="font-size:0.8rem; color:var(--text-dim);">Total: {{ shownTotal(p) }}</div>
+            </div>
           </div>
         </div>
 
@@ -254,6 +263,20 @@ function shownTotal(p) {
   if (!state.value?.roundRevealed || revealFinished.value) return p.totalScore
   const roundScore = state.value.roundResults?.find(r => r.participantId === p.participantId)?.score ?? 0
   return p.totalScore - roundScore
+}
+
+// This round's result for a player (their answer + points), once the round has been revealed.
+function resultFor(p) {
+  return (state.value?.roundResults || []).find(r => r.participantId === p.participantId) || null
+}
+
+// A player's round score appears when the reveal reaches their answer (same as pass-and-play); an
+// answer that isn't on the list at all (it scores 0) shows once the whole list has been revealed.
+function roundScoreShown(p) {
+  const r = resultFor(p)
+  if (!state.value?.roundRevealed || !r) return false
+  const idx = allAnswersList.value.findIndex(a => a.text.toLowerCase() === (r.answerText || '').toLowerCase())
+  return idx === -1 ? revealFinished.value : revealIndex.value > idx
 }
 
 // One chip per player who landed on this exact answer, each with their own
