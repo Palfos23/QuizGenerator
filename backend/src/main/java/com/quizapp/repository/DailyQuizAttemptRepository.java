@@ -22,6 +22,9 @@ public interface DailyQuizAttemptRepository extends JpaRepository<DailyQuizAttem
     // For the retention cleanup job.
     List<DailyQuizAttempt> findBySet_IdIn(List<Long> setIds);
 
+    // A player's results that an admin finished reviewing and that they haven't looked at yet.
+    List<DailyQuizAttempt> findByUser_EmailAndReviewResultUnseenTrue(String email);
+
     // Every attempt in a given state - used to back-fill the compact result records for attempts that
     // were graded before those existed.
     List<DailyQuizAttempt> findByStatus(DailyQuizAttemptStatus status);

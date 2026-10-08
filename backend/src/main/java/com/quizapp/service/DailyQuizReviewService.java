@@ -179,7 +179,13 @@ public class DailyQuizReviewService {
                 answer.getAttempt().getId(), DailyQuizAnswerVerdict.PENDING);
         if (stillPending == 0) {
             var attempt = answer.getAttempt();
+            // Worth telling the player about: their score just became final, or an admin changed it.
+            boolean firstGrading = attempt.getStatus() != DailyQuizAttemptStatus.GRADED;
+            int scoreBefore = attempt.getScore();
             dailyQuizService.gradeAttempt(attempt);
+            if (firstGrading || attempt.getScore() != scoreBefore) {
+                attempt.setReviewResultUnseen(true);
+            }
             attemptRepository.save(attempt);
         }
     }

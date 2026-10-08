@@ -60,6 +60,38 @@
       <span class="btn btn-secondary">Report a problem →</span>
     </router-link>
 
+    <!-- "Your quiz has been reviewed": an admin has finished checking answers the player had waiting, so
+         their score is final. Shown until they've dismissed it or opened the quiz (that's tracked on
+         the server, so it follows them across devices) - and instead of the nudge below, never both. -->
+    <div v-if="reviewNotifications.length" class="modal-backdrop" @click.self="dismissReviewNotifications">
+      <div class="modal dq-modal" style="max-width:400px; text-align:center;" role="dialog" aria-modal="true" aria-label="Your daily quiz has been reviewed">
+        <div class="dq-empty-icon" style="margin:0 auto 14px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+        </div>
+        <h2 class="dq-modal-title" style="margin-bottom:6px;">Your {{ reviewNotifications.length === 1 ? 'quiz has' : 'quizzes have' }} been reviewed</h2>
+        <p class="dq-modal-sub">An admin has finished checking your answers - your score is final.</p>
+        <div class="dq-list" style="margin:16px 0 20px;">
+          <router-link
+            v-for="n in reviewNotifications"
+            :key="n.setId"
+            :to="`/daily-quiz/${n.setId}`"
+            class="dq-row"
+            @click="dismissReviewNotifications"
+          >
+            <div class="dq-row-main" style="text-align:left;">
+              <div class="dq-row-title">{{ formatQuizDate(n.quizDate) }}</div>
+              <div class="dq-row-meta">See your answers</div>
+            </div>
+            <div class="dq-row-end">
+              <span class="dq-pill dq-pill--ok">{{ n.score }} / {{ n.maxScore }}</span>
+              <svg class="dq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+            </div>
+          </router-link>
+        </div>
+        <button class="btn btn-secondary" style="width:100%;" @click="dismissReviewNotifications">Close</button>
+      </div>
+    </div>
+
     <!-- One nudge per day, per browser (see dismissDailyQuizNudge) - not on
          every dashboard visit, just the first one that finds today's quiz
          still un-submitted. Guests/admins never trigger the check that would
@@ -151,8 +183,29 @@ const dailyQuizNudge = ref(null)
 const showDailyQuizNudge = ref(false)
 const DAILY_QUIZ_NUDGE_KEY = 'daily_quiz_nudge_dismissed_date'
 
+// --- "Your quiz has been reviewed" - results an admin finished checking since the player last looked.
+// Takes priority over the nudge: no point asking someone to play today's quiz in the same breath as
+// telling them yesterday's score is in.
+const reviewNotifications = ref([])
+
+function formatQuizDate(iso) {
+  return new Date(iso).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+async function dismissReviewNotifications() {
+  const toDismiss = reviewNotifications.value
+  reviewNotifications.value = []
+  await Promise.allSettled(toDismiss.map(n => api.dismissDailyQuizReviewNotification(n.setId)))
+}
+
 onMounted(async () => {
   if (auth.isAdmin.value || auth.isGuest.value) return
+  try {
+    reviewNotifications.value = await api.getDailyQuizReviewNotifications()
+    if (reviewNotifications.value.length) return
+  } catch (e) {
+    // a nice-to-have - carry on to the regular nudge
+  }
   try {
     const [active] = await api.getActiveDailyQuizzes()
     if (!active || (active.status !== 'NOT_STARTED' && active.status !== 'IN_PROGRESS')) return

@@ -62,6 +62,22 @@ public class DailyQuizAttempt {
         this.draftAnswers = draftAnswers;
     }
 
+    // Set when an admin's review finishes (or changes) this attempt's score, so the player gets a "your
+    // quiz has been reviewed" pop-up next time they visit; cleared once they've seen the result.
+    //
+    // columnDefinition carries the default for the same reason as includeOnLeaderboard above: this column
+    // is added to a table that already has rows, and a bare NOT NULL would be rejected on Postgres.
+    @Column(name = "review_result_unseen", nullable = false, columnDefinition = "boolean not null default false")
+    private boolean reviewResultUnseen = false;
+
+    public boolean isReviewResultUnseen() {
+        return reviewResultUnseen;
+    }
+
+    public void setReviewResultUnseen(boolean reviewResultUnseen) {
+        this.reviewResultUnseen = reviewResultUnseen;
+    }
+
     public Long getId() {
         return id;
     }

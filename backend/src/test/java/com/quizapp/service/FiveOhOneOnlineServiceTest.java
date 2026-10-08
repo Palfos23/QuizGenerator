@@ -2,6 +2,7 @@ package com.quizapp.service;
 
 import com.quizapp.dto.FiveOhOneRoomCategoryDto;
 import com.quizapp.model.FiveOhOneCategory;
+import com.quizapp.model.RoomStatus;
 import com.quizapp.model.GameRoom;
 import com.quizapp.model.RoomGameType;
 import com.quizapp.repository.FiveOhOneCategoryRepository;
@@ -76,5 +77,33 @@ class FiveOhOneOnlineServiceTest {
         assertThatThrownBy(() -> fiveOhOneOnlineService.rerollCategory(started, HOST))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("already started");
+    }
+
+    @Autowired
+    private com.quizapp.repository.FiveOhOneRoomStateRepository roomStateRepository;
+
+    // Regression: "Play again" did nothing. A game that ended by throws marked only its own round state
+    // finished and left the room IN_PROGRESS, so RoomController#restart refused it ("This room hasn't
+    // finished yet"). Both finishing paths in throwEntry now go through finishGame.
+    @Test
+    void finishingAGameLeavesTheRoomFinishedSoTheHostCanPlayAgain() {
+        FiveOhOneCategory category = saveCategory("501 replay " + System.nanoTime());
+        GameRoom room = lobbyRoomWith(category);
+        fiveOhOneOnlineService.startGame(room, HOST);
+        GameRoom running = roomService.findByCode(room.getRoomCode());
+        assertThat(running.getStatus()).isEqualTo(RoomStatus.IN_PROGRESS);
+
+        var state = roomStateRepository.findByRoom_Id(running.getId()).orElseThrow();
+        fiveOhOneOnlineService.finishGame(running, state);
+
+        GameRoom finishedRoom = roomService.findByCode(room.getRoomCode());
+        assertThat(finishedRoom.getStatus()).isEqualTo(RoomStatus.FINISHED);
+        assertThat(roomStateRepository.findByRoom_Id(finishedRoom.getId()).orElseThrow().isFinished()).isTrue();
+
+        // ...which is what the restart endpoint requires: replay puts the room back in the lobby, same category.
+        fiveOhOneOnlineService.restartForReplay(finishedRoom);
+        GameRoom replay = roomService.markWaitingForReplay(finishedRoom);
+        assertThat(replay.getStatus()).isEqualTo(RoomStatus.WAITING);
+        assertThat(fiveOhOneOnlineService.getRoomCategory(replay, HOST).getId()).isEqualTo(category.getId());
     }
 }

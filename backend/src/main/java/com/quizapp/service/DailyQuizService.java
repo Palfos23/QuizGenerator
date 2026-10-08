@@ -253,7 +253,38 @@ public class DailyQuizService {
     public DailyQuizPlayStateDto getPlayState(Long setId, String userEmail) {
         DailyQuizSet set = requireSet(setId);
         DailyQuizAttempt attempt = findOrCreateAttempt(set, userEmail);
+        // Opening a quiz whose result is ready is seeing it - no need to also pop up about it.
+        if (attempt.isReviewResultUnseen() && attempt.getStatus() == DailyQuizAttemptStatus.GRADED) {
+            attempt.setReviewResultUnseen(false);
+            attemptRepository.save(attempt);
+        }
         return toPlayStateDto(set, attempt);
+    }
+
+    // Results an admin has finished reviewing that this player hasn't looked at yet (newest first).
+    // Quizzes that have since expired are left out - there's nothing to open any more.
+    @Transactional(readOnly = true)
+    public List<com.quizapp.dto.DailyQuizReviewNotificationDto> getReviewNotifications(String userEmail) {
+        return attemptRepository.findByUser_EmailAndReviewResultUnseenTrue(userEmail).stream()
+                .filter(a -> a.getStatus() == DailyQuizAttemptStatus.GRADED)
+                .filter(a -> !isExpired(a.getSet().getQuizDate()))
+                .sorted((a, b) -> b.getSet().getQuizDate().compareTo(a.getSet().getQuizDate()))
+                .map(a -> {
+                    int maxScore = answerRepository.findByAttempt_IdOrderByIdAsc(a.getId()).stream()
+                            .mapToInt(ans -> DailyQuizScoring.maxPoints(ans.getQuestion())).sum();
+                    return new com.quizapp.dto.DailyQuizReviewNotificationDto(a.getSet().getId(), a.getSet().getQuizDate(), a.getScore(), maxScore);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void dismissReviewNotification(Long setId, String userEmail) {
+        attemptRepository.findBySet_IdAndUser_Email(setId, userEmail).ifPresent(a -> {
+            if (a.isReviewResultUnseen()) {
+                a.setReviewResultUnseen(false);
+                attemptRepository.save(a);
+            }
+        });
     }
 
     private DailyQuizSet requireSet(Long setId) {

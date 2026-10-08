@@ -261,6 +261,17 @@ public class FiveOhOneOnlineService {
         return dto;
     }
 
+    // Ends the game: the round's own state AND the room itself. The room's FINISHED status is what the host's
+    // "Play again" (RoomController#restart) checks for - 501 used to mark only the round finished, so the
+    // winner screen showed but "Play again" was rejected with "This room hasn't finished yet".
+    void finishGame(GameRoom room, FiveOhOneRoomState state) {
+        state.setFinished(true);
+        roomStateRepository.save(state);
+        room.setStatus(RoomStatus.FINISHED);
+        gameRoomRepository.save(room);
+        gamePlayEventService.record(BattleGameType.FIVE_O_ONE);
+    }
+
     @Transactional
     public FiveOhOneOnlineStateDto throwEntry(GameRoom room, String requestingEmail, Long entryId) {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
@@ -328,9 +339,7 @@ public class FiveOhOneOnlineService {
             } else {
                 state.setWinnerParticipantId(windowReacherId);
             }
-            state.setFinished(true);
-            roomStateRepository.save(state);
-            gamePlayEventService.record(BattleGameType.FIVE_O_ONE);
+            finishGame(room, state);
             return getState(room, requestingEmail);
         }
 
@@ -341,9 +350,7 @@ public class FiveOhOneOnlineService {
                 // the second-starting player reached the window first - the first-starting
                 // player doesn't get a response turn, the game ends right here
                 state.setWinnerParticipantId(me.getId());
-                state.setFinished(true);
-                roomStateRepository.save(state);
-                gamePlayEventService.record(BattleGameType.FIVE_O_ONE);
+                finishGame(room, state);
                 return getState(room, requestingEmail);
             }
             // the first-starting player reached it - the second-starting player still

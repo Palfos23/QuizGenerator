@@ -40,6 +40,16 @@ public class DailyQuizController {
         return dailyQuizWeeklyService.getWeekly(authentication.getName());
     }
 
+    @GetMapping("/review-notifications")
+    public List<com.quizapp.dto.DailyQuizReviewNotificationDto> reviewNotifications(Authentication authentication) {
+        return dailyQuizService.getReviewNotifications(authentication.getName());
+    }
+
+    @PostMapping("/{id}/review-notification/dismiss")
+    public void dismissReviewNotification(@PathVariable Long id, Authentication authentication) {
+        dailyQuizService.dismissReviewNotification(id, authentication.getName());
+    }
+
     @GetMapping("/{id}/play")
     public DailyQuizPlayStateDto play(@PathVariable Long id, Authentication authentication) {
         return dailyQuizService.getPlayState(id, authentication.getName());

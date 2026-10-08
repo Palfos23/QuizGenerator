@@ -298,6 +298,77 @@ class DailyQuizServiceTest {
         assertThat(graded.getResult().getAnswers()).allMatch(a -> a.getCorrectAnswer() != null);
     }
 
+    private Long submitWrongAnswersAndReturnAttemptId(AppUser user, Long setId) {
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(setId, user.getEmail());
+        DailyQuizSubmitRequest request = new DailyQuizSubmitRequest();
+        List<DailyQuizSubmitRequest.AnswerSubmission> answers = new ArrayList<>();
+        for (DailyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
+            DailyQuizSubmitRequest.AnswerSubmission a = new DailyQuizSubmitRequest.AnswerSubmission();
+            a.setQuestionId(q.getQuestionId());
+            a.setAnswerText("not the answer");
+            answers.add(a);
+        }
+        request.setAnswers(answers);
+        dailyQuizService.submitAnswers(setId, user.getEmail(), request);
+        return dailyQuizReviewService.listPendingAttempts().stream()
+                .filter(p -> p.getPlayerName().equals(user.getName())).findFirst().orElseThrow().getAttemptId();
+    }
+
+    @Test
+    void playerGetsAReviewedNotificationOnceAnAdminFinishesAndItClearsWhenSeen() {
+        seedQuestions(20);
+        AppUser user = newUser();
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+        Long attemptId = submitWrongAnswersAndReturnAttemptId(user, setId);
+        var answers = dailyQuizReviewService.getAttemptDetail(attemptId).getAnswers();
+
+        // Nothing to announce while answers are still waiting - not even after most are decided.
+        for (int i = 0; i < answers.size() - 1; i++) dailyQuizReviewService.resolve(answers.get(i).getAnswerId(), true);
+        assertThat(dailyQuizService.getReviewNotifications(user.getEmail())).isEmpty();
+
+        // The last decision finalises the score - now there's something to tell the player.
+        dailyQuizReviewService.resolve(answers.get(answers.size() - 1).getAnswerId(), false);
+        var notifications = dailyQuizService.getReviewNotifications(user.getEmail());
+        assertThat(notifications).hasSize(1);
+        assertThat(notifications.get(0).getSetId()).isEqualTo(setId);
+        assertThat(notifications.get(0).getScore()).isEqualTo(14);
+        assertThat(notifications.get(0).getMaxScore()).isEqualTo(15);
+
+        // Dismissing it clears it...
+        dailyQuizService.dismissReviewNotification(setId, user.getEmail());
+        assertThat(dailyQuizService.getReviewNotifications(user.getEmail())).isEmpty();
+
+        // ...an admin changing the score afterwards announces it again...
+        dailyQuizReviewService.resolve(answers.get(answers.size() - 1).getAnswerId(), true);
+        assertThat(dailyQuizService.getReviewNotifications(user.getEmail())).extracting(com.quizapp.dto.DailyQuizReviewNotificationDto::getScore).containsExactly(15);
+
+        // ...and simply opening the quiz counts as having seen it.
+        dailyQuizService.getPlayState(setId, user.getEmail());
+        assertThat(dailyQuizService.getReviewNotifications(user.getEmail())).isEmpty();
+    }
+
+    @Test
+    void autoGradedQuizzesAndUnchangedScoresDoNotNotify() {
+        seedQuestions(20);
+        AppUser user = newUser();
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+        Long attemptId = submitWrongAnswersAndReturnAttemptId(user, setId);
+        var answers = dailyQuizReviewService.getAttemptDetail(attemptId).getAnswers();
+        for (var a : answers) dailyQuizReviewService.resolve(a.getAnswerId(), false);
+        dailyQuizService.dismissReviewNotification(setId, user.getEmail());
+
+        // Re-confirming a decision that doesn't change the score isn't news.
+        dailyQuizReviewService.resolve(answers.get(0).getAnswerId(), false);
+        assertThat(dailyQuizService.getReviewNotifications(user.getEmail())).isEmpty();
+
+        // A player whose quiz graded straight away (blank answers) has nothing to be told either.
+        AppUser quick = newUser();
+        DailyQuizSubmitRequest blank = new DailyQuizSubmitRequest();
+        blank.setAnswers(new ArrayList<>());
+        dailyQuizService.submitAnswers(setId, quick.getEmail(), blank);
+        assertThat(dailyQuizService.getReviewNotifications(quick.getEmail())).isEmpty();
+    }
+
     @Test
     void cannotSubmitTwice() {
         seedQuestions(20);

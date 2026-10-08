@@ -571,6 +571,12 @@ export default {
   getArchiveDailyQuizzes() {
     return client.get('/daily-quiz/archive').then(r => r.data)
   },
+  getDailyQuizReviewNotifications() {
+    return client.get('/daily-quiz/review-notifications').then(r => r.data)
+  },
+  dismissDailyQuizReviewNotification(id) {
+    return client.post(`/daily-quiz/${id}/review-notification/dismiss`).then(r => r.data)
+  },
   getDailyQuizWeekly() {
     return client.get('/daily-quiz/weekly').then(r => r.data)
   },
