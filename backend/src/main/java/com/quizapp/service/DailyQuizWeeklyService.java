@@ -40,10 +40,13 @@ public class DailyQuizWeeklyService {
     private final DailyQuizResultRepository resultRepository;
     private final DailyQuizAttemptRepository attemptRepository;
     private final AppUserRepository appUserRepository;
+    private final ExpertConfig expertConfig;
 
     public DailyQuizWeeklyService(DailyQuizResultRepository resultRepository,
                                    DailyQuizAttemptRepository attemptRepository,
-                                   AppUserRepository appUserRepository) {
+                                   AppUserRepository appUserRepository,
+                                   ExpertConfig expertConfig) {
+        this.expertConfig = expertConfig;
         this.resultRepository = resultRepository;
         this.attemptRepository = attemptRepository;
         this.appUserRepository = appUserRepository;
@@ -63,7 +66,11 @@ public class DailyQuizWeeklyService {
         LocalDate thisMonday = weekStart(today);
         LocalDate from = thisMonday.minusWeeks(PAST_WEEKS);
         LocalDate to = thisMonday.plusDays(6);
-        List<DailyQuizResult> all = resultRepository.findByQuizDateBetween(from, to);
+        List<DailyQuizResult> everyone = resultRepository.findByQuizDateBetween(from, to);
+        // The expert is the benchmark, not a competitor: out of the standings and the winners, shown on their own.
+        List<DailyQuizResult> all = everyone.stream().filter(r -> !expertConfig.isExpert(r.getUserId())).collect(Collectors.toList());
+        List<DailyQuizResult> expertThisWeek = inWeek(everyone, thisMonday).stream()
+                .filter(r -> expertConfig.isExpert(r.getUserId())).collect(Collectors.toList());
 
         // Days that still have an attempt waiting on an admin - a week containing one isn't settled.
         Set<LocalDate> daysStillBeingReviewed = attemptRepository
@@ -87,7 +94,13 @@ public class DailyQuizWeeklyService {
             boolean provisional = daysStillBeingReviewed.stream().anyMatch(d -> !d.isBefore(start) && !d.isAfter(end));
             past.add(new DailyQuizWeeklyDto.PastWeekDto(start, end, winners, top, provisional));
         }
-        return new DailyQuizWeeklyDto(current, past);
+        DailyQuizWeeklyDto dto = new DailyQuizWeeklyDto(current, past);
+        if (!expertThisWeek.isEmpty()) {
+            String name = expertThisWeek.stream().max(Comparator.comparing(DailyQuizResult::getQuizDate)).get().getPlayerName();
+            dto.setExpert(new DailyQuizWeeklyDto.ExpertWeek(name,
+                    expertThisWeek.stream().mapToInt(DailyQuizResult::getScore).sum(), expertThisWeek.size()));
+        }
+        return dto;
     }
 
     static LocalDate weekStart(LocalDate date) {

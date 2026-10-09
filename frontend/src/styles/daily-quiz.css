@@ -674,6 +674,33 @@ a.dq-row:hover, .dq-row--link:hover {
 .dq-segment button.is-on.ok { background: var(--dq-ok); color: #06301f; }
 .dq-segment button.is-on.bad { background: var(--dq-bad); color: #3b0614; }
 
+/* "Beat the expert": the question author's score, shown beside the ranking instead of in it */
+.dq-expert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(139, 124, 255, 0.28), rgba(139, 124, 255, 0.10));
+  box-shadow: inset 0 0 0 1.5px rgba(181, 169, 255, 0.45);
+}
+.dq-expert-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  color: var(--dq-year);
+  background: rgba(139, 124, 255, 0.25);
+}
+.dq-expert-icon svg { width: 18px; height: 18px; }
+.dq-expert-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dq-expert-main strong { font-size: 0.95rem; }
+.dq-expert-main small { color: var(--text-dim); font-size: 0.82rem; }
+.dq-weekly .dq-expert { margin-top: 14px; }
+
 /* Admin: a day's questions, editable in place */
 .dq-modal--wide { max-width: 680px; }
 .dq-qlist { display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; margin: 0 -4px; padding: 2px 4px; }

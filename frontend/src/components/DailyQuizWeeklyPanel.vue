@@ -43,6 +43,15 @@
         </template>
       </div>
 
+      <div v-if="weekly.expert" class="dq-expert">
+        <span class="dq-expert-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3z" /></svg></span>
+        <div class="dq-expert-main">
+          <strong>Beat the expert</strong>
+          <small>{{ firstName(weekly.expert.name) }} · {{ weekly.expert.total }} pts · {{ weekly.expert.daysPlayed }} {{ weekly.expert.daysPlayed === 1 ? unit : unit + 's' }} played</small>
+        </div>
+        <span v-if="expertVerdict" class="dq-pill" :class="expertVerdict.cls">{{ expertVerdict.text }}</span>
+      </div>
+
       <template v-if="weekly.pastWeeks.length">
         <div class="dq-weekly-label">Previous winners</div>
         <div v-for="(w, i) in weekly.pastWeeks" :key="w.weekStart" class="dq-winner" :class="{ 'is-latest': i === 0 }">
@@ -87,6 +96,16 @@ const topTotal = computed(() => Math.max(1, ...standings.value.map(s => s.total)
 const yourRank = computed(() => {
   const idx = standings.value.findIndex(s => s.isYou)
   return idx === -1 ? null : { rank: idx + 1, entry: standings.value[idx] }
+})
+
+// You against the expert's week so far - only for a player who is on the standings.
+const expertVerdict = computed(() => {
+  const expert = weekly.value?.expert
+  if (!expert || !yourRank.value) return null
+  const diff = yourRank.value.entry.total - expert.total
+  if (diff > 0) return { cls: 'dq-pill--ok', text: `${diff} ahead` }
+  if (diff === 0) return { cls: 'dq-pill--year', text: 'Level' }
+  return { cls: 'dq-pill--wait', text: `${-diff} behind` }
 })
 
 function barWidth(entry) {

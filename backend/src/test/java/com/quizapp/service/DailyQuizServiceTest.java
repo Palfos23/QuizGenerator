@@ -41,6 +41,8 @@ class DailyQuizServiceTest {
     private QuestionRepository questionRepository;
     @Autowired
     private AppUserRepository appUserRepository;
+    @Autowired
+    private ExpertConfig expertConfig;
 
     private AppUser newUser() {
         // Both fields unique - tests in this class share one H2 database with
@@ -367,6 +369,42 @@ class DailyQuizServiceTest {
         blank.setAnswers(new ArrayList<>());
         dailyQuizService.submitAnswers(setId, quick.getEmail(), blank);
         assertThat(dailyQuizService.getReviewNotifications(quick.getEmail())).isEmpty();
+    }
+
+    @Test
+    void theExpertIsLeftOutOfTheDailyRankingAndAverageButShownApart() {
+        seedQuestions(20);
+        AppUser expert = newUser();
+        AppUser player = newUser();
+        long before = expertConfig.getExpertUserId();
+        expertConfig.setExpertUserId(expert.getId());
+        try {
+            Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+            // Both hand in every answer blank: graded at once, 0 points each - then set the scores directly.
+            for (AppUser u : List.of(expert, player)) {
+                DailyQuizSubmitRequest blank = new DailyQuizSubmitRequest();
+                blank.setAnswers(new ArrayList<>());
+                dailyQuizService.submitAnswers(setId, u.getEmail(), blank);
+            }
+            var expertAttempt = dailyQuizAttemptRepository.findBySet_IdAndUser_Email(setId, expert.getEmail()).orElseThrow();
+            expertAttempt.setScore(14);
+            dailyQuizAttemptRepository.save(expertAttempt);
+            var playerAttempt = dailyQuizAttemptRepository.findBySet_IdAndUser_Email(setId, player.getEmail()).orElseThrow();
+            playerAttempt.setScore(9);
+            dailyQuizAttemptRepository.save(playerAttempt);
+
+            var board = dailyQuizService.getScoreboard(setId, player.getEmail());
+
+            assertThat(board.getEntries()).extracting(com.quizapp.dto.DailyQuizScoreboardEntryDto::getUserName)
+                    .contains(player.getName()).doesNotContain(expert.getName());
+            assertThat(board.getAverageScore()).as("the expert doesn't skew the average").isLessThan(14);
+            assertThat(board.getExpert()).isNotNull();
+            assertThat(board.getExpert().getName()).isEqualTo(expert.getName());
+            assertThat(board.getExpert().getScore()).isEqualTo(14);
+            assertThat(board.getExpert().getMaxScore()).isPositive();
+        } finally {
+            expertConfig.setExpertUserId(before);
+        }
     }
 
     @Test

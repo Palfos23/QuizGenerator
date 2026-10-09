@@ -4,6 +4,16 @@
       <h2 class="dq-modal-title">{{ title }}</h2>
       <p class="dq-modal-sub">{{ subtitle }}</p>
 
+      <!-- The expert (the question author) isn't ranked below - they're the benchmark to beat. -->
+      <div v-if="!loading && data && data.expert" class="dq-expert">
+        <span class="dq-expert-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3z" /></svg></span>
+        <div class="dq-expert-main">
+          <strong>Beat the expert</strong>
+          <small>{{ displayName(data.expert.name) }} scored {{ data.expert.score }} / {{ data.expert.maxScore }}</small>
+        </div>
+        <span v-if="expertVerdict" class="dq-pill" :class="expertVerdict.cls">{{ expertVerdict.text }}</span>
+      </div>
+
       <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
       <div v-else-if="!entries.length" class="dq-empty" style="padding:22px 0;">
@@ -95,6 +105,17 @@ const yourDelta = computed(() => {
   const mine = entries.value.find(s => s.isYou)
   if (!mine || !props.data) return null
   return Math.round((mine.score - props.data.averageScore) * 10) / 10
+})
+
+// How you did against the expert - only for a viewer who is on the board.
+const expertVerdict = computed(() => {
+  const mine = entries.value.find(s => s.isYou)
+  const expert = props.data?.expert
+  if (!mine || !expert) return null
+  const diff = mine.score - expert.score
+  if (diff > 0) return { cls: 'dq-pill--ok', text: `You beat them by ${diff}` }
+  if (diff === 0) return { cls: 'dq-pill--year', text: 'You matched them' }
+  return { cls: 'dq-pill--wait', text: `${-diff} behind` }
 })
 
 function displayName(name) {

@@ -61,6 +61,8 @@ class DailyQuizWeeklyTest {
     private QuestionRepository questionRepository;
     @Autowired
     private AppUserRepository appUserRepository;
+    @Autowired
+    private ExpertConfig expertConfig;
 
     // Fixed, far-future "today" for the standings tests so they can't touch real data or each other.
     private static final LocalDate TODAY = LocalDate.of(2031, 3, 5); // a Wednesday
@@ -70,8 +72,16 @@ class DailyQuizWeeklyTest {
     private final List<Question> questions = new ArrayList<>();
     private final List<DailyQuizSet> sets = new ArrayList<>();
 
+    private long expertBefore;
+
+    @org.junit.jupiter.api.BeforeEach
+    void rememberExpert() {
+        expertBefore = expertConfig.getExpertUserId();
+    }
+
     @AfterEach
     void cleanUp() {
+        expertConfig.setExpertUserId(expertBefore);
         List<Long> setIds = sets.stream().map(DailyQuizSet::getId).toList();
         if (!setIds.isEmpty()) {
             List<DailyQuizAttempt> attempts = attemptRepository.findBySet_IdIn(setIds);
@@ -171,6 +181,45 @@ class DailyQuizWeeklyTest {
 
         assertThat(standingFor(weeklyService.getWeekly(visible.getEmail(), TODAY), shy)).as("others can't see them").isNull();
         assertThat(standingFor(weeklyService.getWeekly(shy.getEmail(), TODAY), shy)).as("but they see their own row").isNotNull();
+    }
+
+    // ---- the expert ("beat the expert") ----
+
+    @Test
+    void theExpertIsKeptOutOfTheStandingsAndCantWinButTheirWeekIsShownApart() {
+        AppUser expert = newUser("Expert");
+        AppUser anna = newUser("Anna");
+        expertConfig.setExpertUserId(expert.getId());
+        result(expert, monday(), 15, true);
+        result(expert, monday().plusDays(1), 14, false); // even an opted-out expert still counts as the benchmark
+        result(anna, monday(), 9, true);
+        LocalDate lastMonday = monday().minusWeeks(1);
+        result(expert, lastMonday, 16, true);
+        result(anna, lastMonday.plusDays(1), 8, true);
+
+        DailyQuizWeeklyDto dto = weeklyService.getWeekly(anna.getEmail(), TODAY);
+
+        assertThat(standingFor(dto, expert)).as("not ranked").isNull();
+        assertThat(standingFor(dto, anna).getTotal()).isEqualTo(9);
+        assertThat(dto.getExpert()).isNotNull();
+        assertThat(dto.getExpert().getName()).isEqualTo(expert.getName());
+        assertThat(dto.getExpert().getTotal()).isEqualTo(29);
+        assertThat(dto.getExpert().getDaysPlayed()).isEqualTo(2);
+        // Last week's winner is the best player, not the expert who scored higher.
+        assertThat(dto.getPastWeeks().get(0).getWinners()).containsExactly(anna.getName());
+        assertThat(dto.getPastWeeks().get(0).getWinningScore()).isEqualTo(8);
+    }
+
+    @Test
+    void withNoExpertConfiguredEveryoneIsAnOrdinaryPlayer() {
+        AppUser anna = newUser("Anna");
+        expertConfig.setExpertUserId(0);
+        result(anna, monday(), 9, true);
+
+        DailyQuizWeeklyDto dto = weeklyService.getWeekly(anna.getEmail(), TODAY);
+
+        assertThat(dto.getExpert()).isNull();
+        assertThat(standingFor(dto, anna)).isNotNull();
     }
 
     // ---- past weeks' winners ----

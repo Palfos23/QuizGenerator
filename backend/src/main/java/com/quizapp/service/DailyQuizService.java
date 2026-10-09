@@ -67,6 +67,7 @@ public class DailyQuizService {
     private final AppUserRepository appUserRepository;
     private final AdminNotificationService adminNotificationService;
     private final DailyQuizResultService resultService;
+    private final ExpertConfig expertConfig;
 
     public DailyQuizService(DailyQuizSetRepository setRepository,
                              DailyQuizAttemptRepository attemptRepository,
@@ -74,7 +75,8 @@ public class DailyQuizService {
                              QuestionRepository questionRepository,
                              AppUserRepository appUserRepository,
                              AdminNotificationService adminNotificationService,
-                             DailyQuizResultService resultService) {
+                             DailyQuizResultService resultService,
+                             ExpertConfig expertConfig) {
         this.setRepository = setRepository;
         this.attemptRepository = attemptRepository;
         this.answerRepository = answerRepository;
@@ -82,6 +84,7 @@ public class DailyQuizService {
         this.appUserRepository = appUserRepository;
         this.adminNotificationService = adminNotificationService;
         this.resultService = resultService;
+        this.expertConfig = expertConfig;
     }
 
     @Transactional
@@ -464,13 +467,19 @@ public class DailyQuizService {
     public DailyQuizScoreboardDto getScoreboard(Long setId, String requestingUserEmail) {
         requireSet(setId); // 404s if the set doesn't exist at all
 
-        List<DailyQuizAttempt> gradedAttempts = attemptRepository.findBySet_Id(setId).stream()
+        List<DailyQuizAttempt> allGraded = attemptRepository.findBySet_Id(setId).stream()
                 .filter(a -> a.getStatus() == DailyQuizAttemptStatus.GRADED)
+                .collect(Collectors.toList());
+        // The expert is the benchmark, not a competitor: kept out of the ranking and the average, shown on their own.
+        DailyQuizAttempt expertAttempt = allGraded.stream()
+                .filter(a -> expertConfig.isExpert(a.getUser().getId())).findFirst().orElse(null);
+        List<DailyQuizAttempt> gradedAttempts = allGraded.stream()
+                .filter(a -> !expertConfig.isExpert(a.getUser().getId()))
                 .collect(Collectors.toList());
 
         // Each attempt's max points (a Year question is worth 2, so it isn't just "number of answers"),
         // from one query for all of them rather than one per leaderboard row.
-        List<Long> attemptIds = gradedAttempts.stream().map(DailyQuizAttempt::getId).collect(Collectors.toList());
+        List<Long> attemptIds = allGraded.stream().map(DailyQuizAttempt::getId).collect(Collectors.toList());
         Map<Long, Integer> maxByAttemptId = attemptIds.isEmpty()
                 ? Map.of()
                 : answerRepository.findByAttempt_IdIn(attemptIds).stream()
@@ -491,10 +500,14 @@ public class DailyQuizService {
 
         double averageScore = gradedAttempts.isEmpty() ? 0
                 : gradedAttempts.stream().mapToInt(DailyQuizAttempt::getScore).average().orElse(0);
-        int maxScore = gradedAttempts.isEmpty() ? QUESTIONS_PER_DAY
-                : maxByAttemptId.getOrDefault(gradedAttempts.get(0).getId(), QUESTIONS_PER_DAY);
+        int maxScore = allGraded.isEmpty() ? QUESTIONS_PER_DAY
+                : maxByAttemptId.getOrDefault(allGraded.get(0).getId(), QUESTIONS_PER_DAY);
 
         DailyQuizScoreboardDto dto = new DailyQuizScoreboardDto(entries, averageScore, maxScore);
+        if (expertAttempt != null) {
+            dto.setExpert(new DailyQuizScoreboardDto.ExpertScore(expertAttempt.getUser().getName(), expertAttempt.getScore(),
+                    maxByAttemptId.getOrDefault(expertAttempt.getId(), QUESTIONS_PER_DAY)));
+        }
         gradedAttempts.stream()
                 .filter(a -> a.getUser().getEmail().equals(requestingUserEmail))
                 .findFirst()

@@ -12,9 +12,32 @@ public class DailyQuizWeeklyDto {
     private WeekDto current;
     private List<PastWeekDto> pastWeeks;
 
+    // The expert's total for the current week (shown apart from the ranking), or null when there's no
+    // expert or they haven't played this week. Always null for the weekly games' standings.
+    private ExpertWeek expert;
+
     public DailyQuizWeeklyDto(WeekDto current, List<PastWeekDto> pastWeeks) {
         this.current = current;
         this.pastWeeks = pastWeeks;
+    }
+
+    public ExpertWeek getExpert() { return expert; }
+    public void setExpert(ExpertWeek expert) { this.expert = expert; }
+
+    public static class ExpertWeek {
+        private final String name;
+        private final int total;
+        private final int daysPlayed;
+
+        public ExpertWeek(String name, int total, int daysPlayed) {
+            this.name = name;
+            this.total = total;
+            this.daysPlayed = daysPlayed;
+        }
+
+        public String getName() { return name; }
+        public int getTotal() { return total; }
+        public int getDaysPlayed() { return daysPlayed; }
     }
 
     public WeekDto getCurrent() { return current; }
