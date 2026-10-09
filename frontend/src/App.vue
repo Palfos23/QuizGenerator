@@ -78,23 +78,22 @@
 
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
-      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" @click="onNavClick('/generate', 'generate')">Create</router-link>
-      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
       <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz">Daily Quiz</router-link>
       <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
-        <div v-for="menu in PLAYER_MENUS" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
+        <div v-for="menu in [QUIZZES_MENU, ...PLAYER_MENUS]" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
           <button
             aria-haspopup="true"
             :aria-expanded="openPlayerMenu === menu.key"
             @click="togglePlayerMenu(menu.key)"
             :class="{ active: playerMenuActive(menu) }"
           >{{ menu.label }} ▾</button>
-          <div v-if="openPlayerMenu === menu.key" class="games-popup" role="menu">
+          <div v-if="openPlayerMenu === menu.key" class="games-popup" :class="{ 'popup-left': menu.key === 'quizzes' }" role="menu">
             <router-link
               v-for="item in menu.items"
               :key="item.to"
               :to="item.to"
               role="menuitem"
+              :class="{ 'popup-primary': item.primary }"
               @click="closePlayerMenuItem(item.to, item.key)"
             >{{ item.label }}</router-link>
           </div>
@@ -194,6 +193,19 @@ const PLAYER_MENUS = [
     ]
   }
 ]
+// Mobile bottom bar only: "Create a quiz" and "My quizzes" share one dropdown there (six tabs side by
+// side were cramped), with Create first and highlighted since it's the main action. On desktop the top
+// nav has room, so they stay as two separate links. Opened/closed through the same openPlayerMenu as the
+// others ('quizzes' is one more key).
+const QUIZZES_MENU = {
+  key: 'quizzes',
+  label: 'Quizzes',
+  items: [
+    { to: '/generate', label: 'Create a quiz', key: 'generate', primary: true },
+    { to: '/my-quizzes', label: 'My quizzes', key: 'myQuizzes' }
+  ]
+}
+
 // Prefix match, not exact - Grid/Starting XI each have a /:id play sub-route
 // beyond their own list page.
 function playerMenuActive(menu) {

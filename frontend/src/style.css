@@ -3338,6 +3338,22 @@ table.scoreboard-table {
     border-radius: var(--radius-sm);
     color: var(--text);
   }
+  /* The main action in a popup (Create a quiz): a filled gold button on top, then the plain items. */
+  .bottom-nav .games-popup a.popup-primary {
+    background: linear-gradient(135deg, #f7c52a, var(--gold));
+    color: #231a00;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 13px 16px;
+    margin-bottom: 4px;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(242, 183, 5, 0.3);
+  }
+  .bottom-nav .games-popup a.popup-primary:hover,
+  .bottom-nav .games-popup a.popup-primary.router-link-exact-active {
+    background: linear-gradient(135deg, #fbd04a, #f5bd0c);
+    color: #231a00;
+  }
   .bottom-nav .games-popup a:hover,
   .bottom-nav .games-popup a.router-link-exact-active {
     background: rgba(242,183,5,0.12);
@@ -3348,6 +3364,16 @@ table.scoreboard-table {
      centred on its (narrow, near-the-edge) toggle would spill off-screen - and
      its offset parent is that narrow toggle wrapper, not the bar. Pin these to
      the viewport instead: a full-width sheet sitting just above the bar. */
+  /* The Quizzes tab is the leftmost one, so a popup centred on it would spill off the left edge -
+     pin it to the left of the screen, just above the bar, like the admin sheet below. */
+  .bottom-nav .games-popup.popup-left {
+    position: fixed;
+    left: 8px;
+    right: auto;
+    bottom: calc(var(--bottom-nav-height) + 8px);
+    transform: none;
+    min-width: 210px;
+  }
   .bottom-nav .games-popup.admin-menu-popup {
     position: fixed;
     left: 8px;
