@@ -25,7 +25,11 @@
       </div>
 
       <div class="field">
-        <label>Logo URL <span class="picker-hint">a hosted image link, not a file upload</span><input type="text" v-model="local.logoUrl" placeholder="https://…" /></label>
+        <label>Logo URL <span class="picker-hint">a hosted image link - or upload one below</span><input type="text" v-model="local.logoUrl" placeholder="https://…" /></label>
+        <div class="photo-upload-row">
+          <PhotoUploadButton label="Upload a logo" @uploaded="url => local.logoUrl = url" />
+          <span class="photo-upload-hint">or paste a link above</span>
+        </div>
         <div v-if="local.logoUrl" style="margin-top:10px;">
           <img :src="local.logoUrl" alt="" class="club-logo-preview" @error="previewFailed = true" />
           <span v-if="previewFailed" style="color:var(--coral); font-size:0.85rem; margin-left:8px;">
@@ -53,6 +57,7 @@
 </template>
 
 <script setup>
+import PhotoUploadButton from './PhotoUploadButton.vue'
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '../services/api'
 import gridCategories from '../services/gridCategories'

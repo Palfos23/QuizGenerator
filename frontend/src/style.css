@@ -4616,3 +4616,7 @@ table.scoreboard-table {
   letter-spacing: 0;
   color: var(--text);
 }
+
+/* "Upload a picture" row under a photo-link field */
+.photo-upload-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.photo-upload-hint { color: var(--text-dim); font-size: 0.82rem; }

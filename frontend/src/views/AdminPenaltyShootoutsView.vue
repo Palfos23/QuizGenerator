@@ -85,6 +85,7 @@
         </div>
         <div style="flex:1; min-width:220px;">
           <label>Team crest URL <span class="picker-hint">optional</span><input type="text" v-model="form.teamCrestUrl" placeholder="https://…" /></label>
+          <div class="photo-upload-row"><PhotoUploadButton label="Upload a crest" @uploaded="url => form.teamCrestUrl = url" /></div>
         </div>
       </div>
 
@@ -94,6 +95,7 @@
         </div>
         <div style="flex:1; min-width:220px;">
           <label>Opponent crest URL <span class="picker-hint">optional</span><input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" /></label>
+          <div class="photo-upload-row"><PhotoUploadButton label="Upload a crest" @uploaded="url => form.opponentCrestUrl = url" /></div>
         </div>
       </div>
 
@@ -188,6 +190,7 @@
 </template>
 
 <script setup>
+import PhotoUploadButton from '../components/PhotoUploadButton.vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'

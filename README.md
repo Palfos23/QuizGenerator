@@ -595,6 +595,21 @@ both for "any difficulty").
 The response includes a `warnings` array if any category came up short
 (e.g. only 2 of the 4 requested Film questions exist yet).
 
+### Picture uploads (optional)
+
+Admins can upload their own pictures (question photos, subject photos, club logos, crests) with an
+"Upload a picture" button next to each photo-link field. The server checks the file, shrinks it to at most
+1600 px, strips camera metadata and stores it in a **public Supabase Storage bucket**; the public URL goes
+into the same field a pasted link would. It is off until configured:
+
+1. In Supabase: **Storage > New bucket**, name it `photos`, tick **Public bucket**.
+2. In Supabase: **Project Settings > API** - copy the project URL and the `service_role` key (keep that one secret).
+3. On Render set `SUPABASE_URL` (e.g. `https://abcdxyz.supabase.co`) and `SUPABASE_SERVICE_KEY`
+   (`SUPABASE_STORAGE_BUCKET` only if you named the bucket something else).
+
+Without these the forms still work - they just take a pasted link. Endpoint: `POST /api/admin/images`
+(admin only, multipart `file`, returns `{ "url": ... }`).
+
 ## Deployment (Neon/Supabase + Render + GitHub Pages)
 
 This is the stack the project is set up for out of the box: Postgres on

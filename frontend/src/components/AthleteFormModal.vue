@@ -30,6 +30,10 @@
 
       <div class="field">
         <label>Photo URL <span class="picker-hint">a hosted image link - shown once a player is guessed</span><input type="text" v-model="local.photoUrl" placeholder="https://…" /></label>
+        <div class="photo-upload-row">
+          <PhotoUploadButton @uploaded="url => local.photoUrl = url" />
+          <span class="photo-upload-hint">or paste a link above</span>
+        </div>
         <div v-if="local.photoUrl" style="margin-top:10px;">
           <img :src="local.photoUrl" alt="" class="club-logo-preview" />
         </div>
@@ -41,6 +45,7 @@
         </label>
         <div v-for="(photo, idx) in local.additionalPhotos" :key="idx" class="additional-photo-row">
           <input type="text" v-model="photo.photoUrl" placeholder="https://…" style="flex:1;" />
+          <PhotoUploadButton label="Upload" @uploaded="url => photo.photoUrl = url" />
           <input type="text" v-model="photo.label" placeholder="Label (optional), e.g. Alternate poster" style="flex:1;" />
           <button type="button" class="chip-remove-btn" @click="local.additionalPhotos.splice(idx, 1)">✕</button>
           <img v-if="photo.photoUrl" :src="photo.photoUrl" alt="" class="club-logo-preview" style="width:40px; height:40px;" />
@@ -75,6 +80,7 @@
 </template>
 
 <script setup>
+import PhotoUploadButton from './PhotoUploadButton.vue'
 import { onMounted, reactive, ref } from 'vue'
 import api from '../services/api'
 import gridCategories from '../services/gridCategories'

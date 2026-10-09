@@ -25,6 +25,13 @@ services:
         sync: false
       - key: GOOGLE_CLIENT_ID
         sync: false
+      # Optional - picture uploads in the admin forms. Without these the forms only accept a pasted link.
+      - key: SUPABASE_URL          # https://<project-ref>.supabase.co
+        sync: false
+      - key: SUPABASE_SERVICE_KEY  # Project Settings > API > service_role key (a secret - server only)
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET   # a PUBLIC bucket, default "photos"
+        value: photos
       - key: ADMIN_DEFAULT_USERNAME
         value: admin
       - key: ADMIN_DEFAULT_PASSWORD

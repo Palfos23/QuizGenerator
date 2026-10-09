@@ -55,6 +55,13 @@
 
       <div class="field">
         <label>Photo URL <span class="picker-hint">optional - shown to players and included in PDF downloads</span><input type="text" v-model="local.photoUrl" placeholder="https://…" /></label>
+        <div class="photo-upload-row">
+          <PhotoUploadButton @uploaded="url => local.photoUrl = url" />
+          <span class="photo-upload-hint">or paste a link above</span>
+        </div>
+        <div v-if="local.photoUrl" style="margin-top:10px;">
+          <img :src="local.photoUrl" alt="" class="club-logo-preview" />
+        </div>
       </div>
 
       <div v-if="allLabels.length" class="field">
@@ -93,6 +100,7 @@
 </template>
 
 <script setup>
+import PhotoUploadButton from './PhotoUploadButton.vue'
 import { onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import { LANGUAGES } from '../constants'

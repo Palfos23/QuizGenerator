@@ -151,6 +151,13 @@ export default {
   adminDeleteQuestion(id) {
     return client.delete(`/admin/questions/${id}`)
   },
+  adminUploadImage(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return client.post('/admin/images', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }).then(r => r.data)
+  },
   adminImportCsv(file) {
     const formData = new FormData()
     formData.append('file', file)
