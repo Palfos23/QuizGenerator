@@ -11,7 +11,16 @@ public class DailyQuizResultDto {
 
     private Integer score;
     private int maxScore;
+    private int pendingCount; // answers still waiting for an admin (the whole list reads PENDING until all are decided)
     private List<AnswerResultDto> answers;
+
+    public int getPendingCount() {
+        return pendingCount;
+    }
+
+    public void setPendingCount(int pendingCount) {
+        this.pendingCount = pendingCount;
+    }
 
     public Integer getScore() {
         return score;

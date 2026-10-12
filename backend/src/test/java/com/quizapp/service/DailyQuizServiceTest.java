@@ -508,6 +508,40 @@ class DailyQuizServiceTest {
     }
 
     @Test
+    void nothingAboutTheAnswersIsRevealedUntilEveryAnswerHasBeenReviewed() {
+        seedQuestions(20);
+        AppUser user = newUser();
+        Long setId = dailyQuizService.getOrCreateCurrentSet().getId();
+        Long attemptId = submitWrongAnswersAndReturnAttemptId(user, setId);
+        var answers = dailyQuizReviewService.getAttemptDetail(attemptId).getAnswers();
+        // Decide all but one: most verdicts exist on the server now, but the player must not see any of them.
+        for (int i = 0; i < answers.size() - 1; i++) dailyQuizReviewService.resolve(answers.get(i).getAnswerId(), i % 2 == 0);
+
+        var partly = dailyQuizService.getPlayState(setId, user.getEmail());
+
+        assertThat(partly.getAttemptStatus()).isEqualTo("SUBMITTED");
+        assertThat(partly.getResult().getScore()).isNull();
+        assertThat(partly.getResult().getPendingCount()).isEqualTo(1); // the real count, not "all of them"
+        assertThat(partly.getResult().getAnswers()).allSatisfy(a -> {
+            assertThat(a.getVerdict()).isEqualTo("PENDING");
+            assertThat(a.getCorrectAnswer()).as("no correct answers").isNull();
+            assertThat(a.getPointsAwarded()).isNull();
+            assertThat(a.getPercentCorrect()).isNull();
+            assertThat(a.getYourAnswer()).as("their own answer is still theirs to see").isEqualTo("not the answer");
+        });
+
+        // The last decision opens everything up at once.
+        dailyQuizReviewService.resolve(answers.get(answers.size() - 1).getAnswerId(), true);
+        var done = dailyQuizService.getPlayState(setId, user.getEmail());
+        assertThat(done.getAttemptStatus()).isEqualTo("GRADED");
+        assertThat(done.getResult().getPendingCount()).isZero();
+        assertThat(done.getResult().getAnswers()).allSatisfy(a -> {
+            assertThat(a.getVerdict()).isIn("CORRECT", "INCORRECT");
+            assertThat(a.getCorrectAnswer()).isNotNull();
+        });
+    }
+
+    @Test
     void cannotSubmitTwice() {
         seedQuestions(20);
         AppUser user = newUser();

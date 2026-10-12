@@ -119,7 +119,7 @@
           </div>
           <div class="dq-score-copy">
             <h2>Your answers are in</h2>
-            <p>An admin is checking {{ pendingCount === 1 ? 'one answer' : `${pendingCount} answers` }} - come back later for your final score.</p>
+            <p>An admin is checking {{ pendingCount === 1 ? 'one answer' : `${pendingCount} answers` }}. Your score and the correct answers are shown once everything has been checked - come back later.</p>
           </div>
         </div>
 
@@ -145,6 +145,7 @@
               <DailyQuizEasyMeter :percent="a.percentCorrect" :players="a.playersCounted" />
             </div>
             <div class="dq-answer-end">
+              <template v-if="!underReview">
               <span v-if="a.verdict === 'PENDING'" class="dq-pill dq-pill--wait">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
                 Under review
@@ -155,6 +156,7 @@
               <span v-else class="dq-pill" :class="a.verdict === 'CORRECT' ? 'dq-pill--ok' : 'dq-pill--bad'">
                 {{ a.verdict === 'CORRECT' ? 'Correct' : 'Wrong' }}
               </span>
+              </template>
               <span v-if="a.yearQuestion" class="dq-pill dq-pill--year">Year</span>
             </div>
           </article>
@@ -339,9 +341,13 @@ const scoreHeadline = computed(() => {
   return 'Good effort - see you tomorrow'
 })
 const correctCount = computed(() => (state.value?.result?.answers || []).filter(a => a.verdict === 'CORRECT').length)
-const pendingCount = computed(() => (state.value?.result?.answers || []).filter(a => a.verdict === 'PENDING').length)
+// The real number still waiting on an admin - until it's zero every row reads "pending", so counting rows would just say "all of them".
+const pendingCount = computed(() => state.value?.result?.pendingCount ?? 0)
+// Nothing but the player's own answers is shown until the whole quiz has been reviewed.
+const underReview = computed(() => state.value?.result?.score === null)
 
 function verdictClass(a) {
+  if (underReview.value) return ''
   if (a.verdict === 'PENDING') return 'dq-answer--wait'
   return a.verdict === 'CORRECT' ? 'dq-answer--ok' : 'dq-answer--bad'
 }

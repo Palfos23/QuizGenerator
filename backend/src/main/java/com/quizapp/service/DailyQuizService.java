@@ -387,21 +387,31 @@ public class DailyQuizService {
         return out;
     }
 
+    // What a player sees after submitting. Until EVERY answer has been decided (status GRADED) they only
+    // get their own answers back: no verdicts, no correct answers, no points, no per-question percentages.
+    // Otherwise someone waiting on a review could read the correct answers (and pass them on to players
+    // who haven't played yet), or work the pending ones out by elimination. Withheld here on the server -
+    // not just hidden by the page - and every row reads PENDING in that state.
     private DailyQuizResultDto buildAnswersView(DailyQuizAttempt attempt) {
-        Map<Long, DailyQuizQuestionStatDto> stats = questionStats(attempt.getSet().getId());
+        boolean graded = attempt.getStatus() == DailyQuizAttemptStatus.GRADED;
+        Map<Long, DailyQuizQuestionStatDto> stats = graded ? questionStats(attempt.getSet().getId()) : Map.of();
         List<DailyQuizAnswer> answers = answerRepository.findByAttempt_IdOrderByIdAsc(attempt.getId());
         DailyQuizResultDto result = new DailyQuizResultDto();
-        result.setScore(attempt.getStatus() == DailyQuizAttemptStatus.GRADED ? attempt.getScore() : null);
+        result.setScore(graded ? attempt.getScore() : null);
+        // How many answers still wait for an admin - the real count, not "all of them".
+        result.setPendingCount((int) answers.stream().filter(a -> a.getVerdict() == DailyQuizAnswerVerdict.PENDING).count());
         // Not simply "number of answers": the Year question is worth up to 2.
         result.setMaxScore(answers.stream().mapToInt(a -> DailyQuizScoring.maxPoints(a.getQuestion())).sum());
         List<DailyQuizResultDto.AnswerResultDto> rows = new ArrayList<>();
         for (int i = 0; i < answers.size(); i++) {
             DailyQuizAnswer a = answers.get(i);
-            boolean pending = a.getVerdict() == DailyQuizAnswerVerdict.PENDING;
-            Integer pointsAwarded = pending ? null : (a.getVerdict() == DailyQuizAnswerVerdict.CORRECT ? a.getPoints() : 0);
+            boolean hidden = !graded; // the whole attempt is still under review
+            Integer pointsAwarded = hidden ? null : (a.getVerdict() == DailyQuizAnswerVerdict.CORRECT ? a.getPoints() : 0);
             DailyQuizResultDto.AnswerResultDto row = new DailyQuizResultDto.AnswerResultDto(
                     i + 1, a.getQuestion().getQuestionText(), a.getAnswerText(),
-                    pending ? null : a.getQuestion().getAnswer(), a.getVerdict().name(), a.getQuestion().getPhotoUrl(),
+                    hidden ? null : a.getQuestion().getAnswer(),
+                    hidden ? DailyQuizAnswerVerdict.PENDING.name() : a.getVerdict().name(),
+                    a.getQuestion().getPhotoUrl(),
                     DailyQuizScoring.isScoredAsYear(a.getQuestion()), pointsAwarded);
             DailyQuizQuestionStatDto stat = stats.get(a.getQuestion().getId());
             if (stat != null) {

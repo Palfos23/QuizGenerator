@@ -674,17 +674,12 @@ a.dq-row:hover, .dq-row--link:hover {
 .dq-segment button.is-on.ok { background: var(--dq-ok); color: #06301f; }
 .dq-segment button.is-on.bad { background: var(--dq-bad); color: #3b0614; }
 
-/* How easy a question was: thin bar + "78% got it right · Easy" */
+/* How easy a question was: thin neutral bar + "78% got it right" - deliberately uncoloured, the verdict
+   pill beside it already carries the colour */
 .dq-easy { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 0.82rem; color: var(--text-dim); }
-.dq-easy-track { flex: 0 0 76px; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
-.dq-easy-track i { display: block; height: 100%; border-radius: 999px; background: var(--dq-ok); }
-.dq-easy.is-medium .dq-easy-track i { background: var(--dq-wait); }
-.dq-easy.is-hard .dq-easy-track i { background: var(--dq-bad); }
-.dq-easy-text b { color: var(--text); }
-.dq-easy.is-easy .dq-easy-text { color: var(--dq-ok); }
-.dq-easy.is-medium .dq-easy-text { color: var(--dq-wait); }
-.dq-easy.is-hard .dq-easy-text { color: var(--dq-bad); }
-.dq-easy.is-easy .dq-easy-text b, .dq-easy.is-medium .dq-easy-text b, .dq-easy.is-hard .dq-easy-text b { color: inherit; }
+.dq-easy-track { flex: 0 0 76px; height: 5px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.dq-easy-track i { display: block; height: 100%; border-radius: 999px; background: rgba(255, 255, 255, 0.55); }
+.dq-easy-text b { color: var(--text); font-weight: 650; }
 
 /* "Beat the expert": the question author's score, shown beside the ranking instead of in it */
 .dq-expert {
