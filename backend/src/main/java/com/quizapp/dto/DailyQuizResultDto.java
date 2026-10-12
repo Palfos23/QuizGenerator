@@ -46,6 +46,8 @@ public class DailyQuizResultDto {
         private String photoUrl; // null for questions without a picture
         private boolean yearQuestion;
         private Integer pointsAwarded; // null while PENDING; 0 for a wrong answer
+        private Integer percentCorrect; // how easy the question was: share of the points all players earned on it; null with too few answers to say
+        private int playersCounted; // how many answers that percentage rests on
 
         public AnswerResultDto() {
         }
@@ -116,6 +118,22 @@ public class DailyQuizResultDto {
 
         public void setYearQuestion(boolean yearQuestion) {
             this.yearQuestion = yearQuestion;
+        }
+
+        public Integer getPercentCorrect() {
+            return percentCorrect;
+        }
+
+        public void setPercentCorrect(Integer percentCorrect) {
+            this.percentCorrect = percentCorrect;
+        }
+
+        public int getPlayersCounted() {
+            return playersCounted;
+        }
+
+        public void setPlayersCounted(int playersCounted) {
+            this.playersCounted = playersCounted;
         }
 
         public Integer getPointsAwarded() {

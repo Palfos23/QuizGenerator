@@ -1,6 +1,7 @@
 package com.quizapp.service;
 
 import com.quizapp.dto.DailyQuizPlayStateDto;
+import com.quizapp.dto.DailyQuizQuestionStatDto;
 import com.quizapp.dto.DailyQuizResultDto;
 import com.quizapp.dto.DailyQuizScoreboardDto;
 import com.quizapp.dto.DailyQuizScoreboardEntryDto;
@@ -352,7 +353,42 @@ public class DailyQuizService {
         return dto;
     }
 
+    // Fewer answers than this and a percentage would be noise (one player = 0% or 100%), so none is shown.
+    static final int MIN_ANSWERS_FOR_STATS = 3;
+
+    /**
+     * How each question of a day went for the players: the share of the available points they earned.
+     * The expert is left out (they're the benchmark, not a player), as are answers still waiting for an
+     * admin, and a question with fewer than MIN_ANSWERS_FOR_STATS answers gets no entry. Worked out live
+     * from the day's answers - they are deleted with the quiz after 7 days, which is as long as it's shown.
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, DailyQuizQuestionStatDto> questionStats(Long setId) {
+        List<Long> attemptIds = attemptRepository.findBySet_Id(setId).stream()
+                .filter(a -> a.getStatus() != DailyQuizAttemptStatus.IN_PROGRESS)
+                .filter(a -> !expertConfig.isExpert(a.getUser().getId()))
+                .map(DailyQuizAttempt::getId)
+                .collect(Collectors.toList());
+        if (attemptIds.isEmpty()) return Map.of();
+
+        Map<Long, List<DailyQuizAnswer>> byQuestion = answerRepository.findByAttempt_IdIn(attemptIds).stream()
+                .filter(a -> a.getVerdict() != DailyQuizAnswerVerdict.PENDING)
+                .collect(Collectors.groupingBy(a -> a.getQuestion().getId()));
+
+        Map<Long, DailyQuizQuestionStatDto> out = new java.util.HashMap<>();
+        byQuestion.forEach((questionId, answers) -> {
+            if (answers.size() < MIN_ANSWERS_FOR_STATS) return;
+            // A wrong answer earns 0 whatever its stored points are (the field only says what CORRECT is worth).
+            long earned = answers.stream().filter(a -> a.getVerdict() == DailyQuizAnswerVerdict.CORRECT).mapToLong(DailyQuizAnswer::getPoints).sum();
+            long available = answers.stream().mapToLong(a -> DailyQuizScoring.maxPoints(a.getQuestion())).sum();
+            int percent = available == 0 ? 0 : (int) Math.round(100.0 * earned / available);
+            out.put(questionId, new DailyQuizQuestionStatDto(questionId, Math.min(100, percent), answers.size()));
+        });
+        return out;
+    }
+
     private DailyQuizResultDto buildAnswersView(DailyQuizAttempt attempt) {
+        Map<Long, DailyQuizQuestionStatDto> stats = questionStats(attempt.getSet().getId());
         List<DailyQuizAnswer> answers = answerRepository.findByAttempt_IdOrderByIdAsc(attempt.getId());
         DailyQuizResultDto result = new DailyQuizResultDto();
         result.setScore(attempt.getStatus() == DailyQuizAttemptStatus.GRADED ? attempt.getScore() : null);
@@ -363,10 +399,16 @@ public class DailyQuizService {
             DailyQuizAnswer a = answers.get(i);
             boolean pending = a.getVerdict() == DailyQuizAnswerVerdict.PENDING;
             Integer pointsAwarded = pending ? null : (a.getVerdict() == DailyQuizAnswerVerdict.CORRECT ? a.getPoints() : 0);
-            rows.add(new DailyQuizResultDto.AnswerResultDto(
+            DailyQuizResultDto.AnswerResultDto row = new DailyQuizResultDto.AnswerResultDto(
                     i + 1, a.getQuestion().getQuestionText(), a.getAnswerText(),
                     pending ? null : a.getQuestion().getAnswer(), a.getVerdict().name(), a.getQuestion().getPhotoUrl(),
-                    DailyQuizScoring.isScoredAsYear(a.getQuestion()), pointsAwarded));
+                    DailyQuizScoring.isScoredAsYear(a.getQuestion()), pointsAwarded);
+            DailyQuizQuestionStatDto stat = stats.get(a.getQuestion().getId());
+            if (stat != null) {
+                row.setPercentCorrect(stat.getPercentCorrect());
+                row.setPlayersCounted(stat.getPlayers());
+            }
+            rows.add(row);
         }
         result.setAnswers(rows);
         return result;

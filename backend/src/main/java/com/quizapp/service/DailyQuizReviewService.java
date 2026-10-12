@@ -49,6 +49,16 @@ public class DailyQuizReviewService {
         this.questionRepository = questionRepository;
     }
 
+    // How each of the day's questions went (see DailyQuizService#questionStats) - shown next to the question
+    // in the admin's question list, where a very low figure is often a question or answer that needs fixing.
+    @Transactional(readOnly = true)
+    public List<com.quizapp.dto.DailyQuizQuestionStatDto> listQuestionStatsForSet(Long setId) {
+        setRepository.findById(setId)
+                .filter(found -> !DailyQuizService.isExpired(found.getQuizDate()))
+                .orElseThrow(() -> new ResourceNotFoundException("No daily quiz found with id " + setId));
+        return new java.util.ArrayList<>(dailyQuizService.questionStats(setId).values());
+    }
+
     // The day's questions in the order players see them, with their stored answers - so an admin can
     // spot and fix a wrong question or answer without hunting for it in the question bank. A question
     // that has since been deleted from the bank is simply left out.
@@ -97,13 +107,20 @@ public class DailyQuizReviewService {
                 .orElseThrow(() -> new ResourceNotFoundException("No attempt found with id " + attemptId));
         List<DailyQuizAnswer> answers = answerRepository.findByAttempt_IdOrderByIdAsc(attemptId);
 
+        Map<Long, com.quizapp.dto.DailyQuizQuestionStatDto> stats = dailyQuizService.questionStats(attempt.getSet().getId());
         List<DailyQuizAttemptDetailDto.AnswerDto> rows = new java.util.ArrayList<>();
         for (int i = 0; i < answers.size(); i++) {
             DailyQuizAnswer a = answers.get(i);
-            rows.add(new DailyQuizAttemptDetailDto.AnswerDto(
+            DailyQuizAttemptDetailDto.AnswerDto row = new DailyQuizAttemptDetailDto.AnswerDto(
                     a.getId(), i + 1, a.getQuestion().getQuestionText(), a.getAnswerText(),
                     a.getQuestion().getAnswer(), a.getVerdict().name(), a.getQuestion().getPhotoUrl(),
-                    DailyQuizScoring.isScoredAsYear(a.getQuestion()), a.getPoints(), isReviewable(a)));
+                    DailyQuizScoring.isScoredAsYear(a.getQuestion()), a.getPoints(), isReviewable(a));
+            var stat = stats.get(a.getQuestion().getId());
+            if (stat != null) {
+                row.setPercentCorrect(stat.getPercentCorrect());
+                row.setPlayersCounted(stat.getPlayers());
+            }
+            rows.add(row);
         }
         int maxScore = answers.stream().mapToInt(a -> DailyQuizScoring.maxPoints(a.getQuestion())).sum();
         boolean graded = attempt.getStatus() == DailyQuizAttemptStatus.GRADED;

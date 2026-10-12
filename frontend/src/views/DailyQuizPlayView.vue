@@ -142,6 +142,7 @@
                 <span class="label">Correct</span>
                 <b>{{ a.correctAnswer }}</b>
               </div>
+              <DailyQuizEasyMeter :percent="a.percentCorrect" :players="a.playersCounted" />
             </div>
             <div class="dq-answer-end">
               <span v-if="a.verdict === 'PENDING'" class="dq-pill dq-pill--wait">
@@ -206,6 +207,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import LoadingState from '../components/LoadingState.vue'
 import DailyQuizScoreboardModal from '../components/DailyQuizScoreboardModal.vue'
+import DailyQuizEasyMeter from '../components/DailyQuizEasyMeter.vue'
 import { useEscapeKey } from '../composables/useEscapeKey'
 
 const route = useRoute()

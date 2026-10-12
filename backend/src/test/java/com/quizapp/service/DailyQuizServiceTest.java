@@ -450,6 +450,63 @@ class DailyQuizServiceTest {
         }
     }
 
+    // Submits `answerFor(question)` for every question of the set (null = leave it blank).
+    private void submitFor(AppUser user, Long setId, java.util.function.Function<Question, String> answerFor) {
+        DailyQuizPlayStateDto play = dailyQuizService.getPlayState(setId, user.getEmail());
+        DailyQuizSubmitRequest request = new DailyQuizSubmitRequest();
+        List<DailyQuizSubmitRequest.AnswerSubmission> list = new ArrayList<>();
+        for (DailyQuizPlayStateDto.QuestionDto q : play.getQuestions()) {
+            DailyQuizSubmitRequest.AnswerSubmission a = new DailyQuizSubmitRequest.AnswerSubmission();
+            a.setQuestionId(q.getQuestionId());
+            a.setAnswerText(answerFor.apply(questionRepository.findById(q.getQuestionId()).orElseThrow()));
+            list.add(a);
+        }
+        request.setAnswers(list);
+        dailyQuizService.submitAnswers(setId, user.getEmail(), request);
+    }
+
+    @Test
+    void eachQuestionShowsHowEasyItWasFromThePlayersAnswersButNotTheExpertsOrTooFewAnswers() {
+        seedQuestions(30);
+        Long setId = dailyQuizService.generateSet(LocalDate.now().plusYears(61)).getId();
+        Long firstQuestionId = dailyQuizService.getPlayState(setId, newUser().getEmail()).getQuestions().get(0).getQuestionId();
+
+        AppUser expert = newUser();
+        long before = expertConfig.getExpertUserId();
+        expertConfig.setExpertUserId(expert.getId());
+        try {
+            // Three players get everything right, a fourth leaves the first question blank (a decided miss)...
+            for (int i = 0; i < 3; i++) submitFor(newUser(), setId, Question::getAnswer);
+            submitFor(newUser(), setId, q -> q.getId().equals(firstQuestionId) ? "" : q.getAnswer());
+            // ...and the expert misses everything - which must not drag the percentages down.
+            submitFor(expert, setId, q -> "");
+
+            var stats = dailyQuizService.questionStats(setId);
+
+            assertThat(stats.get(firstQuestionId).getPercentCorrect()).isEqualTo(75); // 3 of 4 players
+            assertThat(stats.get(firstQuestionId).getPlayers()).isEqualTo(4);
+            assertThat(stats.entrySet().stream().filter(e -> !e.getKey().equals(firstQuestionId)))
+                    .allMatch(e -> e.getValue().getPercentCorrect() == 100);
+            // The player's own results view carries the figure per question.
+            AppUser late = newUser();
+            submitFor(late, setId, Question::getAnswer);
+            var result = dailyQuizService.getPlayState(setId, late.getEmail()).getResult();
+            assertThat(result.getAnswers().get(0).getPercentCorrect()).isNotNull();
+        } finally {
+            expertConfig.setExpertUserId(before);
+        }
+    }
+
+    @Test
+    void aQuestionWithTooFewAnswersGetsNoPercentage() {
+        seedQuestions(30);
+        Long setId = dailyQuizService.generateSet(LocalDate.now().plusYears(62)).getId();
+        submitFor(newUser(), setId, Question::getAnswer);
+        submitFor(newUser(), setId, Question::getAnswer);
+
+        assertThat(dailyQuizService.questionStats(setId)).isEmpty();
+    }
+
     @Test
     void cannotSubmitTwice() {
         seedQuestions(20);

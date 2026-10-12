@@ -73,6 +73,8 @@ public class DailyQuizAttemptDetailDto {
         private boolean yearQuestion; // auto-graded (2 / 1 / 0 points) - never needs a decision
         private int points; // what a CORRECT verdict is worth
         private boolean reviewable; // an admin can (re)decide this one - false for auto-graded answers
+        private Integer percentCorrect; // how the question went for all players (null with too few answers)
+        private int playersCounted;
 
         public AnswerDto(Long answerId, int questionNumber, String questionText, String submittedAnswer, String correctAnswer, String verdict,
                          String photoUrl, boolean yearQuestion, int points, boolean reviewable) {
@@ -126,6 +128,22 @@ public class DailyQuizAttemptDetailDto {
 
         public boolean isReviewable() {
             return reviewable;
+        }
+
+        public Integer getPercentCorrect() {
+            return percentCorrect;
+        }
+
+        public void setPercentCorrect(Integer percentCorrect) {
+            this.percentCorrect = percentCorrect;
+        }
+
+        public int getPlayersCounted() {
+            return playersCounted;
+        }
+
+        public void setPlayersCounted(int playersCounted) {
+            this.playersCounted = playersCounted;
         }
     }
 }

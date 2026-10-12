@@ -38,6 +38,7 @@
           </div>
 
           <img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="dq-photo dq-photo--small" @error="e => e.target.style.display = 'none'" />
+          <DailyQuizEasyMeter :percent="a.percentCorrect" :players="a.playersCounted" />
 
           <div class="dq-compare">
             <div class="dq-compare-cell dq-compare-cell--theirs">
@@ -113,6 +114,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import DailyQuizScoreboardModal from '../components/DailyQuizScoreboardModal.vue'
 import AdminDailyQuizQuestionsModal from '../components/AdminDailyQuizQuestionsModal.vue'
+import DailyQuizEasyMeter from '../components/DailyQuizEasyMeter.vue'
 
 const route = useRoute()
 const attemptId = route.params.id

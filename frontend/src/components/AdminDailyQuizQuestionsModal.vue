@@ -14,6 +14,7 @@
             <div class="dq-qrow-text">{{ q.questionText }}</div>
             <img v-if="q.photoUrl" :src="q.photoUrl" alt="" class="dq-photo dq-photo--small" @error="e => e.target.style.display = 'none'" />
             <div class="dq-qrow-answer"><span>Answer</span><b>{{ q.answer }}</b></div>
+            <DailyQuizEasyMeter v-if="statFor(q.id)" :percent="statFor(q.id).percentCorrect" :players="statFor(q.id).players" />
           </div>
           <button class="dq-chip-btn" @click="editing = q">Edit</button>
         </article>
@@ -33,6 +34,7 @@ import { onMounted, ref } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import QuestionFormModal from './QuestionFormModal.vue'
+import DailyQuizEasyMeter from './DailyQuizEasyMeter.vue'
 import { useEscapeKey } from '../composables/useEscapeKey'
 
 // A day's questions with their answers, each editable in place (the same edit form as the question
@@ -47,13 +49,20 @@ const questions = ref([])
 const loading = ref(true)
 const error = ref('')
 const editing = ref(null)
+const statsByQuestion = ref({})
+const statFor = id => statsByQuestion.value[id] || null
 
 // Escape closes the edit form first, then this list.
 useEscapeKey(() => { if (editing.value) editing.value = null; else emit('close') })
 
 onMounted(async () => {
   try {
-    questions.value = await api.adminListDailyQuizQuestions(props.setId)
+    const [list, stats] = await Promise.all([
+      api.adminListDailyQuizQuestions(props.setId),
+      api.adminListDailyQuizQuestionStats(props.setId).catch(() => []) // a nice-to-have: the list works without it
+    ])
+    questions.value = list
+    statsByQuestion.value = Object.fromEntries(stats.map(st => [st.questionId, st]))
   } catch (e) {
     error.value = 'Could not load this quiz\'s questions.'
   } finally {
