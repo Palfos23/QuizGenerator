@@ -11,6 +11,7 @@ import com.quizapp.model.*;
 import com.quizapp.repository.AppUserRepository;
 import com.quizapp.repository.DailyQuizAnswerRepository;
 import com.quizapp.repository.DailyQuizAttemptRepository;
+import com.quizapp.repository.DailyQuizQuestionUseRepository;
 import com.quizapp.repository.DailyQuizSetRepository;
 import com.quizapp.repository.QuestionRepository;
 import org.slf4j.Logger;
@@ -22,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +57,11 @@ public class DailyQuizService {
     // player's per-question answers) is deleted with it; only the compact per-player result
     // records survive (see DailyQuizResult), which is what the weekly winner is worked out from.
     private static final int MAX_AGE_DAYS = 7;
+    // A question that has appeared in a daily quiz stays out of the next ones for this many days. Longer
+    // than MAX_AGE_DAYS, so it can't come from the stored quizzes alone - see DailyQuizQuestionUse.
+    static final int NO_REPEAT_DAYS = 30;
+    // How long the "question was used" log is kept: comfortably past NO_REPEAT_DAYS, then it's just clutter.
+    private static final int QUESTION_USE_RETENTION_DAYS = 90;
 
     private static final Logger log = LoggerFactory.getLogger(DailyQuizService.class);
 
@@ -68,6 +76,7 @@ public class DailyQuizService {
     private final AdminNotificationService adminNotificationService;
     private final DailyQuizResultService resultService;
     private final ExpertConfig expertConfig;
+    private final DailyQuizQuestionUseRepository questionUseRepository;
 
     public DailyQuizService(DailyQuizSetRepository setRepository,
                              DailyQuizAttemptRepository attemptRepository,
@@ -76,7 +85,8 @@ public class DailyQuizService {
                              AppUserRepository appUserRepository,
                              AdminNotificationService adminNotificationService,
                              DailyQuizResultService resultService,
-                             ExpertConfig expertConfig) {
+                             ExpertConfig expertConfig,
+                             DailyQuizQuestionUseRepository questionUseRepository) {
         this.setRepository = setRepository;
         this.attemptRepository = attemptRepository;
         this.answerRepository = answerRepository;
@@ -85,6 +95,7 @@ public class DailyQuizService {
         this.adminNotificationService = adminNotificationService;
         this.resultService = resultService;
         this.expertConfig = expertConfig;
+        this.questionUseRepository = questionUseRepository;
     }
 
     @Transactional
@@ -106,24 +117,35 @@ public class DailyQuizService {
         // multi-language daily quiz is ever wanted.
         List<Question> candidates = new ArrayList<>(questionRepository.findByLanguage(Language.NO));
 
-        // Excludes questions from every set still in storage (ages 0-6, since a quiz that has reached
-        // MAX_AGE_DAYS is deleted) - so a question doesn't come round again within the week.
-        Set<Long> recentlyUsed = setRepository.findByQuizDateAfter(quizDate.minusDays(MAX_AGE_DAYS))
-                .stream()
-                .flatMap(s -> s.getQuestionIds().stream())
-                .collect(Collectors.toSet());
+        // When each question last appeared: from the durable log (covers the whole no-repeat window) plus the
+        // quizzes still in storage (which also covers days from before the log existed).
+        Map<Long, LocalDate> lastUsed = new HashMap<>();
+        LocalDate windowStart = quizDate.minusDays(NO_REPEAT_DAYS);
+        questionUseRepository.findByQuizDateAfterAndQuizDateLessThanEqual(windowStart, quizDate)
+                .forEach(u -> lastUsed.merge(u.getQuestionId(), u.getQuizDate(), (a, b) -> a.isAfter(b) ? a : b));
+        setRepository.findByQuizDateAfter(quizDate.minusDays(MAX_AGE_DAYS))
+                .forEach(st -> st.getQuestionIds().forEach(id -> lastUsed.merge(id, st.getQuizDate(), (a, b) -> a.isAfter(b) ? a : b)));
+        Set<Long> recentlyUsed = lastUsed.keySet();
+
         // The quiz has two fixed "feature" slots, each filled by exactly ONE question from its own
         // category - never more, never fewer - with every other question drawn from outside both:
         //   position 1  : a Logo question (with a photo - the text alone is just "which airline?")
         //   position 10 : a Year question (several events from one year; answered with that year)
-        Question logoQuestion = pickFeatureQuestion(candidates, recentlyUsed, DailyQuizService::isLogoQuestionWithPhoto);
-        Question yearQuestion = pickFeatureQuestion(candidates, recentlyUsed, DailyQuizService::isYearQuestionWithYearAnswer);
+        Question logoQuestion = pickFeatureQuestion(candidates, lastUsed, DailyQuizService::isLogoQuestionWithPhoto);
+        Question yearQuestion = pickFeatureQuestion(candidates, lastUsed, DailyQuizService::isYearQuestionWithYearAnswer);
 
         List<Question> others = candidates.stream()
                 .filter(q -> !isLogoCategory(q) && !DailyQuizScoring.isYearQuestion(q))
-                .filter(q -> !recentlyUsed.contains(q.getId()))
                 .collect(Collectors.toList());
-        Collections.shuffle(others);
+        // Never-seen-lately questions first, in random order; only if there aren't enough of those does the
+        // quiz dip into the 30-day window, taking the ones used longest ago (a repeat beats a short quiz).
+        List<Question> fresh = others.stream().filter(q -> !recentlyUsed.contains(q.getId())).collect(Collectors.toList());
+        Collections.shuffle(fresh);
+        List<Question> stale = others.stream().filter(q -> recentlyUsed.contains(q.getId()))
+                .sorted(Comparator.comparing((Question q) -> lastUsed.get(q.getId())))
+                .collect(Collectors.toList());
+        others = new ArrayList<>(fresh);
+        others.addAll(stale);
 
         int featureCount = (logoQuestion != null ? 1 : 0) + (yearQuestion != null ? 1 : 0);
         List<Long> questionIds = new ArrayList<>();
@@ -142,18 +164,24 @@ public class DailyQuizService {
         DailyQuizSet set = new DailyQuizSet();
         set.setQuizDate(quizDate);
         set.setQuestionIds(questionIds);
-        return setRepository.save(set);
+        DailyQuizSet saved = setRepository.save(set);
+        // Remember what was used, for the no-repeat window - the quiz itself is deleted after 7 days.
+        questionUseRepository.deleteAll(questionUseRepository.findByQuizDate(quizDate));
+        questionUseRepository.saveAll(questionIds.stream().map(id -> new DailyQuizQuestionUse(id, quizDate)).collect(Collectors.toList()));
+        return saved;
     }
 
-    // A random question matching `eligible`, preferring ones not used within the retention window.
-    // If every eligible one HAS been used recently, repeating one beats a quiz with that slot
-    // missing altogether. Null only if nothing eligible exists at all.
-    private static Question pickFeatureQuestion(List<Question> candidates, Set<Long> recentlyUsed,
+    // A random question matching `eligible` that hasn't been used within the no-repeat window. If every
+    // eligible one HAS been used (the logo/year pools are small), the one used longest ago is taken - a
+    // repeat beats a quiz with that slot missing. Null only if nothing eligible exists at all.
+    private static Question pickFeatureQuestion(List<Question> candidates, Map<Long, LocalDate> lastUsed,
                                                 java.util.function.Predicate<Question> eligible) {
         List<Question> pool = candidates.stream().filter(eligible).collect(Collectors.toList());
-        List<Question> fresh = pool.stream().filter(q -> !recentlyUsed.contains(q.getId())).collect(Collectors.toList());
-        List<Question> choices = fresh.isEmpty() ? pool : fresh;
-        return choices.isEmpty() ? null : choices.get(new Random().nextInt(choices.size()));
+        List<Question> fresh = pool.stream().filter(q -> !lastUsed.containsKey(q.getId())).collect(Collectors.toList());
+        if (!fresh.isEmpty()) {
+            return fresh.get(new Random().nextInt(fresh.size()));
+        }
+        return pool.stream().min(Comparator.comparing((Question q) -> lastUsed.get(q.getId()))).orElse(null);
     }
 
     // A Year question needs a stored answer that actually contains a year - otherwise it couldn't be
@@ -188,6 +216,7 @@ public class DailyQuizService {
     @Transactional
     public void deleteOldSets() {
         resultService.pruneOld(LocalDate.now());
+        questionUseRepository.deleteByQuizDateBefore(LocalDate.now().minusDays(QUESTION_USE_RETENTION_DAYS));
 
         List<DailyQuizSet> stale = setRepository.findByQuizDateLessThanEqual(expiryCutoff());
         if (stale.isEmpty()) {

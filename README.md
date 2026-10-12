@@ -603,8 +603,13 @@ Admins can upload their own pictures (question photos, subject photos, club logo
 into the same field a pasted link would. It is off until configured:
 
 1. In Supabase: **Storage > New bucket**, name it `photos`, tick **Public bucket**.
-2. In Supabase: **Project Settings > API** - copy the project URL and the `service_role` key (keep that one secret).
-3. On Render set `SUPABASE_URL` (e.g. `https://abcdxyz.supabase.co`) and `SUPABASE_SERVICE_KEY`
+2. In Supabase, get the project URL and a server key. The dashboard has been reorganised over time, so if a
+   name below is missing, look in **Project Settings** (left sidebar) for **API Keys** / **Data API**:
+   - the **Project URL** looks like `https://<project-ref>.supabase.co` (it's also on the project's home
+     page / the **Connect** dialog; the `<project-ref>` is the same one in your database username `postgres.<project-ref>`);
+   - the **secret key** (`sb_secret_...`) from the **API Keys** page - or, on older projects, the
+     `service_role` key under **Legacy API Keys**. Never use the publishable / `anon` key, and keep this one secret.
+3. On Render set `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` to those two values
    (`SUPABASE_STORAGE_BUCKET` only if you named the bucket something else).
 
 Without these the forms still work - they just take a pasted link. Endpoint: `POST /api/admin/images`

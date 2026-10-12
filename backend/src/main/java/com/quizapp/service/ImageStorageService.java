@@ -105,14 +105,18 @@ public class ImageStorageService {
         }
         Prepared p = prepare(original);
         String path = UUID.randomUUID() + "." + p.extension();
-        HttpRequest request = HttpRequest.newBuilder(URI.create(supabaseUrl + "/storage/v1/object/" + bucket + "/" + path))
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(supabaseUrl + "/storage/v1/object/" + bucket + "/" + path))
                 .timeout(Duration.ofSeconds(30))
-                .header("Authorization", "Bearer " + serviceKey)
                 .header("apikey", serviceKey)
                 .header("Content-Type", p.contentType())
                 .header("Cache-Control", "max-age=31536000")
-                .POST(HttpRequest.BodyPublishers.ofByteArray(p.bytes()))
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofByteArray(p.bytes()));
+        // Supabase's newer "secret" keys (sb_secret_...) are not JWTs and go in the apikey header only;
+        // the older service_role key is a JWT and is also sent as the bearer token.
+        if (!serviceKey.startsWith("sb_")) {
+            builder.header("Authorization", "Bearer " + serviceKey);
+        }
+        HttpRequest request = builder.build();
         try {
             HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() / 100 != 2) {

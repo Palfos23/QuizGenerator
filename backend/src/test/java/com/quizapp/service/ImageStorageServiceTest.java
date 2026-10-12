@@ -21,6 +21,7 @@ class ImageStorageServiceTest {
     private String baseUrl;
     private final AtomicReference<String> path = new AtomicReference<>();
     private final AtomicReference<String> auth = new AtomicReference<>();
+    private final AtomicReference<String> apikey = new AtomicReference<>();
     private final AtomicReference<String> contentType = new AtomicReference<>();
     private final AtomicReference<byte[]> body = new AtomicReference<>();
     private volatile int status = 200;
@@ -31,6 +32,7 @@ class ImageStorageServiceTest {
         server.createContext("/", exchange -> {
             path.set(exchange.getRequestURI().getPath());
             auth.set(exchange.getRequestHeaders().getFirst("Authorization"));
+            apikey.set(exchange.getRequestHeaders().getFirst("apikey"));
             contentType.set(exchange.getRequestHeaders().getFirst("Content-Type"));
             body.set(exchange.getRequestBody().readAllBytes());
             byte[] reply = "{}".getBytes();
@@ -62,9 +64,20 @@ class ImageStorageServiceTest {
 
         assertThat(path.get()).startsWith("/storage/v1/object/photos/").endsWith(".jpg");
         assertThat(auth.get()).isEqualTo("Bearer secret-key");
+        assertThat(apikey.get()).isEqualTo("secret-key");
         assertThat(contentType.get()).isEqualTo("image/jpeg");
         assertThat(url).startsWith(baseUrl + "/storage/v1/object/public/photos/").endsWith(".jpg");
         assertThat(ImageIO.read(new ByteArrayInputStream(body.get()))).isNotNull();
+    }
+
+    @Test
+    void theNewStyleSecretKeyIsSentAsTheApikeyOnly() throws Exception {
+        ImageStorageService service = new ImageStorageService(baseUrl, "sb_secret_abc123", "photos");
+
+        service.upload(image(50, 50, BufferedImage.TYPE_INT_RGB, "png"));
+
+        assertThat(apikey.get()).isEqualTo("sb_secret_abc123");
+        assertThat(auth.get()).as("not a JWT, so not a bearer token").isNull();
     }
 
     @Test

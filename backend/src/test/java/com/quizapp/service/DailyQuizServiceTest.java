@@ -43,6 +43,8 @@ class DailyQuizServiceTest {
     private AppUserRepository appUserRepository;
     @Autowired
     private ExpertConfig expertConfig;
+    @Autowired
+    private com.quizapp.repository.DailyQuizQuestionUseRepository questionUseRepository;
 
     private AppUser newUser() {
         // Both fields unique - tests in this class share one H2 database with
@@ -404,6 +406,47 @@ class DailyQuizServiceTest {
             assertThat(board.getExpert().getMaxScore()).isPositive();
         } finally {
             expertConfig.setExpertUserId(before);
+        }
+    }
+
+    @Test
+    void aQuestionUsedWithinThirtyDaysStaysOutEvenOnceItsQuizIsGone() {
+        List<Question> pool = seedQuestions(60);
+        List<Long> usedTwentyDaysAgo = pool.stream().limit(20).map(Question::getId).toList();
+        LocalDate futureDay = LocalDate.now().plusYears(9);
+        // Only the durable log remembers these - the quiz they appeared in was deleted long ago (it's 20 days old).
+        var rows = questionUseRepository.saveAll(usedTwentyDaysAgo.stream()
+                .map(id -> new com.quizapp.model.DailyQuizQuestionUse(id, futureDay.minusDays(20))).toList());
+        try {
+            DailyQuizSet generated = dailyQuizService.generateSet(futureDay);
+
+            assertThat(generated.getQuestionIds()).hasSize(15);
+            assertThat(generated.getQuestionIds()).noneMatch(usedTwentyDaysAgo::contains);
+            // ...and the new quiz is itself written to the log, so the next 30 days avoid its questions too.
+            assertThat(questionUseRepository.findByQuizDate(futureDay))
+                    .extracting(com.quizapp.model.DailyQuizQuestionUse::getQuestionId)
+                    .containsExactlyInAnyOrderElementsOf(generated.getQuestionIds());
+        } finally {
+            questionUseRepository.deleteAll(rows);
+            questionUseRepository.deleteAll(questionUseRepository.findByQuizDate(futureDay));
+        }
+    }
+
+    @Test
+    void aQuestionFromMoreThanThirtyDaysAgoIsAllowedAgain() {
+        // Every question in the shared test database that could be picked is "fresh" except these - so if the
+        // 31-day-old use were wrongly still blocking, 100% of a tiny dedicated pool would be unavailable. Check the
+        // window boundary directly through the repository query instead.
+        LocalDate day = LocalDate.now().plusYears(10);
+        var old = questionUseRepository.save(new com.quizapp.model.DailyQuizQuestionUse(-1L, day.minusDays(31)));
+        var recent = questionUseRepository.save(new com.quizapp.model.DailyQuizQuestionUse(-2L, day.minusDays(29)));
+        try {
+            var inWindow = questionUseRepository.findByQuizDateAfterAndQuizDateLessThanEqual(
+                    day.minusDays(DailyQuizService.NO_REPEAT_DAYS), day);
+            assertThat(inWindow).extracting(com.quizapp.model.DailyQuizQuestionUse::getQuestionId)
+                    .contains(-2L).doesNotContain(-1L);
+        } finally {
+            questionUseRepository.deleteAll(List.of(old, recent));
         }
     }
 
