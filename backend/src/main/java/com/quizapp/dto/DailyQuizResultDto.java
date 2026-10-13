@@ -13,6 +13,17 @@ public class DailyQuizResultDto {
     private int maxScore;
     private int pendingCount; // answers still waiting for an admin (the whole list reads PENDING until all are decided)
     private List<AnswerResultDto> answers;
+    // The expert's score for this day, once the player's own result is final - for the "beat the expert"
+    // comparison on the results page. Null for the expert themselves, and while the result is still under review.
+    private DailyQuizScoreboardDto.ExpertScore expert;
+
+    public DailyQuizScoreboardDto.ExpertScore getExpert() {
+        return expert;
+    }
+
+    public void setExpert(DailyQuizScoreboardDto.ExpertScore expert) {
+        this.expert = expert;
+    }
 
     public int getPendingCount() {
         return pendingCount;

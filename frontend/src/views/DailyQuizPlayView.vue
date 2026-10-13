@@ -123,6 +123,14 @@
           </div>
         </div>
 
+        <ExpertCard
+          v-if="state.result.expert && state.result.score !== null"
+          :name="state.result.expert.name.split(' ')[0]"
+          :expert-value="state.result.expert.score"
+          :max="state.result.expert.maxScore"
+          :your-value="state.result.score"
+        />
+
         <div class="dq-result-list">
           <article
             v-for="a in state.result.answers"
@@ -210,6 +218,7 @@ import toast from '../services/toast'
 import LoadingState from '../components/LoadingState.vue'
 import DailyQuizScoreboardModal from '../components/DailyQuizScoreboardModal.vue'
 import DailyQuizEasyMeter from '../components/DailyQuizEasyMeter.vue'
+import ExpertCard from '../components/ExpertCard.vue'
 import { useEscapeKey } from '../composables/useEscapeKey'
 
 const route = useRoute()

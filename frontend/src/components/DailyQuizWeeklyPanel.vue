@@ -43,14 +43,16 @@
         </template>
       </div>
 
-      <div v-if="weekly.expert" class="dq-expert">
-        <span class="dq-expert-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3z" /></svg></span>
-        <div class="dq-expert-main">
-          <strong>Beat the expert</strong>
-          <small>{{ firstName(weekly.expert.name) }} · {{ weekly.expert.total }} pts · {{ weekly.expert.daysPlayed }} {{ weekly.expert.daysPlayed === 1 ? unit : unit + 's' }} played</small>
-        </div>
-        <span v-if="expertVerdict" class="dq-pill" :class="expertVerdict.cls">{{ expertVerdict.text }}</span>
-      </div>
+      <ExpertCard
+        v-if="weekly.expert"
+        style="margin-top:14px;"
+        :name="firstName(weekly.expert.name)"
+        :expert-value="weekly.expert.total"
+        :expert-note="daysNote(weekly.expert.daysPlayed)"
+        :your-value="yourRank ? yourRank.entry.total : null"
+        :your-note="yourRank ? daysNote(yourRank.entry.daysPlayed) : ''"
+        period="this week"
+      />
 
       <template v-if="weekly.pastWeeks.length">
         <div class="dq-weekly-label">Previous winners</div>
@@ -72,6 +74,7 @@
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
 import { shortNames } from '../services/displayNames'
+import ExpertCard from './ExpertCard.vue'
 
 // Shared by the daily quiz (the default) and the two weekly games, which pass their own endpoint:
 // every endpoint returns the same { current, pastWeeks } shape.
@@ -99,15 +102,9 @@ const yourRank = computed(() => {
   return idx === -1 ? null : { rank: idx + 1, entry: standings.value[idx] }
 })
 
-// You against the expert's week so far - only for a player who is on the standings.
-const expertVerdict = computed(() => {
-  const expert = weekly.value?.expert
-  if (!expert || !yourRank.value) return null
-  const diff = yourRank.value.entry.total - expert.total
-  if (diff > 0) return { cls: 'dq-pill--ok', text: `${diff} ahead` }
-  if (diff === 0) return { cls: 'dq-pill--year', text: 'Level' }
-  return { cls: 'dq-pill--wait', text: `${-diff} behind` }
-})
+function daysNote(n) {
+  return `${n} ${n === 1 ? props.unit : props.unit + 's'} played`
+}
 
 function barWidth(entry) {
   return `${Math.max(0, Math.min(100, (entry.total / topTotal.value) * 100))}%`

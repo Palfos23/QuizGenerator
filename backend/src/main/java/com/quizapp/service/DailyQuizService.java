@@ -421,7 +421,22 @@ public class DailyQuizService {
             rows.add(row);
         }
         result.setAnswers(rows);
+        if (graded && !expertConfig.isExpert(attempt.getUser().getId())) {
+            result.setExpert(expertScoreFor(attempt.getSet().getId()));
+        }
         return result;
+    }
+
+    // The expert's finished score for a day (their name, points and the most points available), or null if
+    // there is no expert or they haven't been graded for it.
+    private DailyQuizScoreboardDto.ExpertScore expertScoreFor(Long setId) {
+        return attemptRepository.findBySet_Id(setId).stream()
+                .filter(a -> a.getStatus() == DailyQuizAttemptStatus.GRADED && expertConfig.isExpert(a.getUser().getId()))
+                .findFirst()
+                .map(a -> new DailyQuizScoreboardDto.ExpertScore(a.getUser().getName(), a.getScore(),
+                        answerRepository.findByAttempt_IdOrderByIdAsc(a.getId()).stream()
+                                .mapToInt(ans -> DailyQuizScoring.maxPoints(ans.getQuestion())).sum()))
+                .orElse(null);
     }
 
     @Transactional

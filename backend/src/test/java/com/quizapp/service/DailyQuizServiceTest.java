@@ -404,6 +404,11 @@ class DailyQuizServiceTest {
             assertThat(board.getExpert().getName()).isEqualTo(expert.getName());
             assertThat(board.getExpert().getScore()).isEqualTo(14);
             assertThat(board.getExpert().getMaxScore()).isPositive();
+
+            // The player's own results view carries the expert's score for the "beat the expert" comparison;
+            // the expert's own view doesn't compare them with themselves.
+            assertThat(dailyQuizService.getPlayState(setId, player.getEmail()).getResult().getExpert().getScore()).isEqualTo(14);
+            assertThat(dailyQuizService.getPlayState(setId, expert.getEmail()).getResult().getExpert()).isNull();
         } finally {
             expertConfig.setExpertUserId(before);
         }
