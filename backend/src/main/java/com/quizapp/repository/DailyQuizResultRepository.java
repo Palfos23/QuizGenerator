@@ -23,6 +23,12 @@ public interface DailyQuizResultRepository extends JpaRepository<DailyQuizResult
     @Transactional
     void deleteByUserId(Long userId);
 
+    // A player changed their display name: the retained results (which hold the name as of grading) follow it.
+    @Modifying
+    @Transactional
+    @org.springframework.data.jpa.repository.Query("UPDATE DailyQuizResult r SET r.playerName = :name WHERE r.userId = :userId")
+    void updatePlayerName(Long userId, String name);
+
     // The retention job: old results are pruned too, just much later than the quizzes themselves.
     @Modifying
     @Transactional

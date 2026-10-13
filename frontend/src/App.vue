@@ -80,22 +80,24 @@
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
       <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz">Daily Quiz</router-link>
       <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
-        <div v-for="menu in [QUIZZES_MENU, ...PLAYER_MENUS]" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
+        <div v-for="menu in [QUIZZES_MENU, ...PLAYER_MENUS, ACCOUNT_MENU]" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
           <button
             aria-haspopup="true"
             :aria-expanded="openPlayerMenu === menu.key"
             @click="togglePlayerMenu(menu.key)"
             :class="{ active: playerMenuActive(menu) }"
           >{{ menu.label }} ▾</button>
-          <div v-if="openPlayerMenu === menu.key" class="games-popup" :class="{ 'popup-left': menu.key === 'quizzes' }" role="menu">
-            <router-link
-              v-for="item in menu.items"
-              :key="item.to"
-              :to="item.to"
-              role="menuitem"
-              :class="{ 'popup-primary': item.primary }"
-              @click="closePlayerMenuItem(item.to, item.key)"
-            >{{ item.label }}</router-link>
+          <div v-if="openPlayerMenu === menu.key" class="games-popup" :class="{ 'popup-left': menu.key === 'quizzes', 'popup-right': menu.key === 'account' }" role="menu">
+            <template v-for="item in menu.items" :key="item.to || item.action">
+              <button v-if="item.action === 'logout'" type="button" role="menuitem" class="popup-action" @click="closePlayerMenu(); logout()">{{ item.label }}</button>
+              <router-link
+                v-else
+                :to="item.to"
+                role="menuitem"
+                :class="{ 'popup-primary': item.primary }"
+                @click="closePlayerMenuItem(item.to, item.key)"
+              >{{ item.label }}</router-link>
+            </template>
           </div>
         </div>
       </template>
@@ -118,7 +120,7 @@
           </div>
         </div>
       </template>
-      <button @click="logout">{{ auth.isGuest.value ? 'Leave' : 'Log out' }}</button>
+      <button v-if="auth.isAdmin.value || auth.isGuest.value" @click="logout">{{ auth.isGuest.value ? 'Leave' : 'Log out' }}</button>
     </nav>
 
     <ToastHost />
@@ -203,6 +205,18 @@ const QUIZZES_MENU = {
   items: [
     { to: '/generate', label: 'Create a quiz', key: 'generate', primary: true },
     { to: '/my-quizzes', label: 'My quizzes', key: 'myQuizzes' }
+  ]
+}
+
+// Mobile bottom bar only: the account page (where the display name is changed) had no way in from a phone -
+// the top bar's "Account" link doesn't exist there - so the last tab is now an Account menu holding it
+// together with Log out.
+const ACCOUNT_MENU = {
+  key: 'account',
+  label: 'Account',
+  items: [
+    { to: '/account', label: 'My account & name', key: 'account' },
+    { action: 'logout', label: 'Log out' }
   ]
 }
 

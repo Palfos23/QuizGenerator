@@ -921,6 +921,9 @@ export default {
   },
 
   // --- Self-service account export/deletion ---
+  updateMyDisplayName(name) {
+    return client.put('/account/display-name', { name }).then(r => r.data)
+  },
   exportMyData() {
     return client.get('/account/export').then(r => r.data)
   },

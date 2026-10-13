@@ -3374,6 +3374,28 @@ table.scoreboard-table {
     transform: none;
     min-width: 210px;
   }
+  /* The Account tab is the rightmost one - same problem as the left one, mirrored. */
+  .bottom-nav .games-popup.popup-right {
+    position: fixed;
+    right: 8px;
+    left: auto;
+    bottom: calc(var(--bottom-nav-height) + 8px);
+    transform: none;
+    min-width: 200px;
+  }
+  .bottom-nav .games-popup .popup-action {
+    flex: none;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    color: var(--coral);
+    text-align: left;
+  }
+  .bottom-nav .games-popup .popup-action:hover { background: rgba(255, 77, 109, 0.12); }
   .bottom-nav .games-popup.admin-menu-popup {
     position: fixed;
     left: 8px;

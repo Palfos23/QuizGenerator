@@ -71,6 +71,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
+import { shortNames } from '../services/displayNames'
 
 // Shared by the daily quiz (the default) and the two weekly games, which pass their own endpoint:
 // every endpoint returns the same { current, pastWeeks } shape.
@@ -112,8 +113,15 @@ function barWidth(entry) {
   return `${Math.max(0, Math.min(100, (entry.total / topTotal.value) * 100))}%`
 }
 
+// First names, with a surname initial added where two people on the panel share one.
+const shortName = computed(() => shortNames([
+  ...standings.value.map(s => s.playerName),
+  ...(weekly.value?.pastWeeks || []).flatMap(w => w.winners),
+  weekly.value?.expert?.name
+]))
+
 function firstName(name) {
-  return (name || '').split(' ')[0]
+  return shortName.value(name)
 }
 
 function winnersLabel(w) {

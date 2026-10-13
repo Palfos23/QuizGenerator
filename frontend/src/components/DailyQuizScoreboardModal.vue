@@ -75,6 +75,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useEscapeKey } from '../composables/useEscapeKey'
+import { shortNames } from '../services/displayNames'
 
 // One scoreboard for the player's "Leaderboard" button and both admin views. `compact` is the player
 // view (top five, plus your own row if you're further down, first names only); the admin view lists
@@ -118,8 +119,14 @@ const expertVerdict = computed(() => {
   return { cls: 'dq-pill--wait', text: `${-diff} behind` }
 })
 
+// Compact boards show first names, with a surname initial added where two people share one.
+const shortName = computed(() => shortNames([
+  ...entries.value.map(e => e.userName),
+  props.data?.expert?.name
+]))
+
 function displayName(name) {
-  return props.compact ? (name || '').split(' ')[0] : name
+  return props.compact ? shortName.value(name) : name
 }
 
 function barWidth(entry) {

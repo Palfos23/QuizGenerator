@@ -1,6 +1,8 @@
 package com.quizapp.service;
 
 import com.quizapp.dto.AccountExportDto;
+import com.quizapp.dto.AuthResponse;
+import com.quizapp.security.JwtService;
 import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.AppUser;
 import com.quizapp.model.Report;
@@ -39,6 +41,7 @@ public class AccountService {
     private final DailyQuizAnswerRepository dailyQuizAnswerRepository;
     private final DailyQuizResultRepository dailyQuizResultRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AccountService(AppUserRepository appUserRepository,
                            SavedQuizRepository savedQuizRepository,
@@ -49,7 +52,9 @@ public class AccountService {
                            DailyQuizAttemptRepository dailyQuizAttemptRepository,
                            DailyQuizAnswerRepository dailyQuizAnswerRepository,
                            DailyQuizResultRepository dailyQuizResultRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           JwtService jwtService) {
+        this.jwtService = jwtService;
         this.appUserRepository = appUserRepository;
         this.savedQuizRepository = savedQuizRepository;
         this.submittedQuestionRepository = submittedQuestionRepository;
@@ -60,6 +65,40 @@ public class AccountService {
         this.dailyQuizAnswerRepository = dailyQuizAnswerRepository;
         this.dailyQuizResultRepository = dailyQuizResultRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    static final int MIN_NAME_LENGTH = 2;
+    static final int MAX_NAME_LENGTH = 40;
+
+    /** Tidies a typed display name: trims, collapses runs of whitespace, rejects empty/too long/odd characters. */
+    static String cleanDisplayName(String raw) {
+        String name = raw == null ? "" : raw.trim().replaceAll("\\s+", " ");
+        if (name.length() < MIN_NAME_LENGTH) {
+            throw new IllegalArgumentException("Your name needs at least " + MIN_NAME_LENGTH + " characters.");
+        }
+        if (name.length() > MAX_NAME_LENGTH) {
+            throw new IllegalArgumentException("Your name can be at most " + MAX_NAME_LENGTH + " characters.");
+        }
+        if (name.chars().anyMatch(c -> Character.isISOControl(c) || c == '<' || c == '>')) {
+            throw new IllegalArgumentException("Your name can't contain those characters.");
+        }
+        return name;
+    }
+
+    /**
+     * Lets a player choose the name the app shows for them (leaderboards, weekly standings, game rooms).
+     * Returns a fresh sign-in token carrying the new name, so the current session shows it straight away.
+     * Two players may use the same name - boards tell them apart with a surname initial.
+     */
+    @Transactional
+    public AuthResponse updateDisplayName(String email, String rawName) {
+        AppUser user = requireUser(email);
+        String name = cleanDisplayName(rawName);
+        user.setName(name);
+        appUserRepository.save(user);
+        dailyQuizResultRepository.updatePlayerName(user.getId(), name); // the retained daily quiz results use it too
+        String token = jwtService.generateToken(user.getEmail(), "USER", user.getId(), name);
+        return new AuthResponse(token, name, "USER");
     }
 
     @Transactional(readOnly = true)

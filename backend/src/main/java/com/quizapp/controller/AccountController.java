@@ -21,6 +21,12 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+    @PutMapping("/display-name")
+    public com.quizapp.dto.AuthResponse updateDisplayName(@RequestBody com.quizapp.dto.UpdateDisplayNameRequest request,
+                                                           Authentication authentication) {
+        return accountService.updateDisplayName(authentication.getName(), request.getName());
+    }
+
     @GetMapping("/export")
     public AccountExportDto export(Authentication authentication) {
         return accountService.exportData(authentication.getName());
