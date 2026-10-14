@@ -51,7 +51,6 @@
         :expert-note="daysNote(weekly.expert.daysPlayed)"
         :your-value="yourRank ? yourRank.entry.total : null"
         :your-note="yourRank ? daysNote(yourRank.entry.daysPlayed) : ''"
-        period="this week"
       />
 
       <template v-if="weekly.pastWeeks.length">
@@ -103,7 +102,7 @@ const yourRank = computed(() => {
 })
 
 function daysNote(n) {
-  return `${n} ${n === 1 ? props.unit : props.unit + 's'} played`
+  return `${n} ${n === 1 ? props.unit : props.unit + 's'}`
 }
 
 function barWidth(entry) {
