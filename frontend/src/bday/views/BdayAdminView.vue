@@ -35,9 +35,26 @@
         <div v-if="done.length" class="field" style="margin-top:24px;">
           <label>Already finished</label>
           <div class="candidate-list">
-            <div v-for="g in done" :key="g.id" class="candidate-row">
-              <span style="flex:1;">{{ g.name }}</span>
-              <span style="color:var(--text-dim); font-size:0.9rem;">Scored {{ g.score }}</span>
+            <div v-for="g in done" :key="g.id" class="candidate-row" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span style="flex:1; min-width:120px;">{{ g.name }}</span>
+              <label style="display:flex; align-items:center; gap:6px; margin:0; text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.9rem;">
+                Score
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  :value="scoreDrafts[g.id] ?? g.score"
+                  style="width:80px; padding:6px 8px;"
+                  @input="scoreDrafts[g.id] = $event.target.value === '' ? null : Number($event.target.value)"
+                  @keydown.enter="saveScore(g)"
+                />
+              </label>
+              <button
+                class="btn btn-secondary btn-sm"
+                :disabled="savingId === g.id || !scoreChanged(g)"
+                @click="saveScore(g)"
+              >{{ savingId === g.id ? 'Saving…' : 'Save' }}</button>
+              <button class="btn btn-danger btn-sm" @click="pendingReset = g">Reset</button>
             </div>
           </div>
         </div>
@@ -45,13 +62,22 @@
         <div v-if="!pending.length && !done.length" class="empty-state" style="margin-top:24px;">No players registered yet.</div>
       </template>
     </div>
+    <ConfirmModal
+      v-if="pendingReset"
+      title="Reset this player?"
+      :message="`${pendingReset.name}'s score and answers are deleted and they go back on the waiting list, so they can play again.`"
+      confirm-text="Reset player"
+      @confirm="doReset"
+      @cancel="pendingReset = null"
+    />
   </BdayPinGate>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import bdayApi from '../services/bdayApi'
 import BdayPinGate from '../components/BdayPinGate.vue'
+import ConfirmModal from '../../components/ConfirmModal.vue'
 
 const guests = ref([])
 const loading = ref(true)
@@ -97,6 +123,45 @@ async function addGuest() {
     error.value = e.response?.data?.message || 'Could not add that guest.'
   } finally {
     addingGuest.value = false
+  }
+}
+
+// --- Host overrides on finished players: fix a score by hand, or reset them to play again ---
+const scoreDrafts = reactive({}) // guest id -> the number typed in the box
+const savingId = ref(null)
+const pendingReset = ref(null)
+
+function scoreChanged(g) {
+  const draft = scoreDrafts[g.id]
+  return draft !== undefined && draft !== null && draft !== g.score
+}
+
+async function saveScore(g) {
+  if (!scoreChanged(g)) return
+  savingId.value = g.id
+  error.value = ''
+  try {
+    const updated = await bdayApi.setScore(g.id, scoreDrafts[g.id])
+    guests.value = guests.value.map(x => (x.id === g.id ? { ...x, score: updated.score } : x))
+    delete scoreDrafts[g.id]
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not change that score.'
+  } finally {
+    savingId.value = null
+  }
+}
+
+async function doReset() {
+  const g = pendingReset.value
+  pendingReset.value = null
+  if (!g) return
+  error.value = ''
+  try {
+    const updated = await bdayApi.resetGuest(g.id)
+    guests.value = guests.value.map(x => (x.id === g.id ? { ...x, status: updated.status, score: updated.score, completedAt: null } : x))
+    delete scoreDrafts[g.id]
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Could not reset that player.'
   }
 }
 

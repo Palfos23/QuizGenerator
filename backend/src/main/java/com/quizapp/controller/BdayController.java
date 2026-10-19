@@ -43,6 +43,17 @@ public class BdayController {
         return ResponseEntity.noContent().build();
     }
 
+    // Host overrides, behind the same PIN as everything else here.
+    @PutMapping("/guests/{id}/score")
+    public BdayGuestDto setScore(@PathVariable Long id, @Valid @RequestBody com.quizapp.dto.BdayScoreRequest request) {
+        return quizService.setScore(id, request.getScore());
+    }
+
+    @PostMapping("/guests/{id}/reset")
+    public BdayGuestDto resetGuest(@PathVariable Long id) {
+        return quizService.resetGuest(id);
+    }
+
     @GetMapping("/quiz/{guestId}")
     public BdayQuizDto quiz(@PathVariable Long guestId) {
         return quizService.getQuiz(guestId);

@@ -99,20 +99,30 @@ public final class BdayQuestionCatalog {
         }
     }
 
-    // --- Placeholder content - replace/extend as real questions arrive ---
+    // --- The quiz content. A = Pål, B = Erik (the labels the guests see are personALabel / personBLabel). ---
+
+    public static final String PERSON_A = "Pål";
+    public static final String PERSON_B = "Erik";
 
     public static final List<MapQuestion> MAP_QUESTIONS = List.of(
-            new MapQuestion("map-1", "Where are Pål and Erik born?", 61.4522, 5.8572, 20, "Førde")
+            new MapQuestion("map-1", "Hvor er Pål og Erik født?", 61.4522, 5.8572, 20, "Førde")
     );
 
+    // One question, five statements: for each, pick whether it's true for Pål or for Erik (a point each).
     public static final List<TileQuestion> TILE_QUESTIONS = List.of(
-            new TileQuestion("tiles-1", "(Placeholder) Who does this belong to?", "Me", "My friend", List.of(
-                    new Tile("tiles-1-a", "Loves coffee", "A"),
-                    new Tile("tiles-1-b", "Has a cat", "B"),
-                    new Tile("tiles-1-c", "Plays guitar", "A"),
-                    new Tile("tiles-1-d", "Afraid of spiders", "B")
+            new TileQuestion("tiles-1", "Hvem av dem stemmer dette for?", PERSON_A, PERSON_B, List.of(
+                    new Tile("tiles-1-a", "Favorittlag: Middlesbrough", "B"),
+                    new Tile("tiles-1-b", "Har vært i Japan", "A"),
+                    new Tile("tiles-1-c", "Har vært i militæret", "B"),
+                    new Tile("tiles-1-d", "Vart tatt ut på sonelaget i fotball", "B"),
+                    new Tile("tiles-1-e", "Har flest mål i følge fotball.no", "A")
             ))
     );
+
+    /** The most points anyone can score: every map question and every tile right. */
+    public static int maxTotalScore() {
+        return MAP_QUESTIONS.size() * MAP_POINTS + TILE_QUESTIONS.stream().mapToInt(q -> q.tiles.size()).sum();
+    }
 
     public static MapQuestion findMapQuestion(String id) {
         return MAP_QUESTIONS.stream().filter(q -> q.id.equals(id)).findFirst().orElse(null);

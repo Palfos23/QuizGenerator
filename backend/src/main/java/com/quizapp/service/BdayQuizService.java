@@ -71,6 +71,40 @@ public class BdayQuizService {
         guestRepository.delete(guest);
     }
 
+    /** Host override: set a finished guest's total score by hand (e.g. to fix a click that should have counted). */
+    @Transactional
+    public BdayGuestDto setScore(Long id, int score) {
+        BdayGuest guest = guestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No guest found with id " + id));
+        if (guest.getStatus() != BdayGuest.Status.DONE) {
+            throw new IllegalStateException("Only a guest who has finished can have their score changed.");
+        }
+        int max = BdayQuestionCatalog.maxTotalScore();
+        if (score < 0 || score > max) {
+            throw new IllegalArgumentException("The score must be between 0 and " + max + ".");
+        }
+        guest.setScore(score);
+        return toDto(guestRepository.save(guest));
+    }
+
+    /**
+     * Host override: puts a finished guest back on the waiting list - their answers and score are thrown away
+     * and they can pick their name and play again. Already-waiting guests are left as they are.
+     */
+    @Transactional
+    public BdayGuestDto resetGuest(Long id) {
+        BdayGuest guest = guestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No guest found with id " + id));
+        if (guest.getStatus() == BdayGuest.Status.DONE) {
+            answerRepository.deleteByGuest_Id(guest.getId());
+            guest.setStatus(BdayGuest.Status.PENDING);
+            guest.setScore(0);
+            guest.setCompletedAt(null);
+            guest = guestRepository.save(guest);
+        }
+        return toDto(guest);
+    }
+
     @Transactional(readOnly = true)
     public BdayQuizDto getQuiz(Long guestId) {
         requirePendingGuest(guestId);

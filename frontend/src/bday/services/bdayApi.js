@@ -37,6 +37,12 @@ export default {
   deleteGuest(id) {
     return client.delete(`/bday/guests/${id}`).then(r => r.data)
   },
+  setScore(id, score) {
+    return client.put(`/bday/guests/${id}/score`, { score }).then(r => r.data)
+  },
+  resetGuest(id) {
+    return client.post(`/bday/guests/${id}/reset`).then(r => r.data)
+  },
   getQuiz(guestId) {
     return client.get(`/bday/quiz/${guestId}`).then(r => r.data)
   },
