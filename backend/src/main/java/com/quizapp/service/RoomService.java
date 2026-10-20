@@ -21,6 +21,8 @@ public class RoomService {
     // A poll older than this means the tab is probably closed/backgrounded/offline -
     // shown to other players as "disconnected" rather than treated as an error.
     private static final Duration DISCONNECT_THRESHOLD = Duration.ofSeconds(20);
+    // A participant seen more recently than this isn't written again - see touch().
+    static final Duration MIN_TOUCH_INTERVAL = Duration.ofSeconds(5);
     private static final String CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I - easy to misread aloud
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -156,6 +158,15 @@ public class RoomService {
      */
     @Transactional
     public void touch(GameRoomParticipant participant) {
+        // Every state poll and heartbeat lands here, from every player in every room - and each used to be a
+        // database write. "Connected" only needs 20 s of accuracy (DISCONNECT_THRESHOLD), so a participant seen
+        // within the last few seconds is left alone: it cuts those writes (and the disk I/O behind them) to a
+        // fraction, with no visible change. The participant comes from the room loaded for this very request,
+        // so its lastSeenAt is current enough to judge by.
+        if (participant.getLastSeenAt() != null
+                && Duration.between(participant.getLastSeenAt(), Instant.now()).compareTo(MIN_TOUCH_INTERVAL) < 0) {
+            return;
+        }
         gameRoomParticipantRepository.getReferenceById(participant.getId()).setLastSeenAt(Instant.now());
     }
 

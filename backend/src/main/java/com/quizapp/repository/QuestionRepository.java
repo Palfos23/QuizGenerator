@@ -17,6 +17,21 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     // slower the bigger the question bank grows. Single collection fetch join,
     // not two at once, so no risk of the cartesian-product blowup that applies
     // when joining multiple collections of the same entity simultaneously.
+    /** One category and how many questions use that exact spelling. */
+    interface CategoryCount {
+        String getCategory();
+        Long getTotal();
+    }
+
+    // The list of categories, worked out by the database: a handful of rows instead of loading every
+    // question in the bank just to read one column off each. (The Render health check used to trigger the
+    // heavy version of this every few seconds, around the clock.)
+    @Query("SELECT q.category AS category, COUNT(q) AS total FROM Question q GROUP BY q.category")
+    List<CategoryCount> countByCategory();
+
+    @Query("SELECT q.category AS category, COUNT(q) AS total FROM Question q WHERE q.language = :language GROUP BY q.category")
+    List<CategoryCount> countByCategoryForLanguage(@org.springframework.data.repository.query.Param("language") Language language);
+
     @Query("SELECT DISTINCT q FROM Question q LEFT JOIN FETCH q.labels WHERE q.language = :language")
     List<Question> findByLanguageWithLabels(@org.springframework.data.repository.query.Param("language") Language language);
 

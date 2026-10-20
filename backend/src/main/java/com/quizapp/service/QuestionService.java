@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class QuestionService {
@@ -43,13 +42,12 @@ public class QuestionService {
 
     @Transactional(readOnly = true)
     public List<String> findAllCategories() {
-        return dedupeCategoriesIgnoringCase(questionRepository.findAll().stream().map(Question::getCategory));
+        return dedupeCategoryCounts(questionRepository.countByCategory());
     }
 
     @Transactional(readOnly = true)
     public List<String> findCategoriesForLanguage(com.quizapp.model.Language language) {
-        return dedupeCategoriesIgnoringCase(
-                questionRepository.findByLanguage(language).stream().map(Question::getCategory));
+        return dedupeCategoryCounts(questionRepository.countByCategoryForLanguage(language));
     }
 
     /**
@@ -63,12 +61,15 @@ public class QuestionService {
      * QuestionRepository.findCandidates, which already matches categories via
      * LOWER(q.category) = LOWER(:category) for the same reason.
      */
-    private static List<String> dedupeCategoriesIgnoringCase(Stream<String> categories) {
-        Map<String, Map<String, Long>> byLowercase = categories
-                .filter(c -> c != null && !c.isBlank())
-                .map(String::trim)
-                .collect(Collectors.groupingBy(String::toLowerCase, Collectors.groupingBy(c -> c, Collectors.counting())));
-
+    // (The rule above, applied to per-spelling counts the database has already worked out.)
+    private static List<String> dedupeCategoryCounts(List<QuestionRepository.CategoryCount> counts) {
+        Map<String, Map<String, Long>> byLowercase = new java.util.HashMap<>();
+        for (QuestionRepository.CategoryCount row : counts) {
+            if (row.getCategory() == null || row.getCategory().isBlank()) continue;
+            String trimmed = row.getCategory().trim();
+            byLowercase.computeIfAbsent(trimmed.toLowerCase(), k -> new java.util.HashMap<>())
+                    .merge(trimmed, row.getTotal(), Long::sum);
+        }
         return byLowercase.values().stream()
                 .map(variants -> variants.entrySet().stream()
                         .min(Comparator.<Map.Entry<String, Long>>comparingLong(e -> -e.getValue())

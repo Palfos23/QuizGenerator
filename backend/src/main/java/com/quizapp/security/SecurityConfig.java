@@ -40,6 +40,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // login endpoints, and dev-only H2 console, are open
                         .requestMatchers("/api/auth/**").permitAll()
+                        // the host's liveness check - no database, no login
+                        .requestMatchers("/api/health").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         // room-state push channel - no STOMP-level auth (see WebSocketConfig's
                         // own comment on why that's fine); SockJS's handshake/polling fallback
