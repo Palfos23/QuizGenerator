@@ -1,9 +1,9 @@
 <template>
   <div class="modal-backdrop" @click.self="$emit('close')">
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Legg til nye emner">
-      <h2 style="margin-top:0;">Legg til {{ includedCount }} {{ includedCount === 1 ? 'nytt emne' : 'nye emner' }}?</h2>
+    <div class="modal" role="dialog" aria-modal="true" :aria-label="$t('Legg til nye emner')">
+      <h2 style="margin-top:0;">{{ $t('Legg til') }} {{ includedCount }} {{ includedCount === 1 ? $t('nytt emne') : $t('nye emner') }}?</h2>
       <p class="page-subtitle">
-        Disse navnene ble ikke funnet i <strong>"{{ sport }}"</strong>. Rett eventuelle skrivefeil under, fjern avhukingen for de du ikke vil legge til, og legg til resten som nye emner med en gang - du slipper å forlate siden og importere på nytt.
+        {{ $t('Disse navnene ble ikke funnet i') }} <strong>"{{ sport }}"</strong>{{ $t('. Rett eventuelle skrivefeil under, fjern avhukingen for de du ikke vil legge til, og legg til resten som nye emner med en gang - du slipper å forlate siden og importere på nytt.') }}
       </p>
 
       <div class="candidate-list" style="max-height:340px; overflow-y:auto;">
@@ -16,14 +16,14 @@
             style="flex:1; min-width:140px;"
             @click.stop
           />
-          <span style="color:var(--text-dim); font-size:0.85rem; white-space:nowrap;">verdi: {{ item.value }}</span>
+          <span style="color:var(--text-dim); font-size:0.85rem; white-space:nowrap;">{{ $t('verdi:') }} {{ item.value }}</span>
         </label>
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-secondary" @click="$emit('close')">Avbryt</button>
+        <button class="btn btn-secondary" @click="$emit('close')">{{ $t('Avbryt') }}</button>
         <button class="btn btn-primary" :disabled="!includedCount || submitting" @click="submit">
-          {{ submitting ? 'Legger til…' : `Legg til ${includedCount} ${includedCount === 1 ? 'emne' : 'emner'}` }}
+          {{ submitting ? $t('Legger til…') : $t('Legg til {0} emne¦Legg til {0} emner', [includedCount]) }}
         </button>
       </div>
     </div>
@@ -31,6 +31,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, reactive, ref } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -60,10 +61,10 @@ async function submit() {
     const created = await api.adminCreateAthletesBulk(
       toCreate.map(i => ({ name: i.name.trim(), sport: props.sport }))
     )
-    toast.show(`La til ${created.length} ${created.length === 1 ? 'emne' : 'emner'} i "${props.sport}".`)
+    toast.show(_t('La til {0} emne i "{1}".¦La til {0} emner i "{1}".', [created.length, props.sport]))
     emit('added', created.map((athlete, idx) => ({ athlete, value: toCreate[idx].value })))
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke legge til emnene.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke legge til emnene.'), 'error')
   } finally {
     submitting.value = false
   }

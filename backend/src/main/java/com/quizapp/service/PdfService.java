@@ -1,5 +1,6 @@
 package com.quizapp.service;
 
+import com.quizapp.config.RequestLang;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
@@ -56,7 +57,7 @@ public class PdfService {
 
             document.close();
         } catch (DocumentException e) {
-            throw new IllegalStateException("Kunne ikke lage PDF: " + e.getMessage(), e);
+            throw new IllegalStateException(RequestLang.t("Kunne ikke lage PDF: ", "Failed to generate PDF: ") + e.getMessage(), e);
         }
         return out.toByteArray();
     }
@@ -77,7 +78,7 @@ public class PdfService {
 
         cell.addElement(new Paragraph(number + ". " + question.getQuestionText(), QUESTION_FONT));
         cell.addElement(new Paragraph(
-                question.getCategory() + " - Vanskelighetsgrad " + question.getDifficultyLevel() + "/10", META_FONT));
+                question.getCategory() + RequestLang.t(" - Vanskelighetsgrad ", " - Difficulty ") + question.getDifficultyLevel() + "/10", META_FONT));
 
         if (question.getPhotoUrl() != null && !question.getPhotoUrl().isBlank()) {
             Image photo = loadPhoto(question.getPhotoUrl());
@@ -87,14 +88,14 @@ public class PdfService {
                 // Better a visible note than a silently missing picture: a question like
                 // "which team?" is unanswerable without it, and the host needs to see this
                 // before quiz night so they can fix the link.
-                cell.addElement(new Paragraph("[Bildet kunne ikke lastes]", BLANK_FONT));
+                cell.addElement(new Paragraph(RequestLang.t("[Bildet kunne ikke lastes]", "[Picture could not be loaded]"), BLANK_FONT));
             }
         }
 
         if (includeAnswers) {
-            cell.addElement(new Paragraph("Svar: " + question.getAnswer(), ANSWER_FONT));
+            cell.addElement(new Paragraph(RequestLang.t("Svar: ", "Answer: ") + question.getAnswer(), ANSWER_FONT));
         } else {
-            cell.addElement(new Paragraph("Svar: _______________________________", BLANK_FONT));
+            cell.addElement(new Paragraph(RequestLang.t("Svar: ", "Answer: ") + "_______________________________", BLANK_FONT));
         }
 
         PdfPTable table = new PdfPTable(1);

@@ -1,8 +1,12 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import java.time.Instant;
 import java.util.List;
 
+@Translated(type = ContentTranslation.TYPE_IMPOSTER, fields = {"title", "description"})
 public class ImposterPlayStateDto {
     private Long id;
     private String title;

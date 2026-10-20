@@ -2,44 +2,44 @@
   <div>
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
       <div>
-        <h1>Klubber</h1>
-        <p class="page-subtitle">Emblemer brukt som logohint på rutene i ukens grid.</p>
+        <h1>{{ $t('Klubber') }}</h1>
+        <p class="page-subtitle">{{ $t('Emblemer brukt som logohint på rutene i ukens grid.') }}</p>
       </div>
-      <button class="btn btn-primary" @click="openCreate">+ Legg til klubb</button>
+      <button class="btn btn-primary" @click="openCreate">{{ $t('+ Legg til klubb') }}</button>
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div class="filter-bar">
       <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
-        <label>Søk<input type="text" v-model="searchText" placeholder="Søk etter navn…" /></label>
+        <label>{{ $t('Søk') }}<input type="text" v-model="searchText" :placeholder="$t('Søk etter navn…')" /></label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Kategori
+        <label>{{ $t('Kategori') }}
           <select v-model="sportFilter">
-            <option value="ALL">Alle kategorier</option>
+            <option value="ALL">{{ $t('Alle kategorier') }}</option>
             <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
           </select>
         </label>
       </div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
     <div v-else-if="!clubs.length" class="empty-state friendly">
-      Ingen klubber ennå. Legg til en her, og velg den som logohint når du lager et ukentlig grid.
+      {{ $t('Ingen klubber ennå. Legg til en her, og velg den som logohint når du lager et ukentlig grid.') }}
     </div>
 
-    <div v-else-if="!filteredClubs.length" class="empty-state">Ingen klubber samsvarer med disse filtrene.</div>
+    <div v-else-if="!filteredClubs.length" class="empty-state">{{ $t('Ingen klubber samsvarer med disse filtrene.') }}</div>
 
     <div v-else class="table-scroll">
       <table class="table">
         <thead>
           <tr>
             <th>Logo</th>
-            <th>Navn</th>
-            <th>Kategori</th>
-            <th>Farge</th>
+            <th>{{ $t('Navn') }}</th>
+            <th>{{ $t('Kategori') }}</th>
+            <th>{{ $t('Farge') }}</th>
             <th></th>
           </tr>
         </thead>
@@ -55,8 +55,8 @@
             <td>{{ sportLabel(c.sport) }}</td>
             <td><span class="color-swatch" :style="{ background: c.color || 'var(--gold)' }"></span></td>
             <td style="white-space:nowrap;">
-              <button class="btn btn-secondary btn-sm" @click="openEdit(c)">Rediger</button>
-              <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(c)">Slett</button>
+              <button class="btn btn-secondary btn-sm" @click="openEdit(c)">{{ $t('Rediger') }}</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(c)">{{ $t('Slett') }}</button>
             </td>
           </tr>
         </tbody>
@@ -74,8 +74,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Slette denne klubben?"
-      :message="`«${pendingDelete.name}» fjernes.`"
+      :title="$t('Slette denne klubben?')"
+      :message="$t('«{0}» fjernes.', [pendingDelete.name])"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -83,6 +83,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -130,7 +131,7 @@ async function loadClubs() {
   try {
     clubs.value = await api.adminSearchClubs()
   } catch (e) {
-    error.value = 'Kunne ikke laste klubber.'
+    error.value = _t('Kunne ikke laste klubber.')
   } finally {
     loading.value = false
   }
@@ -148,7 +149,7 @@ function openEdit(c) {
 
 function onSaved() {
   showModal.value = false
-  toast.show('Klubben er lagret.')
+  toast.show(_t('Klubben er lagret.'))
   loadClubs()
 }
 
@@ -162,10 +163,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteClub(c.id)
-    toast.show('Klubben er slettet.')
+    toast.show(_t('Klubben er slettet.'))
     loadClubs()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke slette klubben.'
+    error.value = e.response?.data?.message || _t('Kunne ikke slette klubben.')
   }
 }
 </script>

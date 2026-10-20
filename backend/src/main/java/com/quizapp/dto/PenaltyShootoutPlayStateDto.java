@@ -1,5 +1,8 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -10,6 +13,7 @@ import java.util.List;
 // solo and pass-and-play both just start from a blank board and track
 // progress client-side, the same way Lineup's *multiplayer*-start path
 // already does.
+@Translated(type = ContentTranslation.TYPE_SHOOTOUT, fields = {"title", "competition"})
 public class PenaltyShootoutPlayStateDto {
 
     private Long id;

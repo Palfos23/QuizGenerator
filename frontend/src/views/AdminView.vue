@@ -2,46 +2,46 @@
   <div>
     <header class="admin-head">
       <div>
-        <span class="dq-eyebrow">Spørsmål</span>
-        <h1 class="dq-title">Spørsmålsbank</h1>
+        <span class="dq-eyebrow">{{ $t('Spørsmål§AdminViewT') }}</span>
+        <h1 class="dq-title">{{ $t('Spørsmålsbank') }}</h1>
         <p class="dq-sub">
-          Alle spørsmål her er tilgjengelige for quizgeneratoren.
-          <router-link to="/admin/question-submissions">Gå gjennom innsendte spørsmål →</router-link> ·
-          <router-link to="/admin/quiz-templates">Administrer quizmaler →</router-link>
+          {{ $t('Alle spørsmål her er tilgjengelige for quizgeneratoren.') }}
+          <router-link to="/admin/question-submissions">{{ $t('Gå gjennom innsendte spørsmål →') }}</router-link> ·
+          <router-link to="/admin/quiz-templates">{{ $t('Administrer quizmaler →') }}</router-link>
         </p>
       </div>
       <div class="admin-head-actions">
         <button class="btn btn-secondary" @click="triggerImport" :disabled="importing">
-          {{ importing ? 'Importerer…' : 'Importer CSV' }}
+          {{ importing ? $t('Importerer…') : $t('Importer CSV') }}
         </button>
         <input ref="fileInput" type="file" accept=".csv,text/csv" style="display:none;" @change="onFileChosen" />
-        <button class="btn btn-primary" @click="openCreate">+ Legg til spørsmål</button>
+        <button class="btn btn-primary" @click="openCreate">{{ $t('+ Legg til spørsmål') }}</button>
       </div>
     </header>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div v-if="importResult" class="banner" :class="importResult.errors.length ? 'error' : 'success'">
-      <div>Importerte {{ importResult.imported }} spørsmål{{ importResult.skipped ? `, hoppet over ${importResult.skipped}` : '' }}.</div>
+      <div>{{ $t('Importerte') }} {{ importResult.imported }} {{ $t('spørsmål§AdminViewT') }}{{ importResult.skipped ? $t(', hoppet over {0}', [importResult.skipped]) : '' }}.</div>
       <ul v-if="importResult.errors.length" style="margin:8px 0 0; padding-left:18px;">
         <li v-for="(e, i) in importResult.errors" :key="i">{{ e }}</li>
       </ul>
-      <button class="btn btn-secondary btn-sm" style="margin-top:10px;" @click="importResult = null">Lukk</button>
+      <button class="btn btn-secondary btn-sm" style="margin-top:10px;" @click="importResult = null">{{ $t('Lukk§AdminViewT') }}</button>
     </div>
 
     <!-- Bank overview / coverage -->
     <div class="stats-panel">
       <button class="btn btn-secondary btn-sm" @click="showStats = !showStats">
-        {{ showStats ? 'Skjul' : 'Vis' }} bankoversikt
+        {{ showStats ? $t('Skjul') : $t('Vis§AdminViewM') }} {{ $t('bankoversikt') }}
       </button>
       <div v-if="showStats" class="table-scroll" style="margin-top:14px;">
         <table class="table">
           <thead>
             <tr>
-              <th>Kategori</th>
-              <th>Språk</th>
-              <th>Spørsmål</th>
-              <th>Vanskelighetsgrad</th>
+              <th>{{ $t('Kategori') }}</th>
+              <th>{{ $t('Språk§AdminViewT') }}</th>
+              <th>{{ $t('Spørsmål§AdminViewT') }}</th>
+              <th>{{ $t('Vanskelighetsgrad§AdminViewT') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -50,7 +50,7 @@
               <td>{{ flagFor(s.language) }} {{ s.language }}</td>
               <td>
                 <span :class="{ 'stat-low': s.count < 3 }">{{ s.count }}</span>
-                <span v-if="s.count < 3" class="tag changeable" style="margin-left:8px;">Lav dekning</span>
+                <span v-if="s.count < 3" class="tag changeable" style="margin-left:8px;">{{ $t('Lav dekning') }}</span>
               </td>
               <td>{{ s.minDifficulty }}-{{ s.maxDifficulty }}</td>
             </tr>
@@ -61,46 +61,46 @@
 
     <div class="filter-bar">
       <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
-        <label>Søk<input type="text" v-model="searchText" placeholder="Søk etter spørsmål, kategori eller svar…" /></label>
+        <label>{{ $t('Søk') }}<input type="text" v-model="searchText" :placeholder="$t('Søk etter spørsmål, kategori eller svar…')" /></label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Språk
+        <label>{{ $t('Språk§AdminViewT') }}
           <select v-model="languageFilter">
-            <option value="ALL">Alle språk</option>
+            <option value="ALL">{{ $t('Alle språk') }}</option>
             <option v-for="lang in LANGUAGES" :key="lang.code" :value="lang.code">{{ lang.flag }} {{ lang.label }}</option>
           </select>
         </label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Kategori
+        <label>{{ $t('Kategori') }}
           <select v-model="categoryFilter">
-            <option value="ALL">Alle kategorier</option>
+            <option value="ALL">{{ $t('Alle kategorier') }}</option>
             <option v-for="c in availableCategories" :key="c" :value="c">{{ c }}</option>
           </select>
         </label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Kan endre seg?
+        <label>{{ $t('Kan endre seg?') }}
           <select v-model="couldChangeFilter">
-            <option value="ALL">Alle</option>
-            <option value="YES">Kan endre seg</option>
-            <option value="NO">Stabil</option>
+            <option value="ALL">{{ $t('Alle') }}</option>
+            <option value="YES">{{ $t('Kan endre seg') }}</option>
+            <option value="NO">{{ $t('Stabil') }}</option>
           </select>
         </label>
       </div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
     <div v-else-if="!questions.length" class="empty-state friendly">
-      <p style="margin-top:0;">Ingen spørsmål i banken ennå.</p>
+      <p style="margin-top:0;">{{ $t('Ingen spørsmål i banken ennå.') }}</p>
       <button class="btn btn-primary" :disabled="seedingStarterPack" @click="addStarterPack">
-        {{ seedingStarterPack ? 'Legger til…' : 'Legg til en startpakke med eksempelspørsmål' }}
+        {{ seedingStarterPack ? $t('Legger til…') : $t('Legg til en startpakke med eksempelspørsmål') }}
       </button>
     </div>
 
     <div v-else-if="!filteredQuestions.length" class="empty-state">
-      Ingen spørsmål samsvarer med disse filtrene.
+      {{ $t('Ingen spørsmål samsvarer med disse filtrene.') }}
     </div>
 
     <template v-else>
@@ -108,12 +108,12 @@
         <table class="table">
           <thead>
             <tr>
-              <th class="sortable" @click="toggleSort('questionText')">Spørsmål{{ sortArrow('questionText') }}</th>
-              <th class="sortable" @click="toggleSort('category')">Kategori{{ sortArrow('category') }}</th>
-              <th>Språk</th>
-              <th class="sortable" @click="toggleSort('difficultyLevel')">Vanskelighetsgrad{{ sortArrow('difficultyLevel') }}</th>
-              <th>Svar</th>
-              <th class="sortable" @click="toggleSort('couldChange')">Kan endre seg?{{ sortArrow('couldChange') }}</th>
+              <th class="sortable" @click="toggleSort('questionText')">{{ $t('Spørsmål§AdminViewT') }}{{ sortArrow('questionText') }}</th>
+              <th class="sortable" @click="toggleSort('category')">{{ $t('Kategori') }}{{ sortArrow('category') }}</th>
+              <th>{{ $t('Språk§AdminViewT') }}</th>
+              <th class="sortable" @click="toggleSort('difficultyLevel')">{{ $t('Vanskelighetsgrad§AdminViewT') }}{{ sortArrow('difficultyLevel') }}</th>
+              <th>{{ $t('Svar§AdminViewT') }}</th>
+              <th class="sortable" @click="toggleSort('couldChange')">{{ $t('Kan endre seg?') }}{{ sortArrow('couldChange') }}</th>
               <th></th>
             </tr>
           </thead>
@@ -125,12 +125,12 @@
               <td><span class="tag difficulty-tag" :style="{ background: difficultyColor(q.difficultyLevel), color: difficultyTextColor(q.difficultyLevel) }">{{ q.difficultyLevel }}/10</span></td>
               <td v-html="highlight(q.answer)"></td>
               <td>
-                <span v-if="q.couldChange" class="tag changeable">Kan endre seg</span>
-                <span v-else style="color:var(--text-dim); font-size:0.85rem;">Stabil</span>
+                <span v-if="q.couldChange" class="tag changeable">{{ $t('Kan endre seg') }}</span>
+                <span v-else style="color:var(--text-dim); font-size:0.85rem;">{{ $t('Stabil') }}</span>
               </td>
               <td style="white-space:nowrap;">
-                <button class="btn btn-secondary btn-sm" @click="openEdit(q)">Rediger</button>
-                <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(q)">Slett</button>
+                <button class="btn btn-secondary btn-sm" @click="openEdit(q)">{{ $t('Rediger') }}</button>
+                <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(q)">{{ $t('Slett') }}</button>
               </td>
             </tr>
           </tbody>
@@ -138,11 +138,11 @@
       </div>
 
       <div class="pagination-bar" v-if="totalPages > 1">
-        <button class="btn btn-secondary btn-sm" :disabled="page === 1" @click="page--">← Forrige</button>
-        <span>Side {{ page }} av {{ totalPages }} · {{ filteredQuestions.length }} spørsmål</span>
-        <button class="btn btn-secondary btn-sm" :disabled="page === totalPages" @click="page++">Neste →</button>
+        <button class="btn btn-secondary btn-sm" :disabled="page === 1" @click="page--">{{ $t('← Forrige') }}</button>
+        <span>{{ $t('Side') }} {{ page }} {{ $t('av') }} {{ totalPages }} · {{ filteredQuestions.length }} {{ $t('spørsmål§AdminViewT') }}</span>
+        <button class="btn btn-secondary btn-sm" :disabled="page === totalPages" @click="page++">{{ $t('Neste →') }}</button>
       </div>
-      <p v-else style="color:var(--text-dim); font-size:0.85rem;">{{ filteredQuestions.length }} spørsmål</p>
+      <p v-else style="color:var(--text-dim); font-size:0.85rem;">{{ filteredQuestions.length }} {{ $t('spørsmål§AdminViewT') }}</p>
     </template>
 
     <QuestionFormModal
@@ -154,8 +154,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Slette dette spørsmålet?"
-      :message="`«${pendingDelete.questionText}» fjernes fra banken for godt.`"
+      :title="$t('Slette dette spørsmålet?')"
+      :message="$t('«{0}» fjernes fra banken for godt.', [pendingDelete.questionText])"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -163,6 +163,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -293,7 +294,7 @@ async function loadQuestions() {
   try {
     questions.value = await api.adminListQuestions()
   } catch (e) {
-    error.value = 'Kunne ikke laste spørsmål fra serveren.'
+    error.value = _t('Kunne ikke laste spørsmål fra serveren.')
   } finally {
     loading.value = false
   }
@@ -352,7 +353,7 @@ function openEdit(q) {
 
 function onSaved() {
   showModal.value = false
-  toast.show('Spørsmålet er lagret.')
+  toast.show(_t('Spørsmålet er lagret.'))
   loadQuestions()
   loadStats()
 }
@@ -367,11 +368,11 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteQuestion(q.id)
-    toast.show('Spørsmålet er slettet.')
+    toast.show(_t('Spørsmålet er slettet.'))
     loadQuestions()
     loadStats()
   } catch (e) {
-    error.value = 'Kunne ikke slette spørsmålet.'
+    error.value = _t('Kunne ikke slette spørsmålet.§AdminViewJ')
   }
 }
 
@@ -380,11 +381,11 @@ async function addStarterPack() {
   error.value = ''
   try {
     const result = await api.adminAddStarterPack()
-    toast.show(`La til ${result.added} eksempelspørsmål på alle fem språk.`)
+    toast.show(_t('La til {0} eksempelspørsmål på alle fem språk.', [result.added]))
     loadQuestions()
     loadStats()
   } catch (e) {
-    error.value = 'Kunne ikke legge til startpakken.'
+    error.value = _t('Kunne ikke legge til startpakken.')
   } finally {
     seedingStarterPack.value = false
   }
@@ -407,7 +408,7 @@ async function onFileChosen(event) {
     loadQuestions()
     loadStats()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke importere filen.'
+    error.value = e.response?.data?.message || _t('Kunne ikke importere filen.')
   } finally {
     importing.value = false
   }

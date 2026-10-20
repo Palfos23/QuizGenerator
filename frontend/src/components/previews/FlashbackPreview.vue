@@ -1,6 +1,6 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Forhåndsvisning av Flashback: et mysterieår avslørt gjennom hint, gjettet riktig på det andre.">
-    <span class="game-preview-tag">Forhåndsvisning</span>
+  <div class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av Flashback: et mysterieår avslørt gjennom hint, gjettet riktig på det andre.')">
+    <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
 
     <div class="fp-clues">
       <div v-for="c in clues" :key="c.num" class="fp-clue" :class="{ win: c.winner }">
@@ -17,22 +17,23 @@
     </div>
 
     <div class="fp-answer">
-      <span class="fp-answer-label">Året var</span>
+      <span class="fp-answer-label">{{ $t('Året var') }}</span>
       <span class="fp-answer-val">1969</span>
-      <span class="fp-answer-points">+4 poeng</span>
+      <span class="fp-answer-points">{{ $t('+4 poeng') }}</span>
     </div>
 
     <p class="game-preview-caption">
-      Ingen traff på hint 1, så hint 2 ble vist - gjetter du riktig på et <strong>tidligere</strong> hint, får du flere poeng.
+      {{ $t('Ingen traff på hint 1, så hint 2 ble vist - gjetter du riktig på et') }} <strong>{{ $t('tidligere') }}</strong> {{ $t('hint, får du flere poeng.') }}
     </p>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../../i18n'
 const clues = [
   {
     num: 1,
-    text: 'Et berømt «ett lite skritt» ble tatt dette året',
+    text: _t('Et berømt «ett lite skritt» ble tatt dette året'),
     winner: false,
     guesses: [
       { name: 'Jo', year: 1958, win: false },
@@ -41,7 +42,7 @@ const clues = [
   },
   {
     num: 2,
-    text: 'Kappløpet om verdensrommet mellom USA og Sovjetunionen var i full gang',
+    text: _t('Kappløpet om verdensrommet mellom USA og Sovjetunionen var i full gang'),
     winner: true,
     guesses: [
       { name: 'Jo', year: 1969, win: true }

@@ -4,18 +4,18 @@
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
         <div>
-          <h1>Straffekonkurranser <span v-if="!loading && shootouts.length" class="header-count">{{ shootouts.length }}</span></h1>
+          <h1>{{ $t('Straffekonkurranser') }} <span v-if="!loading && shootouts.length" class="header-count">{{ shootouts.length }}</span></h1>
           <p class="page-subtitle">
-            Lag og administrer «gjett straffeskytteren»-brett for en bestemt straffekonkurranse.
+            {{ $t('Lag og administrer «gjett straffeskytteren»-brett for en bestemt straffekonkurranse.') }}
           </p>
         </div>
-        <button class="btn btn-primary" @click="openCreate">+ Lag straffekonkurranse</button>
+        <button class="btn btn-primary" @click="openCreate">{{ $t('+ Lag straffekonkurranse') }}</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
       <div v-else-if="!shootouts.length" class="empty-state friendly">
-        Ingen straffekonkurranser ennå. Legg til noen fotballemner på siden Emner, og lag din første straffekonkurranse her.
+        {{ $t('Ingen straffekonkurranser ennå. Legg til noen fotballemner på siden Emner, og lag din første straffekonkurranse her.') }}
       </div>
 
       <template v-else>
@@ -26,25 +26,25 @@
         :sorts="shootoutSorts"
         :total-count="shootouts.length"
         :filtered-count="filteredShootouts.length"
-        placeholder="Søk etter straffekonkurranser på tittel eller lag…"
+        :placeholder="$t('Søk etter straffekonkurranser på tittel eller lag…')"
       />
 
-      <div v-if="!filteredShootouts.length" class="empty-state">Ingen straffekonkurranser samsvarer med søket ditt.</div>
+      <div v-if="!filteredShootouts.length" class="empty-state">{{ $t('Ingen straffekonkurranser samsvarer med søket ditt.') }}</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="s in pagedShootouts" :key="s.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ s.title }}</div>
             <div class="saved-quiz-meta">
-              {{ s.teamName }} mot {{ s.opponentName }}
-              <template v-if="s.teamPensScored != null && s.opponentPensScored != null"> ({{ s.teamPensScored }}-{{ s.opponentPensScored }} straffer)</template>
-              · {{ s.kickCount }} spark · {{ s.maxStrikes }} {{ s.maxStrikes === 1 ? 'liv' : 'liv' }}
+              {{ s.teamName }} {{ $t('mot') }} {{ s.opponentName }}
+              <template v-if="s.teamPensScored != null && s.opponentPensScored != null"> ({{ s.teamPensScored }}-{{ s.opponentPensScored }} {{ $t('straffer)') }}</template>
+              · {{ $t('{0} spark¦{0} spark', [s.kickCount]) }} · {{ $t('{0} liv¦{0} liv', [s.maxStrikes]) }}
             </div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(s.id)">Rediger</button>
-            <button class="btn btn-secondary btn-sm" @click="duplicateShootout(s.id)">⧉ Dupliser</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(s)">Slett</button>
+            <button class="btn btn-secondary btn-sm" @click="openEdit(s.id)">{{ $t('Rediger') }}</button>
+            <button class="btn btn-secondary btn-sm" @click="duplicateShootout(s.id)">{{ $t('⧉ Dupliser') }}</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(s)">{{ $t('Slett') }}</button>
           </div>
         </div>
       </div>
@@ -56,62 +56,62 @@
     <!-- Builder view -->
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-        <h1 style="margin:0;">{{ editingShootoutId ? 'Rediger straffekonkurranse' : 'Lag straffekonkurranse' }}</h1>
-        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til listen</button>
+        <h1 style="margin:0;">{{ editingShootoutId ? $t('Rediger straffekonkurranse') : $t('Lag straffekonkurranse') }}</h1>
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">{{ $t('← Tilbake til listen') }}</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Tittel<input type="text" v-model="form.title" placeholder="f.eks. VM-finalen 2006" /></label>
+        <label>{{ $t('Tittel') }}<input type="text" v-model="form.title" :placeholder="$t('f.eks. VM-finalen 2006')" /></label>
       </div>
 
       <div class="field">
-        <label>Turnering / sammenheng <span class="picker-hint">valgfritt</span><textarea v-model="form.competition" placeholder="f.eks. Italia vinner 5-3 på straffer etter 1-1."></textarea></label>
+        <label>{{ $t('Turnering / sammenheng') }} <span class="picker-hint">{{ $t('valgfritt') }}</span><textarea v-model="form.competition" :placeholder="$t('f.eks. Italia vinner 5-3 på straffer etter 1-1.')"></textarea></label>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
-          <label>Kampdato <span class="picker-hint">valgfritt</span><input type="date" v-model="form.matchDate" /></label>
+          <label>{{ $t('Kampdato') }} <span class="picker-hint">{{ $t('valgfritt') }}</span><input type="date" v-model="form.matchDate" /></label>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>Maks liv<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
+          <label>{{ $t('Maks liv') }}<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <label>Lag<input type="text" v-model="form.teamName" placeholder="f.eks. Italia" /></label>
+          <label>{{ $t('Lag') }}<input type="text" v-model="form.teamName" :placeholder="$t('f.eks. Italia')" /></label>
         </div>
         <div style="flex:1; min-width:220px;">
-          <label>URL til lagets emblem <span class="picker-hint">valgfritt</span><input type="text" v-model="form.teamCrestUrl" placeholder="https://…" /></label>
-          <div class="photo-upload-row"><PhotoUploadButton label="Last opp et emblem" @uploaded="url => form.teamCrestUrl = url" /></div>
+          <label>{{ $t('URL til lagets emblem') }} <span class="picker-hint">{{ $t('valgfritt') }}</span><input type="text" v-model="form.teamCrestUrl" placeholder="https://…" /></label>
+          <div class="photo-upload-row"><PhotoUploadButton :label="$t('Last opp et emblem')" @uploaded="url => form.teamCrestUrl = url" /></div>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <label>Motstander<input type="text" v-model="form.opponentName" placeholder="f.eks. Frankrike" /></label>
+          <label>{{ $t('Motstander') }}<input type="text" v-model="form.opponentName" :placeholder="$t('f.eks. Frankrike')" /></label>
         </div>
         <div style="flex:1; min-width:220px;">
-          <label>URL til motstanderens emblem <span class="picker-hint">valgfritt</span><input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" /></label>
-          <div class="photo-upload-row"><PhotoUploadButton label="Last opp et emblem" @uploaded="url => form.opponentCrestUrl = url" /></div>
+          <label>{{ $t('URL til motstanderens emblem') }} <span class="picker-hint">{{ $t('valgfritt') }}</span><input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" /></label>
+          <div class="photo-upload-row"><PhotoUploadButton :label="$t('Last opp et emblem')" @uploaded="url => form.opponentCrestUrl = url" /></div>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:140px;">
-          <label>{{ form.teamName || 'Lag' }} scorede straffer <span class="picker-hint">valgfritt, f.eks. "5"</span><input type="number" min="0" v-model.number="form.teamPensScored" /></label>
+          <label>{{ form.teamName || $t('Lag') }} {{ $t('scorede straffer') }} <span class="picker-hint">{{ $t('valgfritt, f.eks. "5"') }}</span><input type="number" min="0" v-model.number="form.teamPensScored" /></label>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>{{ form.opponentName || 'Motstander' }} scorede straffer <span class="picker-hint">valgfritt, f.eks. "3"</span><input type="number" min="0" v-model.number="form.opponentPensScored" /></label>
+          <label>{{ form.opponentName || $t('Motstander') }} {{ $t('scorede straffer') }} <span class="picker-hint">{{ $t('valgfritt, f.eks. "3"') }}</span><input type="number" min="0" v-model.number="form.opponentPensScored" /></label>
         </div>
       </div>
 
       <div class="field">
-        <label>Spark <span class="picker-hint">i riktig rekkefølge - søk legger til på slutten, endre rekkefølge med pilene</span></label>
+        <label>{{ $t('Spark') }} <span class="picker-hint">{{ $t('i riktig rekkefølge - søk legger til på slutten, endre rekkefølge med pilene') }}</span></label>
 
-        <input type="text" v-model="kickSearchTerm" placeholder="Søk etter hvem som tok et spark…" style="width:100%; margin-bottom:10px;" />
+        <input type="text" v-model="kickSearchTerm" :placeholder="$t('Søk etter hvem som tok et spark…')" style="width:100%; margin-bottom:10px;" />
 
         <div v-if="kickSearchResults.length" class="guess-results" style="margin-bottom:10px;">
           <button v-for="a in kickSearchResults" :key="a.id" class="guess-result-row" @click="addKick(a)">
@@ -120,7 +120,7 @@
         </div>
 
         <div v-if="!kicks.length" class="empty-state" style="padding:20px;">
-          Ingen spark lagt til ennå - søk over etter den første skytteren.
+          {{ $t('Ingen spark lagt til ennå - søk over etter den første skytteren.') }}
         </div>
 
         <div v-else>
@@ -131,32 +131,34 @@
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <div class="language-row" style="gap:6px;">
-                <button type="button" class="language-btn" :class="{ active: k.forTeam }" @click="k.forTeam = true">{{ form.teamName || 'Lag' }}</button>
-                <button type="button" class="language-btn" :class="{ active: !k.forTeam }" @click="k.forTeam = false">{{ form.opponentName || 'Motstander' }}</button>
+                <button type="button" class="language-btn" :class="{ active: k.forTeam }" @click="k.forTeam = true">{{ form.teamName || $t('Lag') }}</button>
+                <button type="button" class="language-btn" :class="{ active: !k.forTeam }" @click="k.forTeam = false">{{ form.opponentName || $t('Motstander') }}</button>
               </div>
               <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400; font-size:0.82rem; color:var(--text-dim); margin:0;">
                 <input type="checkbox" v-model="k.scored" style="width:auto;" />
-                Scoret
+                {{ $t('Scoret') }}
               </label>
             </div>
             <div style="display:flex; gap:4px;">
-              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === 0" @click="moveKick(i, -1)" aria-label="Flytt opp">↑</button>
-              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === kicks.length - 1" @click="moveKick(i, 1)" aria-label="Flytt ned">↓</button>
+              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === 0" @click="moveKick(i, -1)" :aria-label="$t('Flytt opp')">↑</button>
+              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === kicks.length - 1" @click="moveKick(i, 1)" :aria-label="$t('Flytt ned')">↓</button>
               <button class="btn btn-danger btn-sm" @click="kicks.splice(i, 1)">✕</button>
             </div>
           </div>
         </div>
       </div>
 
+      <TranslationEditor v-if="editingShootoutId" type="SHOOTOUT" :entity-id="editingShootoutId" />
+
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" :disabled="!kicks.length" @click="showPreview = true">
-          Forhåndsvisning ({{ kicks.length }} spark)
+          {{ $t('Forhåndsvisning ({0} spark)¦Forhåndsvisning ({0} spark)', [kicks.length]) }}
         </button>
         <button v-if="editingShootoutId" class="btn btn-secondary" @click="duplicateAsNewVersion">
-          ⧉ Dupliser som ny versjon
+          {{ $t('⧉ Dupliser som ny versjon') }}
         </button>
         <button class="btn btn-primary" :disabled="saving" @click="saveShootout">
-          {{ saving ? 'Lagrer…' : 'Lagre straffekonkurranse' }}
+          {{ saving ? $t('Lagrer…') : $t('Lagre straffekonkurranse') }}
         </button>
       </div>
     </template>
@@ -164,10 +166,10 @@
     <div v-if="showPreview" class="modal-backdrop" @click.self="showPreview = false">
       <div class="modal" style="max-width:640px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <h2 style="margin:0;">{{ form.title || 'Straffekonkurranse uten tittel' }}</h2>
-          <button class="btn btn-secondary btn-sm" @click="showPreview = false">Lukk</button>
+          <h2 style="margin:0;">{{ form.title || $t('Straffekonkurranse uten tittel') }}</h2>
+          <button class="btn btn-secondary btn-sm" @click="showPreview = false">{{ $t('Lukk§AdminPenaltyShootoutsViewT') }}</button>
         </div>
-        <p class="page-subtitle" style="margin-top:0;">Alt vist avslørt, for en rask sjekk av at spark og rekkefølge ser riktige ut.</p>
+        <p class="page-subtitle" style="margin-top:0;">{{ $t('Alt vist avslørt, for en rask sjekk av at spark og rekkefølge ser riktige ut.') }}</p>
 
         <PenaltyShootoutBoard
           :team-name="form.teamName"
@@ -181,8 +183,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Slette denne straffekonkurransen?"
-      :message="`«${pendingDelete.title}» fjernes for godt.`"
+      :title="$t('Slette denne straffekonkurransen?')"
+      :message="$t('«{0}» fjernes for godt.', [pendingDelete.title])"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -190,6 +192,8 @@
 </template>
 
 <script setup>
+import TranslationEditor from '../components/TranslationEditor.vue'
+import { t as _t } from '../i18n'
 import PhotoUploadButton from '../components/PhotoUploadButton.vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
@@ -213,9 +217,9 @@ const {
   pageSize: 10,
   searchFields: [s => s.title, s => s.teamName, s => s.opponentName],
   sorts: [
-    { key: 'date', label: 'Kampdato', accessor: s => s.matchDate, dir: 'desc' },
-    { key: 'title', label: 'Tittel', accessor: s => s.title },
-    { key: 'team', label: 'Lag', accessor: s => s.teamName }
+    { key: 'date', label: _t('Kampdato'), accessor: s => s.matchDate, dir: 'desc' },
+    { key: 'title', label: _t('Tittel'), accessor: s => s.title },
+    { key: 'team', label: _t('Lag'), accessor: s => s.teamName }
   ]
 })
 const error = ref('')
@@ -258,7 +262,7 @@ async function loadShootouts() {
   try {
     shootouts.value = await api.adminListPenaltyShootouts()
   } catch (e) {
-    error.value = 'Kunne ikke laste straffekonkurranser.'
+    error.value = _t('Kunne ikke laste straffekonkurranser.§AdminPenaltyShootoutsViewJ')
   } finally {
     loading.value = false
   }
@@ -350,7 +354,7 @@ async function openEdit(id) {
     editingShootoutId.value = id
     view.value = 'builder'
   } catch (e) {
-    error.value = 'Kunne ikke laste straffekonkurransen.'
+    error.value = _t('Kunne ikke laste straffekonkurransen.')
   }
 }
 
@@ -362,22 +366,22 @@ async function duplicateShootout(id) {
 
 function duplicateAsNewVersion() {
   editingShootoutId.value = null
-  form.title = form.title + ' (oppdatert)'
-  toast.show('Du redigerer nå en ny duplikat - den opprinnelige straffekonkurransen er urørt. Husk å lagre denne kopien.')
+  form.title = form.title + _t(' (oppdatert)')
+  toast.show(_t('Du redigerer nå en ny duplikat - den opprinnelige straffekonkurransen er urørt. Husk å lagre denne kopien.'))
 }
 
 async function saveShootout() {
   error.value = ''
   if (!form.title.trim()) {
-    error.value = 'Tittel må fylles ut.'
+    error.value = _t('Tittel må fylles ut.')
     return
   }
   if (!form.teamName.trim() || !form.opponentName.trim()) {
-    error.value = 'Lag og motstander må fylles ut.'
+    error.value = _t('Lag og motstander må fylles ut.')
     return
   }
   if (!kicks.value.length) {
-    error.value = 'Legg til minst ett spark.'
+    error.value = _t('Legg til minst ett spark.')
     return
   }
 
@@ -406,11 +410,11 @@ async function saveShootout() {
     } else {
       await api.adminCreatePenaltyShootout(payload)
     }
-    toast.show('Straffekonkurransen er lagret.')
+    toast.show(_t('Straffekonkurransen er lagret.'))
     view.value = 'list'
     loadShootouts()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke lagre straffekonkurransen.'
+    error.value = e.response?.data?.message || _t('Kunne ikke lagre straffekonkurransen.')
   } finally {
     saving.value = false
   }
@@ -426,10 +430,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeletePenaltyShootout(s.id)
-    toast.show('Straffekonkurransen er slettet.')
+    toast.show(_t('Straffekonkurransen er slettet.'))
     loadShootouts()
   } catch (e) {
-    error.value = 'Kunne ikke slette straffekonkurransen.'
+    error.value = _t('Kunne ikke slette straffekonkurransen.')
   }
 }
 </script>

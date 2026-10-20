@@ -1,20 +1,20 @@
 <template>
   <div>
-    <LoadingState v-if="loadingChoices" message="Laster gridvalg…" full />
+    <LoadingState v-if="loadingChoices" :message="$t('Laster gridvalg…')" full />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
         Grid {{ currentGridIndex + 1 }} / {{ totalGrids }}
       </div>
-      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ pickerName }}</strong>, velg et grid</h2>
+      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ pickerName }}</strong>{{ $t(', velg et grid') }}</h2>
       <div class="tension-choice-grid">
         <button v-for="g in roundChoices" :key="g.id" class="tension-choice-card" @click="chooseGrid(g)">
           <strong>{{ g.title }}</strong>
-          <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ sportLabel(g.sport) }} · {{ g.entryCount }} å finne</div>
+          <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ sportLabel(g.sport) }} · {{ g.entryCount }} {{ $t('å finne') }}</div>
         </button>
       </div>
       <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="rerolling" @click="rerollChoices">
-        {{ rerolling ? 'Finner flere…' : '↻ Vis 3 andre grids' }}
+        {{ rerolling ? $t('Finner flere…') : $t('↻ Vis 3 andre grids') }}
       </button>
     </div>
 
@@ -25,7 +25,7 @@
       <div v-if="lastUpdatedLabel" style="color:var(--text-dim); font-size:0.75rem; text-align:center; width:100%;">{{ lastUpdatedLabel }}</div>
     </div>
 
-    <LoadingState v-if="loading" message="Laster grid…" full />
+    <LoadingState v-if="loading" :message="$t('Laster grid…')" full />
 
     <template v-else-if="gridState">
       <div class="mp-player-row">
@@ -38,19 +38,19 @@
         >
           <strong>{{ p.name }}</strong>
           <LivesHearts :max="gridState.maxStrikes" :used="livesUsed[p.name] || 0" style="margin-top:4px;" />
-          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Totalt: {{ scores[p.name] || 0 }}</div>
+          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">{{ $t('Totalt:') }} {{ scores[p.name] || 0 }}</div>
         </div>
       </div>
 
       <div v-if="!gridComplete" class="guess-box-wrap no-print">
-        <p class="guess-box-turn-label">{{ currentPlayerName }}sin tur</p>
+        <p class="guess-box-turn-label">{{ currentPlayerName }}{{ $t('sin tur') }}</p>
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <div class="guess-box-row">
             <input
               type="text"
               v-model="searchTerm"
-              placeholder="Søk etter et svar…"
-              aria-label="Søk etter et svar"
+              :placeholder="$t('Søk etter et svar…')"
+              :aria-label="$t('Søk etter et svar')"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -62,7 +62,7 @@
               class="btn btn-danger-solid btn-sm no-print guess-box-skip-btn"
               :disabled="guessing"
               @click="showSkipConfirm = true"
-            >Gi videre</button>
+            >{{ $t('Gi videre') }}</button>
           </div>
           <div v-if="searchResults.length" class="guess-results">
             <button
@@ -80,17 +80,17 @@
 
       <ConfirmModal
         v-if="showSkipConfirm"
-        title="Gi turen videre?"
-        message="Du mister et liv, akkurat som ved en feil gjetning."
-        confirm-text="Gi videre"
-        cancel-text="Fortsett å gjette"
+        :title="$t('Gi turen videre?')"
+        :message="$t('Du mister et liv, akkurat som ved en feil gjetning.')"
+        :confirm-text="$t('Gi videre')"
+        :cancel-text="$t('Fortsett å gjette')"
         @confirm="confirmSkipTurn"
         @cancel="showSkipConfirm = false"
       />
 
       <div v-if="gridComplete" class="modal-backdrop">
         <div class="completion-popup">
-          <h2 style="margin-top:0;">Gridet er ferdig!</h2>
+          <h2 style="margin-top:0;">{{ $t('Gridet er ferdig!') }}</h2>
           <div class="score-square-grid">
             <div v-for="(p, i) in leaderboardForGrid" :key="p.name" class="score-square" :class="{ leader: i === 0 }">
               <div class="score-square-name">{{ p.name }}</div>
@@ -101,7 +101,7 @@
 
           <template v-if="recapTiles.length && recapSolvedCount < recapTiles.length">
             <div class="grid-recap-label">
-              {{ recapSolvedCount }} / {{ recapTiles.length }} funnet — <span style="color:var(--coral);">røde</span> ruter ble ikke gjettet
+              {{ recapSolvedCount }} / {{ recapTiles.length }} {{ $t('funnet —') }} <span style="color:var(--coral);">{{ $t('røde') }}</span> {{ $t('ruter ble ikke gjettet') }}
             </div>
             <div class="grid-tiles-recap">
               <div
@@ -133,7 +133,7 @@
           </template>
 
           <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextGrid">
-            {{ currentGridIndex + 1 < totalGrids ? 'Neste grid' : 'Fullfør spillet' }}
+            {{ currentGridIndex + 1 < totalGrids ? $t('Neste grid') : $t('Fullfør spillet') }}
           </button>
         </div>
       </div>
@@ -168,18 +168,19 @@
     </template>
 
     <div v-else class="empty-state">
-      <p>Kunne ikke laste dette gridet.</p>
-      <button class="btn btn-primary" @click="proceedToCurrentRound">Prøv igjen</button>
+      <p>{{ $t('Kunne ikke laste dette gridet.§MultiplayerGridGameT') }}</p>
+      <button class="btn btn-primary" @click="proceedToCurrentRound">{{ $t('Prøv igjen') }}</button>
     </div>
     </template>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
-      <div class="grid-result-text">{{ resultOverlay.correct ? 'Riktig' : 'Feil' }}</div>
+      <div class="grid-result-text">{{ resultOverlay.correct ? $t('Riktig§MultiplayerGridGameM') : $t('Feil§MultiplayerGridGameM') }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import { useDebouncedSearch } from '../composables/useDebouncedSearch'
@@ -279,7 +280,7 @@ async function loadGrid(gridId) {
     gridState.value = await api.getMultiplayerGridStart(gridId)
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke laste dette gridet - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke laste dette gridet - prøv igjen.'), 'error')
   } finally {
     loading.value = false
   }
@@ -290,7 +291,7 @@ async function loadRoundChoices() {
   try {
     roundChoices.value = await api.fetchGridBattleRoundChoices(3, chosenGrids.value.map(g => g.id))
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke laste neste runde - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke laste neste runde - prøv igjen.'), 'error')
   } finally {
     loadingChoices.value = false
   }
@@ -307,10 +308,10 @@ async function rerollChoices() {
     if (fresh.length) {
       roundChoices.value = fresh
     } else {
-      toast.show('Ingen andre grids igjen å vise.', 'error')
+      toast.show(_t('Ingen andre grids igjen å vise.'), 'error')
     }
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke laste andre grids - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke laste andre grids - prøv igjen.'), 'error')
   } finally {
     rerolling.value = false
   }

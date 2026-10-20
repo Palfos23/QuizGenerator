@@ -1,25 +1,26 @@
 <template>
   <div style="display:inline-flex; gap:8px; flex-wrap:wrap;">
     <button type="button" class="btn btn-secondary" @click="share">
-      {{ copied ? 'Kopiert!' : 'Inviter venner' }}
+      {{ copied ? $t('Kopiert!') : $t('Inviter venner') }}
     </button>
     <button type="button" class="btn btn-secondary" @click="toggleQr">
-      Vis QR-kode
+      {{ $t('Vis QR-kode') }}
     </button>
 
     <div v-if="showQr" class="modal-backdrop" @click.self="toggleQr">
-      <div class="modal" role="dialog" aria-modal="true" aria-label="QR-kode for å bli med i rommet" style="text-align:center; max-width:280px;">
-        <h2 style="margin-bottom:4px;">Skann for å bli med</h2>
-        <p class="page-subtitle" style="margin-bottom:16px;">Romkode {{ roomCode }}</p>
-        <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR-kode for å bli med i rommet" width="220" height="220" style="border-radius: 2px; background:#fff; padding:8px;" />
-        <p v-else style="color:var(--text-dim); font-size:0.85rem;">Lager QR-kode…</p>
-        <button type="button" class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="toggleQr">Lukk</button>
+      <div class="modal" role="dialog" aria-modal="true" :aria-label="$t('QR-kode for å bli med i rommet')" style="text-align:center; max-width:280px;">
+        <h2 style="margin-bottom:4px;">{{ $t('Skann for å bli med') }}</h2>
+        <p class="page-subtitle" style="margin-bottom:16px;">{{ $t('Romkode') }} {{ roomCode }}</p>
+        <img v-if="qrDataUrl" :src="qrDataUrl" :alt="$t('QR-kode for å bli med i rommet')" width="220" height="220" style="border-radius: 2px; background:#fff; padding:8px;" />
+        <p v-else style="color:var(--text-dim); font-size:0.85rem;">{{ $t('Lager QR-kode…') }}</p>
+        <button type="button" class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="toggleQr">{{ $t('Lukk§InviteLinkButtonT') }}</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { ref, watch } from 'vue'
 import QRCode from 'qrcode'
 import { useEscapeKey } from '../composables/useEscapeKey'
@@ -69,7 +70,7 @@ async function share() {
   // the link straight into Messages/WhatsApp/AirDrop instead of copy-paste.
   if (navigator.share) {
     try {
-      await navigator.share({ title: 'Bli med i spillet mitt', text: `Bli med i spillet mitt - romkode ${props.roomCode}`, url: link })
+      await navigator.share({ title: _t('Bli med i spillet mitt'), text: _t('Bli med i spillet mitt - romkode {0}', [props.roomCode]), url: link })
       return
     } catch (e) {
       // Share sheet dismissed/cancelled, or unsupported for this content -
@@ -92,7 +93,7 @@ async function share() {
     // return null, so this still needs its own guard rather than assuming
     // the fallback itself can't fail.
     try {
-      window.prompt('Kopier denne lenken for å invitere venner:', link)
+      window.prompt(_t('Kopier denne lenken for å invitere venner:'), link)
     } catch (e2) {
       // Truly nothing left to fall back to - the room code shown above
       // this button is still there to read off and share manually.

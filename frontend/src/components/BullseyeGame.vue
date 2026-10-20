@@ -1,35 +1,35 @@
 <template>
   <div>
-    <LoadingState v-if="loadingChoices" message="Laster spørsmålsvalg…" full />
+    <LoadingState v-if="loadingChoices" :message="$t('Laster spørsmålsvalg…')" full />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
-        Runde {{ roundIndex + 1 }} / {{ totalRounds }}
+        {{ $t('Runde') }} {{ roundIndex + 1 }} / {{ totalRounds }}
       </div>
-      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ rotatedActivePlayers[0]?.name }}</strong>, velg et spørsmål</h2>
+      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ rotatedActivePlayers[0]?.name }}</strong>{{ $t(', velg et spørsmål') }}</h2>
       <div class="tension-choice-grid">
         <button v-for="q in roundChoices" :key="q.id" class="tension-choice-card" @click="chooseQuestion(q)">
           <strong>{{ formatQuestionTarget(q) }} {{ q.statLabel }}</strong>
           <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">
-            {{ sportLabel(q.sport) }} · {{ q.entryCount }} mulige svar
+            {{ sportLabel(q.sport) }} · {{ q.entryCount }} {{ $t('mulige svar') }}
           </div>
         </button>
       </div>
       <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="rerolling" @click="rerollChoices">
-        {{ rerolling ? 'Finner flere…' : '↻ Vis 3 andre spørsmål' }}
+        {{ rerolling ? $t('Finner flere…') : $t('↻ Vis 3 andre spørsmål') }}
       </button>
     </div>
 
-    <LoadingState v-else-if="loading" message="Laster spørsmålet…" full />
+    <LoadingState v-else-if="loading" :message="$t('Laster spørsmålet…')" full />
 
     <div v-else-if="!roundState" class="empty-state">
-      <p>Kunne ikke laste denne runden.</p>
-      <button class="btn btn-primary" @click="loadRoundChoices">Prøv igjen</button>
+      <p>{{ $t('Kunne ikke laste denne runden.') }}</p>
+      <button class="btn btn-primary" @click="loadRoundChoices">{{ $t('Prøv igjen') }}</button>
     </div>
 
     <template v-else>
       <div class="grid-status-bar">
-        <div class="grid-progress" style="text-align:center; width:100%;">Runde {{ roundIndex + 1 }} / {{ totalRounds }}</div>
+        <div class="grid-progress" style="text-align:center; width:100%;">{{ $t('Runde') }} {{ roundIndex + 1 }} / {{ totalRounds }}</div>
         <div style="color:var(--text-dim); font-size:0.85rem; text-align:center; width:100%;">{{ sportLabel(roundState.sport) }}</div>
       </div>
 
@@ -45,29 +45,29 @@
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <div class="tension-player-answer">{{ answerTextFor(p.name) || '— venter —' }}</div>
+          <div class="tension-player-answer">{{ answerTextFor(p.name) || $t('— venter —') }}</div>
         </div>
       </div>
 
       <div v-if="!revealed" style="text-align:center; margin:8px 0 0;">
         <div v-if="countdown !== null" style="font-size:1.4rem; font-weight:700;">
-          Alle har svart! Avslører om {{ countdown }}…
+          {{ $t('Alle har svart! Avslører om') }} {{ countdown }}…
         </div>
         <p v-else style="color:var(--gold); font-weight:600;">
-          {{ currentTurnPlayerName }}sin tur - velg et navn
+          {{ currentTurnPlayerName }}{{ $t('sin tur - velg et navn') }}
         </p>
       </div>
 
       <div v-if="revealed" class="tension-answers-panel" style="margin:16px auto 0;">
-        <h3 style="text-align:center; margin-top:0;">Svar</h3>
+        <h3 style="text-align:center; margin-top:0;">{{ $t('Svar§BullseyeGameT') }}</h3>
 
         <div v-if="drumrolling" class="bullseye-drumroll">
           <div class="bullseye-drumroll-icon">🥁</div>
-          <div>Bare to igjen…</div>
+          <div>{{ $t('Bare to igjen…') }}</div>
         </div>
 
         <div v-if="eliminating" class="bullseye-elimination-banner">
-          ❌ {{ justEliminatedName }} er ute!
+          ❌ {{ justEliminatedName }} {{ $t('er ute!') }}
         </div>
 
         <div
@@ -79,7 +79,7 @@
           <div class="bullseye-spotlight-label">{{ spotlightLabel }}</div>
           <div class="bullseye-spotlight-name">{{ spotlightEntry.player }}</div>
           <div class="bullseye-spotlight-answer">
-            {{ spotlightEntry.name }} · {{ fmt(spotlightEntry.statValue) }} ({{ fmt(spotlightEntry.distance) }} unna)
+            {{ spotlightEntry.name }} · {{ fmt(spotlightEntry.statValue) }} ({{ fmt(spotlightEntry.distance) }} {{ $t('unna)') }}
           </div>
         </div>
 
@@ -97,22 +97,22 @@
             <div class="bullseye-reveal-rank">{{ revealIndex > idx ? idx + 1 : '?' }}</div>
             <div class="bullseye-reveal-main">
               <div class="bullseye-reveal-player">{{ revealIndex > idx ? a.player : '???' }}</div>
-              <div class="bullseye-reveal-guess">{{ revealIndex > idx ? a.name : 'Skjult til avsløringen' }}</div>
+              <div class="bullseye-reveal-guess">{{ revealIndex > idx ? a.name : $t('Skjult til avsløringen') }}</div>
             </div>
             <div v-if="revealIndex > idx" class="bullseye-reveal-stats">
               <div class="bullseye-reveal-value">{{ fmt(a.statValue) }}</div>
               <div class="bullseye-reveal-bar">
                 <div class="bullseye-reveal-bar-fill" :style="{ width: distancePct(a.distance) + '%' }"></div>
               </div>
-              <div class="bullseye-reveal-distance">{{ fmt(a.distance) }} unna</div>
+              <div class="bullseye-reveal-distance">{{ fmt(a.distance) }} {{ $t('unna') }}</div>
             </div>
           </div>
         </div>
 
-        <div v-if="showTruth && bullseyeAnswers.length" class="bullseye-reveal-divider">Det riktige svaret</div>
+        <div v-if="showTruth && bullseyeAnswers.length" class="bullseye-reveal-divider">{{ $t('Det riktige svaret') }}</div>
 
         <div v-if="showTruth && bullseyeAnswers.length" class="bullseye-truth-callout">
-          <div class="bullseye-truth-label">{{ bullseyeAnswers[0].distance === 0 ? '🎯 Bullseye' : 'Nærmeste mulige svar' }}</div>
+          <div class="bullseye-truth-label">{{ bullseyeAnswers[0].distance === 0 ? '🎯 Bullseye' : $t('Nærmeste mulige svar') }}</div>
           <div class="bullseye-truth-list">
             <span
               v-for="e in bullseyeAnswersWithFoundState"
@@ -120,17 +120,17 @@
               class="bullseye-truth-name"
               :class="e.foundBy ? 'found' : 'not-found'"
             >
-              {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ fmt(e.statValue) }})<template v-if="e.foundBy"> — funnet av {{ e.foundBy }}</template>
+              {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ fmt(e.statValue) }})<template v-if="e.foundBy"> {{ $t('— funnet av') }} {{ e.foundBy }}</template>
             </span>
           </div>
         </div>
 
         <div style="text-align:center; margin-top:16px;">
           <button v-if="revealIndex < rankedAnswers.length" class="btn btn-secondary" @click="skipReveal">
-            Hopp over avsløringen
+            {{ $t('Hopp over avsløringen') }}
           </button>
           <button v-else-if="readyForNextRound" class="btn btn-primary" @click="nextRound">
-            {{ activePlayers.length <= 2 ? 'Fullfør spillet' : 'Neste runde' }}
+            {{ activePlayers.length <= 2 ? $t('Fullfør spillet') : $t('Neste runde') }}
           </button>
         </div>
       </div>
@@ -152,6 +152,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -291,9 +292,9 @@ const spotlightLabel = computed(() => {
   const total = rankedAnswers.value.length
   const rank = revealIndex.value
   if (!rank) return ''
-  if (rank === total) return '❌ Ute'
-  if (rank === total - 1) return '✅ Trygg!'
-  return `${ordinal(rank)} nærmest`
+  if (rank === total) return _t('❌ Ute')
+  if (rank === total - 1) return _t('✅ Trygg!')
+  return _t('{0} nærmest', [ordinal(rank)])
 })
 
 let countdownTimer = null
@@ -447,7 +448,7 @@ async function loadRoundChoices() {
   try {
     roundChoices.value = await api.fetchBullseyeBattleRoundChoices(3, chosenQuestions.value.map(q => q.id), props.excludeCategories)
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke laste neste runde - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke laste neste runde - prøv igjen.'), 'error')
   } finally {
     loadingChoices.value = false
   }
@@ -464,10 +465,10 @@ async function rerollChoices() {
     if (fresh.length) {
       roundChoices.value = fresh
     } else {
-      toast.show('Ingen andre spørsmål igjen å vise.', 'error')
+      toast.show(_t('Ingen andre spørsmål igjen å vise.'), 'error')
     }
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke laste andre spørsmål - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke laste andre spørsmål - prøv igjen.'), 'error')
   } finally {
     rerolling.value = false
   }
@@ -484,7 +485,7 @@ async function loadRoundState(id) {
   try {
     roundState.value = await api.getMultiplayerBullseyeStart(id)
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke laste dette spørsmålet - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke laste dette spørsmålet - prøv igjen.'), 'error')
   } finally {
     loading.value = false
   }

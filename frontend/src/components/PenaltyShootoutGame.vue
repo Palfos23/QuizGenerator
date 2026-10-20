@@ -1,6 +1,6 @@
 <template>
   <div>
-    <LoadingState v-if="loading" message="Laster konkurransen…" full />
+    <LoadingState v-if="loading" :message="$t('Laster konkurransen…')" full />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-else-if="shootout">
@@ -24,7 +24,7 @@
         <div v-if="shootout.teamPensScored != null && shootout.opponentPensScored != null" class="pitch-scoreline-score">
           <span>{{ shootout.teamPensScored }}</span><span class="dash">-</span><span>{{ shootout.opponentPensScored }}</span>
         </div>
-        <div v-else class="pitch-scoreline-vs">mot</div>
+        <div v-else class="pitch-scoreline-vs">{{ $t('mot') }}</div>
         <div class="pitch-scoreline-team away">
           <GameImage v-if="shootout.opponentCrestUrl" :src="shootout.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
           <span>{{ shootout.opponentName }}</span>
@@ -45,27 +45,27 @@
         >
           <strong>{{ p.name }}</strong>
           <LivesHearts :max="shootout.maxStrikes" :used="livesUsed[p.name] || 0" style="margin-top:4px;" />
-          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Funnet: {{ scores[p.name] || 0 }}</div>
+          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">{{ $t('Funnet:') }} {{ scores[p.name] || 0 }}</div>
         </div>
       </div>
       <div v-else class="mp-player-row">
         <div class="mp-player-card" style="border-color:var(--gold);">
           <LivesHearts :max="shootout.maxStrikes" :used="livesUsed[players[0]?.name] || 0" />
-          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Funnet: {{ scores[players[0]?.name] || 0 }}</div>
+          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">{{ $t('Funnet:') }} {{ scores[players[0]?.name] || 0 }}</div>
         </div>
       </div>
 
       <div v-if="!shootoutComplete" class="guess-box-wrap no-print">
         <p class="guess-box-turn-label">
-          {{ players.length > 1 ? `${currentPlayerName} sin tur` : 'Hvem tok dette sparket?' }}
+          {{ players.length > 1 ? $t('{0} sin tur', [currentPlayerName]) : $t('Hvem tok dette sparket?') }}
         </p>
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <div class="guess-box-row">
             <input
               type="text"
               v-model="searchTerm"
-              placeholder="Søk etter en spiller…"
-              aria-label="Søk etter en spiller"
+              :placeholder="$t('Søk etter en spiller…')"
+              :aria-label="$t('Søk etter en spiller')"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -78,7 +78,7 @@
               class="btn btn-danger-solid btn-sm no-print guess-box-skip-btn"
               :disabled="guessing"
               @click="showSkipConfirm = true"
-            >Gi videre</button>
+            >{{ $t('Gi videre') }}</button>
           </div>
           <div v-if="searchResults.length" class="guess-results">
             <button v-for="a in searchResults" :key="a.id" class="guess-result-row" :disabled="guessing" @click="submitGuess(a)">
@@ -91,15 +91,15 @@
       <!-- Only before anything's happened - once a kick is revealed or a life's
            been spent, swapping would throw that progress away. -->
       <div v-if="!shootoutComplete && !revealedKickIds.length && !Object.values(livesUsed).some(n => n)" class="no-print" style="text-align:center; margin-top:10px;">
-        <button type="button" class="btn btn-secondary btn-sm" @click="emit('swap')">↻ Hatt denne før? Velg en annen konkurranse</button>
+        <button type="button" class="btn btn-secondary btn-sm" @click="emit('swap')">{{ $t('↻ Hatt denne før? Velg en annen konkurranse') }}</button>
       </div>
 
       <ConfirmModal
         v-if="showSkipConfirm"
-        title="Gi turen videre?"
-        message="Du mister et liv, akkurat som ved en feil gjetning."
-        confirm-text="Gi videre"
-        cancel-text="Fortsett å gjette"
+        :title="$t('Gi turen videre?')"
+        :message="$t('Du mister et liv, akkurat som ved en feil gjetning.')"
+        :confirm-text="$t('Gi videre')"
+        :cancel-text="$t('Fortsett å gjette')"
         @confirm="confirmSkipTurn"
         @cancel="showSkipConfirm = false"
       />
@@ -112,7 +112,7 @@
 
       <div v-if="shootoutComplete" class="modal-backdrop">
         <div class="completion-popup">
-          <h2 style="margin-top:0;">{{ allKicksSolved ? 'Konkurransen er løst!' : 'Konkurransen er over' }}</h2>
+          <h2 style="margin-top:0;">{{ allKicksSolved ? $t('Konkurransen er løst!') : $t('Konkurransen er over') }}</h2>
           <div class="score-square-grid">
             <div v-for="(p, i) in leaderboard" :key="p.name" class="score-square" :class="{ leader: i === 0 }">
               <div class="score-square-name">{{ p.name }}</div>
@@ -122,7 +122,7 @@
 
           <template v-if="recapKicks.length && recapFoundCount < recapKicks.length">
             <div class="grid-recap-label">
-              {{ recapFoundCount }} / {{ recapKicks.length }} funnet — <span style="color:var(--coral);">røde</span> spark ble ikke funnet
+              {{ recapFoundCount }} / {{ recapKicks.length }} {{ $t('funnet —') }} <span style="color:var(--coral);">{{ $t('røde') }}</span> {{ $t('spark ble ikke funnet') }}
             </div>
             <div class="pen-kick-recap">
               <PenaltyShootoutBoard :kicks="recapKicks" :show-scoreline="false" />
@@ -130,19 +130,20 @@
           </template>
 
           <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="finish">
-            {{ players.length > 1 ? 'Se sluttresultatet' : 'Ferdig' }}
+            {{ players.length > 1 ? $t('Se sluttresultatet§PenaltyShootoutGameM') : $t('Ferdig') }}
           </button>
         </div>
       </div>
     </template>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
-      <div class="grid-result-text">{{ resultOverlay.correct ? 'Riktig' : 'Feil' }}</div>
+      <div class="grid-result-text">{{ resultOverlay.correct ? $t('Riktig§PenaltyShootoutGameM') : $t('Feil§PenaltyShootoutGameM') }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import { useDebouncedSearch } from '../composables/useDebouncedSearch'
@@ -207,7 +208,7 @@ const currentPlayerName = computed(() => props.players[currentPlayerIdx.value]?.
 // was specifically "all of the match info", so it's included.
 const matchDateLabel = computed(() => {
   if (!shootout.value?.matchDate) return ''
-  return new Date(shootout.value.matchDate).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
+  return new Date(shootout.value.matchDate).toLocaleDateString(window.QUIZ_LOCALE, { day: 'numeric', month: 'long', year: 'numeric' })
 })
 const leaderboard = computed(() =>
   [...props.players]
@@ -233,7 +234,7 @@ async function loadShootout() {
     shootout.value = fresh
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke laste denne konkurransen - prøv igjen.'
+    error.value = e.response?.data?.message || _t('Kunne ikke laste denne konkurransen - prøv igjen.')
   } finally {
     loading.value = false
   }
@@ -330,7 +331,7 @@ async function revealRemaining() {
       return match || k
     })
   } catch (e) {
-    toast.show('Kunne ikke vise de gjenstående sparkene.', 'error')
+    toast.show(_t('Kunne ikke vise de gjenstående sparkene.'), 'error')
   }
 }
 

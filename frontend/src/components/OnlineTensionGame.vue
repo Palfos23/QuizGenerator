@@ -1,20 +1,20 @@
 <template>
   <div>
     <div class="grid-status-bar">
-      <div class="grid-progress">Spørsmål {{ (state?.currentQuestionIndex ?? 0) + 1 }} / {{ state?.totalQuestions ?? '?' }}</div>
-      <div v-if="state" style="color:var(--text-dim); font-size:0.85rem;">Tension-svar: {{ state.tensionAnswerCount }}</div>
+      <div class="grid-progress">{{ $t('Spørsmål§OnlineTensionGameT') }} {{ (state?.currentQuestionIndex ?? 0) + 1 }} / {{ state?.totalQuestions ?? '?' }}</div>
+      <div v-if="state" style="color:var(--text-dim); font-size:0.85rem;">{{ $t('Tension-svar:') }} {{ state.tensionAnswerCount }}</div>
     </div>
 
-    <LoadingState v-if="loading" full message="Laster spillet…" />
+    <LoadingState v-if="loading" full :message="$t('Laster spillet…')" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
       <h1 style="text-align:center; margin:6px 0 4px;">{{ state.questionTitle }}</h1>
       <p v-if="state.source" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
-        Tilleggsinformasjon: {{ state.source }}
+        {{ $t('Tilleggsinformasjon:') }} {{ state.source }}
       </p>
       <p v-if="state.tiebreaker" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
-        Avgjørende spørsmål: {{ state.tiebreaker }}
+        {{ $t('Avgjørende spørsmål:') }} {{ state.tiebreaker }}
       </p>
       <p v-if="lastUpdatedLabel" style="text-align:center; margin:0 0 20px; color:var(--text-dim); font-size:0.75rem;">
         {{ lastUpdatedLabel }}
@@ -31,10 +31,10 @@
           >
             <div>
               <strong>{{ p.name }}</strong>
-              <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Frakoblet</span>
+              <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">{{ $t('Frakoblet§OnlineTensionGameT') }}</span>
               <!-- Once the reveal starts, each box shows what that player actually answered. -->
               <div v-if="state.roundRevealed && resultFor(p)" class="tension-player-answer">{{ resultFor(p).answerText }}</div>
-              <div v-else class="tension-player-answer">{{ p.answered ? '✓ svart' : '— venter —' }}</div>
+              <div v-else class="tension-player-answer">{{ p.answered ? $t('✓ svart') : $t('— venter —') }}</div>
             </div>
             <div style="text-align:right;">
               <div
@@ -42,7 +42,7 @@
                 class="tension-round-score"
                 :class="{ positive: resultFor(p).score > 0, negative: resultFor(p).score < 0 }"
               >{{ formatScore(resultFor(p).score) }}</div>
-              <div style="font-size:0.8rem; color:var(--text-dim);">Totalt: {{ shownTotal(p) }}</div>
+              <div style="font-size:0.8rem; color:var(--text-dim);">{{ $t('Totalt:') }} {{ shownTotal(p) }}</div>
             </div>
           </div>
         </div>
@@ -53,12 +53,12 @@
                  throw answers away. -->
             <div v-if="isHost && !(state.answersSoFar && state.answersSoFar.length)" style="text-align:center; margin-bottom:16px;">
               <button type="button" class="btn btn-secondary btn-sm" :disabled="swapping" @click="swapQuestion">
-                {{ swapping ? 'Finner et nytt…' : '↻ Hatt dette før? Velg et annet spørsmål' }}
+                {{ swapping ? $t('Finner et nytt…') : $t('↻ Hatt dette før? Velg et annet spørsmål') }}
               </button>
             </div>
             <div v-if="state.answersSoFar && state.answersSoFar.length" style="text-align:left; margin-bottom:16px; border:1px solid var(--border); border-radius: 2px; padding:10px 14px;">
               <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
-                Svart så langt denne runden
+                {{ $t('Svart så langt denne runden') }}
               </div>
               <div v-for="a in state.answersSoFar" :key="a.name" style="display:flex; justify-content:space-between; font-size:0.9rem; padding:2px 0;">
                 <span>{{ a.name }}</span>
@@ -67,14 +67,14 @@
             </div>
 
             <template v-if="isYourTurn">
-              <h3 style="text-align:center; margin-top:0;">Din tur</h3>
+              <h3 style="text-align:center; margin-top:0;">{{ $t('Din tur') }}</h3>
               <form @submit.prevent="submit">
                 <div class="guess-box" style="margin:0 auto;">
                   <input
                     type="text"
                     v-model="value"
                     @input="onInput"
-                    placeholder="Skriv svaret ditt…"
+                    :placeholder="$t('Skriv svaret ditt…')"
                     autocomplete="off"
                     autocorrect="off"
                     autocapitalize="off"
@@ -83,15 +83,15 @@
                 </div>
                 <!-- Say what's going on with the suggestion list instead of just showing nothing -->
                 <div v-if="optionsStatus === 'loading'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px;">
-                  Laster forslag…
+                  {{ $t('Laster forslag…') }}
                 </div>
                 <div v-else-if="optionsStatus === 'error'" style="color:var(--coral); font-size:0.85rem; margin-top:8px;">
-                  Kunne ikke laste forslagene.
-                  <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryOptions">Prøv igjen</button>
-                  <div style="color:var(--text-dim); margin-top:4px;">Du kan fortsatt skrive svaret ditt nøyaktig og sende det inn.</div>
+                  {{ $t('Kunne ikke laste forslagene.') }}
+                  <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryOptions">{{ $t('Prøv igjen') }}</button>
+                  <div style="color:var(--text-dim); margin-top:4px;">{{ $t('Du kan fortsatt skrive svaret ditt nøyaktig og sende det inn.') }}</div>
                 </div>
                 <div v-else-if="optionsStatus === 'empty'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px;">
-                  Ingen forslag er tilgjengelige for dette spørsmålet - skriv svaret ditt nøyaktig og send det inn.
+                  {{ $t('Ingen forslag er tilgjengelige for dette spørsmålet - skriv svaret ditt nøyaktig og send det inn.') }}
                 </div>
 
                 <div v-if="showDropdown" class="guess-results" style="margin-top:6px; max-height:220px; overflow-y:auto;">
@@ -102,20 +102,20 @@
                     class="guess-result-row"
                     @click="select(opt)"
                   >{{ opt }}</button>
-                  <div v-if="!filteredOptions.length" class="guess-result-row" style="opacity:0.6; font-style:italic;">Ingen treff</div>
+                  <div v-if="!filteredOptions.length" class="guess-result-row" style="opacity:0.6; font-style:italic;">{{ $t('Ingen treff') }}</div>
                 </div>
                 <button type="submit" class="btn btn-primary" :disabled="!canSubmit || submitting" style="margin-top:16px; width:100%;">
-                  {{ submitting ? 'Sender inn…' : 'Send inn' }}
+                  {{ submitting ? $t('Sender inn…') : $t('Send inn') }}
                 </button>
               </form>
             </template>
             <div v-else style="text-align:center; color:var(--text-dim);">
-              Venter på {{ currentTurnName }}sin tur…
+              {{ $t('Venter på') }} {{ currentTurnName }}{{ $t('sin tur…') }}
             </div>
           </template>
 
           <template v-else>
-            <h3 style="text-align:center; margin-top:0;">Svar</h3>
+            <h3 style="text-align:center; margin-top:0;">{{ $t('Svar§OnlineTensionGameT') }}</h3>
             <div class="tension-reveal-list">
               <div
                 v-for="(ans, idx) in allAnswersList"
@@ -125,13 +125,13 @@
               >
                 <div class="tension-reveal-rank">{{ idx + 1 }}</div>
                 <div class="tension-reveal-main">
-                  <div class="tension-reveal-answer">{{ revealIndex > idx ? ans.text : 'Skjult til avsløringen' }}</div>
+                  <div class="tension-reveal-answer">{{ revealIndex > idx ? ans.text : $t('Skjult til avsløringen') }}</div>
                   <div v-if="revealIndex > idx" class="tension-reveal-tag" :class="ans.tension ? 'trap' : 'safe'">
-                    {{ ans.tension ? 'Tension-svar' : 'Trygt svar' }}
+                    {{ ans.tension ? $t('Tension-svar§OnlineTensionGameM') : $t('Trygt svar') }}
                   </div>
                 </div>
                 <div v-if="revealIndex > idx" class="tension-reveal-guessers">
-                  <span v-if="!guessersFor(ans).length" class="tension-reveal-nobody">Ingen gjettet dette</span>
+                  <span v-if="!guessersFor(ans).length" class="tension-reveal-nobody">{{ $t('Ingen gjettet dette') }}</span>
                   <span
                     v-for="g in guessersFor(ans)"
                     :key="g.name"
@@ -149,7 +149,7 @@
               class="btn btn-secondary"
               style="margin-top:16px; width:100%;"
               @click="skipReveal"
-            >Hopp over avsløringen</button>
+            >{{ $t('Hopp over avsløringen') }}</button>
             <button
               v-else-if="isHost"
               class="btn btn-primary"
@@ -157,22 +157,23 @@
               :disabled="advancing"
               @click="nextQuestion"
             >
-              {{ advancing ? 'Laster…' : (state.currentQuestionIndex + 1 < state.totalQuestions ? 'Neste spørsmål' : 'Fullfør spillet') }}
+              {{ advancing ? $t('Laster…') : (state.currentQuestionIndex + 1 < state.totalQuestions ? $t('Neste spørsmål') : $t('Fullfør spillet')) }}
             </button>
-            <div v-else style="margin-top:16px; text-align:center; color:var(--text-dim);">Venter på at verten skal fortsette…</div>
+            <div v-else style="margin-top:16px; text-align:center; color:var(--text-dim);">{{ $t('Venter på at verten skal fortsette…') }}</div>
           </template>
         </div>
       </div>
     </template>
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm no-print" @click="leave">← Forlat spillet</button>
-      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">Rom: {{ roomCode }}</span>
+      <button class="btn btn-secondary btn-sm no-print" @click="leave">{{ $t('← Forlat spillet') }}</button>
+      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onUnmounted, ref } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -304,7 +305,7 @@ async function poll() {
     const fresh = await api.getTensionOnlineState(props.roomCode)
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    error.value = 'Mistet forbindelsen til rommet - prøver igjen…'
+    error.value = _t('Mistet forbindelsen til rommet - prøver igjen…')
   } finally {
     loading.value = false
   }
@@ -380,7 +381,7 @@ async function submit() {
     dropdownOpen.value = false
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke sende inn svaret.'
+    error.value = e.response?.data?.message || _t('Kunne ikke sende inn svaret.')
   } finally {
     submitting.value = false
   }
@@ -394,7 +395,7 @@ async function swapQuestion() {
     const fresh = await api.rerollTensionOnlineQuestion(props.roomCode)
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke bytte til et annet spørsmål - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke bytte til et annet spørsmål - prøv igjen.'), 'error')
   } finally {
     swapping.value = false
   }
@@ -407,7 +408,7 @@ async function nextQuestion() {
     const fresh = await api.advanceTensionOnlineQuestion(props.roomCode)
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke gå videre til neste spørsmål.'
+    error.value = e.response?.data?.message || _t('Kunne ikke gå videre til neste spørsmål.')
   } finally {
     advancing.value = false
   }

@@ -2,7 +2,7 @@
   <div>
     <div class="grid-status-bar">
       <div class="grid-progress" style="text-align:center; width:100%;">
-        Brett {{ (state?.currentLineupIndex ?? 0) + 1 }} / {{ state?.totalLineups ?? '?' }}: {{ state?.lineupTitle }}
+        {{ $t('Brett§OnlineStartingXiBattleGameT') }} {{ (state?.currentLineupIndex ?? 0) + 1 }} / {{ state?.totalLineups ?? '?' }}: {{ state?.lineupTitle }}
       </div>
       <div v-if="lastUpdatedLabel" style="color:var(--text-dim); font-size:0.75rem; text-align:center; width:100%;">{{ lastUpdatedLabel }}</div>
     </div>
@@ -15,23 +15,23 @@
       <div v-if="state.scoreFor != null && state.scoreAgainst != null" class="pitch-scoreline-score">
         <span>{{ state.scoreFor }}</span><span class="dash">-</span><span>{{ state.scoreAgainst }}</span>
       </div>
-      <div v-else class="pitch-scoreline-vs">mot</div>
+      <div v-else class="pitch-scoreline-vs">{{ $t('mot') }}</div>
       <div class="pitch-scoreline-team away">
         <GameImage v-if="state.opponentCrestUrl" :src="state.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
         <span>{{ state.opponentName }}</span>
       </div>
     </div>
 
-    <LoadingState v-if="loading" full message="Laster laguttaket…" />
+    <LoadingState v-if="loading" full :message="$t('Laster laguttaket…')" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
       <div v-if="state.awaitingLineupChoice" class="tension-choice-overlay">
         <template v-if="isPicker">
           <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
-            Brett {{ state.currentLineupIndex + 1 }} / {{ state.totalLineups }}
+            {{ $t('Brett§OnlineStartingXiBattleGameT') }} {{ state.currentLineupIndex + 1 }} / {{ state.totalLineups }}
           </div>
-          <h2 style="margin:0 0 24px;">Velg et brett</h2>
+          <h2 style="margin:0 0 24px;">{{ $t('Velg et brett') }}</h2>
           <div class="tension-choice-grid">
             <button
               v-for="l in state.lineupChoices"
@@ -41,15 +41,15 @@
               @click="chooseLineup(l)"
             >
               <strong>{{ l.title }}</strong>
-              <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ l.teamName }} mot {{ l.opponentName }} · {{ l.formation }}</div>
+              <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ l.teamName }} {{ $t('mot') }} {{ l.opponentName }} · {{ l.formation }}</div>
             </button>
           </div>
           <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="choosing || rerolling" @click="rerollChoices">
-            {{ rerolling ? 'Finner flere…' : '↻ Vis 3 andre brett' }}
+            {{ rerolling ? $t('Finner flere…') : $t('↻ Vis 3 andre brett') }}
           </button>
         </template>
         <div v-else class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
-          Venter på <strong style="color:var(--gold);">{{ pickerName }}</strong> å velge et brett…
+          {{ $t('Venter på') }} <strong style="color:var(--gold);">{{ pickerName }}</strong> {{ $t('å velge et brett…') }}
         </div>
       </div>
 
@@ -63,21 +63,21 @@
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Frakoblet</span>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">{{ $t('Frakoblet§OnlineStartingXiBattleGameT') }}</span>
           <LivesHearts :max="state.maxStrikes" :used="p.livesUsed" style="margin-top:4px;" />
-          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Totalt: {{ p.totalScore }}</div>
+          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">{{ $t('Totalt:') }} {{ p.totalScore }}</div>
         </div>
       </div>
 
       <div v-if="!state.lineupComplete && isYourTurn" class="guess-box-wrap no-print">
-        <p class="guess-box-turn-label">Din tur</p>
+        <p class="guess-box-turn-label">{{ $t('Din tur') }}</p>
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <div class="guess-box-row">
             <input
               type="text"
               v-model="searchTerm"
-              placeholder="Søk etter en spiller…"
-              aria-label="Søk etter en spiller"
+              :placeholder="$t('Søk etter en spiller…')"
+              :aria-label="$t('Søk etter en spiller')"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -89,7 +89,7 @@
               class="btn btn-danger-solid btn-sm no-print guess-box-skip-btn"
               :disabled="guessing"
               @click="showSkipConfirm = true"
-            >Gi videre</button>
+            >{{ $t('Gi videre') }}</button>
           </div>
           <div v-if="searchResults.length" class="guess-results">
             <button v-for="a in searchResults" :key="a.id" class="guess-result-row" :disabled="guessing" @click="submitGuess(a)">
@@ -101,21 +101,21 @@
 
       <ConfirmModal
         v-if="showSkipConfirm"
-        title="Gi turen videre?"
-        message="Du mister et liv, akkurat som ved en feil gjetning."
-        confirm-text="Gi videre"
-        cancel-text="Fortsett å gjette"
+        :title="$t('Gi turen videre?')"
+        :message="$t('Du mister et liv, akkurat som ved en feil gjetning.')"
+        :confirm-text="$t('Gi videre')"
+        :cancel-text="$t('Fortsett å gjette')"
         @confirm="confirmSkipTurn"
         @cancel="showSkipConfirm = false"
       />
 
       <div v-if="!state.lineupComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
-        Venter på {{ currentTurnName }}sin tur…
+        {{ $t('Venter på') }} {{ currentTurnName }}{{ $t('sin tur…') }}
       </div>
 
       <div v-if="state.lineupComplete" class="modal-backdrop">
         <div class="completion-popup">
-          <h2 style="margin-top:0;">Brettet er ferdig!</h2>
+          <h2 style="margin-top:0;">{{ $t('Brettet er ferdig!') }}</h2>
           <div class="score-square-grid">
             <div v-for="(p, i) in leaderboardForLineup" :key="p.name" class="score-square" :class="{ leader: i === 0 }">
               <div class="score-square-name">{{ p.name }}</div>
@@ -126,7 +126,7 @@
 
           <template v-if="recapSlots.length && recapFoundCount < recapSlots.length">
             <div class="grid-recap-label">
-              {{ recapFoundCount }} / {{ recapSlots.length }} funnet — <span style="color:var(--coral);">røde</span> drakter ble ikke gjettet
+              {{ recapFoundCount }} / {{ recapSlots.length }} {{ $t('funnet —') }} <span style="color:var(--coral);">{{ $t('røde') }}</span> {{ $t('drakter ble ikke gjettet') }}
             </div>
             <PitchRecap
               :rows="recapRows"
@@ -136,9 +136,9 @@
           </template>
 
           <button v-if="isHost" class="btn btn-primary" style="margin-top:12px; width:100%;" :disabled="advancing" @click="nextLineup">
-            {{ advancing ? 'Laster…' : (state.currentLineupIndex + 1 < state.totalLineups ? 'Neste brett' : 'Fullfør spillet') }}
+            {{ advancing ? $t('Laster…') : (state.currentLineupIndex + 1 < state.totalLineups ? $t('Neste brett') : $t('Fullfør spillet')) }}
           </button>
-          <div v-else style="margin-top:8px; color:var(--text-dim);">Venter på at verten skal fortsette…</div>
+          <div v-else style="margin-top:8px; color:var(--text-dim);">{{ $t('Venter på at verten skal fortsette…') }}</div>
         </div>
       </div>
 
@@ -167,17 +167,18 @@
     </template>
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm no-print" @click="leave">← Forlat spillet</button>
-      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">Rom: {{ roomCode }}</span>
+      <button class="btn btn-secondary btn-sm no-print" @click="leave">{{ $t('← Forlat spillet') }}</button>
+      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
     </div>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
-      <div class="grid-result-text">{{ resultOverlay.correct ? 'Riktig' : 'Feil' }}</div>
+      <div class="grid-result-text">{{ resultOverlay.correct ? $t('Riktig§OnlineStartingXiBattleGameM') : $t('Feil§OnlineStartingXiBattleGameM') }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -280,7 +281,7 @@ async function poll() {
     const fresh = await api.getLineupBattleState(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = 'Mistet forbindelsen til rommet - prøver igjen…'
+    error.value = _t('Mistet forbindelsen til rommet - prøver igjen…')
   } finally {
     loading.value = false
   }
@@ -347,7 +348,7 @@ async function submitGuess(athlete) {
     }
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke sende inn gjetningen.'
+    error.value = e.response?.data?.message || _t('Kunne ikke sende inn gjetningen.')
   } finally {
     guessing.value = false
   }
@@ -364,7 +365,7 @@ async function rerollChoices() {
     const fresh = await api.rerollLineupBattleChoices(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke laste andre brett - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke laste andre brett - prøv igjen.'), 'error')
   } finally {
     rerolling.value = false
   }
@@ -377,7 +378,7 @@ async function chooseLineup(l) {
     const fresh = await api.chooseLineupBattleLineup(props.roomCode, l.id)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke velge dette brettet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke velge dette brettet.')
   } finally {
     choosing.value = false
   }
@@ -398,7 +399,7 @@ async function skipTurn() {
     const fresh = await api.skipLineupBattleTurn(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke hoppe over turen din.'
+    error.value = e.response?.data?.message || _t('Kunne ikke hoppe over turen din.')
   } finally {
     guessing.value = false
   }
@@ -411,7 +412,7 @@ async function nextLineup() {
     const fresh = await api.advanceLineupBattleLineup(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke gå videre til neste brett.'
+    error.value = e.response?.data?.message || _t('Kunne ikke gå videre til neste brett.')
   } finally {
     advancing.value = false
   }

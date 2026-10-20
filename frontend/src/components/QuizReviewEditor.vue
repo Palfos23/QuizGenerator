@@ -18,37 +18,37 @@
     </div>
 
     <div v-if="!quiz.questions.length" class="empty-state">
-      <slot name="empty">Ingen spørsmål her ennå - bruk panelene under for å legge til noen.</slot>
+      <slot name="empty">{{ $t('Ingen spørsmål her ennå - bruk panelene under for å legge til noen.') }}</slot>
     </div>
 
     <div class="add-questions-row">
       <div class="add-panel no-print">
         <div class="add-panel-header">
-          <span class="add-panel-title">Legg til en tilfeldig gruppe</span>
-          <span class="add-panel-hint">henter ubrukte spørsmål fra én kategori</span>
+          <span class="add-panel-title">{{ $t('Legg til en tilfeldig gruppe') }}</span>
+          <span class="add-panel-hint">{{ $t('henter ubrukte spørsmål fra én kategori') }}</span>
         </div>
         <div class="add-panel-row">
           <select v-model="addCategory" style="flex:1; min-width:140px;">
-            <option value="" disabled>Velg en kategori…</option>
+            <option value="" disabled>{{ $t('Velg en kategori…§QuizReviewEditorT') }}</option>
             <option v-for="cat in availableCategories" :key="cat" :value="cat">{{ cat }}</option>
           </select>
           <input type="number" min="1" max="20" v-model.number="addCount" style="width:70px;" />
           <button class="btn btn-secondary btn-sm" :disabled="!addCategory || adding" @click="addMore">
-            {{ adding ? 'Legger til…' : '+ Legg til' }}
+            {{ adding ? $t('Legger til…') : $t('+ Legg til') }}
           </button>
         </div>
       </div>
 
       <div class="add-panel no-print">
         <div class="add-panel-header">
-          <span class="add-panel-title">Søk og legg til bestemte spørsmål</span>
-          <span class="add-panel-hint">finn ett spørsmål om gangen, etter tekst eller etikett</span>
+          <span class="add-panel-title">{{ $t('Søk og legg til bestemte spørsmål') }}</span>
+          <span class="add-panel-hint">{{ $t('finn ett spørsmål om gangen, etter tekst eller etikett') }}</span>
         </div>
         <div class="add-panel-row">
           <input
             type="text"
             v-model="searchTerm"
-            placeholder="Søk etter spørsmål, kategori eller svar…"
+            :placeholder="$t('Søk etter spørsmål, kategori eller svar…')"
             style="flex:1; min-width:180px;"
           />
           <div v-if="searchResults.length" class="guess-results" style="position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:5; max-height:260px; overflow-y:auto;">
@@ -85,6 +85,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { onMounted, ref, watch } from 'vue'
 import QuestionCard from './QuestionCard.vue'
 import api from '../services/api'
@@ -171,16 +172,16 @@ async function addMore() {
       excludeIds: props.quiz.questions.map(q => q.id)
     })
     if (!added.length) {
-      emit('error', `Ingen flere ubrukte «${addCategory.value}»-spørsmål er tilgjengelige for det språket og den vanskelighetsgraden.`)
+      emit('error', _t('Ingen flere ubrukte «{0}»-spørsmål er tilgjengelige for det språket og den vanskelighetsgraden.', [addCategory.value]))
       return
     }
     props.quiz.questions.push(...added)
     if (added.length < addCount.value) {
-      emit('error', `Fant bare ${added.length} flere «${addCategory.value}»-spørsmål - la til det som var tilgjengelig.`)
+      emit('error', _t('Fant bare {0} flere «{1}»-spørsmål - la til det som var tilgjengelig.', [added.length, addCategory.value]))
     }
     emit('changed')
   } catch (e) {
-    emit('error', e.response?.data?.message || 'Kunne ikke legge til flere spørsmål.')
+    emit('error', e.response?.data?.message || _t('Kunne ikke legge til flere spørsmål.'))
   } finally {
     adding.value = false
   }
@@ -201,7 +202,7 @@ async function discardAndReplace(idx) {
     props.quiz.questions.splice(idx, 1, replacement)
     emit('changed')
   } catch (e) {
-    emit('error', e.response?.data?.message || 'Ingen erstatningsspørsmål var tilgjengelig.')
+    emit('error', e.response?.data?.message || _t('Ingen erstatningsspørsmål var tilgjengelig.'))
   } finally {
     busyIndex.value = -1
   }

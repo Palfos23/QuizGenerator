@@ -1,7 +1,7 @@
 <template>
   <div class="board-toolbar">
     <div class="field board-toolbar-search">
-      <label>Søk
+      <label>{{ $t('Søk') }}
         <input
           type="text"
           :value="search"
@@ -13,7 +13,7 @@
 
     <div class="field board-toolbar-sort">
       <div class="board-toolbar-sort-row">
-        <label>Sorter etter
+        <label>{{ $t('Sorter etter') }}
           <select :value="sortKey" @change="$emit('update:sortKey', $event.target.value)">
             <option v-for="s in sorts" :key="s.key" :value="s.key">{{ s.label }}</option>
           </select>
@@ -21,8 +21,8 @@
         <button
           type="button"
           class="board-toolbar-dir"
-          :aria-label="sortDir === 'asc' ? 'Sortert stigende, klikk for synkende' : 'Sortert synkende, klikk for stigende'"
-          :title="sortDir === 'asc' ? 'Stigende' : 'Synkende'"
+          :aria-label="sortDir === 'asc' ? $t('Sortert stigende, klikk for synkende') : $t('Sortert synkende, klikk for stigende')"
+          :title="sortDir === 'asc' ? $t('Stigende') : $t('Synkende')"
           @click="$emit('update:sortDir', sortDir === 'asc' ? 'desc' : 'asc')"
         >
           <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
@@ -42,12 +42,13 @@
     </div>
 
     <div v-if="search.trim()" class="board-toolbar-count">
-      {{ filteredCount }} av {{ totalCount }}
+      {{ filteredCount }} {{ $t('av') }} {{ totalCount }}
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 defineProps({
   search: { type: String, default: '' },
   sortKey: { type: String, default: '' },
@@ -55,7 +56,7 @@ defineProps({
   sorts: { type: Array, default: () => [] },
   totalCount: { type: Number, default: 0 },
   filteredCount: { type: Number, default: 0 },
-  placeholder: { type: String, default: 'Søk…' }
+  placeholder: { type: String, default: _t('Søk…') }
 })
 defineEmits(['update:search', 'update:sortKey', 'update:sortDir'])
 </script>

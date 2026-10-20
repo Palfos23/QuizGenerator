@@ -1,15 +1,15 @@
 <template>
   <div>
-    <h1>Kan utløpe</h1>
+    <h1>{{ $t('Kan utløpe') }}</h1>
     <p class="page-subtitle">
-      Hvert quizbrett på tvers av alle spillene som er merket som å inneholde et tidssensitivt faktum (f.eks. «nåværende all-time toppscorer») - bruk dette til å sjekke dem jevnlig. Merk et brett som «Kan utløpe» fra sin egen redigeringsskjerm på hvert spills administrasjonsside.
+      {{ $t('Hvert quizbrett på tvers av alle spillene som er merket som å inneholde et tidssensitivt faktum (f.eks. «nåværende all-time toppscorer») - bruk dette til å sjekke dem jevnlig. Merk et brett som «Kan utløpe» fra sin egen redigeringsskjerm på hvert spills administrasjonsside.') }}
     </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
     <div v-else-if="!sections.length" class="empty-state friendly">
-      Ingenting er merket som «Kan utløpe» ennå.
+      {{ $t('Ingenting er merket som «Kan utløpe» ennå.') }}
     </div>
 
     <div v-else>
@@ -20,10 +20,10 @@
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ item.title }}</div>
               <div class="saved-quiz-meta">
-                {{ item.subtitle }}<span v-if="item.subtitle"> · </span>Sist oppdatert {{ formatUpdatedAt(item.updatedAt) }}
+                {{ item.subtitle }}<span v-if="item.subtitle"> · </span>{{ $t('Sist oppdatert') }} {{ formatUpdatedAt(item.updatedAt) }}
               </div>
             </div>
-            <router-link class="btn btn-secondary btn-sm" :to="s.to">Åpne i {{ s.label }} →</router-link>
+            <router-link class="btn btn-secondary btn-sm" :to="s.to">{{ $t('Åpne i') }} {{ s.label }} →</router-link>
           </div>
         </div>
       </div>
@@ -32,6 +32,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'
 import api from '../services/api'
 
@@ -44,7 +45,7 @@ const error = ref('')
 // has different fields worth showing at a glance here).
 const GAMES = [
   {
-    label: 'Ukentlige grids',
+    label: _t('Ukentlige grids'),
     to: '/admin/grids',
     load: () => api.adminListGrids(),
     subtitle: g => [g.sport, g.weekStartDate].filter(Boolean).join(' · ')
@@ -59,7 +60,7 @@ const GAMES = [
     label: 'Tension',
     to: '/admin/tension-questions',
     load: () => api.adminListTensionQuestions(),
-    subtitle: q => q.mainCategory || 'Uten kategori'
+    subtitle: q => q.mainCategory || _t('Uten kategori')
   },
   {
     label: '501',
@@ -91,7 +92,7 @@ onMounted(load)
 
 function formatUpdatedAt(value) {
   if (!value) return 'unknown'
-  return new Date(value).toLocaleDateString('nb-NO', { year: 'numeric', month: 'short', day: 'numeric' })
+  return new Date(value).toLocaleDateString(window.QUIZ_LOCALE, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 async function load() {
@@ -109,7 +110,7 @@ async function load() {
     }))
     sections.value = results.filter(s => s.items.length)
   } catch (e) {
-    error.value = 'Kunne ikke laste innhold som kan utløpe på tvers av spillene.'
+    error.value = _t('Kunne ikke laste innhold som kan utløpe på tvers av spillene.')
   } finally {
     loading.value = false
   }

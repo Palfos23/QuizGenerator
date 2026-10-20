@@ -2,32 +2,32 @@
   <GameAccessGate game="imposter">
   <div>
     <div v-if="onlineRoom && (stage === 'onlineLobby' || stage === 'onlineGame')" style="display:flex; justify-content:flex-end; margin-bottom:8px;">
-      <button class="btn btn-secondary btn-sm" @click="openPlayersModal">Administrer spillere</button>
+      <button class="btn btn-secondary btn-sm" @click="openPlayersModal">{{ $t('Administrer spillere') }}</button>
     </div>
 
     <template v-if="stage === 'modeChoice'">
       <h1>Imposter</h1>
       <p class="page-subtitle">
-        De fleste rutene passer faktisk til temaet - noen få er bevisste imposters. Snu ruter sammen og prøv å unngå dem. Færrest imposter-treff vinner.
+        {{ $t('De fleste rutene passer faktisk til temaet - noen få er bevisste imposters. Snu ruter sammen og prøv å unngå dem. Færrest imposter-treff vinner.') }}
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div v-if="savedRoomCode" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <span>Du har et spill i gang i rom <strong>{{ savedRoomCode }}</strong>.</span>
+        <span>{{ $t('Du har et spill i gang i rom') }} <strong>{{ savedRoomCode }}</strong>.</span>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-primary btn-sm" :disabled="rejoining" @click="rejoinSavedRoom">
-            {{ rejoining ? 'Går inn igjen…' : 'Gå inn igjen' }}
+            {{ rejoining ? $t('Går inn igjen…') : $t('Gå inn igjen') }}
           </button>
-          <button class="btn btn-secondary btn-sm" @click="dismissSavedRoom">Lukk</button>
+          <button class="btn btn-secondary btn-sm" @click="dismissSavedRoom">{{ $t('Lukk§ImposterViewT') }}</button>
         </div>
       </div>
 
       <div v-if="savedPassAndPlay" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <span>Du har et spill der enheten sendes rundt, i gang.</span>
+        <span>{{ $t('Du har et spill der enheten sendes rundt, i gang.') }}</span>
         <div style="display:flex; gap:8px;">
-          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Fortsett</button>
-          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">Lukk</button>
+          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">{{ $t('Fortsett§ImposterViewT') }}</button>
+          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">{{ $t('Lukk§ImposterViewT') }}</button>
         </div>
       </div>
 
@@ -36,12 +36,12 @@
 
         <div class="mode-choice-row">
           <button class="mode-choice-card" @click="stage = 'landing'">
-            <h3>Samme enhet</h3>
-            <p>Send telefonen rundt - alle tar turen sin på én skjerm.</p>
+            <h3>{{ $t('Samme enhet') }}</h3>
+            <p>{{ $t('Send telefonen rundt - alle tar turen sin på én skjerm.') }}</p>
           </button>
           <button class="mode-choice-card" @click="stage = 'onlineChoice'">
-            <h3>Spill på nett</h3>
-            <p>Alle spiller fra sin egen enhet med en felles romkode.</p>
+            <h3>{{ $t('Spill på nett') }}</h3>
+            <p>{{ $t('Alle spiller fra sin egen enhet med en felles romkode.') }}</p>
           </button>
         </div>
       </div>
@@ -50,28 +50,28 @@
     <template v-else-if="stage === 'landing'">
       <h1>Imposter</h1>
       <p class="page-subtitle">
-        De fleste rutene passer faktisk til temaet - noen få er bevisste imposters. Snu ruter sammen og prøv å unngå dem. Færrest imposter-treff vinner.
+        {{ $t('De fleste rutene passer faktisk til temaet - noen få er bevisste imposters. Snu ruter sammen og prøv å unngå dem. Færrest imposter-treff vinner.') }}
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
       <div v-if="savedPassAndPlay" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <span>Du har et spill i gang.</span>
+        <span>{{ $t('Du har et spill i gang.') }}</span>
         <div style="display:flex; gap:8px;">
-          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Fortsett</button>
-          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">Lukk</button>
+          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">{{ $t('Fortsett§ImposterViewT') }}</button>
+          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">{{ $t('Lukk§ImposterViewT') }}</button>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
-          <label>Spillere
+          <label>{{ $t('Spillere') }}
             <select v-model.number="numPlayers">
               <option v-for="n in [2,3,4,5]" :key="n" :value="n">{{ n }}</option>
             </select>
           </label>
         </div>
         <div style="flex:1; min-width:160px;">
-          <label>Brett
+          <label>{{ $t('Brett§ImposterViewT') }}
             <select v-model.number="numBoards">
               <option v-for="n in [1,2,3,4]" :key="n" :value="n">{{ n }}</option>
             </select>
@@ -80,38 +80,38 @@
       </div>
 
       <div class="field">
-        <label>Hvordan skal brettene velges?</label>
+        <label>{{ $t('Hvordan skal brettene velges?') }}</label>
         <div class="language-row">
-          <button class="language-btn" :class="{ active: boardMode === 'random' }" @click="boardMode = 'random'">Tilfeldig</button>
-          <button class="language-btn" :class="{ active: boardMode === 'manual' }" @click="boardMode = 'manual'">Velg selv</button>
+          <button class="language-btn" :class="{ active: boardMode === 'random' }" @click="boardMode = 'random'">{{ $t('Tilfeldig') }}</button>
+          <button class="language-btn" :class="{ active: boardMode === 'manual' }" @click="boardMode = 'manual'">{{ $t('Velg selv') }}</button>
         </div>
       </div>
 
-      <button class="btn btn-secondary" @click="stage = 'modeChoice'">← Tilbake</button>
-      <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">Neste →</button>
+      <button class="btn btn-secondary" @click="stage = 'modeChoice'">{{ $t('← Tilbake') }}</button>
+      <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">{{ $t('Neste →') }}</button>
     </template>
 
     <template v-else-if="stage === 'onlineChoice'">
-      <h1>Spill på nett</h1>
-      <p class="page-subtitle">Samme spill, ulike enheter - del en romkode med 1-4 venner i stedet for å sende én telefon rundt.</p>
+      <h1>{{ $t('Spill på nett') }}</h1>
+      <p class="page-subtitle">{{ $t('Samme spill, ulike enheter - del en romkode med 1-4 venner i stedet for å sende én telefon rundt.') }}</p>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="btn btn-primary" @click="stage = 'onlineCreate'">+ Opprett et rom</button>
-        <button class="btn btn-secondary" @click="stage = 'onlineJoin'">Bli med med kode</button>
+        <button class="btn btn-primary" @click="stage = 'onlineCreate'">{{ $t('+ Opprett et rom') }}</button>
+        <button class="btn btn-secondary" @click="stage = 'onlineJoin'">{{ $t('Bli med med kode') }}</button>
       </div>
-      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'modeChoice'">← Tilbake</button>
+      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'modeChoice'">{{ $t('← Tilbake') }}</button>
     </template>
 
     <template v-else-if="stage === 'onlineCreate'">
-      <h1>Opprett et rom</h1>
+      <h1>{{ $t('Opprett et rom') }}</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Navnet ditt <span class="picker-hint">vises for andre spillere</span><input type="text" v-model="onlineDisplayName" placeholder="Navnet ditt" /></label>
+        <label>{{ $t('Navnet ditt') }} <span class="picker-hint">{{ $t('vises for andre spillere') }}</span><input type="text" v-model="onlineDisplayName" :placeholder="$t('Navnet ditt')" /></label>
       </div>
 
       <div class="field">
-        <label>Brett <span class="picker-hint">2-4</span>
+        <label>{{ $t('Brett§ImposterViewT') }} <span class="picker-hint">2-4</span>
           <select v-model.number="onlineNumBoards">
             <option v-for="n in [2,3,4]" :key="n" :value="n">{{ n }}</option>
           </select>
@@ -119,59 +119,59 @@
       </div>
 
       <div class="field">
-        <label>Hvordan skal brettene velges?</label>
+        <label>{{ $t('Hvordan skal brettene velges?') }}</label>
         <div class="language-row">
-          <button class="language-btn" :class="{ active: onlineBoardMode === 'random' }" @click="onlineBoardMode = 'random'">Tilfeldig</button>
-          <button class="language-btn" :class="{ active: onlineBoardMode === 'manual' }" @click="selectOnlineManual">Velg selv</button>
+          <button class="language-btn" :class="{ active: onlineBoardMode === 'random' }" @click="onlineBoardMode = 'random'">{{ $t('Tilfeldig') }}</button>
+          <button class="language-btn" :class="{ active: onlineBoardMode === 'manual' }" @click="selectOnlineManual">{{ $t('Velg selv') }}</button>
         </div>
       </div>
 
       <div v-if="onlineBoardMode === 'manual'" class="field">
-        <label>Velg nøyaktig {{ onlineNumBoards }} brett <span class="picker-hint">{{ onlineChosenBoards.length }}/{{ onlineNumBoards }} valgt</span></label>
-        <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+        <label>{{ $t('Velg nøyaktig') }} {{ onlineNumBoards }} {{ $t('brett§ImposterViewT') }} <span class="picker-hint">{{ onlineChosenBoards.length }}/{{ onlineNumBoards }} {{ $t('valgt§ImposterViewT') }}</span></label>
+        <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
         <div v-else class="saved-quiz-list">
           <div v-for="g in allBoards" :key="g.id" class="saved-quiz-row">
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ g.title }}</div>
-              <div class="saved-quiz-meta">{{ g.tileCount }} ruter, {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span></div>
+              <div class="saved-quiz-meta">{{ g.tileCount }} {{ $t('ruter,') }} {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span></div>
             </div>
             <button
               class="btn btn-sm"
               :class="onlineChosenBoards.includes(g.id) ? 'btn-primary' : 'btn-secondary'"
               @click="toggleOnlineBoard(g.id)"
-            >{{ onlineChosenBoards.includes(g.id) ? 'Valgt ✓' : '+ Velg' }}</button>
+            >{{ onlineChosenBoards.includes(g.id) ? $t('Valgt ✓§ImposterViewM') : $t('+ Velg§ImposterViewM') }}</button>
           </div>
         </div>
       </div>
 
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Tilbake</button>
+        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">{{ $t('← Tilbake') }}</button>
         <button class="btn btn-primary" :disabled="creatingRoom || !onlineDisplayName.trim() || (onlineBoardMode === 'manual' && onlineChosenBoards.length !== onlineNumBoards)" @click="createOnlineRoom">
-          {{ creatingRoom ? 'Oppretter…' : 'Opprett rom' }}
+          {{ creatingRoom ? $t('Oppretter…') : $t('Opprett rom') }}
         </button>
       </div>
     </template>
 
     <template v-else-if="stage === 'onlineJoin'">
-      <h1>Bli med i et rom</h1>
+      <h1>{{ $t('Bli med i et rom') }}</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div class="field">
-        <label>Navnet ditt <span class="picker-hint">vises for andre spillere</span><input type="text" v-model="onlineDisplayName" placeholder="Navnet ditt" /></label>
+        <label>{{ $t('Navnet ditt') }} <span class="picker-hint">{{ $t('vises for andre spillere') }}</span><input type="text" v-model="onlineDisplayName" :placeholder="$t('Navnet ditt')" /></label>
       </div>
       <div class="field">
-        <label>Romkode<input type="text" v-model="joinCode" placeholder="f.eks. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" /></label>
+        <label>{{ $t('Romkode') }}<input type="text" v-model="joinCode" :placeholder="$t('f.eks. ABCDE')" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" /></label>
       </div>
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Tilbake</button>
+        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">{{ $t('← Tilbake') }}</button>
         <button class="btn btn-primary" :disabled="!joinCode.trim() || !onlineDisplayName.trim() || joiningRoom" @click="joinOnlineRoom()">
-          {{ joiningRoom ? 'Blir med…' : 'Bli med' }}
+          {{ joiningRoom ? $t('Blir med…') : $t('Bli med') }}
         </button>
       </div>
     </template>
 
     <template v-else-if="stage === 'onlineLobby'">
-      <h1>Rom {{ onlineRoom?.roomCode }}</h1>
-      <p class="page-subtitle">Del denne koden med vennene dine. Alle må bli med før verten starter.</p>
+      <h1>{{ $t('Rom') }} {{ onlineRoom?.roomCode }}</h1>
+      <p class="page-subtitle">{{ $t('Del denne koden med vennene dine. Alle må bli med før verten starter.') }}</p>
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="saved-quiz-list" style="max-width:420px;">
@@ -182,25 +182,25 @@
               {{ p.displayName }}
             </div>
           </div>
-          <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">Frakoblet</span>
-            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">I rommet</span>
+          <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">{{ $t('Frakoblet§ImposterViewT') }}</span>
+            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">{{ $t('I rommet') }}</span>
         </div>
       </div>
 
       <p style="color:var(--text-dim); font-size:0.9rem; margin-top:16px;">
-        {{ (onlineRoom?.participants || []).length }} har blitt med · minst 2 trengs for å starte
+        {{ (onlineRoom?.participants || []).length }} {{ $t('har blitt med · minst 2 trengs for å starte') }}
       </p>
 
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="leaveLobby">← Forlat</button>
+        <button class="btn btn-secondary" @click="leaveLobby">{{ $t('← Forlat') }}</button>
         <InviteLinkButton v-if="onlineRoom" :room-code="onlineRoom.roomCode" />
         <button
           v-if="isHost"
           class="btn btn-primary"
           :disabled="(onlineRoom?.participants || []).length < 2 || startingRoom"
           @click="startOnlineRoom"
-        >{{ startingRoom ? 'Starter…' : 'Start spillet' }}</button>
-        <span v-else style="color:var(--text-dim); align-self:center;">Venter på at verten skal starte…</span>
+        >{{ startingRoom ? $t('Starter…') : $t('Start spillet') }}</button>
+        <span v-else style="color:var(--text-dim); align-self:center;">{{ $t('Venter på at verten skal starte…') }}</span>
       </div>
     </template>
 
@@ -214,51 +214,51 @@
     />
 
     <template v-else-if="stage === 'setup'">
-      <h1>Gi spillerne navn</h1>
-      <p class="page-subtitle">{{ numPlayers }} spillere, der enheten sendes rundt mellom turene.</p>
+      <h1>{{ $t('Gi spillerne navn') }}</h1>
+      <p class="page-subtitle">{{ numPlayers }} {{ $t('spillere, der enheten sendes rundt mellom turene.') }}</p>
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div v-for="(name, i) in playerNames" :key="i" class="field">
-        <label>Spiller {{ i + 1 }}<input type="text" v-model="playerNames[i]" :placeholder="`Spiller ${i + 1}`" /></label>
+        <label>{{ $t('Spiller') }} {{ i + 1 }}<input type="text" v-model="playerNames[i]" :placeholder="$t('Spiller {0}', [i + 1])" /></label>
       </div>
 
       <div style="margin-top:20px; display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="stage = 'landing'">← Tilbake</button>
-        <button class="btn btn-primary" :disabled="!allNamed" @click="goToBoardChoice">Neste →</button>
+        <button class="btn btn-secondary" @click="stage = 'landing'">{{ $t('← Tilbake') }}</button>
+        <button class="btn btn-primary" :disabled="!allNamed" @click="goToBoardChoice">{{ $t('Neste →') }}</button>
       </div>
     </template>
 
     <template v-else-if="stage === 'pickBoards'">
-      <h1>Velg {{ numBoards }} brett</h1>
-      <p class="page-subtitle">{{ chosenBoards.length }} / {{ numBoards }} valgt</p>
+      <h1>{{ $t('Velg') }} {{ numBoards }} {{ $t('brett§ImposterViewT') }}</h1>
+      <p class="page-subtitle">{{ chosenBoards.length }} / {{ numBoards }} {{ $t('valgt§ImposterViewT') }}</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
-      <div v-else-if="!allBoards.length" class="empty-state friendly">Ingen brett ennå - be en administrator legge til ett.</div>
+      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <div v-else-if="!allBoards.length" class="empty-state friendly">{{ $t('Ingen brett ennå - be en administrator legge til ett.') }}</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="g in allBoards" :key="g.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ g.title }}</div>
-            <div class="saved-quiz-meta">{{ g.tileCount }} ruter, {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span><span v-if="g.description"> · {{ g.description }}</span></div>
+            <div class="saved-quiz-meta">{{ g.tileCount }} {{ $t('ruter,') }} {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span><span v-if="g.description"> · {{ g.description }}</span></div>
           </div>
           <button
             class="btn btn-sm"
             :class="isChosen(g) ? 'btn-primary' : 'btn-secondary'"
             :disabled="!isChosen(g) && chosenBoards.length >= numBoards"
             @click="toggleChosen(g)"
-          >{{ isChosen(g) ? 'Valgt ✓' : '+ Velg' }}</button>
+          >{{ isChosen(g) ? $t('Valgt ✓§ImposterViewM') : $t('+ Velg§ImposterViewM') }}</button>
         </div>
       </div>
 
       <div class="board-picker-actions">
-        <button class="btn btn-secondary" @click="stage = 'setup'">← Tilbake</button>
+        <button class="btn btn-secondary" @click="stage = 'setup'">{{ $t('← Tilbake') }}</button>
         <button
           class="btn btn-primary"
           :class="{ 'btn-ready-pulse': chosenBoards.length === numBoards }"
           :disabled="chosenBoards.length !== numBoards"
           @click="startGame"
-        >{{ chosenBoards.length === numBoards ? `Start spillet ✓ (${chosenBoards.length}/${numBoards})` : `Start spillet (${chosenBoards.length}/${numBoards})` }}</button>
+        >{{ chosenBoards.length === numBoards ? $t('Start spillet ✓ ({0}/{1})', [chosenBoards.length, numBoards]) : $t('Start spillet ({0}/{1})', [chosenBoards.length, numBoards]) }}</button>
       </div>
     </template>
 
@@ -272,13 +272,13 @@
     />
 
     <template v-else-if="stage === 'done'">
-      <h1 style="text-align:center;">Spillet er over!</h1>
+      <h1 style="text-align:center;">{{ $t('Spillet er over!') }}</h1>
 
       <div class="podium-row">
         <div v-for="(entry, i) in finalScores.slice(0, 3)" :key="entry[0]" class="podium-block" :class="`rank-${i + 1}`">
           <div class="podium-rank-number">{{ i + 1 }}</div>
           <div class="podium-name">{{ entry[0] }}</div>
-          <div class="podium-score">{{ entry[1] }} imposter-treff</div>
+          <div class="podium-score">{{ $t('{0} imposter-treff¦{0} imposter-treff', [entry[1]]) }}</div>
         </div>
       </div>
 
@@ -292,16 +292,16 @@
       <div style="text-align:center; margin-top:20px;">
         <template v-if="lastGameWasOnline && onlineRoom">
           <p class="page-subtitle" style="margin:0 0 12px;">
-            {{ isHost ? `Rom ${onlineRoom.roomCode} er fortsatt åpent - spill igjen med samme gruppe, eller forlat det.` : 'Venter på at verten skal starte en ny runde, eller forlat rommet.' }}
+            {{ isHost ? $t('Rom {0} er fortsatt åpent - spill igjen med samme gruppe, eller forlat det.', [onlineRoom.roomCode]) : $t('Venter på at verten skal starte en ny runde, eller forlat rommet.') }}
           </p>
           <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
             <button v-if="isHost" class="btn btn-primary" :disabled="restartingRoom" @click="restartOnlineRoom">
-              {{ restartingRoom ? 'Starter på nytt…' : 'Spill igjen' }}
+              {{ restartingRoom ? $t('Starter på nytt…') : $t('Spill igjen') }}
             </button>
-            <button class="btn btn-secondary" @click="leaveLobby">← Forlat</button>
+            <button class="btn btn-secondary" @click="leaveLobby">{{ $t('← Forlat') }}</button>
           </div>
         </template>
-        <button v-else class="btn btn-primary" @click="resetToStart">Spill igjen</button>
+        <button v-else class="btn btn-primary" @click="resetToStart">{{ $t('Spill igjen') }}</button>
       </div>
     </template>
 
@@ -319,6 +319,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
@@ -381,7 +382,7 @@ async function loadBoards() {
   try {
     allBoards.value = await api.listImposterGrids()
   } catch (e) {
-    error.value = 'Kunne ikke laste brett.'
+    error.value = _t('Kunne ikke laste brett.')
   } finally {
     loading.value = false
   }
@@ -477,7 +478,7 @@ async function openPlayersModal() {
     playersModalParticipants.value = fresh.participants
     showPlayersModal.value = true
   } catch (e) {
-    error.value = 'Kunne ikke laste spillerlisten.'
+    error.value = _t('Kunne ikke laste spillerlisten.')
   }
 }
 function onPlayersModalChanged(dto) {
@@ -529,7 +530,7 @@ async function createOnlineRoom() {
     stage.value = 'onlineLobby'
     startLobbyChannel()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke opprette rommet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke opprette rommet.')
   } finally {
     creatingRoom.value = false
   }
@@ -559,7 +560,7 @@ async function joinOnlineRoom(codeOverride) {
       startLobbyChannel()
     }
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke bli med i rommet - sjekk koden og prøv igjen.'
+    error.value = e.response?.data?.message || _t('Kunne ikke bli med i rommet - sjekk koden og prøv igjen.')
     activeRoom.clear()
     savedRoomCode.value = ''
   } finally {
@@ -625,7 +626,7 @@ async function startOnlineRoom() {
     stopLobbyChannel()
     stage.value = 'onlineGame'
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke starte spillet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke starte spillet.')
   } finally {
     startingRoom.value = false
   }
@@ -672,7 +673,7 @@ async function restartOnlineRoom() {
     const dto = await api.restartRoom(onlineRoom.value.roomCode)
     applyLobbyUpdate(dto)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke starte spillet på nytt.'
+    error.value = e.response?.data?.message || _t('Kunne ikke starte spillet på nytt.')
   } finally {
     restartingRoom.value = false
   }

@@ -4,9 +4,9 @@
       <router-link to="/" class="nav-brand">Quizzes</router-link>
 
       <template v-if="auth.isAuthenticated.value">
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Lag en quiz</router-link>
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">Mine quizzer</router-link>
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">Dagens quiz</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">{{ $t('Lag en quiz') }}</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">{{ $t('Mine quizzer') }}</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">{{ $t('Dagens quiz§AppT') }}</router-link>
         <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
           <div v-for="menu in PLAYER_MENUS" :key="menu.key" class="top-nav-dropdown">
             <button
@@ -57,13 +57,14 @@
         </template>
 
         <div class="top-nav-spacer"></div>
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/account" class="nav-link" @click="onNavClick('/account', 'account')">Konto</router-link>
-        <span class="top-nav-user">{{ auth.state.displayName }}<template v-if="auth.isGuest.value"> (gjest)</template></span>
-        <button class="btn btn-secondary btn-sm" @click="logout">{{ auth.isGuest.value ? 'Forlat' : 'Logg ut' }}</button>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/account" class="nav-link" @click="onNavClick('/account', 'account')">{{ $t('Konto') }}</router-link>
+        <span class="top-nav-user">{{ auth.state.displayName }}<template v-if="auth.isGuest.value"> {{ $t('(gjest)') }}</template></span>
+        <button class="btn btn-secondary btn-sm" @click="logout">{{ auth.isGuest.value ? $t('Forlat') : $t('Logg ut') }}</button>
       </template>
       <template v-else>
         <div class="top-nav-spacer"></div>
       </template>
+      <LanguageToggle />
     </nav>
 
     <main class="main-content">
@@ -71,14 +72,14 @@
     </main>
 
     <footer class="app-footer">
-      <router-link to="/privacy">Personvernerklæring</router-link>
-      <router-link to="/cookies">Retningslinjer for informasjonskapsler</router-link>
-      <button type="button" class="app-footer-link-btn" @click="cookieConsent.reset()">Cookie-innstillinger</button>
+      <router-link to="/privacy">{{ $t('Personvernerklæring') }}</router-link>
+      <router-link to="/cookies">{{ $t('Retningslinjer for informasjonskapsler') }}</router-link>
+      <button type="button" class="app-footer-link-btn" @click="cookieConsent.reset()">{{ $t('Cookie-innstillinger§AppT') }}</button>
     </footer>
 
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
-      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz">Dagens quiz</router-link>
+      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz">{{ $t('Dagens quiz§AppT') }}</router-link>
       <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
         <div v-for="menu in [QUIZZES_MENU, ...PLAYER_MENUS, ACCOUNT_MENU]" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
           <button
@@ -120,34 +121,35 @@
           </div>
         </div>
       </template>
-      <button v-if="auth.isAdmin.value || auth.isGuest.value" @click="logout">{{ auth.isGuest.value ? 'Forlat' : 'Logg ut' }}</button>
+      <button v-if="auth.isAdmin.value || auth.isGuest.value" @click="logout">{{ auth.isGuest.value ? $t('Forlat') : $t('Logg ut') }}</button>
     </nav>
 
     <ToastHost />
     <CookieConsentBanner />
 
     <div v-if="showInactivityWarning" class="modal-backdrop">
-      <div class="modal" role="alertdialog" aria-modal="true" aria-label="Fortsatt der?" style="max-width:420px; text-align:center;">
-        <h2 style="margin-top:0;">Fortsatt der?</h2>
-        <p class="page-subtitle">Du har vært inaktiv en stund - du blir logget ut om {{ inactivityWarningSecondsLeft }}s.</p>
+      <div class="modal" role="alertdialog" aria-modal="true" :aria-label="$t('Fortsatt der?')" style="max-width:420px; text-align:center;">
+        <h2 style="margin-top:0;">{{ $t('Fortsatt der?') }}</h2>
+        <p class="page-subtitle">{{ $t('Du har vært inaktiv en stund - du blir logget ut om') }} {{ inactivityWarningSecondsLeft }}s.</p>
         <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
-          <button class="btn btn-secondary" @click="logoutNow">Logg ut nå</button>
-          <button class="btn btn-primary" @click="staySignedIn">Forbli innlogget</button>
+          <button class="btn btn-secondary" @click="logoutNow">{{ $t('Logg ut nå') }}</button>
+          <button class="btn btn-primary" @click="staySignedIn">{{ $t('Forbli innlogget') }}</button>
         </div>
       </div>
     </div>
 
     <div v-else-if="showExpiryWarning" class="modal-backdrop">
-      <div class="modal" role="alertdialog" aria-modal="true" aria-label="Økten din utløper snart" style="max-width:420px; text-align:center;">
-        <h2 style="margin-top:0;">Økten din utløper snart</h2>
-        <p class="page-subtitle">Du blir snart logget ut og må logge inn på nytt - å være aktiv utsetter ikke dette. Det kan være lurt å runde av nå.</p>
-        <button class="btn btn-primary" style="margin-top:8px;" @click="dismissExpiryWarning">Greit</button>
+      <div class="modal" role="alertdialog" aria-modal="true" :aria-label="$t('Økten din utløper snart')" style="max-width:420px; text-align:center;">
+        <h2 style="margin-top:0;">{{ $t('Økten din utløper snart') }}</h2>
+        <p class="page-subtitle">{{ $t('Du blir snart logget ut og må logge inn på nytt - å være aktiv utsetter ikke dette. Det kan være lurt å runde av nå.') }}</p>
+        <button class="btn btn-primary" style="margin-top:8px;" @click="dismissExpiryWarning">{{ $t('Greit') }}</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from './i18n'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import auth from './services/auth'
 import api from './services/api'
@@ -155,6 +157,7 @@ import { useRouter } from 'vue-router'
 import navTrigger from './services/navTrigger'
 import cookieConsent from './services/cookieConsent'
 import ToastHost from './components/ToastHost.vue'
+import LanguageToggle from './components/LanguageToggle.vue'
 import CookieConsentBanner from './components/CookieConsentBanner.vue'
 import { useEscapeKey } from './composables/useEscapeKey'
 
@@ -164,7 +167,7 @@ const router = useRouter()
 // desktop top nav and the mobile bottom-nav popup. Daily Quiz is deliberately not
 // in either - it has its own standalone nav button, next to Create a quiz/My quizzes.
 //
-// "Ukentlig" holds only the two weekly boards (Grid, Starting XI); "Spill" holds every
+// 'Ukentlig' holds only the two weekly boards (Grid, Starting XI); 'Spill' holds every
 // party game and its online Battle variants. `key` on an item is only set for the
 // ones that use onNavClick's "re-click while already there" retrigger (see
 // closePlayerMenuItem); Grid/Starting XI never needed that, so theirs stay null.
@@ -175,7 +178,7 @@ const router = useRouter()
 const PLAYER_MENUS = [
   {
     key: 'weekly',
-    label: 'Ukentlig',
+    label: _t('Ukentlig'),
     items: [
       { to: '/weekly-grid', label: 'Grid', key: null },
       { to: '/starting-xi', label: 'Starting XI', key: null }
@@ -183,7 +186,7 @@ const PLAYER_MENUS = [
   },
   {
     key: 'games',
-    label: 'Spill',
+    label: _t('Spill§AppJ'),
     items: [
       { to: '/tension', label: 'Tension', key: 'tension' },
       { to: '/501', label: '501', key: 'fiveOhOne' },
@@ -195,28 +198,28 @@ const PLAYER_MENUS = [
     ]
   }
 ]
-// Mobile bottom bar only: "Lag en quiz" and "Mine quizzer" share one dropdown there (six tabs side by
+// Mobile bottom bar only: 'Lag en quiz' and 'Mine quizzer' share one dropdown there (six tabs side by
 // side were cramped), with Create first and highlighted since it's the main action. On desktop the top
 // nav has room, so they stay as two separate links. Opened/closed through the same openPlayerMenu as the
 // others ('quizzes' is one more key).
 const QUIZZES_MENU = {
   key: 'quizzes',
-  label: 'Quizzer',
+  label: _t('Quizzer'),
   items: [
-    { to: '/generate', label: 'Lag en quiz', key: 'generate', primary: true },
-    { to: '/my-quizzes', label: 'Mine quizzer', key: 'myQuizzes' }
+    { to: '/generate', label: _t('Lag en quiz'), key: 'generate', primary: true },
+    { to: '/my-quizzes', label: _t('Mine quizzer'), key: 'myQuizzes' }
   ]
 }
 
 // Mobile bottom bar only: the account page (where the display name is changed) had no way in from a phone -
-// the top bar's "Konto" link doesn't exist there - so the last tab is now an Account menu holding it
+// the top bar's 'Konto' link doesn't exist there - so the last tab is now an Account menu holding it
 // together with Log out.
 const ACCOUNT_MENU = {
   key: 'account',
-  label: 'Konto',
+  label: _t('Konto'),
   items: [
-    { to: '/account', label: 'Min konto og navn', key: 'account' },
-    { action: 'logout', label: 'Logg ut' }
+    { to: '/account', label: _t('Min konto og navn'), key: 'account' },
+    { action: 'logout', label: _t('Logg ut') }
   ]
 }
 
@@ -248,45 +251,45 @@ function closePlayerMenuItem(path, key) {
 // single `openAdminMenu` (one menu open at a time), mirroring the Games popup.
 const ADMIN_MENUS = [
   {
-    label: 'Spørsmål',
+    label: _t('Spørsmål§AppJ'),
     items: [
-      { to: '/admin/questions', label: 'Spørsmålsbank' },
-      { to: '/admin/question-labels', label: 'Etiketter' },
-      { to: '/admin/question-submissions', label: 'Innsendte spørsmål' },
-      { to: '/admin/quiz-templates', label: 'Quizmaler' }
+      { to: '/admin/questions', label: _t('Spørsmålsbank') },
+      { to: '/admin/question-labels', label: _t('Etiketter') },
+      { to: '/admin/question-submissions', label: _t('Innsendte spørsmål§AppJ') },
+      { to: '/admin/quiz-templates', label: _t('Quizmaler') }
     ]
   },
   {
-    label: 'Innhold',
+    label: _t('Innhold'),
     items: [
-      { to: '/admin/athletes', label: 'Emner' },
+      { to: '/admin/athletes', label: _t('Emner') },
       { to: '/admin/athlete-pools', label: 'Emneutvalg' },
-      { to: '/admin/grid-categories', label: 'Kategorier' },
-      { to: '/admin/clubs', label: 'Klubber' },
-      { to: '/admin/tension-categories', label: 'Tension-kategorier' }
+      { to: '/admin/grid-categories', label: _t('Kategorier') },
+      { to: '/admin/clubs', label: _t('Klubber') },
+      { to: '/admin/tension-categories', label: _t('Tension-kategorier') }
     ]
   },
   {
-    label: 'Spill',
+    label: _t('Spill§AppJ'),
     items: [
-      { to: '/admin/daily-quiz-review', label: 'Gjennomgang av dagens quiz' },
-      { to: '/admin/grids', label: 'Ukentlige grids' },
+      { to: '/admin/daily-quiz-review', label: _t('Gjennomgang av dagens quiz') },
+      { to: '/admin/grids', label: _t('Ukentlige grids') },
       { to: '/admin/lineups', label: 'Starting XI' },
       { to: '/admin/tension-questions', label: 'Tension' },
       { to: '/admin/501', label: '501' },
       { to: '/admin/imposter', label: 'Imposter' },
       { to: '/admin/bullseye', label: 'Bullseye' },
-      { to: '/admin/penalty-shootouts', label: 'Straffekonkurranse' },
+      { to: '/admin/penalty-shootouts', label: _t('Straffekonkurranse') },
       { to: '/admin/flashback', label: 'Flashback' }
     ]
   },
   {
-    label: 'Innsikt',
+    label: _t('Innsikt'),
     items: [
-      { to: '/admin/statistics', label: 'Statistikk' },
-      { to: '/admin/reports', label: 'Rapporter' },
-      { to: '/admin/expiring-content', label: 'Kan utløpe' },
-      { to: '/admin/duplicate-subjects', label: 'Dupliserte emner' }
+      { to: '/admin/statistics', label: _t('Statistikk') },
+      { to: '/admin/reports', label: _t('Rapporter') },
+      { to: '/admin/expiring-content', label: _t('Kan utløpe') },
+      { to: '/admin/duplicate-subjects', label: _t('Dupliserte emner') }
     ]
   }
 ]

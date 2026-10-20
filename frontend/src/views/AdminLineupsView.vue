@@ -6,16 +6,16 @@
         <div>
           <h1>Starting XI <span v-if="!loading && lineups.length" class="header-count">{{ lineups.length }}</span></h1>
           <p class="page-subtitle">
-            Lag og administrer «gjett laget»-brett for en bestemt fotballkamp.
+            {{ $t('Lag og administrer «gjett laget»-brett for en bestemt fotballkamp.') }}
           </p>
         </div>
-        <button class="btn btn-primary" @click="openCreate">+ Lag brett</button>
+        <button class="btn btn-primary" @click="openCreate">{{ $t('+ Lag brett') }}</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
       <div v-else-if="!lineups.length" class="empty-state friendly">
-        Ingen Starting XI-brett ennå. Legg til noen fotballemner på siden Emner, og lag ditt første brett her.
+        {{ $t('Ingen Starting XI-brett ennå. Legg til noen fotballemner på siden Emner, og lag ditt første brett her.') }}
       </div>
 
       <template v-else>
@@ -26,30 +26,30 @@
         :sorts="lineupSorts"
         :total-count="lineups.length"
         :filtered-count="filteredLineups.length"
-        placeholder="Søk etter brett på tittel, lag eller formasjon…"
+        :placeholder="$t('Søk etter brett på tittel, lag eller formasjon…')"
       />
 
-      <div v-if="!filteredLineups.length" class="empty-state">Ingen brett samsvarer med søket ditt.</div>
+      <div v-if="!filteredLineups.length" class="empty-state">{{ $t('Ingen brett samsvarer med søket ditt.') }}</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="l in pagedLineups" :key="l.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ l.title }}
-              <span v-if="l.excludedFromBattle" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">Ikke i XI Battle</span>
-              <span v-if="l.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Automatisk utvalg</span>
-              <span v-if="l.canExpire" class="tag" style="background:rgba(154, 106, 0, 0.15); color:#8a5a00; margin-left:6px;">Kan utløpe</span>
+              <span v-if="l.excludedFromBattle" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">{{ $t('Ikke i XI Battle') }}</span>
+              <span v-if="l.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">{{ $t('Automatisk utvalg') }}</span>
+              <span v-if="l.canExpire" class="tag" style="background:rgba(154, 106, 0, 0.15); color:#8a5a00; margin-left:6px;">{{ $t('Kan utløpe') }}</span>
             </div>
             <div class="saved-quiz-meta">
-              {{ l.teamName }} mot {{ l.opponentName }}
+              {{ l.teamName }} {{ $t('mot') }} {{ l.opponentName }}
               <template v-if="l.scoreFor != null && l.scoreAgainst != null"> ({{ l.scoreFor }}-{{ l.scoreAgainst }})</template>
-              · {{ l.formation }} · {{ l.maxStrikes }} {{ l.maxStrikes === 1 ? 'liv' : 'liv' }} · uke {{ l.weekStartDate }}
+              · {{ l.formation }} · {{ $t('{0} liv¦{0} liv', [l.maxStrikes]) }} {{ $t('· uke') }} {{ l.weekStartDate }}
             </div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(l.id)">Rediger</button>
-            <button class="btn btn-secondary btn-sm" @click="duplicateLineup(l.id)">⧉ Dupliser</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(l)">Slett</button>
+            <button class="btn btn-secondary btn-sm" @click="openEdit(l.id)">{{ $t('Rediger') }}</button>
+            <button class="btn btn-secondary btn-sm" @click="duplicateLineup(l.id)">{{ $t('⧉ Dupliser') }}</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(l)">{{ $t('Slett') }}</button>
           </div>
         </div>
       </div>
@@ -61,66 +61,66 @@
     <!-- Builder view -->
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-        <h1 style="margin:0;">{{ editingLineupId ? 'Rediger Starting XI-brett' : 'Lag Starting XI-brett' }}</h1>
-        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til listen</button>
+        <h1 style="margin:0;">{{ editingLineupId ? $t('Rediger Starting XI-brett') : $t('Lag Starting XI-brett') }}</h1>
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">{{ $t('← Tilbake til listen') }}</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Tittel<input type="text" v-model="form.title" placeholder="f.eks. Community Shield 2014" /></label>
+        <label>{{ $t('Tittel') }}<input type="text" v-model="form.title" :placeholder="$t('f.eks. Community Shield 2014')" /></label>
       </div>
 
       <div class="field">
-        <label>Turnering / sammenheng <span class="picker-hint">valgfritt</span><textarea v-model="form.competition" placeholder="f.eks. Arsenals åpningsdags-XI sesongen etter at de vant FA-cupen."></textarea></label>
+        <label>{{ $t('Turnering / sammenheng') }} <span class="picker-hint">{{ $t('valgfritt') }}</span><textarea v-model="form.competition" :placeholder="$t('f.eks. Arsenals åpningsdags-XI sesongen etter at de vant FA-cupen.')"></textarea></label>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
-          <label>Kampdato <span class="picker-hint">valgfritt</span><input type="date" v-model="form.matchDate" /></label>
+          <label>{{ $t('Kampdato') }} <span class="picker-hint">{{ $t('valgfritt') }}</span><input type="date" v-model="form.matchDate" /></label>
         </div>
         <div style="flex:1; min-width:160px;">
-          <label>Startdato for uken<input type="date" v-model="form.weekStartDate" /></label>
+          <label>{{ $t('Startdato for uken') }}<input type="date" v-model="form.weekStartDate" /></label>
           <p v-if="weekConflict" style="margin:6px 0 0; color:var(--coral); font-size:0.82rem;">
-            ⚠ '{{ weekConflict.title }}' bruker allerede denne uken.
+            ⚠ '{{ weekConflict.title }}{{ $t('\' bruker allerede denne uken.') }}
           </p>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>Maks liv<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
+          <label>{{ $t('Maks liv') }}<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <label>Lag (laget som gjettes)<input type="text" v-model="form.teamName" placeholder="f.eks. Arsenal" /></label>
+          <label>{{ $t('Lag (laget som gjettes)') }}<input type="text" v-model="form.teamName" :placeholder="$t('f.eks. Arsenal')" /></label>
         </div>
         <div style="flex:1; min-width:220px;">
-          <label>URL til lagets emblem <span class="picker-hint">valgfritt</span><input type="text" v-model="form.teamCrestUrl" placeholder="https://…" /></label>
-          <div class="photo-upload-row"><PhotoUploadButton label="Last opp et emblem" @uploaded="url => form.teamCrestUrl = url" /></div>
+          <label>{{ $t('URL til lagets emblem') }} <span class="picker-hint">{{ $t('valgfritt') }}</span><input type="text" v-model="form.teamCrestUrl" placeholder="https://…" /></label>
+          <div class="photo-upload-row"><PhotoUploadButton :label="$t('Last opp et emblem')" @uploaded="url => form.teamCrestUrl = url" /></div>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <label>Motstander <span class="picker-hint">bare som sammenheng, kan aldri gjettes</span><input type="text" v-model="form.opponentName" placeholder="f.eks. Man City" /></label>
+          <label>{{ $t('Motstander') }} <span class="picker-hint">{{ $t('bare som sammenheng, kan aldri gjettes') }}</span><input type="text" v-model="form.opponentName" :placeholder="$t('f.eks. Man City')" /></label>
         </div>
         <div style="flex:1; min-width:220px;">
-          <label>URL til motstanderens emblem <span class="picker-hint">valgfritt</span><input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" /></label>
-          <div class="photo-upload-row"><PhotoUploadButton label="Last opp et emblem" @uploaded="url => form.opponentCrestUrl = url" /></div>
+          <label>{{ $t('URL til motstanderens emblem') }} <span class="picker-hint">{{ $t('valgfritt') }}</span><input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" /></label>
+          <div class="photo-upload-row"><PhotoUploadButton :label="$t('Last opp et emblem')" @uploaded="url => form.opponentCrestUrl = url" /></div>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:140px;">
-          <label>{{ form.teamName || 'Lag' }} mål<input type="number" min="0" v-model.number="form.scoreFor" /></label>
+          <label>{{ form.teamName || $t('Lag') }} {{ $t('mål') }}<input type="number" min="0" v-model.number="form.scoreFor" /></label>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>{{ form.opponentName || 'Motstander' }} mål<input type="number" min="0" v-model.number="form.scoreAgainst" /></label>
+          <label>{{ form.opponentName || $t('Motstander') }} {{ $t('mål') }}<input type="number" min="0" v-model.number="form.scoreAgainst" /></label>
         </div>
       </div>
 
       <div class="field">
-        <label>Formasjon <span class="picker-hint">bestemmer de 11 plassene på banen under</span></label>
+        <label>{{ $t('Formasjon') }} <span class="picker-hint">{{ $t('bestemmer de 11 plassene på banen under') }}</span></label>
         <div class="language-row">
           <button
             v-for="f in FORMATION_NAMES"
@@ -136,33 +136,33 @@
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.excludedFromBattle" style="width:auto;" />
-          Utelat fra XI Battle
+          {{ $t('Utelat fra XI Battle') }}
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
-          Bruk dette når et bretts tropp må rettes - det kan fortsatt spilles alene, men slutter å tilbys i XI Battles tilfeldige eller manuelle valg.
+          {{ $t('Bruk dette når et bretts tropp må rettes - det kan fortsatt spilles alene, men slutter å tilbys i XI Battles tilfeldige eller manuelle valg.') }}
         </p>
       </div>
 
       <div class="field option-card">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
-          Kan utløpe
+          {{ $t('Kan utløpe') }}
           <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
-            f.eks. "nåværende all-time toppscorer" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.
+            {{ $t('f.eks. "nåværende all-time toppscorer" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.§AdminLineupsViewT') }}
           </div>
         </label>
       </div>
 
       <div class="field">
-        <label>Draktfarger <span class="picker-hint">keeperen vises alltid med en annen drakt enn utespillerne</span></label>
+        <label>{{ $t('Draktfarger') }} <span class="picker-hint">{{ $t('keeperen vises alltid med en annen drakt enn utespillerne') }}</span></label>
         <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
           <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; margin:0;">
             <input type="color" v-model="form.kitColor" style="width:44px; height:32px; padding:2px; cursor:pointer;" />
-            Utespillerdrakt
+            {{ $t('Utespillerdrakt') }}
           </label>
           <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; margin:0;">
             <input type="color" v-model="form.goalkeeperKitColor" style="width:44px; height:32px; padding:2px; cursor:pointer;" />
-            Keeperdrakt
+            {{ $t('Keeperdrakt') }}
           </label>
         </div>
       </div>
@@ -170,37 +170,37 @@
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.entireCategoryPool" style="width:auto;" @change="onEntireCategoryToggle" />
-          Bruk alle emner i "Football" som utvalg
+          {{ $t('Bruk alle emner i "Football" som utvalg') }}
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
-          Alle emner i denne kategorien kan gjettes automatisk, inkludert de som legges til senere - ingenting å importere på nytt. Du velger fortsatt hvilke som er de riktige startspillerne under.
+          {{ $t('Alle emner i denne kategorien kan gjettes automatisk, inkludert de som legges til senere - ingenting å importere på nytt. Du velger fortsatt hvilke som er de riktige startspillerne under.') }}
         </p>
       </div>
 
       <div class="field">
-        <label>Kandidatutvalg <span class="picker-hint">{{ form.entireCategoryPool ? 'velg de riktige startspillerne - alle fotballemner kan gjettes' : 'alle som kan gjettes på dette brettet - riktige og avledere' }}</span></label>
+        <label>{{ $t('Kandidatutvalg') }} <span class="picker-hint">{{ form.entireCategoryPool ? $t('velg de riktige startspillerne - alle fotballemner kan gjettes') : $t('alle som kan gjettes på dette brettet - riktige og avledere') }}</span></label>
 
-        <input type="text" v-model="athleteSearchTerm" placeholder="Søk etter fotballemner på navn…" style="width:100%; margin-bottom:10px;" />
+        <input type="text" v-model="athleteSearchTerm" :placeholder="$t('Søk etter fotballemner på navn…')" style="width:100%; margin-bottom:10px;" />
 
         <template v-if="!form.entireCategoryPool">
         <div v-if="poolsForFootball.length" style="margin-bottom:10px;">
           <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
-            ...eller importer fra et lagret utvalg
+            {{ $t('...eller importer fra et lagret utvalg') }}
           </label>
           <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
             <select v-model="selectedPoolId" style="flex:1; min-width:200px;">
-              <option :value="null">Velg et utvalg…</option>
+              <option :value="null">{{ $t('Velg et utvalg…') }}</option>
               <option v-for="p in poolsForFootball" :key="p.id" :value="p.id">{{ p.name }} ({{ p.memberCount }})</option>
             </select>
             <button class="btn btn-secondary btn-sm" :disabled="!selectedPoolId" @click="importFromPool">
-              + Importer utvalg
+              {{ $t('+ Importer utvalg') }}
             </button>
           </div>
         </div>
 
         <div style="margin-bottom:10px;">
           <button class="btn btn-secondary btn-sm" :disabled="importingAll" @click="importAllInCategory">
-            {{ importingAll ? 'Importerer…' : '+ Importer alle emner i "Football"' }}
+            {{ importingAll ? $t('Importerer…') : $t('+ Importer alle emner i "Football"') }}
           </button>
         </div>
         </template>
@@ -212,20 +212,20 @@
         </div>
 
         <div v-if="!candidates.length" class="empty-state" style="padding:20px;">
-          {{ form.entireCategoryPool ? 'Ingen startspillere valgt ennå - søk over for å markere hvem som er riktig.' : 'Ingen emner lagt til ennå - søk over, eller importer et lagret utvalg.' }}
+          {{ form.entireCategoryPool ? $t('Ingen startspillere valgt ennå - søk over for å markere hvem som er riktig.') : $t('Ingen emner lagt til ennå - søk over, eller importer et lagret utvalg.') }}
         </div>
 
         <div v-else>
           <input
             type="text"
             v-model="candidateFilterTerm"
-            placeholder="Finn noen som allerede er lagt til…"
+            :placeholder="$t('Finn noen som allerede er lagt til…')"
             class="search-input"
             style="margin-bottom:12px;"
           />
 
           <div v-if="!filteredCandidates.length" class="empty-state" style="padding:20px;">
-            Ingen som er lagt til samsvarer med "{{ candidateFilterTerm }}".
+            {{ $t('Ingen som er lagt til samsvarer med "') }}{{ candidateFilterTerm }}".
           </div>
 
           <template v-else>
@@ -238,19 +238,19 @@
               {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
             </div>
             <div v-if="c.correct" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-              <input type="number" v-model.number="c.shirtNumber" placeholder="Nr." style="width:70px;" min="1" max="99" />
+              <input type="number" v-model.number="c.shirtNumber" :placeholder="$t('Nr.')" style="width:70px;" min="1" max="99" />
               <select v-model.number="c.slotIndex" style="width:130px;">
-                <option :value="null">Plass…</option>
+                <option :value="null">{{ $t('Plass…') }}</option>
                 <option v-for="(label, idx) in slotLabels(form.formation)" :key="idx" :value="idx" :disabled="slotTaken(idx, c)">
                   {{ label }}
                 </option>
               </select>
               <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400; font-size:0.82rem; color:var(--text-dim); margin:0;">
                 <input type="checkbox" v-model="c.captain" style="width:auto;" />
-                Kaptein
+                {{ $t('Kaptein') }}
               </label>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="openEditAthlete(c)">Rediger</button>
+            <button class="btn btn-secondary btn-sm" @click="openEditAthlete(c)">{{ $t('Rediger') }}</button>
             <button class="btn btn-danger btn-sm" @click="removeCandidate(c)">✕</button>
           </div>
 
@@ -259,15 +259,17 @@
         </div>
       </div>
 
+      <TranslationEditor v-if="editingLineupId" type="LINEUP" :entity-id="editingLineupId" />
+
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" :disabled="filledSlotCount === 0" @click="showPreview = true">
-          Forhåndsvisning ({{ filledSlotCount }}/{{ requiredSlotCount }} plasser)
+          {{ $t('Forhåndsvisning (') }}{{ filledSlotCount }}/{{ requiredSlotCount }} {{ $t('plasser)') }}
         </button>
         <button v-if="editingLineupId" class="btn btn-secondary" @click="duplicateAsNewVersion">
-          ⧉ Dupliser som ny versjon
+          {{ $t('⧉ Dupliser som ny versjon') }}
         </button>
         <button class="btn btn-primary" :disabled="saving" @click="saveLineup">
-          {{ saving ? 'Lagrer…' : 'Lagre brett' }}
+          {{ saving ? $t('Lagrer…') : $t('Lagre brett') }}
         </button>
       </div>
     </template>
@@ -275,23 +277,23 @@
     <div v-if="showPreview" class="modal-backdrop" @click.self="showPreview = false">
       <div class="modal" style="max-width:640px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <h2 style="margin:0;">{{ form.title || 'Brett uten tittel' }}</h2>
-          <button class="btn btn-secondary btn-sm" @click="showPreview = false">Lukk</button>
+          <h2 style="margin:0;">{{ form.title || $t('Brett uten tittel') }}</h2>
+          <button class="btn btn-secondary btn-sm" @click="showPreview = false">{{ $t('Lukk§AdminLineupsViewT') }}</button>
         </div>
-        <p class="page-subtitle" style="margin-top:0;">Alt vist avslørt, for en rask sjekk av at drakter og plasser ser riktige ut.</p>
+        <p class="page-subtitle" style="margin-top:0;">{{ $t('Alt vist avslørt, for en rask sjekk av at drakter og plasser ser riktige ut.') }}</p>
 
         <div class="pitch-scoreline" v-if="form.teamName || form.opponentName">
           <div class="pitch-scoreline-team">
             <img v-if="form.teamCrestUrl" :src="form.teamCrestUrl" alt="" class="pitch-scoreline-crest" />
-            <span>{{ form.teamName || 'Lag' }}</span>
+            <span>{{ form.teamName || $t('Lag') }}</span>
           </div>
           <div v-if="form.scoreFor != null && form.scoreAgainst != null" class="pitch-scoreline-score">
             <span>{{ form.scoreFor }}</span><span class="dash">-</span><span>{{ form.scoreAgainst }}</span>
           </div>
-          <div v-else class="pitch-scoreline-vs">mot</div>
+          <div v-else class="pitch-scoreline-vs">{{ $t('mot') }}</div>
           <div class="pitch-scoreline-team away">
             <img v-if="form.opponentCrestUrl" :src="form.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
-            <span>{{ form.opponentName || 'Motstander' }}</span>
+            <span>{{ form.opponentName || $t('Motstander') }}</span>
           </div>
         </div>
 
@@ -306,7 +308,7 @@
                 {{ slot.shirtNumber ?? '?' }}
                 <span v-if="slot.captain" class="pitch-shirt-captain">C</span>
               </div>
-              <div class="pitch-slot-name">{{ slot.name || '(tom)' }}</div>
+              <div class="pitch-slot-name">{{ slot.name || $t('(tom)') }}</div>
             </div>
           </div>
         </div>
@@ -322,8 +324,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Slette dette Starting XI-brettet?"
-      :message="`«${pendingDelete.title}» og alles fremgang på det fjernes for godt.`"
+      :title="$t('Slette dette Starting XI-brettet?')"
+      :message="$t('«{0}» og alles fremgang på det fjernes for godt.', [pendingDelete.title])"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -331,6 +333,8 @@
 </template>
 
 <script setup>
+import TranslationEditor from '../components/TranslationEditor.vue'
+import { t as _t } from '../i18n'
 import PhotoUploadButton from '../components/PhotoUploadButton.vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
@@ -360,10 +364,10 @@ const {
   pageSize: 10,
   searchFields: [l => l.title, l => l.teamName, l => l.opponentName, l => l.formation],
   sorts: [
-    { key: 'week', label: 'Uke', accessor: l => l.weekStartDate, dir: 'desc' },
-    { key: 'title', label: 'Tittel', accessor: l => l.title },
-    { key: 'team', label: 'Lag', accessor: l => l.teamName },
-    { key: 'formation', label: 'Formasjon', accessor: l => l.formation }
+    { key: 'week', label: _t('Uke'), accessor: l => l.weekStartDate, dir: 'desc' },
+    { key: 'title', label: _t('Tittel'), accessor: l => l.title },
+    { key: 'team', label: _t('Lag'), accessor: l => l.teamName },
+    { key: 'formation', label: _t('Formasjon'), accessor: l => l.formation }
   ]
 })
 const error = ref('')
@@ -459,7 +463,7 @@ async function loadLineups() {
   try {
     lineups.value = await api.adminListLineups()
   } catch (e) {
-    error.value = 'Kunne ikke laste Starting XI-brett.'
+    error.value = _t('Kunne ikke laste Starting XI-brett.')
   } finally {
     loading.value = false
   }
@@ -550,7 +554,7 @@ function onAthleteEdited(saved) {
     c.additionalPhotos = saved.additionalPhotos || []
     c.additionalDescriptions = saved.additionalDescriptions || []
   }
-  toast.show('Emnet er oppdatert.')
+  toast.show(_t('Emnet er oppdatert.'))
 }
 
 async function importFromPool() {
@@ -560,10 +564,10 @@ async function importFromPool() {
     const pool = await api.adminGetAthletePool(selectedPoolId.value)
     const added = addCandidatesBulk(pool.members)
     if (!linkedPoolIds.value.includes(pool.id)) linkedPoolIds.value.push(pool.id)
-    toast.show(`Importerte ${added} emne(r) fra "${pool.name}". Dette brettet får nå automatisk nye medlemmer som legges til i det utvalget senere.`)
+    toast.show(_t('Importerte {0} emne(r) fra "{1}". Dette brettet får nå automatisk nye medlemmer som legges til i det utvalget senere.', [added, pool.name]))
     selectedPoolId.value = null
   } catch (e) {
-    error.value = 'Kunne ikke importere utvalget.'
+    error.value = _t('Kunne ikke importere utvalget.')
   }
 }
 
@@ -574,9 +578,9 @@ async function importAllInCategory() {
   try {
     const all = await api.adminSearchAthletes({ sport: FOOTBALL_CATEGORY })
     const added = addCandidatesBulk(all)
-    toast.show(`Importerte ${added} emne(r) fra "Football" (${all.length - added} var allerede lagt til).`)
+    toast.show(_t('Importerte {0} emne(r) fra "Football" ({1} var allerede lagt til).', [added, all.length - added]))
   } catch (e) {
-    error.value = 'Kunne ikke importere emner for den kategorien.'
+    error.value = _t('Kunne ikke importere emner for den kategorien.')
   } finally {
     importingAll.value = false
   }
@@ -694,7 +698,7 @@ async function openEdit(id) {
     loadAthletePools()
     rebuildCandidateDisplayOrder()
   } catch (e) {
-    error.value = 'Kunne ikke laste brettet.'
+    error.value = _t('Kunne ikke laste brettet.')
   }
 }
 
@@ -713,28 +717,28 @@ async function duplicateLineup(id) {
 // completely untouched until this copy is saved.
 function duplicateAsNewVersion() {
   editingLineupId.value = null
-  form.title = form.title + ' (oppdatert)'
+  form.title = form.title + _t(' (oppdatert)')
   form.excludedFromBattle = false
-  toast.show('Du redigerer nå en ny duplikat - det opprinnelige brettet er urørt. Husk å lagre denne kopien.')
+  toast.show(_t('Du redigerer nå en ny duplikat - det opprinnelige brettet er urørt. Husk å lagre denne kopien.'))
 }
 
 async function saveLineup() {
   error.value = ''
   if (!form.title.trim() || !form.weekStartDate) {
-    error.value = 'Tittel og startdato for uken må fylles ut.'
+    error.value = _t('Tittel og startdato for uken må fylles ut.')
     return
   }
   if (!form.teamName.trim() || !form.opponentName.trim()) {
-    error.value = 'Lag og motstander må fylles ut.'
+    error.value = _t('Lag og motstander må fylles ut.')
     return
   }
   const entries = candidates.value.filter(c => c.correct)
   if (entries.length !== requiredSlotCount.value) {
-    error.value = `${form.formation} trenger nøyaktig ${requiredSlotCount.value} riktige startspillere - for øyeblikket ${entries.length}.`
+    error.value = _t('{0} trenger nøyaktig {1} riktige startspillere - for øyeblikket {2}.', [form.formation, requiredSlotCount.value, entries.length])
     return
   }
   if (entries.some(c => !c.shirtNumber || c.slotIndex == null)) {
-    error.value = 'Hver startspiller trenger både draktnummer og en plass i formasjonen.'
+    error.value = _t('Hver startspiller trenger både draktnummer og en plass i formasjonen.')
     return
   }
 
@@ -770,11 +774,11 @@ async function saveLineup() {
     } else {
       await api.adminCreateLineup(payload)
     }
-    toast.show('Starting XI-brettet er lagret.')
+    toast.show(_t('Starting XI-brettet er lagret.'))
     view.value = 'list'
     loadLineups()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke lagre dette brettet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke lagre dette brettet.')
   } finally {
     saving.value = false
   }
@@ -790,10 +794,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteLineup(l.id)
-    toast.show('Brettet er slettet.')
+    toast.show(_t('Brettet er slettet.'))
     loadLineups()
   } catch (e) {
-    error.value = 'Kunne ikke slette brettet.'
+    error.value = _t('Kunne ikke slette brettet.')
   }
 }
 </script>

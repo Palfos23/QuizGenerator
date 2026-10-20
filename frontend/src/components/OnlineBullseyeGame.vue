@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="grid-status-bar">
-      <div class="grid-progress">Runde {{ (state?.currentQuestionIndex ?? 0) + 1 }} / {{ state?.totalQuestions ?? '?' }}</div>
+      <div class="grid-progress">{{ $t('Runde') }} {{ (state?.currentQuestionIndex ?? 0) + 1 }} / {{ state?.totalQuestions ?? '?' }}</div>
     </div>
 
-    <LoadingState v-if="loading" full message="Laster spillet…" />
+    <LoadingState v-if="loading" full :message="$t('Laster spillet…')" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
@@ -19,8 +19,8 @@
           :style="{ borderColor: p.color, opacity: p.eliminated ? 0.5 : (p.connected === false && p.participantId !== props.yourParticipantId ? 0.55 : 1) }"
         >
           <strong>{{ p.name }}<template v-if="p.eliminated"> ❌</template></strong>
-          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Frakoblet</span>
-          <div class="tension-player-answer">{{ p.answered ? '✓ svart' : (p.eliminated ? 'ute' : '— venter —') }}</div>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">{{ $t('Frakoblet§OnlineBullseyeGameT') }}</span>
+          <div class="tension-player-answer">{{ p.answered ? $t('✓ svart') : (p.eliminated ? $t('ute§OnlineBullseyeGameM') : $t('— venter —')) }}</div>
         </div>
       </div>
 
@@ -29,12 +29,12 @@
              throw answers away. -->
         <div v-if="isHost && !(state.answersSoFar && state.answersSoFar.length)" class="no-print" style="text-align:center; margin-top:10px;">
           <button type="button" class="btn btn-secondary btn-sm" :disabled="swapping" @click="swapQuestion">
-            {{ swapping ? 'Finner et nytt…' : '↻ Hatt dette før? Velg et annet spørsmål' }}
+            {{ swapping ? $t('Finner et nytt…') : $t('↻ Hatt dette før? Velg et annet spørsmål') }}
           </button>
         </div>
         <div v-if="state.answersSoFar && state.answersSoFar.length" style="max-width:420px; margin:16px auto 0; border:1px solid var(--border); border-radius: 2px; padding:10px 14px;">
           <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
-            Svart så langt denne runden
+            {{ $t('Svart så langt denne runden') }}
           </div>
           <div v-for="a in state.answersSoFar" :key="a.name" style="display:flex; justify-content:space-between; font-size:0.9rem; padding:2px 0;">
             <span>{{ a.name }}</span>
@@ -43,13 +43,13 @@
         </div>
 
         <p v-if="!isYourTurn" style="text-align:center; color:var(--text-dim); margin-top:16px;">
-          Venter på {{ currentTurnName }}sin tur…
+          {{ $t('Venter på') }} {{ currentTurnName }}{{ $t('sin tur…') }}
         </p>
       </template>
 
       <template v-else>
         <div class="tension-answers-panel" style="margin:16px auto 0;">
-          <h3 style="text-align:center; margin-top:0;">Svar</h3>
+          <h3 style="text-align:center; margin-top:0;">{{ $t('Svar§OnlineBullseyeGameT') }}</h3>
 
           <div class="bullseye-reveal-list">
             <div
@@ -64,21 +64,21 @@
               <div class="bullseye-reveal-rank">{{ revealIndex > idx ? idx + 1 : '?' }}</div>
               <div class="bullseye-reveal-main">
                 <div class="bullseye-reveal-player">{{ revealIndex > idx ? a.name : '???' }}</div>
-                <div class="bullseye-reveal-guess">{{ revealIndex > idx ? a.guessedName : 'Skjult til avsløringen' }}</div>
+                <div class="bullseye-reveal-guess">{{ revealIndex > idx ? a.guessedName : $t('Skjult til avsløringen') }}</div>
               </div>
               <div v-if="revealIndex > idx" class="bullseye-reveal-stats">
                 <div class="bullseye-reveal-value">{{ fmt(a.statValue) }}</div>
-                <div class="bullseye-reveal-distance">{{ fmt(a.distance) }} unna</div>
+                <div class="bullseye-reveal-distance">{{ fmt(a.distance) }} {{ $t('unna') }}</div>
               </div>
             </div>
           </div>
 
           <template v-if="revealIndex >= (state.roundResults?.length || 0)">
-            <div v-if="eliminatedName" class="bullseye-elimination-banner">❌ {{ eliminatedName }} er ute!</div>
+            <div v-if="eliminatedName" class="bullseye-elimination-banner">❌ {{ eliminatedName }} {{ $t('er ute!') }}</div>
 
-            <div v-if="state.bullseyeAnswers && state.bullseyeAnswers.length" class="bullseye-reveal-divider">Det riktige svaret</div>
+            <div v-if="state.bullseyeAnswers && state.bullseyeAnswers.length" class="bullseye-reveal-divider">{{ $t('Det riktige svaret') }}</div>
             <div v-if="state.bullseyeAnswers && state.bullseyeAnswers.length" class="bullseye-truth-callout">
-              <div class="bullseye-truth-label">{{ state.bullseyeAnswers[0].distance === 0 ? '🎯 Bullseye' : 'Nærmeste mulige svar' }}</div>
+              <div class="bullseye-truth-label">{{ state.bullseyeAnswers[0].distance === 0 ? '🎯 Bullseye' : $t('Nærmeste mulige svar') }}</div>
               <div class="bullseye-truth-list">
                 <span
                   v-for="e in state.bullseyeAnswers"
@@ -86,7 +86,7 @@
                   class="bullseye-truth-name"
                   :class="e.foundBy ? 'found' : 'not-found'"
                 >
-                  {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ fmt(e.statValue) }})<template v-if="e.foundBy"> — funnet av {{ e.foundBy }}</template>
+                  {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ fmt(e.statValue) }})<template v-if="e.foundBy"> {{ $t('— funnet av') }} {{ e.foundBy }}</template>
                 </span>
               </div>
             </div>
@@ -94,15 +94,15 @@
 
           <div style="text-align:center; margin-top:16px;">
             <button v-if="revealIndex < (state.roundResults?.length || 0)" class="btn btn-secondary" @click="skipReveal">
-              Hopp over avsløringen
+              {{ $t('Hopp over avsløringen') }}
             </button>
             <button
               v-else-if="isHost"
               class="btn btn-primary"
               :disabled="advancing"
               @click="nextRound"
-            >{{ advancing ? 'Laster…' : (state.currentQuestionIndex + 1 < state.totalQuestions ? 'Neste runde' : 'Fullfør spillet') }}</button>
-            <div v-else style="color:var(--text-dim);">Venter på at verten skal fortsette…</div>
+            >{{ advancing ? $t('Laster…') : (state.currentQuestionIndex + 1 < state.totalQuestions ? $t('Neste runde') : $t('Fullfør spillet')) }}</button>
+            <div v-else style="color:var(--text-dim);">{{ $t('Venter på at verten skal fortsette…') }}</div>
           </div>
         </div>
       </template>
@@ -122,13 +122,14 @@
     />
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm no-print" @click="leave">← Forlat spillet</button>
-      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">Rom: {{ roomCode }}</span>
+      <button class="btn btn-secondary btn-sm no-print" @click="leave">{{ $t('← Forlat spillet') }}</button>
+      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onUnmounted, ref } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -180,7 +181,7 @@ async function poll() {
     const fresh = await api.getBullseyeOnlineState(props.roomCode)
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    error.value = 'Mistet forbindelsen til rommet - prøver igjen…'
+    error.value = _t('Mistet forbindelsen til rommet - prøver igjen…')
   } finally {
     loading.value = false
   }
@@ -240,7 +241,7 @@ async function submit(guessedName) {
     const fresh = await api.submitBullseyeOnlineAnswer(props.roomCode, guessedName)
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke sende inn svaret.'
+    error.value = e.response?.data?.message || _t('Kunne ikke sende inn svaret.')
   } finally {
     submitting.value = false
   }
@@ -254,7 +255,7 @@ async function swapQuestion() {
     const fresh = await api.rerollBullseyeOnlineQuestion(props.roomCode)
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke bytte til et annet spørsmål - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke bytte til et annet spørsmål - prøv igjen.'), 'error')
   } finally {
     swapping.value = false
   }
@@ -267,7 +268,7 @@ async function nextRound() {
     const fresh = await api.advanceBullseyeOnlineRound(props.roomCode)
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke gå videre til neste runde.'
+    error.value = e.response?.data?.message || _t('Kunne ikke gå videre til neste runde.')
   } finally {
     advancing.value = false
   }

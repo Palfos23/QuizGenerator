@@ -155,6 +155,7 @@ public class FlashbackOnlineService {
         FlashbackYear year = flashbackYearRepository.findById(state.getYearIds().get(state.getCurrentRoundIndex()))
                 .orElseThrow(() -> new ResourceNotFoundException("Fant ikke år for denne runden"));
         List<String> allHints = year.getHints();
+        dto.setYearId(year.getId());
 
         int participantCount = room.getParticipants().size();
 

@@ -1,23 +1,23 @@
 <template>
   <div>
     <div class="fiveoo-header">
-      <div class="grid-progress" style="text-align:center;">Brett {{ (state?.currentGridIndex ?? 0) + 1 }} / {{ state?.totalGrids ?? '?' }}</div>
+      <div class="grid-progress" style="text-align:center;">{{ $t('Brett§OnlineImposterGameT') }} {{ (state?.currentGridIndex ?? 0) + 1 }} / {{ state?.totalGrids ?? '?' }}</div>
       <h2>{{ state?.gridTitle }}</h2>
       <p v-if="state?.gridDescription" class="fiveoo-description">{{ state.gridDescription }}</p>
       <p v-if="lastUpdatedLabel" class="fiveoo-description" style="font-size:0.75rem;">{{ lastUpdatedLabel }}</p>
-      <p class="fiveoo-rules-reminder">Færrest imposter-treff vinner - snu en rute når det er din tur</p>
+      <p class="fiveoo-rules-reminder">{{ $t('Færrest imposter-treff vinner - snu en rute når det er din tur') }}</p>
     </div>
 
-    <LoadingState v-if="loading" full message="Laster brettet…" />
+    <LoadingState v-if="loading" full :message="$t('Laster brettet…')" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
       <div v-if="state.awaitingGridChoice" class="tension-choice-overlay">
         <template v-if="isPicker">
           <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
-            Brett {{ state.currentGridIndex + 1 }} / {{ state.totalGrids }}
+            {{ $t('Brett§OnlineImposterGameT') }} {{ state.currentGridIndex + 1 }} / {{ state.totalGrids }}
           </div>
-          <h2 style="margin:0 0 24px;">Velg et brett</h2>
+          <h2 style="margin:0 0 24px;">{{ $t('Velg et brett') }}</h2>
           <div class="tension-choice-grid">
             <button
               v-for="g in state.gridChoices"
@@ -28,16 +28,16 @@
             >
               <strong>{{ g.title }}</strong>
               <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">
-                {{ g.tileCount }} ruter, {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span><span v-if="g.description"> · {{ g.description }}</span>
+                {{ g.tileCount }} {{ $t('ruter,') }} {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span><span v-if="g.description"> · {{ g.description }}</span>
               </div>
             </button>
           </div>
           <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="choosing || rerolling" @click="rerollChoices">
-            {{ rerolling ? 'Finner flere…' : '↻ Vis 3 andre brett' }}
+            {{ rerolling ? $t('Finner flere…') : $t('↻ Vis 3 andre brett') }}
           </button>
         </template>
         <div v-else class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
-          Venter på <strong style="color:var(--gold);">{{ pickerName }}</strong> å velge et brett…
+          {{ $t('Venter på') }} <strong style="color:var(--gold);">{{ pickerName }}</strong> {{ $t('å velge et brett…') }}
         </div>
       </div>
 
@@ -51,7 +51,7 @@
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Frakoblet</span>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">{{ $t('Frakoblet§OnlineImposterGameT') }}</span>
           <div style="font-size:1.8rem; font-weight:700; margin-top:4px;" :style="{ color: p.totalScore === 0 ? 'var(--teal)' : 'var(--text)' }">
             {{ p.totalScore }}
           </div>
@@ -59,7 +59,7 @@
       </div>
 
       <p v-if="!state.boardComplete" style="text-align:center; margin:0 0 12px;" :style="{ color: isYourTurn ? 'var(--gold)' : 'var(--text-dim)' }">
-        {{ isYourTurn ? "Din tur - velg en rute" : `Venter på at ${currentTurnName} skal ta turen sin…` }}
+        {{ isYourTurn ? $t('Din tur - velg en rute') : $t('Venter på at {0} skal ta turen sin…', [currentTurnName]) }}
       </p>
 
       <div class="grid-tiles">
@@ -93,7 +93,7 @@
 
       <div v-if="state.boardComplete" class="modal-backdrop">
         <div class="modal">
-          <h2 style="margin-top:0;">Brettet er ferdig!</h2>
+          <h2 style="margin-top:0;">{{ $t('Brettet er ferdig!') }}</h2>
 
           <div class="score-square-grid">
             <div v-for="(p, i) in sortedPlayers" :key="p.participantId" class="score-square" :class="{ leader: i === 0 }">
@@ -102,36 +102,37 @@
             </div>
           </div>
 
-          <div v-if="!revealList.length" style="color:var(--text-dim);">Ingen imposters på dette brettet.</div>
+          <div v-if="!revealList.length" style="color:var(--text-dim);">{{ $t('Ingen imposters på dette brettet.') }}</div>
           <div v-for="(r, i) in revealList" :key="i" class="imposter-reveal-entry">
             <div>
               <span class="imposter-reveal-entry-name">{{ r.imposterName }}</span>
-              <span v-if="r.replacedName" class="imposter-reveal-entry-replaced">erstattet {{ r.replacedName }}</span>
+              <span v-if="r.replacedName" class="imposter-reveal-entry-replaced">{{ $t('erstattet') }} {{ r.replacedName }}</span>
             </div>
-            <span v-if="r.flippedByName" class="imposter-reveal-entry-foundby">Funnet av {{ r.flippedByName }}</span>
+            <span v-if="r.flippedByName" class="imposter-reveal-entry-foundby">{{ $t('Funnet av') }} {{ r.flippedByName }}</span>
           </div>
 
           <button v-if="isHost" class="btn btn-primary" style="margin-top:16px; width:100%;" :disabled="advancing" @click="nextBoard">
-            {{ advancing ? 'Laster…' : (state.currentGridIndex + 1 < state.totalGrids ? 'Neste brett' : 'Se sluttresultatet') }}
+            {{ advancing ? $t('Laster…') : (state.currentGridIndex + 1 < state.totalGrids ? $t('Neste brett') : $t('Se sluttresultatet§OnlineImposterGameM')) }}
           </button>
-          <div v-else style="margin-top:8px; color:var(--text-dim);">Venter på at verten skal fortsette…</div>
+          <div v-else style="margin-top:8px; color:var(--text-dim);">{{ $t('Venter på at verten skal fortsette…') }}</div>
         </div>
       </div>
       </template>
     </template>
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm no-print" @click="leave">← Forlat spillet</button>
-      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">Rom: {{ roomCode }}</span>
+      <button class="btn btn-secondary btn-sm no-print" @click="leave">{{ $t('← Forlat spillet') }}</button>
+      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
     </div>
 
     <div v-if="flipOverlay" class="imposter-flip-overlay" :class="flipOverlay.imposter ? 'imposter-hit' : 'imposter-fit'">
-      <div class="imposter-overlay-text">{{ flipOverlay.imposter ? 'IMPOSTER!' : 'Riktig' }}</div>
+      <div class="imposter-overlay-text">{{ flipOverlay.imposter ? 'IMPOSTER!' : $t('Riktig§OnlineImposterGameM') }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, ref } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -209,7 +210,7 @@ async function poll() {
     const fresh = await api.getImposterOnlineState(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = 'Mistet forbindelsen til rommet - prøver igjen…'
+    error.value = _t('Mistet forbindelsen til rommet - prøver igjen…')
   } finally {
     loading.value = false
   }
@@ -259,7 +260,7 @@ async function rerollChoices() {
     const fresh = await api.rerollImposterChoices(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke laste andre brett - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke laste andre brett - prøv igjen.'), 'error')
   } finally {
     rerolling.value = false
   }
@@ -272,7 +273,7 @@ async function chooseGrid(g) {
     const fresh = await api.chooseImposterOnlineGrid(props.roomCode, g.id)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke velge dette brettet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke velge dette brettet.')
   } finally {
     choosing.value = false
   }
@@ -291,7 +292,7 @@ async function flipTile(t) {
     }
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke snu ruten.'
+    error.value = e.response?.data?.message || _t('Kunne ikke snu ruten.')
   } finally {
     flipping.value = false
   }
@@ -304,7 +305,7 @@ async function nextBoard() {
     const fresh = await api.advanceImposterOnlineBoard(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke gå videre til neste brett.'
+    error.value = e.response?.data?.message || _t('Kunne ikke gå videre til neste brett.')
   } finally {
     advancing.value = false
   }

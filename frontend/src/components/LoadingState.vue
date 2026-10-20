@@ -10,8 +10,9 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 defineProps({
-  message: { type: String, default: 'Laster…' },
+  message: { type: String, default: _t('Laster…') },
   subtitle: { type: String, default: '' },
   full: { type: Boolean, default: false }
 })

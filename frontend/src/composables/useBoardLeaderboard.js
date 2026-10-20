@@ -1,3 +1,4 @@
+import { t as _t } from '../i18n'
 import { computed, ref } from 'vue'
 import toast from '../services/toast'
 
@@ -10,7 +11,7 @@ import toast from '../services/toast'
 export function useBoardLeaderboard(fetchBoard, savePreference) {
   const show = ref(false)
   const loading = ref(false)
-  const title = ref('Toppliste')
+  const title = ref(_t('Toppliste'))
   const raw = ref(null)
   const optIn = ref(true)
   let boardId = null
@@ -29,7 +30,7 @@ export function useBoardLeaderboard(fetchBoard, savePreference) {
 
   async function open(id, boardTitle) {
     boardId = id
-    title.value = boardTitle ? `Toppliste - ${boardTitle}` : 'Toppliste'
+    title.value = boardTitle ? _t('Toppliste - {0}', [boardTitle]) : _t('Toppliste')
     raw.value = null
     show.value = true
     loading.value = true
@@ -50,7 +51,7 @@ export function useBoardLeaderboard(fetchBoard, savePreference) {
       await savePreference(boardId, include)
       raw.value = await fetchBoard(boardId)
     } catch (e) {
-      toast.show('Kunne ikke oppdatere innstillingen for topplisten.')
+      toast.show(_t('Kunne ikke oppdatere innstillingen for topplisten.'))
       optIn.value = previous
     }
   }

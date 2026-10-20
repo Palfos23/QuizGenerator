@@ -1,32 +1,32 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Forhåndsvisning av Tension: en skjult rangert liste med ti svar, med et fellesvar rett etter slutten.">
-    <span class="game-preview-tag">Forhåndsvisning</span>
-    <div class="tp-q">«Nevn en av de 10 mest søkte ingrediensene i oppskrifter»</div>
+  <div class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av Tension: en skjult rangert liste med ti svar, med et fellesvar rett etter slutten.')">
+    <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
+    <div class="tp-q">{{ $t('«Nevn en av de 10 mest søkte ingrediensene i oppskrifter»') }}</div>
 
     <div class="tp-track">
       <div class="tp-fill"></div>
       <div class="tp-danger">
-        <span>Tension-sone</span>
+        <span>{{ $t('Tension-sone') }}</span>
       </div>
 
       <div class="tp-pin safe" style="left: 8%;">
         <span class="tp-dot"></span>
-        <span class="tp-label">Salt<b>plass 1 · +1</b></span>
+        <span class="tp-label">Salt<b>{{ $t('plass 1 · +1') }}</b></span>
       </div>
       <div class="tp-pin safe hi" style="left: 60%;">
         <span class="tp-dot"></span>
-        <span class="tp-label">Basilikum<b>plass 10 · +10</b></span>
+        <span class="tp-label">{{ $t('Basilikum') }}<b>{{ $t('plass 10 · +10') }}</b></span>
       </div>
       <div class="tp-pin trap" style="left: 82%;">
         <span class="tp-dot"></span>
-        <span class="tp-label">Oregano<b class="bad">felle · −5</b></span>
+        <span class="tp-label">Oregano<b class="bad">{{ $t('felle · −5') }}</b></span>
       </div>
     </div>
 
-    <div class="tp-scale"><span>trygt · lav belønning</span><span>risikabelt · høy belønning</span><span>for langt</span></div>
+    <div class="tp-scale"><span>{{ $t('trygt · lav belønning') }}</span><span>{{ $t('risikabelt · høy belønning') }}</span><span>{{ $t('for langt') }}</span></div>
 
     <p class="game-preview-caption">
-      Gjett så nær <strong>plass 10</strong> som du tør — jo nærmere du går, jo flere poeng. Går du for langt inn i <span class="bad">tension</span> -sonen, koster det deg.
+      {{ $t('Gjett så nær') }} <strong>{{ $t('plass 10') }}</strong> {{ $t('som du tør — jo nærmere du går, jo flere poeng. Går du for langt inn i') }} <span class="bad">tension</span> {{ $t('-sonen, koster det deg.') }}
     </p>
   </div>
 </template>

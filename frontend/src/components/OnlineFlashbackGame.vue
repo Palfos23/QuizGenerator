@@ -1,14 +1,14 @@
 <template>
   <div>
-    <LoadingState v-if="loading" message="Laster runden…" full />
+    <LoadingState v-if="loading" :message="$t('Laster runden…')" full />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
       <div class="grid-status-bar">
-        <div class="grid-progress" style="text-align:center; width:100%;">Runde {{ state.currentRoundIndex + 1 }} / {{ state.totalRounds }}</div>
+        <div class="grid-progress" style="text-align:center; width:100%;">{{ $t('Runde') }} {{ state.currentRoundIndex + 1 }} / {{ state.totalRounds }}</div>
       </div>
 
-      <h1 style="text-align:center; margin:6px 0 20px;">Runde {{ state.currentRoundIndex + 1 }}</h1>
+      <h1 style="text-align:center; margin:6px 0 20px;">{{ $t('Runde') }} {{ state.currentRoundIndex + 1 }}</h1>
 
       <div class="mp-player-row">
         <div
@@ -19,11 +19,11 @@
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Frakoblet</span>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">{{ $t('Frakoblet§OnlineFlashbackGameT') }}</span>
           <div v-if="!state.roundRevealed" style="font-size:0.8rem; margin-top:4px;" :style="{ color: p.hasAnsweredCurrentHint ? 'var(--teal)' : 'var(--text-dim)' }">
-            {{ p.hasAnsweredCurrentHint ? '✓ svart' : '— venter —' }}
+            {{ p.hasAnsweredCurrentHint ? $t('✓ svart') : $t('— venter —') }}
           </div>
-          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Poeng: {{ p.totalScore }}</div>
+          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">{{ $t('Poeng:') }} {{ p.totalScore }}</div>
         </div>
       </div>
 
@@ -34,14 +34,14 @@
               <input
                 type="number"
                 v-model.number="guessValue"
-                placeholder="Gjett et år…"
+                :placeholder="$t('Gjett et år…')"
                 style="background-image:none; padding-left:20px; text-align:center;"
                 autocomplete="off"
                 @input="duplicateGuessError = false"
               />
             </form>
             <p v-if="duplicateGuessError" style="color:var(--coral); font-size:0.85rem; margin:8px 0 0; text-align:center;">
-              Det året er allerede gjettet på et tidligere hint.
+              {{ $t('Det året er allerede gjettet på et tidligere hint.') }}
             </p>
             <button
               type="button"
@@ -49,10 +49,10 @@
               style="margin-top:10px; width:100%;"
               :disabled="guessValue === null || guessValue === '' || submitting"
               @click="submitGuess"
-            >Gjett</button>
+            >{{ $t('Gjett') }}</button>
           </template>
           <p v-else style="text-align:center; color:var(--text-dim); margin:0;">
-            Venter på at alle andre skal svare…
+            {{ $t('Venter på at alle andre skal svare…') }}
           </p>
         </div>
       </div>
@@ -65,7 +65,7 @@
         style="text-align:center; margin-top:10px;"
       >
         <button type="button" class="btn btn-secondary btn-sm" :disabled="swapping" @click="swapYear">
-          {{ swapping ? 'Finner et nytt…' : '↻ Hatt denne før? Velg et annet år' }}
+          {{ swapping ? $t('Finner et nytt…') : $t('↻ Hatt denne før? Velg et annet år') }}
         </button>
       </div>
 
@@ -76,7 +76,7 @@
             <div class="tension-reveal-answer" style="font-weight:400; font-style:italic;">{{ hint }}</div>
           </div>
           <div class="tension-reveal-guessers">
-            <span v-if="!guessesForHint(hIdx).length" class="tension-reveal-nobody">Ingen gjettet</span>
+            <span v-if="!guessesForHint(hIdx).length" class="tension-reveal-nobody">{{ $t('Ingen gjettet') }}</span>
             <span
               v-for="g in guessesForHint(hIdx)"
               :key="g.name"
@@ -90,7 +90,7 @@
 
       <div v-if="state.roundRevealed" class="modal-backdrop">
         <div class="completion-popup">
-          <h2 style="margin-top:0;">Runden er ferdig!</h2>
+          <h2 style="margin-top:0;">{{ $t('Runden er ferdig!') }}</h2>
 
           <div class="score-square-grid">
             <div v-for="(p, i) in leaderboardForRound" :key="p.name" class="score-square" :class="{ leader: i === 0 }">
@@ -106,21 +106,22 @@
           </div>
 
           <button v-if="isHost" class="btn btn-primary" style="margin-top:16px; width:100%;" :disabled="advancing" @click="nextRound">
-            {{ advancing ? 'Laster…' : (state.currentRoundIndex + 1 < state.totalRounds ? 'Neste runde' : 'Fullfør spillet') }}
+            {{ advancing ? $t('Laster…') : (state.currentRoundIndex + 1 < state.totalRounds ? $t('Neste runde') : $t('Fullfør spillet')) }}
           </button>
-          <div v-else style="margin-top:16px; text-align:center; color:var(--text-dim);">Venter på at verten skal fortsette…</div>
+          <div v-else style="margin-top:16px; text-align:center; color:var(--text-dim);">{{ $t('Venter på at verten skal fortsette…') }}</div>
         </div>
       </div>
     </template>
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm no-print" @click="leave">← Forlat spillet</button>
-      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">Rom: {{ roomCode }}</span>
+      <button class="btn btn-secondary btn-sm no-print" @click="leave">{{ $t('← Forlat spillet') }}</button>
+      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, ref } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -160,13 +161,13 @@ function colorOf(name) {
 
 const resultLabel = computed(() => {
   if (!state.value) return ''
-  const names = (state.value.roundWinners || []).join('og')
+  const names = (state.value.roundWinners || []).join(_t('og'))
   if (state.value.wasExactMatch) {
-    return state.value.roundWinners.length > 1 ? `🎯 ${names} traff begge!` : `🎯 ${names} traff!`
+    return state.value.roundWinners.length > 1 ? _t('🎯 {0} traff begge!', [names]) : _t('🎯 {0} traff!', [names])
   }
-  if (state.value.roundWinners.length > 1) return `Ingen traff helt riktig - ${names} var like nær`
-  if (state.value.roundWinners.length === 1) return `Ingen traff helt riktig - ${names} var nærmest`
-  return 'Året var'
+  if (state.value.roundWinners.length > 1) return _t('Ingen traff helt riktig - {0} var like nær', [names])
+  if (state.value.roundWinners.length === 1) return _t('Ingen traff helt riktig - {0} var nærmest', [names])
+  return _t('Året var')
 })
 
 const leaderboardForRound = computed(() => {
@@ -188,7 +189,7 @@ async function poll() {
     const fresh = await api.getFlashbackOnlineState(props.roomCode)
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    error.value = 'Mistet forbindelsen til rommet - prøver igjen…'
+    error.value = _t('Mistet forbindelsen til rommet - prøver igjen…')
   } finally {
     loading.value = false
   }
@@ -216,9 +217,9 @@ async function submitGuess() {
     guessValue.value = null
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    const message = e.response?.data?.message || 'Kunne ikke sende inn gjetningen.'
+    const message = e.response?.data?.message || _t('Kunne ikke sende inn gjetningen.')
     error.value = message
-    if (message.toLowerCase().includes('allerede gjettet')) {
+    if (/allerede gjettet|already been guessed/i.test(message)) {
       duplicateGuessError.value = true
       shakeGuessBox.value = true
       setTimeout(() => { shakeGuessBox.value = false }, 400)
@@ -236,7 +237,7 @@ async function swapYear() {
     const fresh = await api.rerollFlashbackOnlineYear(props.roomCode)
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke bytte til et annet år - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke bytte til et annet år - prøv igjen.'), 'error')
   } finally {
     swapping.value = false
   }
@@ -249,7 +250,7 @@ async function nextRound() {
     const fresh = await api.advanceFlashbackOnlineRound(props.roomCode)
     if (stillFresh()) applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke gå videre til neste runde.'
+    error.value = e.response?.data?.message || _t('Kunne ikke gå videre til neste runde.')
   } finally {
     advancing.value = false
   }

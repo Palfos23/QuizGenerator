@@ -1,5 +1,6 @@
 package com.quizapp.service;
 
+import com.quizapp.config.RequestLang;
 import com.quizapp.dto.AthleteDto;
 import com.quizapp.dto.AthleteDescriptionDto;
 import com.quizapp.dto.AthletePhotoDto;
@@ -319,19 +320,21 @@ public class AthleteService {
             }
             if (best == 0) break;
         }
-        if (best == 0) return "Samme navn når spesialtegn/aksenter normaliseres";
+        if (best == 0) return RequestLang.t("Samme navn når spesialtegn/aksenter normaliseres", "Same name once special letters/accents are normalized");
         if (best <= maxDistance) {
-            return best + (best == 1 ? " tegn" : " tegn") + " forskjell etter normalisering";
+            return RequestLang.isEnglish()
+                    ? best + (best == 1 ? " character" : " characters") + " different once normalized"
+                    : best + " tegn forskjell etter normalisering";
         }
         for (String a : variantsA) {
             List<String> tokensA = List.of(a.split(" "));
             for (String b : variantsB) {
                 List<String> tokensB = List.of(b.split(" "));
                 if (tokensA.size() == 1 && tokensB.size() > 1 && tokensA.get(0).equals(tokensB.get(tokensB.size() - 1))) {
-                    return "Én oppføring ser ut som en versjon av den andre med bare etternavn";
+                    return RequestLang.t("Én oppføring ser ut som en versjon av den andre med bare etternavn", "One entry looks like a last-name-only version of the other");
                 }
                 if (tokensB.size() == 1 && tokensA.size() > 1 && tokensB.get(0).equals(tokensA.get(tokensA.size() - 1))) {
-                    return "Én oppføring ser ut som en versjon av den andre med bare etternavn";
+                    return RequestLang.t("Én oppføring ser ut som en versjon av den andre med bare etternavn", "One entry looks like a last-name-only version of the other");
                 }
             }
         }
@@ -472,7 +475,7 @@ public class AthleteService {
             usage.add(new AthleteUsageDto("Imposter", t.getImposterGrid().getId(), t.getImposterGrid().getTitle(), true));
         }
         for (PenaltyKick k : penaltyKickRepository.findByAthlete_Id(athleteId)) {
-            usage.add(new AthleteUsageDto("Straffekonkurranse", k.getShootout().getId(), k.getShootout().getTitle(), true));
+            usage.add(new AthleteUsageDto(RequestLang.t("Straffekonkurranse", "Penalty Shootout"), k.getShootout().getId(), k.getShootout().getTitle(), true));
         }
         return usage;
     }

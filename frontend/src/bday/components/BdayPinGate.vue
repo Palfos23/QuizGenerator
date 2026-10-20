@@ -1,7 +1,7 @@
 <template>
   <div v-if="!bdayAuth.hasPin.value" style="max-width:360px; margin:80px auto; padding:0 20px; text-align:center;">
-    <h1 style="margin-bottom:6px;">🎂 Bursdagsquiz</h1>
-    <p class="page-subtitle">Denne siden er privat - skriv inn PIN-koden.</p>
+    <h1 style="margin-bottom:6px;">{{ $t('🎂 Bursdagsquiz') }}</h1>
+    <p class="page-subtitle">{{ $t('Denne siden er privat - skriv inn PIN-koden.') }}</p>
     <div v-if="error" class="banner error">{{ error }}</div>
     <div class="field" style="text-align:left;">
       <label>PIN</label>
@@ -15,13 +15,14 @@
       />
     </div>
     <button class="btn btn-primary" style="width:100%;" :disabled="checking" @click="submit">
-      {{ checking ? 'Sjekker…' : 'Gå inn' }}
+      {{ checking ? $t('Sjekker…') : $t('Gå inn') }}
     </button>
   </div>
   <slot v-else />
 </template>
 
 <script setup>
+import { t as _t } from '../../i18n'
 import { ref } from 'vue'
 import bdayAuth from '../composables/useBdayPin'
 import bdayApi from '../services/bdayApi'
@@ -40,7 +41,7 @@ async function submit() {
     await bdayApi.checkPin()
   } catch (e) {
     bdayAuth.clearPin()
-    error.value = 'Feil PIN-kode.'
+    error.value = _t('Feil PIN-kode.')
   } finally {
     checking.value = false
   }

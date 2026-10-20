@@ -3,33 +3,33 @@
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
         <div>
-          <h1>Tension-spørsmål</h1>
+          <h1>{{ $t('Tension-spørsmål') }}</h1>
           <p class="page-subtitle">
-            Hvert spørsmål trenger opptil 10 rangerte trygge svar, pluss et hvilket som helst antall tension-svar (feller).
-            <router-link to="/admin/tension-categories">Administrer svarkategorier →</router-link>
+            {{ $t('Hvert spørsmål trenger opptil 10 rangerte trygge svar, pluss et hvilket som helst antall tension-svar (feller).') }}
+            <router-link to="/admin/tension-categories">{{ $t('Administrer svarkategorier →') }}</router-link>
           </p>
         </div>
-        <button class="btn btn-primary" @click="openCreate">+ Lag spørsmål</button>
+        <button class="btn btn-primary" @click="openCreate">{{ $t('+ Lag spørsmål') }}</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
       <div v-else-if="!questions.length" class="empty-state friendly">
-        Ingen Tension-spørsmål ennå. Lag ditt første for å kunne starte et spill.
+        {{ $t('Ingen Tension-spørsmål ennå. Lag ditt første for å kunne starte et spill.') }}
       </div>
 
       <div v-else>
         <input
           type="text"
           v-model="questionSearchTerm"
-          placeholder="Søk etter tittel eller kategori…"
+          :placeholder="$t('Søk etter tittel eller kategori…')"
           class="search-input"
           style="margin-bottom:16px;"
         />
 
         <div v-if="!filteredQuestions.length" class="empty-state" style="padding:20px;">
-          Ingen spørsmål samsvarer med "{{ questionSearchTerm }}".
+          {{ $t('Ingen spørsmål samsvarer med "') }}{{ questionSearchTerm }}".
         </div>
 
         <div v-else class="saved-quiz-list">
@@ -37,13 +37,13 @@
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ q.title }}</div>
               <div class="saved-quiz-meta">
-                {{ q.mainCategory || 'Uten kategori' }} · {{ q.safeCount }} trygge · {{ q.tensionCount }} tension
-                <span v-if="q.canExpire" class="tag" style="color:var(--gold); border-color:var(--gold);">Kan utløpe</span>
+                {{ q.mainCategory || $t('Uten kategori') }} · {{ q.safeCount }} {{ $t('trygge ·') }} {{ q.tensionCount }} tension
+                <span v-if="q.canExpire" class="tag" style="color:var(--gold); border-color:var(--gold);">{{ $t('Kan utløpe') }}</span>
               </div>
             </div>
             <div style="display:flex; gap:8px;">
-              <button class="btn btn-secondary btn-sm" @click="openEdit(q.id)">Rediger</button>
-              <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Slett</button>
+              <button class="btn btn-secondary btn-sm" @click="openEdit(q.id)">{{ $t('Rediger') }}</button>
+              <button class="btn btn-danger btn-sm" @click="requestDelete(q)">{{ $t('Slett') }}</button>
             </div>
           </div>
         </div>
@@ -54,113 +54,115 @@
 
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h1 style="margin:0;">{{ editingId ? 'Rediger spørsmål' : 'Lag spørsmål' }}</h1>
-        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til listen</button>
+        <h1 style="margin:0;">{{ editingId ? $t('Rediger spørsmål') : $t('Lag spørsmål') }}</h1>
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">{{ $t('← Tilbake til listen') }}</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Tittel / oppgave<input type="text" v-model="form.title" placeholder="f.eks. Nevn et land i Europa" /></label>
+        <label>{{ $t('Tittel / oppgave') }}<input type="text" v-model="form.title" :placeholder="$t('f.eks. Nevn et land i Europa')" /></label>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:200px;">
-          <label>Hovedkategori <span class="picker-hint">brukes til å filtrere hvilke spørsmål et spill trekker fra - skriv hva som helst, eller velg et forslag</span><input type="text" v-model="form.mainCategory" placeholder="f.eks. Geografi" list="main-category-suggestions" /></label>
+          <label>{{ $t('Hovedkategori') }} <span class="picker-hint">{{ $t('brukes til å filtrere hvilke spørsmål et spill trekker fra - skriv hva som helst, eller velg et forslag') }}</span><input type="text" v-model="form.mainCategory" :placeholder="$t('f.eks. Geografi')" list="main-category-suggestions" /></label>
           <datalist id="main-category-suggestions">
             <option v-for="c in mainCategorySuggestions" :key="c" :value="c" />
           </datalist>
         </div>
         <div style="flex:1; min-width:240px;">
-          <label>Svarkilde <span class="picker-hint">driver autofullføringen i svarfeltet</span></label>
+          <label>{{ $t('Svarkilde') }} <span class="picker-hint">{{ $t('driver autofullføringen i svarfeltet') }}</span></label>
           <div style="display:flex; gap:16px; margin-bottom:8px;">
             <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400;">
               <input type="radio" :value="false" v-model="form.answersFromSubjects" style="width:auto;" />
-              Tension-kategori
+              {{ $t('Tension-kategori') }}
             </label>
             <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400;">
               <input type="radio" :value="true" v-model="form.answersFromSubjects" style="width:auto;" />
-              Emner
+              {{ $t('Emner') }}
             </label>
           </div>
           <template v-if="!form.answersFromSubjects">
             <SearchableSelect
               v-model="form.answersCategory"
               :options="tensionCategories.map(c => c.name)"
-              placeholder="Søk etter kategorier…"
+              :placeholder="$t('Søk etter kategorier…')"
             />
             <p v-if="!tensionCategories.length" style="color:var(--coral); font-size:0.85rem; margin-top:6px;">
-              Ingen kategorier finnes ennå - legg først til en på siden for Tension-kategorier.
+              {{ $t('Ingen kategorier finnes ennå - legg først til en på siden for Tension-kategorier.') }}
             </p>
           </template>
           <template v-else>
             <select v-model="form.answersSport">
-              <option value="">Velg en kategori…</option>
+              <option value="">{{ $t('Velg en kategori…§AdminTensionQuestionsViewT') }}</option>
               <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
             </select>
             <p style="color:var(--text-dim); font-size:0.85rem; margin-top:6px;">
-              Svarene hentes fra emner i denne kategorien, f.eks. "Football"-spillere etter navn.
+              {{ $t('Svarene hentes fra emner i denne kategorien, f.eks. "Football"-spillere etter navn.') }}
             </p>
           </template>
         </div>
       </div>
 
       <div class="field">
-        <label>Tilleggsinformasjon <span class="picker-hint">valgfritt - vises for spillerne under spørsmålet (f.eks. hvor dataene kommer fra)</span><input type="text" v-model="form.source" placeholder="f.eks. Lionpopulation.com" /></label>
+        <label>{{ $t('Tilleggsinformasjon') }} <span class="picker-hint">{{ $t('valgfritt - vises for spillerne under spørsmålet (f.eks. hvor dataene kommer fra)') }}</span><input type="text" v-model="form.source" :placeholder="$t('f.eks. Lionpopulation.com')" /></label>
       </div>
 
       <div class="field">
-        <label>Avgjørende spørsmål <span class="picker-hint">valgfritt - vises for spillerne, beskriver hvordan likt avgjøres</span><input type="text" v-model="form.tiebreaker" placeholder="f.eks. Ved likt vinner landet som ble grunnlagt først" /></label>
+        <label>{{ $t('Avgjørende spørsmål') }} <span class="picker-hint">{{ $t('valgfritt - vises for spillerne, beskriver hvordan likt avgjøres') }}</span><input type="text" v-model="form.tiebreaker" :placeholder="$t('f.eks. Ved likt vinner landet som ble grunnlagt først')" /></label>
       </div>
 
       <div class="field option-card">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
-          Kan utløpe
+          {{ $t('Kan utløpe') }}
           <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
-            f.eks. "nåværende all-time toppscorer" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.
+            {{ $t('f.eks. "nåværende all-time toppscorer" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.§AdminTensionQuestionsViewT') }}
           </div>
         </label>
       </div>
 
       <div class="field">
-        <label>Trygge svar <span class="picker-hint">rangert 1-10 - høyere plassering gir flere poeng</span></label>
+        <label>{{ $t('Trygge svar') }} <span class="picker-hint">{{ $t('rangert 1-10 - høyere plassering gir flere poeng') }}</span></label>
         <p v-if="!(form.answersFromSubjects ? form.answersSport : form.answersCategory).trim()" style="color:var(--text-dim); font-size:0.85rem; margin-top:-4px;">
-          Velg en svarkilde over for å velge fra alternativlisten.
+          {{ $t('Velg en svarkilde over for å velge fra alternativlisten.') }}
         </p>
         <p v-else-if="!categoryOptions.length" style="color:var(--coral); font-size:0.85rem; margin-top:-4px;">
-          <template v-if="form.answersFromSubjects">Ingen emner funnet i "{{ form.answersSport }}" - legg først til noen på siden Emner.</template>
-          <template v-else>Ingen alternativer funnet for "{{ form.answersCategory }}" - legg først til noen på siden Tension-kategorier.</template>
+          <template v-if="form.answersFromSubjects">{{ $t('Ingen emner funnet i "') }}{{ form.answersSport }}{{ $t('" - legg først til noen på siden Emner.') }}</template>
+          <template v-else>{{ $t('Ingen alternativer funnet for "') }}{{ form.answersCategory }}{{ $t('" - legg først til noen på siden Tension-kategorier.') }}</template>
         </p>
         <div v-for="(a, idx) in form.safeAnswers" :key="idx" class="candidate-row">
-          <input type="number" min="1" max="10" v-model.number="a.rank" style="width:70px;" placeholder="Plassering" />
+          <input type="number" min="1" max="10" v-model.number="a.rank" style="width:70px;" :placeholder="$t('Plassering')" />
           <div style="flex:1;">
-            <SearchableSelect v-model="a.text" :options="categoryOptions" placeholder="Søk etter svar…" />
+            <SearchableSelect v-model="a.text" :options="categoryOptions" :placeholder="$t('Søk etter svar…')" />
           </div>
           <button class="btn btn-danger btn-sm" @click="form.safeAnswers.splice(idx, 1)">✕</button>
         </div>
-        <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addSafeAnswer">+ Legg til trygt svar</button>
+        <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addSafeAnswer">{{ $t('+ Legg til trygt svar') }}</button>
       </div>
 
       <div class="field">
-        <label>Tension-svar <span class="picker-hint">rangert separat - hvert av disse koster -5 hvis det gjettes</span></label>
+        <label>{{ $t('Tension-svar§AdminTensionQuestionsViewT') }} <span class="picker-hint">{{ $t('rangert separat - hvert av disse koster -5 hvis det gjettes') }}</span></label>
         <div v-for="(a, idx) in form.tensionAnswers" :key="idx" class="candidate-row">
-          <input type="number" min="1" v-model.number="a.rank" style="width:70px;" placeholder="Plassering" />
+          <input type="number" min="1" v-model.number="a.rank" style="width:70px;" :placeholder="$t('Plassering')" />
           <div style="flex:1;">
-            <SearchableSelect v-model="a.text" :options="categoryOptions" placeholder="Søk etter svar…" />
+            <SearchableSelect v-model="a.text" :options="categoryOptions" :placeholder="$t('Søk etter svar…')" />
           </div>
           <button class="btn btn-danger btn-sm" @click="form.tensionAnswers.splice(idx, 1)">✕</button>
         </div>
-        <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addTensionAnswer">+ Legg til Tension-svar</button>
+        <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addTensionAnswer">{{ $t('+ Legg til Tension-svar') }}</button>
       </div>
 
-      <button class="btn btn-primary" :disabled="saving" @click="save">{{ saving ? 'Lagrer…' : 'Lagre spørsmål' }}</button>
+      <TranslationEditor v-if="editingId" type="TENSION" :entity-id="editingId" />
+
+      <button class="btn btn-primary" :disabled="saving" @click="save">{{ saving ? $t('Lagrer…') : $t('Lagre spørsmål') }}</button>
     </template>
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Slette dette spørsmålet?"
-      :message="`«${pendingDelete.title}» fjernes for godt.`"
+      :title="$t('Slette dette spørsmålet?')"
+      :message="$t('«{0}» fjernes for godt.', [pendingDelete.title])"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -168,6 +170,8 @@
 </template>
 
 <script setup>
+import TranslationEditor from '../components/TranslationEditor.vue'
+import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -277,7 +281,7 @@ async function loadQuestions() {
   try {
     questions.value = await api.adminListTensionQuestions()
   } catch (e) {
-    error.value = 'Kunne ikke laste Tension-spørsmål.'
+    error.value = _t('Kunne ikke laste Tension-spørsmål.')
   } finally {
     loading.value = false
   }
@@ -331,22 +335,22 @@ async function openEdit(id) {
     editingId.value = id
     view.value = 'builder'
   } catch (e) {
-    error.value = 'Kunne ikke laste spørsmålet.'
+    error.value = _t('Kunne ikke laste spørsmålet.')
   }
 }
 
 async function save() {
   error.value = ''
   if (!form.title.trim()) {
-    error.value = 'En tittel må fylles ut.'
+    error.value = _t('En tittel må fylles ut.')
     return
   }
   if (!form.safeAnswers.length || form.safeAnswers.some(a => !a.text.trim())) {
-    error.value = 'Legg til minst ett trygt svar, og sørg for at ingen er tomme.'
+    error.value = _t('Legg til minst ett trygt svar, og sørg for at ingen er tomme.')
     return
   }
   if (form.tensionAnswers.some(a => !a.text.trim())) {
-    error.value = 'Tension-svar kan ikke være tomme - fjern eventuelle tomme rader.'
+    error.value = _t('Tension-svar kan ikke være tomme - fjern eventuelle tomme rader.')
     return
   }
 
@@ -357,11 +361,11 @@ async function save() {
     } else {
       await api.adminCreateTensionQuestion(form)
     }
-    toast.show('Spørsmålet er lagret.')
+    toast.show(_t('Spørsmålet er lagret.'))
     view.value = 'list'
     loadQuestions()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke lagre spørsmålet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke lagre spørsmålet.')
   } finally {
     saving.value = false
   }
@@ -377,10 +381,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteTensionQuestion(q.id)
-    toast.show('Spørsmålet er slettet.')
+    toast.show(_t('Spørsmålet er slettet.'))
     loadQuestions()
   } catch (e) {
-    error.value = 'Kunne ikke slette spørsmålet.'
+    error.value = _t('Kunne ikke slette spørsmålet.§AdminTensionQuestionsViewJ')
   }
 }
 </script>

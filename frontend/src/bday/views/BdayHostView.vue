@@ -2,22 +2,22 @@
   <BdayPinGate>
     <div style="max-width:720px; margin:0 auto; padding:20px 20px 60px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <h1 style="margin:0;">🎂 Bursdagsquiz</h1>
+        <h1 style="margin:0;">{{ $t('🎂 Bursdagsquiz') }}</h1>
         <div style="display:flex; gap:8px;">
-          <router-link to="/bday/admin" class="btn btn-secondary btn-sm">Administrer spillere</router-link>
-          <router-link to="/bday/leaderboard" class="btn btn-secondary btn-sm">Åpne topplisten</router-link>
+          <router-link to="/bday/admin" class="btn btn-secondary btn-sm">{{ $t('Administrer spillere') }}</router-link>
+          <router-link to="/bday/leaderboard" class="btn btn-secondary btn-sm">{{ $t('Åpne topplisten') }}</router-link>
         </div>
       </div>
 
       <div v-if="error" class="banner error" style="margin-top:16px;">{{ error }}</div>
 
       <template v-if="step === 'picking'">
-        <p class="page-subtitle">Velg navnet ditt for å starte. Når du er ferdig, vises ikke navnet ditt igjen.</p>
+        <p class="page-subtitle">{{ $t('Velg navnet ditt for å starte. Når du er ferdig, vises ikke navnet ditt igjen.') }}</p>
 
-        <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+        <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
         <div v-else-if="!guests.length" class="empty-state">
-          Ingen venter på å spille - sjekk topplisten, eller
-          <router-link to="/bday/admin">administrer spillere</router-link> for å legge til noen.
+          {{ $t('Ingen venter på å spille - sjekk topplisten, eller') }}
+          <router-link to="/bday/admin">{{ $t('administrer spillere') }}</router-link> {{ $t('for å legge til noen.') }}
         </div>
         <div v-else class="candidate-list">
           <div v-for="g in guests" :key="g.id" class="candidate-row">
@@ -29,7 +29,7 @@
       </template>
 
       <template v-else-if="step === 'quiz' && quiz">
-        <h2>{{ activeGuest.name }}sin tur</h2>
+        <h2>{{ activeGuest.name }}{{ $t('sin tur') }}</h2>
 
         <div v-for="q in quiz.mapQuestions" :key="q.id" class="field">
           <label style="text-transform:none; font-size:1.05rem; letter-spacing:normal; color:var(--text);">{{ q.prompt }}</label>
@@ -47,35 +47,36 @@
         </div>
 
         <button class="btn btn-primary" style="margin-top:12px;" :disabled="submitting || !allAnswered" @click="submit">
-          {{ submitting ? 'Sender inn…' : 'Send inn svar' }}
+          {{ submitting ? $t('Sender inn…') : $t('Send inn svar') }}
         </button>
       </template>
 
       <template v-else-if="step === 'result' && result">
-        <h2>{{ activeGuest.name }} fikk {{ result.score }} / {{ result.maxScore }}</h2>
+        <h2>{{ activeGuest.name }} {{ $t('fikk') }} {{ result.score }} / {{ result.maxScore }}</h2>
 
         <div v-if="result.mapResults.length" class="field">
-          <label>Kartspørsmål</label>
+          <label>{{ $t('Kartspørsmål') }}</label>
           <ul style="margin:0; padding-left:20px; line-height:1.8;">
             <li v-for="r in result.mapResults" :key="r.questionId">
-              {{ r.correct ? '✓' : '✕' }} Riktig by: <strong>{{ r.correctCityName }}</strong>
-              <span style="color:var(--text-dim);"> - {{ Math.round(r.distanceKm) }} km unna</span>
+              {{ r.correct ? '✓' : '✕' }} {{ $t('Riktig by:') }} <strong>{{ r.correctCityName }}</strong>
+              <span style="color:var(--text-dim);"> - {{ Math.round(r.distanceKm) }} {{ $t('km unna') }}</span>
             </li>
           </ul>
         </div>
 
         <div v-if="result.tileResults.length" class="field">
-          <label>Rutespørsmål</label>
-          <div style="color:var(--text-dim); font-size:0.9rem;">{{ correctTileCount }} / {{ result.tileResults.length }} riktige ruter</div>
+          <label>{{ $t('Rutespørsmål') }}</label>
+          <div style="color:var(--text-dim); font-size:0.9rem;">{{ correctTileCount }} / {{ result.tileResults.length }} {{ $t('riktige ruter') }}</div>
         </div>
 
-        <button class="btn btn-primary" style="margin-top:12px;" @click="backToPicker">Neste gjest</button>
+        <button class="btn btn-primary" style="margin-top:12px;" @click="backToPicker">{{ $t('Neste gjest') }}</button>
       </template>
     </div>
   </BdayPinGate>
 </template>
 
 <script setup>
+import { t as _t } from '../../i18n'
 import { computed, onMounted, reactive, ref } from 'vue'
 import bdayApi from '../services/bdayApi'
 import BdayPinGate from '../components/BdayPinGate.vue'
@@ -102,7 +103,7 @@ async function loadGuests() {
   try {
     guests.value = await bdayApi.listGuests()
   } catch (e) {
-    error.value = 'Kunne ikke laste gjesteoversikten.'
+    error.value = _t('Kunne ikke laste gjesteoversikten.')
   } finally {
     loading.value = false
   }
@@ -118,7 +119,7 @@ async function pickGuest(guest) {
     activeGuest.value = guest
     step.value = 'quiz'
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke starte quizen for den gjesten.'
+    error.value = e.response?.data?.message || _t('Kunne ikke starte quizen for den gjesten.')
   }
 }
 
@@ -146,7 +147,7 @@ async function submit() {
     result.value = await bdayApi.submitQuiz(activeGuest.value.id, payload)
     step.value = 'result'
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke sende inn svarene.'
+    error.value = e.response?.data?.message || _t('Kunne ikke sende inn svarene.')
   } finally {
     submitting.value = false
   }

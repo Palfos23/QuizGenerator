@@ -9,6 +9,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed } from 'vue'
 
 // "Beat the expert": one calm line pair - a title that asks (or answers) the question, and the numbers
@@ -34,19 +35,19 @@ const state = computed(() => {
 })
 
 const title = computed(() => {
-  if (state.value === 'ahead') return 'Du slo eksperten!'
-  if (state.value === 'level') return 'Du var like god som eksperten!'
-  return 'Kan du få høyere poengsum enn eksperten?'
+  if (state.value === 'ahead') return _t('Du slo eksperten!')
+  if (state.value === 'level') return _t('Du var like god som eksperten!')
+  return _t('Kan du få høyere poengsum enn eksperten?')
 })
 
 function part(value, note) {
-  const base = props.max !== null ? `${value} / ${props.max}` : `${value} poeng`
+  const base = props.max !== null ? `${value} / ${props.max}` : _t('{0} poeng', [value])
   return note ? `${base} (${note})` : base
 }
 
 const detail = computed(() => {
-  const expert = `Eksperten: ${part(props.expertValue, props.expertNote)}`
-  return hasYou.value ? `${expert} · Du: ${part(props.yourValue, props.yourNote)}` : expert
+  const expert = _t('Eksperten: {0}', [part(props.expertValue, props.expertNote)])
+  return hasYou.value ? _t('{0} · Du: {1}', [expert, part(props.yourValue, props.yourNote)]) : expert
 })
 </script>
 

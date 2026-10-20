@@ -1,27 +1,27 @@
 <template>
   <div class="modal-backdrop" @click.self="$emit('cancel')">
-    <div class="modal" role="alertdialog" aria-modal="true" aria-label="Slett kontoen din">
-      <h2 style="margin-top:0;">Slette kontoen din?</h2>
+    <div class="modal" role="alertdialog" aria-modal="true" :aria-label="$t('Slett kontoen din')">
+      <h2 style="margin-top:0;">{{ $t('Slette kontoen din?') }}</h2>
       <p class="page-subtitle">
-        Dette sletter kontoen din, de lagrede quizene dine og spillhistorikken din for godt. Spørsmål eller rapporter du har sendt inn blir værende (andre kan allerede se eller vurdere dem), men er ikke lenger knyttet til deg. Dette kan ikke angres.
+        {{ $t('Dette sletter kontoen din, de lagrede quizene dine og spillhistorikken din for godt. Spørsmål eller rapporter du har sendt inn blir værende (andre kan allerede se eller vurdere dem), men er ikke lenger knyttet til deg. Dette kan ikke angres.') }}
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Passord <span class="picker-hint">bare hvis du registrerte deg med e-post og passord - la stå tomt for en Google-konto</span></label>
+        <label>{{ $t('Passord') }} <span class="picker-hint">{{ $t('bare hvis du registrerte deg med e-post og passord - la stå tomt for en Google-konto') }}</span></label>
         <input type="password" v-model="password" autocomplete="current-password" />
       </div>
 
       <div class="field">
-        <label>Skriv <strong>SLETT</strong> for å bekrefte</label>
+        <label>{{ $t('Skriv') }} <strong>{{ $t('SLETT') }}</strong> {{ $t('for å bekrefte') }}</label>
         <input type="text" v-model="confirmText" autocomplete="off" />
       </div>
 
       <div style="display:flex; gap:10px; justify-content:flex-end;">
-        <button class="btn btn-secondary" @click="$emit('cancel')">Avbryt</button>
+        <button class="btn btn-secondary" @click="$emit('cancel')">{{ $t('Avbryt') }}</button>
         <button class="btn btn-danger-solid" :disabled="confirmText !== 'DELETE' || deleting" @click="submit">
-          {{ deleting ? 'Sletter…' : 'Slett kontoen min' }}
+          {{ deleting ? $t('Sletter…') : $t('Slett kontoen min') }}
         </button>
       </div>
     </div>

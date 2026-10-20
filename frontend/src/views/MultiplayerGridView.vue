@@ -2,32 +2,32 @@
   <GameAccessGate game="grid-battle">
   <div>
     <div v-if="onlineRoom && (stage === 'onlineLobby' || stage === 'onlineGame')" style="display:flex; justify-content:flex-end; margin-bottom:8px;">
-      <button class="btn btn-secondary btn-sm" @click="openPlayersModal">Administrer spillere</button>
+      <button class="btn btn-secondary btn-sm" @click="openPlayersModal">{{ $t('Administrer spillere') }}</button>
     </div>
 
     <template v-if="stage === 'modeChoice'">
       <h1>Grid Battle</h1>
       <p class="page-subtitle">
-        Bytt på å gjette - gjetter du riktig, avsløres ruten (og du får ett poeng), gjetter du feil, mister du et liv. Spillet fortsetter til et grid er helt løst eller alle er tomme for liv.
+        {{ $t('Bytt på å gjette - gjetter du riktig, avsløres ruten (og du får ett poeng), gjetter du feil, mister du et liv. Spillet fortsetter til et grid er helt løst eller alle er tomme for liv.') }}
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div v-if="savedRoomCode" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <span>Du har et spill i gang i rom <strong>{{ savedRoomCode }}</strong>.</span>
+        <span>{{ $t('Du har et spill i gang i rom') }} <strong>{{ savedRoomCode }}</strong>.</span>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-primary btn-sm" :disabled="rejoining" @click="rejoinSavedRoom">
-            {{ rejoining ? 'Går inn igjen…' : 'Gå inn igjen' }}
+            {{ rejoining ? $t('Går inn igjen…') : $t('Gå inn igjen') }}
           </button>
-          <button class="btn btn-secondary btn-sm" @click="dismissSavedRoom">Lukk</button>
+          <button class="btn btn-secondary btn-sm" @click="dismissSavedRoom">{{ $t('Lukk§MultiplayerGridViewT') }}</button>
         </div>
       </div>
 
       <div v-if="savedPassAndPlay" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <span>Du har et spill der enheten sendes rundt, i gang.</span>
+        <span>{{ $t('Du har et spill der enheten sendes rundt, i gang.') }}</span>
         <div style="display:flex; gap:8px;">
-          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Fortsett</button>
-          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">Lukk</button>
+          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">{{ $t('Fortsett§MultiplayerGridViewT') }}</button>
+          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">{{ $t('Lukk§MultiplayerGridViewT') }}</button>
         </div>
       </div>
 
@@ -36,35 +36,35 @@
 
         <div class="mode-choice-row">
           <button class="mode-choice-card" @click="stage = 'landing'">
-            <h3>Samme enhet</h3>
-            <p>Send telefonen rundt - alle tar turen sin på én skjerm.</p>
+            <h3>{{ $t('Samme enhet') }}</h3>
+            <p>{{ $t('Send telefonen rundt - alle tar turen sin på én skjerm.') }}</p>
           </button>
           <button class="mode-choice-card" @click="stage = 'onlineChoice'">
-            <h3>Spill på nett</h3>
-            <p>Alle spiller fra sin egen enhet med en felles romkode.</p>
+            <h3>{{ $t('Spill på nett') }}</h3>
+            <p>{{ $t('Alle spiller fra sin egen enhet med en felles romkode.') }}</p>
           </button>
         </div>
       </div>
 
       <details class="advanced-disclosure" style="margin-top:24px;">
-        <summary>Usikker på hvordan det fungerer? Se et eksempel</summary>
+        <summary>{{ $t('Usikker på hvordan det fungerer? Se et eksempel') }}</summary>
 
         <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgba(27, 26, 23, 0.06);">
           <p style="margin-top:0;">
-            La oss si at gridets tema er <em>«Toppscorere for en fotballklubb forrige sesong.»</em> Det er et brett med skjulte ruter, der hver viser et lite hint før den er løst - som <strong>«FW | 14»</strong> for en spiss med 14 mål.
+            {{ $t('La oss si at gridets tema er') }} <em>{{ $t('«Toppscorere for en fotballklubb forrige sesong.»') }}</em> {{ $t('Det er et brett med skjulte ruter, der hver viser et lite hint før den er løst - som') }} <strong>{{ $t('«FW | 14»') }}</strong> {{ $t('for en spiss med 14 mål.') }}
           </p>
           <p>
-            Når det er din tur, søker du etter spilleren du tror passer til en av de skjulte rutene, og sender inn en gjetning.
+            {{ $t('Når det er din tur, søker du etter spilleren du tror passer til en av de skjulte rutene, og sender inn en gjetning.') }}
           </p>
           <ul style="margin:0 0 14px; padding-left:20px; line-height:1.7;">
-            <li><strong style="color:var(--teal);">Gjett riktig</strong> - ruten snus og avslører bildet og navnet, og du får ett poeng.</li>
-            <li><strong style="color:var(--coral);">Gjett feil</strong> - du mister ett av livene dine (5 som standard).</li>
+            <li><strong style="color:var(--teal);">{{ $t('Gjett riktig') }}</strong> {{ $t('- ruten snus og avslører bildet og navnet, og du får ett poeng.') }}</li>
+            <li><strong style="color:var(--coral);">{{ $t('Gjett feil') }}</strong> {{ $t('- du mister ett av livene dine (5 som standard).') }}</li>
           </ul>
           <p>
-            Uansett går turen videre til neste spiller. Hver spiller har sine egne liv, så det å bli slått ut avslutter ikke spillet for alle andre - brettet fortsetter til det enten er helt løst, eller alle spillere er tomme for liv.
+            {{ $t('Uansett går turen videre til neste spiller. Hver spiller har sine egne liv, så det å bli slått ut avslutter ikke spillet for alle andre - brettet fortsetter til det enten er helt løst, eller alle spillere er tomme for liv.') }}
           </p>
           <p style="margin-bottom:0;">
-            Et helt spill er 2-4 grids spilt etter hverandre, der alles poeng legges sammen på tvers av alle - den som har høyest sum til slutt vinner.
+            {{ $t('Et helt spill er 2-4 grids spilt etter hverandre, der alles poeng legges sammen på tvers av alle - den som har høyest sum til slutt vinner.') }}
           </p>
         </div>
       </details>
@@ -73,14 +73,14 @@
     <template v-else-if="stage === 'landing'">
       <h1>Grid Battle</h1>
       <p class="page-subtitle">
-        En flerspillerversjon av Ukens grid der enheten sendes rundt. Bytt på å gjette - gjetter du riktig, avsløres ruten (og du får ett poeng), gjetter du feil, mister du et liv. Spillet fortsetter til et grid er helt løst eller alle er tomme for liv.
+        {{ $t('En flerspillerversjon av Ukens grid der enheten sendes rundt. Bytt på å gjette - gjetter du riktig, avsløres ruten (og du får ett poeng), gjetter du feil, mister du et liv. Spillet fortsetter til et grid er helt løst eller alle er tomme for liv.') }}
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
-          <label>Spillere
+          <label>{{ $t('Spillere') }}
             <select v-model.number="numPlayers">
               <option v-for="n in [2,3,4,5]" :key="n" :value="n">{{ n }}</option>
             </select>
@@ -96,34 +96,34 @@
       </div>
 
       <div class="field">
-        <label>Hvordan skal gridene velges?</label>
+        <label>{{ $t('Hvordan skal gridene velges?') }}</label>
         <div class="language-row">
-          <button class="language-btn" :class="{ active: gridMode === 'random' }" @click="gridMode = 'random'">Tilfeldig</button>
-          <button class="language-btn" :class="{ active: gridMode === 'manual' }" @click="gridMode = 'manual'">Velg selv</button>
+          <button class="language-btn" :class="{ active: gridMode === 'random' }" @click="gridMode = 'random'">{{ $t('Tilfeldig') }}</button>
+          <button class="language-btn" :class="{ active: gridMode === 'manual' }" @click="gridMode = 'manual'">{{ $t('Velg selv') }}</button>
         </div>
       </div>
 
-      <button class="btn btn-secondary" @click="stage = 'modeChoice'">← Tilbake</button>
-      <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">Opprett spill</button>
+      <button class="btn btn-secondary" @click="stage = 'modeChoice'">{{ $t('← Tilbake') }}</button>
+      <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">{{ $t('Opprett spill') }}</button>
     </template>
 
     <template v-else-if="stage === 'onlineChoice'">
-      <h1>Spill på nett</h1>
-      <p class="page-subtitle">Samme spill, ulike enheter - del en romkode med 1-3 venner i stedet for å sende én telefon rundt.</p>
+      <h1>{{ $t('Spill på nett') }}</h1>
+      <p class="page-subtitle">{{ $t('Samme spill, ulike enheter - del en romkode med 1-3 venner i stedet for å sende én telefon rundt.') }}</p>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="btn btn-primary" @click="stage = 'onlineCreate'">+ Opprett et rom</button>
-        <button class="btn btn-secondary" @click="stage = 'onlineJoin'">Bli med med kode</button>
+        <button class="btn btn-primary" @click="stage = 'onlineCreate'">{{ $t('+ Opprett et rom') }}</button>
+        <button class="btn btn-secondary" @click="stage = 'onlineJoin'">{{ $t('Bli med med kode') }}</button>
       </div>
-      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'modeChoice'">← Tilbake</button>
+      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'modeChoice'">{{ $t('← Tilbake') }}</button>
     </template>
 
     <template v-else-if="stage === 'onlineCreate'">
-      <h1>Opprett et rom</h1>
+      <h1>{{ $t('Opprett et rom') }}</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Navnet ditt <span class="picker-hint">vises for andre spillere</span><input type="text" v-model="onlineDisplayName" placeholder="Navnet ditt" /></label>
+        <label>{{ $t('Navnet ditt') }} <span class="picker-hint">{{ $t('vises for andre spillere') }}</span><input type="text" v-model="onlineDisplayName" :placeholder="$t('Navnet ditt')" /></label>
       </div>
 
       <div class="field">
@@ -135,15 +135,15 @@
       </div>
 
       <div class="field">
-        <label>Hvordan skal gridene velges?</label>
+        <label>{{ $t('Hvordan skal gridene velges?') }}</label>
         <div class="language-row">
-          <button class="language-btn" :class="{ active: onlineGridMode === 'random' }" @click="onlineGridMode = 'random'">Tilfeldig</button>
-          <button class="language-btn" :class="{ active: onlineGridMode === 'manual' }" @click="selectOnlineManual">Velg selv</button>
+          <button class="language-btn" :class="{ active: onlineGridMode === 'random' }" @click="onlineGridMode = 'random'">{{ $t('Tilfeldig') }}</button>
+          <button class="language-btn" :class="{ active: onlineGridMode === 'manual' }" @click="selectOnlineManual">{{ $t('Velg selv') }}</button>
         </div>
       </div>
 
       <div v-if="onlineGridMode === 'manual'" class="field">
-        <label>Velg nøyaktig {{ onlineNumGrids }} grid <span class="picker-hint">{{ onlineChosenGrids.length }}/{{ onlineNumGrids }} valgt</span></label>
+        <label>{{ $t('Velg nøyaktig') }} {{ onlineNumGrids }} {{ $t('grid') }} <span class="picker-hint">{{ onlineChosenGrids.length }}/{{ onlineNumGrids }} {{ $t('valgt§MultiplayerGridViewT') }}</span></label>
         <LoadingState v-if="loadingGrids" full />
         <div v-else class="saved-quiz-list">
           <div v-for="g in availableGrids" :key="g.id" class="saved-quiz-row">
@@ -151,45 +151,45 @@
               <div class="saved-quiz-title">
                 {{ g.title }}
               </div>
-              <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} å finne</div>
+              <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} {{ $t('å finne') }}</div>
             </div>
             <button
               class="btn btn-sm"
               :class="onlineChosenGrids.includes(g.id) ? 'btn-primary' : 'btn-secondary'"
               @click="toggleOnlineGrid(g.id)"
-            >{{ onlineChosenGrids.includes(g.id) ? 'Valgt ✓' : '+ Velg' }}</button>
+            >{{ onlineChosenGrids.includes(g.id) ? $t('Valgt ✓§MultiplayerGridViewM') : $t('+ Velg§MultiplayerGridViewM') }}</button>
           </div>
         </div>
       </div>
 
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Tilbake</button>
+        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">{{ $t('← Tilbake') }}</button>
         <button class="btn btn-primary" :disabled="creatingRoom || !onlineDisplayName.trim() || (onlineGridMode === 'manual' && onlineChosenGrids.length !== onlineNumGrids)" @click="createOnlineRoom">
-          {{ creatingRoom ? 'Oppretter…' : 'Opprett rom' }}
+          {{ creatingRoom ? $t('Oppretter…') : $t('Opprett rom') }}
         </button>
       </div>
     </template>
 
     <template v-else-if="stage === 'onlineJoin'">
-      <h1>Bli med i et rom</h1>
+      <h1>{{ $t('Bli med i et rom') }}</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div class="field">
-        <label>Navnet ditt <span class="picker-hint">vises for andre spillere</span><input type="text" v-model="onlineDisplayName" placeholder="Navnet ditt" /></label>
+        <label>{{ $t('Navnet ditt') }} <span class="picker-hint">{{ $t('vises for andre spillere') }}</span><input type="text" v-model="onlineDisplayName" :placeholder="$t('Navnet ditt')" /></label>
       </div>
       <div class="field">
-        <label>Romkode<input type="text" v-model="joinCode" placeholder="f.eks. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" /></label>
+        <label>{{ $t('Romkode') }}<input type="text" v-model="joinCode" :placeholder="$t('f.eks. ABCDE')" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" /></label>
       </div>
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Tilbake</button>
+        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">{{ $t('← Tilbake') }}</button>
         <button class="btn btn-primary" :disabled="!joinCode.trim() || !onlineDisplayName.trim() || joiningRoom" @click="joinOnlineRoom()">
-          {{ joiningRoom ? 'Blir med…' : 'Bli med' }}
+          {{ joiningRoom ? $t('Blir med…') : $t('Bli med') }}
         </button>
       </div>
     </template>
 
     <template v-else-if="stage === 'onlineLobby'">
-      <h1>Rom {{ onlineRoom?.roomCode }}</h1>
-      <p class="page-subtitle">Del denne koden med vennene dine. Alle må bli med før verten starter.</p>
+      <h1>{{ $t('Rom') }} {{ onlineRoom?.roomCode }}</h1>
+      <p class="page-subtitle">{{ $t('Del denne koden med vennene dine. Alle må bli med før verten starter.') }}</p>
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="saved-quiz-list" style="max-width:420px;">
@@ -200,25 +200,25 @@
               {{ p.displayName }}
             </div>
           </div>
-          <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">Frakoblet</span>
-            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">I rommet</span>
+          <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">{{ $t('Frakoblet§MultiplayerGridViewT') }}</span>
+            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">{{ $t('I rommet') }}</span>
         </div>
       </div>
 
       <p style="color:var(--text-dim); font-size:0.9rem; margin-top:16px;">
-        {{ (onlineRoom?.participants || []).length }} har blitt med · minst 2 trengs for å starte
+        {{ (onlineRoom?.participants || []).length }} {{ $t('har blitt med · minst 2 trengs for å starte') }}
       </p>
 
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="leaveLobby">← Forlat</button>
+        <button class="btn btn-secondary" @click="leaveLobby">{{ $t('← Forlat') }}</button>
         <InviteLinkButton v-if="onlineRoom" :room-code="onlineRoom.roomCode" />
         <button
           v-if="isHost"
           class="btn btn-primary"
           :disabled="(onlineRoom?.participants || []).length < 2 || startingRoom"
           @click="startOnlineRoom"
-        >{{ startingRoom ? 'Starter…' : 'Start spillet' }}</button>
-        <span v-else style="color:var(--text-dim); align-self:center;">Venter på at verten skal starte…</span>
+        >{{ startingRoom ? $t('Starter…') : $t('Start spillet') }}</button>
+        <span v-else style="color:var(--text-dim); align-self:center;">{{ $t('Venter på at verten skal starte…') }}</span>
       </div>
     </template>
 
@@ -232,28 +232,28 @@
     />
 
     <template v-else-if="stage === 'setup'">
-      <h1>Hvem spiller?</h1>
-      <p class="page-subtitle" v-if="duplicateNames">To spillere kan ikke ha samme navn.</p>
+      <h1>{{ $t('Hvem spiller?') }}</h1>
+      <p class="page-subtitle" v-if="duplicateNames">{{ $t('To spillere kan ikke ha samme navn.') }}</p>
 
       <div v-for="(p, i) in setupPlayers" :key="i" class="field">
-        <input type="text" v-model="p.name" :placeholder="`Spiller ${i + 1}`" />
+        <input type="text" v-model="p.name" :placeholder="$t('Spiller {0}', [i + 1])" />
       </div>
 
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="stage = 'landing'">← Tilbake</button>
+        <button class="btn btn-secondary" @click="stage = 'landing'">{{ $t('← Tilbake') }}</button>
         <button class="btn btn-primary" :disabled="!allNamed || duplicateNames || checkingPool" @click="goToGridChoice">
-          Neste →
+          {{ $t('Neste →') }}
         </button>
       </div>
-      <LoadingState v-if="checkingPool" full message="Stokker gridene dine…" subtitle="Første runde starter om et øyeblikk." />
+      <LoadingState v-if="checkingPool" full :message="$t('Stokker gridene dine…')" :subtitle="$t('Første runde starter om et øyeblikk.')" />
     </template>
 
     <template v-else-if="stage === 'pickGrids'">
-      <h1>Velg {{ numGrids }} grid</h1>
-      <p class="page-subtitle">{{ chosenGrids.length }} / {{ numGrids }} valgt</p>
+      <h1>{{ $t('Velg') }} {{ numGrids }} {{ $t('grid') }}</h1>
+      <p class="page-subtitle">{{ chosenGrids.length }} / {{ numGrids }} {{ $t('valgt§MultiplayerGridViewT') }}</p>
 
       <LoadingState v-if="loadingGrids" full />
-      <div v-else-if="!availableGrids.length" class="empty-state">Ingen grids tilgjengelige ennå.</div>
+      <div v-else-if="!availableGrids.length" class="empty-state">{{ $t('Ingen grids tilgjengelige ennå.') }}</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="g in availableGrids" :key="g.id" class="saved-quiz-row">
@@ -261,25 +261,25 @@
             <div class="saved-quiz-title">
               {{ g.title }}
             </div>
-            <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} å finne</div>
+            <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} {{ $t('å finne') }}</div>
           </div>
           <button
             class="btn btn-sm"
             :class="isChosen(g) ? 'btn-primary' : 'btn-secondary'"
             :disabled="!isChosen(g) && chosenGrids.length >= numGrids"
             @click="toggleChosen(g)"
-          >{{ isChosen(g) ? 'Valgt ✓' : '+ Velg' }}</button>
+          >{{ isChosen(g) ? $t('Valgt ✓§MultiplayerGridViewM') : $t('+ Velg§MultiplayerGridViewM') }}</button>
         </div>
       </div>
 
       <div class="board-picker-actions">
-        <button class="btn btn-secondary" @click="stage = 'setup'">← Tilbake</button>
+        <button class="btn btn-secondary" @click="stage = 'setup'">{{ $t('← Tilbake') }}</button>
         <button
           class="btn btn-primary"
           :class="{ 'btn-ready-pulse': chosenGrids.length === numGrids }"
           :disabled="chosenGrids.length !== numGrids"
           @click="startGame"
-        >{{ chosenGrids.length === numGrids ? `Start spillet ✓ (${chosenGrids.length}/${numGrids})` : `Start spillet (${chosenGrids.length}/${numGrids})` }}</button>
+        >{{ chosenGrids.length === numGrids ? $t('Start spillet ✓ ({0}/{1})', [chosenGrids.length, numGrids]) : $t('Start spillet ({0}/{1})', [chosenGrids.length, numGrids]) }}</button>
       </div>
     </template>
 
@@ -295,7 +295,7 @@
     <template v-else-if="stage === 'done'">
       <div class="modal-backdrop">
         <div class="completion-popup podium-host">
-          <h2 style="margin-top:0;">Spillet er over!</h2>
+          <h2 style="margin-top:0;">{{ $t('Spillet er over!') }}</h2>
 
           <div class="podium-row">
             <div v-for="(entry, i) in sortedScores.slice(0, 3)" :key="entry[0]" class="podium-block" :class="`rank-${i + 1}`">
@@ -314,16 +314,16 @@
 
           <template v-if="lastGameWasOnline && onlineRoom">
             <p class="page-subtitle" style="margin:16px 0 0;">
-              {{ isHost ? `Rom ${onlineRoom.roomCode} er fortsatt åpent - spill igjen med samme gruppe, eller forlat det.` : 'Venter på at verten skal starte en ny runde, eller forlat rommet.' }}
+              {{ isHost ? $t('Rom {0} er fortsatt åpent - spill igjen med samme gruppe, eller forlat det.', [onlineRoom.roomCode]) : $t('Venter på at verten skal starte en ny runde, eller forlat rommet.') }}
             </p>
             <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px;">
               <button v-if="isHost" class="btn btn-primary" :disabled="restartingRoom" @click="restartOnlineRoom">
-                {{ restartingRoom ? 'Starter på nytt…' : 'Spill igjen' }}
+                {{ restartingRoom ? $t('Starter på nytt…') : $t('Spill igjen') }}
               </button>
-              <button class="btn btn-secondary" @click="leaveLobby">← Forlat</button>
+              <button class="btn btn-secondary" @click="leaveLobby">{{ $t('← Forlat') }}</button>
             </div>
           </template>
-          <button v-else class="btn btn-primary" style="margin-top:16px; width:100%;" @click="resetGame">Spill igjen</button>
+          <button v-else class="btn btn-primary" style="margin-top:16px; width:100%;" @click="resetGame">{{ $t('Spill igjen') }}</button>
         </div>
       </div>
     </template>
@@ -342,6 +342,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
@@ -361,13 +362,13 @@ import GridBattlePreview from '../components/previews/GridBattlePreview.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },
-  { hex: '#7C7CFC', name: 'Lys indigo' },
-  { hex: '#F22C05', name: 'Rød' },
-  { hex: '#F2BB05', name: 'Gul' },
-  { hex: '#032E8A', name: 'Blå' },
-  { hex: '#05D6F2', name: 'Lyseblå' },
-  { hex: '#f43f5e', name: 'Rosa' },
-  { hex: '#5D038A', name: 'Lilla' }
+  { hex: '#7C7CFC', name: _t('Lys indigo') },
+  { hex: '#F22C05', name: _t('Rød') },
+  { hex: '#F2BB05', name: _t('Gul') },
+  { hex: '#032E8A', name: _t('Blå') },
+  { hex: '#05D6F2', name: _t('Lyseblå') },
+  { hex: '#f43f5e', name: _t('Rosa') },
+  { hex: '#5D038A', name: _t('Lilla') }
 ]
 
 const stage = ref('modeChoice')
@@ -436,7 +437,7 @@ async function loadAvailableGrids() {
   try {
     availableGrids.value = await api.getBattleEligibleGrids()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke laste grids.'
+    error.value = e.response?.data?.message || _t('Kunne ikke laste grids.')
   } finally {
     loadingGrids.value = false
   }
@@ -466,7 +467,7 @@ async function goToGridChoice() {
       return
     }
     if (poolSize < numGrids.value) {
-      error.value = `Fant bare ${poolSize} grid - trenger minst ${numGrids.value}. Prøv å velge selv, eller be en administrator legge til flere grids.`
+      error.value = _t('Fant bare {0} grid - trenger minst {1}. Prøv å velge selv, eller be en administrator legge til flere grids.', [poolSize, numGrids.value])
       stage.value = 'landing'
       return
     }
@@ -552,7 +553,7 @@ async function openPlayersModal() {
     playersModalParticipants.value = fresh.participants
     showPlayersModal.value = true
   } catch (e) {
-    error.value = 'Kunne ikke laste spillerlisten.'
+    error.value = _t('Kunne ikke laste spillerlisten.')
   }
 }
 function onPlayersModalChanged(dto) {
@@ -604,7 +605,7 @@ async function createOnlineRoom() {
     stage.value = 'onlineLobby'
     startLobbyChannel()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke opprette rommet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke opprette rommet.')
   } finally {
     creatingRoom.value = false
   }
@@ -634,7 +635,7 @@ async function joinOnlineRoom(codeOverride) {
       startLobbyChannel()
     }
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke bli med i rommet - sjekk koden og prøv igjen.'
+    error.value = e.response?.data?.message || _t('Kunne ikke bli med i rommet - sjekk koden og prøv igjen.')
     activeRoom.clear()
     savedRoomCode.value = ''
   } finally {
@@ -700,7 +701,7 @@ async function startOnlineRoom() {
     stopLobbyChannel()
     stage.value = 'onlineGame'
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke starte spillet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke starte spillet.')
   } finally {
     startingRoom.value = false
   }
@@ -747,7 +748,7 @@ async function restartOnlineRoom() {
     const dto = await api.restartRoom(onlineRoom.value.roomCode)
     applyLobbyUpdate(dto)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke starte spillet på nytt.'
+    error.value = e.response?.data?.message || _t('Kunne ikke starte spillet på nytt.')
   } finally {
     restartingRoom.value = false
   }

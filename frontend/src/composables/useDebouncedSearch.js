@@ -1,3 +1,4 @@
+import { t as _t } from '../i18n'
 import { ref } from 'vue'
 import { createStaleGuard } from './useRoomChannel'
 import toast from '../services/toast'
@@ -62,7 +63,7 @@ export function useDebouncedSearch(fetcher, { delay = 250, minLength = 2, postFi
         // Once per run of failures, not once per keystroke - typing several
         // letters while offline shouldn't re-trigger the same toast each time.
         if (!toastShownForThisFailureStreak) {
-          toast.show("Kunne ikke søke - sjekk tilkoblingen og prøv igjen.", 'error')
+          toast.show(_t('Kunne ikke søke - sjekk tilkoblingen og prøv igjen.'), 'error')
           toastShownForThisFailureStreak = true
         }
       } finally {

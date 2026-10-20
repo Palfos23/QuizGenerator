@@ -3,16 +3,16 @@
     <div class="modal">
       <div style="text-align:center;">
         <div style="color:var(--gold); font-weight:700; font-size:1.1rem; margin-bottom:6px;">
-          {{ currentPlayer }}sin tur
+          {{ currentPlayer }}{{ $t('sin tur') }}
         </div>
         <p style="font-style:italic; font-size:1.15rem; margin:0 0 6px;">{{ questionTitle }}</p>
         <p style="color:var(--text-dim); font-size:0.8rem; margin-bottom:20px;">
-          Tension-svar på denne: {{ tensionCount }}
+          {{ $t('Tension-svar på denne:') }} {{ tensionCount }}
         </p>
 
         <div v-if="answeredPlayers.length" style="text-align:left; margin-bottom:20px; border:1px solid var(--border); border-radius: 2px; padding:10px 14px;">
           <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
-            Svart så langt denne runden
+            {{ $t('Svart så langt denne runden') }}
           </div>
           <div v-for="(name, i) in answeredPlayers" :key="name" style="display:flex; justify-content:space-between; font-size:0.9rem; padding:2px 0;">
             <span>{{ name }}</span>
@@ -26,7 +26,7 @@
               type="text"
               v-model="value"
               @input="onInput"
-              placeholder="Skriv svaret ditt…"
+              :placeholder="$t('Skriv svaret ditt…')"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -35,20 +35,20 @@
           </div>
 
           <div v-if="duplicateError" style="color:var(--coral); font-size:0.9rem; margin-top:8px;">
-            Det svaret er allerede brukt av en annen spiller denne runden.
+            {{ $t('Det svaret er allerede brukt av en annen spiller denne runden.') }}
           </div>
 
           <!-- Say what's going on with the suggestion list instead of just showing nothing -->
           <div v-if="optionsStatus === 'loading'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px;">
-            Laster forslag…
+            {{ $t('Laster forslag…') }}
           </div>
           <div v-else-if="optionsStatus === 'error'" style="color:var(--coral); font-size:0.85rem; margin-top:8px;">
-            Kunne ikke laste forslagene.
-            <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryOptions">Prøv igjen</button>
-            <div style="color:var(--text-dim); margin-top:4px;">Du kan fortsatt skrive svaret ditt nøyaktig og sende det inn.</div>
+            {{ $t('Kunne ikke laste forslagene.') }}
+            <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryOptions">{{ $t('Prøv igjen') }}</button>
+            <div style="color:var(--text-dim); margin-top:4px;">{{ $t('Du kan fortsatt skrive svaret ditt nøyaktig og sende det inn.') }}</div>
           </div>
           <div v-else-if="optionsStatus === 'empty'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px;">
-            Ingen forslag er tilgjengelige for dette spørsmålet - skriv svaret ditt nøyaktig og send det inn.
+            {{ $t('Ingen forslag er tilgjengelige for dette spørsmålet - skriv svaret ditt nøyaktig og send det inn.') }}
           </div>
 
           <div v-if="showDropdown" class="guess-results" style="position:absolute; bottom:100%; left:0; right:0; margin-bottom:6px; max-height:220px; overflow-y:auto;">
@@ -59,11 +59,11 @@
               class="guess-result-row"
               @click="select(opt)"
             >{{ opt }}</button>
-            <div v-if="!filteredOptions.length" class="guess-result-row" style="opacity:0.6; font-style:italic;">Ingen treff</div>
+            <div v-if="!filteredOptions.length" class="guess-result-row" style="opacity:0.6; font-style:italic;">{{ $t('Ingen treff') }}</div>
           </div>
 
           <button type="submit" class="btn btn-primary" :disabled="!canSubmit" style="margin-top:16px; width:100%;">
-            Send inn
+            {{ $t('Send inn') }}
           </button>
         </form>
 

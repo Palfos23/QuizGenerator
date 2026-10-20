@@ -1,14 +1,14 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Forhåndsvisning av 501: en poengsum som teller ned fra 501 mot et utsjekkvindu.">
-    <span class="game-preview-tag">Forhåndsvisning</span>
-    <div class="fp-cat">Kategori · «Premier League-kamper»</div>
+  <div class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av 501: en poengsum som teller ned fra 501 mot et utsjekkvindu.')">
+    <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
+    <div class="fp-cat">{{ $t('Kategori · «Premier League-kamper»') }}</div>
 
     <div class="fp-body">
       <div class="fp-board">
         <div class="fp-ring">
           <div class="fp-score">
             <span class="fp-num">8</span>
-            <span class="fp-lbl">for å sjekke ut</span>
+            <span class="fp-lbl">{{ $t('for å sjekke ut') }}</span>
           </div>
         </div>
       </div>
@@ -35,7 +35,7 @@
           <span class="fp-t">bust</span>
         </div>
         <div class="fp-throw now">
-          <span class="fp-p">din kasting…</span>
+          <span class="fp-p">{{ $t('din kasting…') }}</span>
           <span class="fp-d"></span>
           <span class="fp-t">8</span>
         </div>
@@ -43,7 +43,7 @@
     </div>
 
     <p class="game-preview-caption">
-      Start på 501, trekk fra tallet til hvert valg, og land mellom <strong>0 og −10</strong> for å vinne. Går du utenfor vinduet eller bryter dartreglene, <span class="bad">teller ikke kastet</span>.
+      {{ $t('Start på 501, trekk fra tallet til hvert valg, og land mellom') }} <strong>{{ $t('0 og −10') }}</strong> {{ $t('for å vinne. Går du utenfor vinduet eller bryter dartreglene,') }} <span class="bad">{{ $t('teller ikke kastet') }}</span>.
     </p>
   </div>
 </template>

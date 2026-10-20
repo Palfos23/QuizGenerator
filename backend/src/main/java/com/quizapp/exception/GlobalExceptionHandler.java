@@ -8,6 +8,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.quizapp.config.MessageTranslations;
+import com.quizapp.config.RequestLang;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,7 +91,7 @@ public class GlobalExceptionHandler {
         map.put("timestamp", Instant.now().toString());
         map.put("status", status.value());
         map.put("error", status.getReasonPhrase());
-        map.put("message", message);
+        map.put("message", RequestLang.isEnglish() ? MessageTranslations.toEnglish(message) : message);
         return map;
     }
 }

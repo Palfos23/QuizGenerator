@@ -1,10 +1,14 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import com.quizapp.model.RoomStatus;
 
 import java.time.Instant;
 import java.util.List;
 
+@Translated(type = ContentTranslation.TYPE_GRID, id = "currentGridId", fields = {"gridTitle:title", "gridTheme:theme"})
 public class GridBattleStateDto {
     private String roomCode;
     private RoomStatus status;

@@ -5,7 +5,7 @@
       <h2>{{ category.title }}</h2>
       <p v-if="category.description" class="fiveoo-description">{{ category.description }}</p>
       <p v-if="lastUpdatedLabel" class="fiveoo-description" style="font-size:0.75rem;">{{ lastUpdatedLabel }}</p>
-      <p class="fiveoo-rules-reminder">Første som kommer ut mellom 0 og -10 vinner</p>
+      <p class="fiveoo-rules-reminder">{{ $t('Første som kommer ut mellom 0 og -10 vinner') }}</p>
     </div>
 
     <div v-if="!winner" class="mp-player-row">
@@ -19,7 +19,7 @@
         <div style="font-size:1.8rem; font-weight:700; margin-top:4px;" :style="{ color: totals[p] <= 0 && totals[p] >= -10 ? 'var(--teal)' : 'var(--text)' }">
           {{ totals[p] }}
         </div>
-        <div v-if="windowReacher === p && !winner" style="font-size:0.78rem; color:var(--gold); margin-top:2px;">I vinduet!</div>
+        <div v-if="windowReacher === p && !winner" style="font-size:0.78rem; color:var(--gold); margin-top:2px;">{{ $t('I vinduet!') }}</div>
         <div v-if="recentThrowsFor(p).length" class="fiveoo-recent-throws">
           <span
             v-for="(t, i) in recentThrowsFor(p)"
@@ -34,17 +34,17 @@
     <template v-if="!winner">
       <div class="guess-box-center">
       <div class="guess-box" :class="{ shake: shakeGuessBox }">
-        <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayer }}sin kasting</p>
+        <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayer }}{{ $t('sin kasting') }}</p>
         <p v-if="bestAvailableScore !== null" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
-          Beste tilgjengelige poengsum: <strong style="color:var(--text);">{{ bestAvailableScore }}</strong>
+          {{ $t('Beste tilgjengelige poengsum:') }} <strong style="color:var(--text);">{{ bestAvailableScore }}</strong>
         </p>
         <p v-if="checkoutCount !== null" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
-          <strong style="color:var(--text);">{{ checkoutCount }}</strong> mulig utsjekk<span v-if="checkoutCount !== 1">s</span> igjen
+          <strong style="color:var(--text);">{{ checkoutCount }}</strong> {{ $t('mulig utsjekk') }}<span v-if="checkoutCount !== 1">s</span> {{ $t('igjen') }}
         </p>
         <input
           type="text"
           v-model="searchTerm"
-          placeholder="Søk etter et navn…"
+          :placeholder="$t('Søk etter et navn…')"
           autocomplete="off"
           autocorrect="off"
           autocapitalize="off"
@@ -64,15 +64,15 @@
       <div v-if="lastThrow" style="text-align:center; margin-top:16px; color:var(--text-dim); font-size:0.9rem;">
         <span v-if="lastThrow.bust" style="color:var(--coral); font-weight:600;">BUST!</span>
         <template v-else>
-          {{ lastThrow.player }} kastet {{ lastThrow.name }} ({{ lastThrow.rawValue }})
-          <span v-if="lastThrow.score === 0" style="color:var(--coral);"> - får 0</span>
-          <span v-else> - får {{ lastThrow.score }}</span>
+          {{ lastThrow.player }} {{ $t('kastet') }} {{ lastThrow.name }} ({{ lastThrow.rawValue }})
+          <span v-if="lastThrow.score === 0" style="color:var(--coral);"> {{ $t('- får 0') }}</span>
+          <span v-else> {{ $t('- får') }} {{ lastThrow.score }}</span>
         </template>
       </div>
     </template>
 
     <div v-else class="fiveoo-gameover">
-      <div class="darts-win-label">Vinner</div>
+      <div class="darts-win-label">{{ $t('Vinner') }}</div>
       <div class="darts-win-name">{{ winner }}</div>
 
       <div class="score-square-grid">
@@ -83,17 +83,17 @@
       </div>
 
       <button class="btn btn-primary" style="margin-top:8px; min-width:220px;" @click="$emit('gameOver', players.map(p => [p, totals[p]]))">
-        Spill igjen
+        {{ $t('Spill igjen') }}
       </button>
     </div>
 
     <details class="advanced-disclosure" style="margin-top:20px;">
-      <summary>Kastehistorikk</summary>
+      <summary>{{ $t('Kastehistorikk') }}</summary>
       <div style="margin-top:10px; max-height:220px; overflow-y:auto;">
         <div v-for="(t, i) in [...history].reverse()" :key="i" style="font-size:0.85rem; color:var(--text-dim); padding:3px 0;">
           <strong style="color:var(--text);">{{ t.player }}</strong>
-          {{ t.bust ? 'bustet på' : 'kastet' }} {{ t.name }} ({{ t.rawValue }})
-          <span v-if="!t.bust">→ fikk {{ t.score }}, nå på {{ t.resultingTotal }}</span>
+          {{ t.bust ? $t('bustet på') : $t('kastet') }} {{ t.name }} ({{ t.rawValue }})
+          <span v-if="!t.bust">{{ $t('→ fikk') }} {{ t.score }}{{ $t(', nå på') }} {{ t.resultingTotal }}</span>
         </div>
       </div>
     </details>

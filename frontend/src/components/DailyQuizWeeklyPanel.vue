@@ -6,14 +6,14 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
         </span>
         <div>
-          <h2 style="margin:0; font-size:1.2rem;">Ukens vinner</h2>
+          <h2 style="margin:0; font-size:1.2rem;">{{ $t('Ukens vinner') }}</h2>
           <div class="dq-row-meta" style="margin:0;">{{ blurb }}</div>
         </div>
       </div>
 
-      <div class="dq-weekly-label">Denne uken · {{ formatRange(weekly.current.weekStart, weekly.current.weekEnd) }}</div>
+      <div class="dq-weekly-label">{{ $t('Denne uken ·') }} {{ formatRange(weekly.current.weekStart, weekly.current.weekEnd) }}</div>
 
-      <div v-if="!standings.length" class="dq-row-meta" style="padding:6px 0 2px;">Ingen resultater denne uken ennå - vær den første.</div>
+      <div v-if="!standings.length" class="dq-row-meta" style="padding:6px 0 2px;">{{ $t('Ingen resultater denne uken ennå - vær den første.') }}</div>
       <div v-else class="dq-board">
         <template v-for="row in rows" :key="row.kind === 'expert' ? 'expert' : row.entry.playerName + row.rank">
           <!-- The expert is in the list at their real total, but not ranked: a star instead of a number. -->
@@ -23,12 +23,12 @@
             </span>
             <div style="min-width:0;">
               <div class="dq-board-name">
-                Eksperten
-                <small>Ikke rangert · {{ daysNote(row.daysPlayed) }} spilt</small>
+                {{ $t('Eksperten') }}
+                <small>{{ $t('Ikke rangert ·') }} {{ daysNote(row.daysPlayed) }} {{ $t('spilt') }}</small>
               </div>
               <div class="dq-board-bar"><i :style="{ width: barWidth(row) }"></i></div>
             </div>
-            <div class="dq-board-score">{{ row.total }}<small> poeng</small></div>
+            <div class="dq-board-score">{{ row.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelT') }}</small></div>
           </div>
 
           <div v-else class="dq-board-row" :class="{ 'is-you': row.entry.isYou }">
@@ -36,11 +36,11 @@
             <div style="min-width:0;">
               <div class="dq-board-name">
                 {{ firstName(row.entry.playerName) }}
-                <small>{{ row.entry.isYou ? 'Det er deg · ' : '' }}{{ daysNote(row.entry.daysPlayed) }} spilt</small>
+                <small>{{ row.entry.isYou ? $t('Det er deg · §DailyQuizWeeklyPanelM') : '' }}{{ daysNote(row.entry.daysPlayed) }} {{ $t('spilt') }}</small>
               </div>
               <div class="dq-board-bar"><i :style="{ width: barWidth(row.entry) }"></i></div>
             </div>
-            <div class="dq-board-score">{{ row.entry.total }}<small> poeng</small></div>
+            <div class="dq-board-score">{{ row.entry.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelT') }}</small></div>
           </div>
         </template>
 
@@ -51,25 +51,25 @@
             <div style="min-width:0;">
               <div class="dq-board-name">
                 {{ firstName(yourRank.entry.playerName) }}
-                <small>Det er deg · {{ yourRank.entry.daysPlayed }} {{ yourRank.entry.daysPlayed === 1 ? unit : unitPlural }} spilt</small>
+                <small>{{ $t('Det er deg ·§DailyQuizWeeklyPanelT') }} {{ yourRank.entry.daysPlayed }} {{ yourRank.entry.daysPlayed === 1 ? unit : unitPlural }} {{ $t('spilt') }}</small>
               </div>
               <div class="dq-board-bar"><i :style="{ width: barWidth(yourRank.entry) }"></i></div>
             </div>
-            <div class="dq-board-score">{{ yourRank.entry.total }}<small> poeng</small></div>
+            <div class="dq-board-score">{{ yourRank.entry.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelT') }}</small></div>
           </div>
         </template>
       </div>
 
       <template v-if="weekly.pastWeeks.length">
-        <div class="dq-weekly-label">Tidligere vinnere</div>
+        <div class="dq-weekly-label">{{ $t('Tidligere vinnere') }}</div>
         <div v-for="(w, i) in weekly.pastWeeks" :key="w.weekStart" class="dq-winner" :class="{ 'is-latest': i === 0 }">
           <svg class="dq-winner-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" /></svg>
           <div class="dq-winner-main">
             <div class="dq-winner-name">{{ winnersLabel(w) }}</div>
-            <div class="dq-winner-meta">{{ formatRange(w.weekStart, w.weekEnd) }} · {{ w.winningScore }} poeng</div>
+            <div class="dq-winner-meta">{{ formatRange(w.weekStart, w.weekEnd) }} · {{ w.winningScore }} {{ $t('poeng§DailyQuizWeeklyPanelT') }}</div>
           </div>
-          <span v-if="w.winners.length > 1" class="dq-pill">Delt</span>
-          <span v-if="w.provisional" class="dq-pill dq-pill--wait" title="Noen av svarene den uken ble fortsatt gjennomgått">Foreløpig</span>
+          <span v-if="w.winners.length > 1" class="dq-pill">{{ $t('Delt') }}</span>
+          <span v-if="w.provisional" class="dq-pill dq-pill--wait" :title="$t('Noen av svarene den uken ble fortsatt gjennomgått')">{{ $t('Foreløpig') }}</span>
         </div>
       </template>
     </div>
@@ -77,6 +77,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
 import { shortNames } from '../services/displayNames'
@@ -87,7 +88,7 @@ const props = defineProps({
   fetcher: { type: Function, default: () => api.getDailyQuizWeekly() },
   unit: { type: String, default: 'dag' }, // what one "played" is - 'dag' for the daily quiz, 'brett' for the weekly games
   unitPlural: { type: String, default: 'dager' },
-  blurb: { type: String, default: 'Poengene fra hver dag legges sammen fra mandag til søndag - høyest sum vinner.' }
+  blurb: { type: String, default: _t('Poengene fra hver dag legges sammen fra mandag til søndag - høyest sum vinner.') }
 })
 
 const weekly = ref(null)
@@ -145,6 +146,6 @@ function winnersLabel(w) {
 
 function formatRange(startIso, endIso) {
   const opts = { day: 'numeric', month: 'short' }
-  return `${new Date(startIso).toLocaleDateString('nb-NO', opts)} - ${new Date(endIso).toLocaleDateString('nb-NO', opts)}`
+  return `${new Date(startIso).toLocaleDateString(window.QUIZ_LOCALE, opts)} - ${new Date(endIso).toLocaleDateString(window.QUIZ_LOCALE, opts)}`
 }
 </script>

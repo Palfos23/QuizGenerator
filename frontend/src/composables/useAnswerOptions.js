@@ -1,3 +1,4 @@
+import { t as _t } from '../i18n'
 import { computed } from 'vue'
 import api from '../services/api'
 import { useReferenceList } from './useReferenceList'
@@ -16,7 +17,7 @@ import { useReferenceList } from './useReferenceList'
 export function useAnswerOptions() {
   const list = useReferenceList({
     area: 'tension-suggestions',
-    failureToast: "Kunne ikke laste forslagene - prøver igjen. Du kan fortsatt skrive svaret ditt."
+    failureToast: _t('Kunne ikke laste forslagene - prøver igjen. Du kan fortsatt skrive svaret ditt.')
   })
 
   const unavailable = computed(() => list.status.value === 'error' || list.status.value === 'empty')

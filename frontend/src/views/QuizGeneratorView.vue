@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div class="step-indicator">{{ quiz ? 'Steg 2 av 2 - Gå gjennom og fullfør' : 'Steg 1 av 2 - Sett opp' }}</div>
+    <div class="step-indicator">{{ quiz ? $t('Steg 2 av 2 - Gå gjennom og fullfør') : $t('Steg 1 av 2 - Sett opp') }}</div>
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
-      <h1 style="margin:0;">Lag en quiz</h1>
-      <router-link v-if="!quiz" to="/suggest-question" class="btn btn-secondary btn-sm">+ Foreslå et spørsmål</router-link>
+      <h1 style="margin:0;">{{ $t('Lag en quiz') }}</h1>
+      <router-link v-if="!quiz" to="/suggest-question" class="btn btn-secondary btn-sm">{{ $t('+ Foreslå et spørsmål') }}</router-link>
     </div>
     <p class="page-subtitle">
-      Velg språk, vanskelighetsgrad og hvor mange spørsmål du vil ha fra hver kategori.
+      {{ $t('Velg språk, vanskelighetsgrad og hvor mange spørsmål du vil ha fra hver kategori.') }}
     </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
@@ -17,11 +17,11 @@
     <!-- Step 1: settings form -->
     <section v-if="!quiz">
       <div class="field">
-        <label>Quiztittel<input type="text" v-model="form.title" placeholder="f.eks. Saras 30-årsquiz" /></label>
+        <label>{{ $t('Quiztittel') }}<input type="text" v-model="form.title" :placeholder="$t('f.eks. Saras 30-årsquiz')" /></label>
       </div>
 
       <div class="field">
-        <label>Språk <span class="picker-hint">velg en</span></label>
+        <label>{{ $t('Språk§QuizGeneratorViewT') }} <span class="picker-hint">{{ $t('velg en') }}</span></label>
         <div class="language-row">
           <button
             v-for="lang in LANGUAGES"
@@ -36,11 +36,11 @@
       </div>
 
       <div class="field">
-        <label>Kategorier og hvor mange spørsmål fra hver</label>
+        <label>{{ $t('Kategorier og hvor mange spørsmål fra hver') }}</label>
 
-        <div v-if="categoriesLoading" style="color:var(--text-dim); padding:20px;">Laster kategorier…</div>
+        <div v-if="categoriesLoading" style="color:var(--text-dim); padding:20px;">{{ $t('Laster kategorier…') }}</div>
         <div v-else-if="!availableCategories.length" class="empty-state friendly" style="padding:20px;">
-          Ingen {{ languageLabel(form.language) }} kategorier ennå - legg først til noen spørsmål på det språket på administrasjonssiden.
+          {{ $t('Ingen') }} {{ languageLabel(form.language) }} {{ $t('kategorier ennå - legg først til noen spørsmål på det språket på administrasjonssiden.') }}
         </div>
 
         <div v-else class="category-chip-grid">
@@ -56,35 +56,35 @@
             <template v-else>
               <span class="category-chip-name">{{ cat }}</span>
               <div class="stepper">
-                <button aria-label="Færre spørsmål" @click="stepCount(cat, -1)">−</button>
+                <button :aria-label="$t('Færre spørsmål')" @click="stepCount(cat, -1)">−</button>
                 <span>{{ countFor(cat) }}</span>
-                <button aria-label="Flere spørsmål" @click="stepCount(cat, 1)">+</button>
+                <button :aria-label="$t('Flere spørsmål')" @click="stepCount(cat, 1)">+</button>
               </div>
-              <button class="chip-remove-btn" aria-label="Fjern kategori" @click="toggleCategory(cat)">✕</button>
+              <button class="chip-remove-btn" :aria-label="$t('Fjern kategori')" @click="toggleCategory(cat)">✕</button>
             </template>
           </div>
         </div>
       </div>
 
       <details class="advanced-disclosure">
-        <summary>Avanserte valg</summary>
+        <summary>{{ $t('Avanserte valg') }}</summary>
 
         <div class="field" style="margin-top:16px;">
-          <label>Vanskelighetsgrad <span style="text-transform:none;font-weight:400;">(1 = lettest, 10 = vanskeligst)</span></label>
+          <label>{{ $t('Vanskelighetsgrad§QuizGeneratorViewT') }} <span style="text-transform:none;font-weight:400;">{{ $t('(1 = lettest, 10 = vanskeligst)') }}</span></label>
           <div class="difficulty-slider-group">
             <div class="difficulty-slider-row">
-              <span class="slider-label">Min</span>
+              <span class="slider-label">{{ $t('Min') }}</span>
               <input
                 type="range" min="1" max="10" v-model.number="form.minDifficulty"
-                @input="clampRange('min')" aria-label="Laveste vanskelighetsgrad"
+                @input="clampRange('min')" :aria-label="$t('Laveste vanskelighetsgrad')"
               />
               <output>{{ form.minDifficulty }} <span class="difficulty-word">{{ difficultyWord(form.minDifficulty) }}</span></output>
             </div>
             <div class="difficulty-slider-row">
-              <span class="slider-label">Maks</span>
+              <span class="slider-label">{{ $t('Maks') }}</span>
               <input
                 type="range" min="1" max="10" v-model.number="form.maxDifficulty"
-                @input="clampRange('max')" aria-label="Høyeste vanskelighetsgrad"
+                @input="clampRange('max')" :aria-label="$t('Høyeste vanskelighetsgrad')"
               />
               <output>{{ form.maxDifficulty }} <span class="difficulty-word">{{ difficultyWord(form.maxDifficulty) }}</span></output>
             </div>
@@ -93,16 +93,16 @@
 
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400;">
           <input type="checkbox" v-model="form.includeMySubmissions" style="width:auto;" />
-          Ta med mine egne innsendte spørsmål <span class="picker-hint">også de som fortsatt venter eller er avvist - bare du kan bruke disse</span>
+          {{ $t('Ta med mine egne innsendte spørsmål') }} <span class="picker-hint">{{ $t('også de som fortsatt venter eller er avvist - bare du kan bruke disse') }}</span>
         </label>
       </details>
 
       <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:20px;">
         <button class="btn btn-primary" :disabled="generating || !form.categorySelections.length" @click="generateQuiz">
-          {{ generating ? 'Lager…' : 'Lag quiz' }}
+          {{ generating ? $t('Lager…') : $t('Lag quiz') }}
         </button>
         <button class="btn btn-secondary" @click="startBlank">
-          Eller start tom og søk etter bestemte spørsmål →
+          {{ $t('Eller start tom og søk etter bestemte spørsmål →') }}
         </button>
       </div>
     </section>
@@ -111,12 +111,12 @@
     <section v-else>
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
         <div style="flex:1; min-width:220px;">
-          <input type="text" v-model="quiz.title" @input="reviewDirty = true" class="title-edit-input" aria-label="Quiztittel" />
-          <span style="color:var(--text-dim); font-size:0.9rem;">{{ quiz.questions.length }} spørsmål</span>
+          <input type="text" v-model="quiz.title" @input="reviewDirty = true" class="title-edit-input" :aria-label="$t('Quiztittel')" />
+          <span style="color:var(--text-dim); font-size:0.9rem;">{{ quiz.questions.length }} {{ $t('spørsmål§QuizGeneratorViewT') }}</span>
         </div>
-        <button class="btn btn-secondary btn-sm no-print" @click="requestStartOver">← Tilbake til innstillinger</button>
+        <button class="btn btn-secondary btn-sm no-print" @click="requestStartOver">{{ $t('← Tilbake til innstillinger') }}</button>
       </div>
-      <p class="page-subtitle" style="margin-top:-10px;">Bruk knappene ↑ / ↓ for å endre rekkefølgen på spørsmålene.</p>
+      <p class="page-subtitle" style="margin-top:-10px;">{{ $t('Bruk knappene ↑ / ↓ for å endre rekkefølgen på spørsmålene.') }}</p>
 
       <QuizReviewEditor
         :quiz="quiz"
@@ -126,17 +126,17 @@
         @changed="reviewDirty = true"
       >
         <template #empty>
-          Ingen spørsmål her ennå - legg til en tilfeldig gruppe, eller søk etter bestemte, under.
+          {{ $t('Ingen spørsmål her ennå - legg til en tilfeldig gruppe, eller søk etter bestemte, under.') }}
         </template>
         <template #actions>
           <div class="review-actions">
             <label class="review-actions-toggle">
               <input type="checkbox" v-model="includeAnswersInPdf" />
-              Ta med svar i PDF
+              {{ $t('Ta med svar i PDF') }}
             </label>
             <div class="review-actions-buttons">
               <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
-                {{ exportingPdf ? 'Forbereder PDF…' : 'Last ned som PDF' }}
+                {{ exportingPdf ? $t('Forbereder PDF…') : $t('Last ned som PDF') }}
               </button>
               <button
                 class="btn"
@@ -144,7 +144,7 @@
                 :disabled="saving"
                 @click="saveQuiz"
               >
-                {{ saving ? 'Lagrer…' : justSaved ? 'Lagret i Mine quizer ✓' : 'Lagre i Mine quizer' }}
+                {{ saving ? $t('Lagrer…') : justSaved ? $t('Lagret i Mine quizer ✓') : $t('Lagre i Mine quizer') }}
               </button>
             </div>
           </div>
@@ -154,18 +154,18 @@
 
     <ConfirmModal
       v-if="showStartOverConfirm"
-      title="Forkaste endringene?"
-      message="Du har forkastet, byttet ut eller endret rekkefølgen på spørsmål i denne quizen. Hvis du går tilbake til innstillingene, mister du disse endringene med mindre du allerede har lagret quizen."
-      confirm-text="Tilbake til innstillinger"
+      :title="$t('Forkaste endringene?')"
+      :message="$t('Du har forkastet, byttet ut eller endret rekkefølgen på spørsmål i denne quizen. Hvis du går tilbake til innstillingene, mister du disse endringene med mindre du allerede har lagret quizen.')"
+      :confirm-text="$t('Tilbake til innstillinger')"
       @confirm="confirmStartOver"
       @cancel="showStartOverConfirm = false"
     />
 
     <ConfirmModal
       v-if="showLeaveConfirm"
-      title="Forlate denne quizen?"
-      message="Du har forkastet, byttet ut eller endret rekkefølgen på spørsmål i denne quizen. Hvis du forlater siden, mister du disse endringene med mindre du allerede har lagret quizen."
-      confirm-text="Forlat likevel"
+      :title="$t('Forlate denne quizen?')"
+      :message="$t('Du har forkastet, byttet ut eller endret rekkefølgen på spørsmål i denne quizen. Hvis du forlater siden, mister du disse endringene med mindre du allerede har lagret quizen.')"
+      :confirm-text="$t('Forlat likevel')"
       @confirm="confirmLeave"
       @cancel="cancelLeave"
     />
@@ -173,6 +173,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import navTrigger from '../services/navTrigger'
@@ -266,7 +267,7 @@ async function loadCategories() {
   try {
     availableCategories.value = await api.getCategories(form.language)
   } catch (e) {
-    error.value = 'Kunne ikke laste kategorier fra serveren.'
+    error.value = _t('Kunne ikke laste kategorier fra serveren.')
   } finally {
     categoriesLoading.value = false
   }
@@ -287,9 +288,9 @@ function clampRange(which) {
 }
 
 function difficultyWord(value) {
-  if (value <= 3) return 'Lett'
-  if (value <= 7) return 'Middels'
-  return 'Vanskelig'
+  if (value <= 3) return _t('Lett')
+  if (value <= 7) return _t('Middels')
+  return _t('Vanskelig')
 }
 
 function isSelected(cat) {
@@ -321,7 +322,7 @@ function stepCount(cat, delta) {
 
 function startBlank() {
   quiz.value = {
-    title: form.title || 'Min quiz',
+    title: form.title || _t('Min quiz'),
     language: form.language,
     questions: [],
     warnings: []
@@ -333,7 +334,7 @@ async function generateQuiz() {
   generating.value = true
   try {
     const result = await api.generateQuiz({
-      title: form.title || 'Min quiz',
+      title: form.title || _t('Min quiz'),
       language: form.language,
       minDifficulty: form.minDifficulty,
       maxDifficulty: form.maxDifficulty,
@@ -343,7 +344,7 @@ async function generateQuiz() {
     quiz.value = result
     reviewDirty.value = false
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke lage en quiz. Prøv andre filtre.'
+    error.value = e.response?.data?.message || _t('Kunne ikke lage en quiz. Prøv andre filtre.')
   } finally {
     generating.value = false
   }
@@ -380,7 +381,7 @@ async function downloadPdf() {
     a.click()
     window.URL.revokeObjectURL(url)
   } catch (e) {
-    error.value = 'Kunne ikke lage PDF-en.'
+    error.value = _t('Kunne ikke lage PDF-en.')
   } finally {
     exportingPdf.value = false
   }
@@ -395,7 +396,7 @@ async function saveQuiz() {
     justSaved.value = true
     setTimeout(() => { justSaved.value = false }, 3000)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke lagre quizen.'
+    error.value = e.response?.data?.message || _t('Kunne ikke lagre quizen.')
   } finally {
     saving.value = false
   }

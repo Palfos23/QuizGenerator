@@ -3,13 +3,13 @@
     <div class="modal">
       <div style="text-align:center;">
         <div style="color:var(--gold); font-weight:700; font-size:1.1rem; margin-bottom:6px;">
-          {{ currentPlayer }}sin tur
+          {{ currentPlayer }}{{ $t('sin tur') }}
         </div>
         <p style="font-size:1.4rem; font-weight:700; margin:0 0 20px;">{{ groupDigits ? formatNumber(targetValue) : targetValue }} {{ statLabel }}</p>
 
         <div v-if="answeredPlayers.length" style="text-align:left; margin-bottom:20px; border:1px solid var(--border); border-radius: 2px; padding:10px 14px;">
           <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
-            Svart så langt denne runden
+            {{ $t('Svart så langt denne runden') }}
           </div>
           <div v-for="(name, i) in answeredPlayers" :key="name" style="display:flex; justify-content:space-between; font-size:0.9rem; padding:2px 0;">
             <span>{{ name }}</span>
@@ -23,7 +23,7 @@
               type="text"
               v-model="value"
               @input="onInput"
-              placeholder="Skriv et navn…"
+              :placeholder="$t('Skriv et navn…')"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -32,7 +32,7 @@
           </div>
 
           <div v-if="duplicateError" style="color:var(--coral); font-size:0.9rem; margin-top:8px;">
-            Dette navnet er allerede brukt denne runden.
+            {{ $t('Dette navnet er allerede brukt denne runden.') }}
           </div>
 
           <div v-if="showDropdown" class="guess-results" style="position:absolute; bottom:100%; left:0; right:0; margin-bottom:6px; max-height:220px; overflow-y:auto;">
@@ -46,7 +46,7 @@
           </div>
 
           <button type="submit" class="btn btn-primary" :disabled="!value.trim()" style="margin-top:16px; width:100%;">
-            Send inn
+            {{ $t('Send inn') }}
           </button>
         </form>
 

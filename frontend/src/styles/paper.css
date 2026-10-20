@@ -247,3 +247,27 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .dq-rank--star { background: transparent; border: 2px solid var(--gold); color: var(--gold); display: grid; place-items: center; }
 .dq-rank--star svg { width: 15px; height: 15px; }
 .dq-board-row--expert .dq-board-bar i { background: var(--gold); }
+
+/* Language toggle (NO | EN) in the top nav */
+.lang-toggle {
+  display: inline-flex;
+  border: 1.5px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+.lang-toggle-btn {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 5px 9px;
+  background: transparent;
+  color: var(--text-dim);
+  border: none;
+  cursor: pointer;
+}
+.lang-toggle-btn + .lang-toggle-btn { border-left: 1.5px solid var(--rule); }
+.lang-toggle-btn.is-on { background: var(--rule); color: var(--ink-raised); }
+.lang-toggle-btn:not(.is-on):hover { background: rgba(27, 26, 23, 0.07); color: var(--text); }

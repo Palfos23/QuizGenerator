@@ -1,10 +1,19 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import com.quizapp.model.RoomStatus;
 
 import java.util.List;
 
+@Translated(type = ContentTranslation.TYPE_FLASHBACK, id = "yearId", fields = {"visibleHints:hints"})
 public class FlashbackOnlineStateDto {
+    // Lets the translation overlay find this board's admin-written versions (see config/Translated).
+    private Long yearId;
+    public Long getYearId() { return yearId; }
+    public void setYearId(Long yearId) { this.yearId = yearId; }
+
     private String roomCode;
     private RoomStatus status;
     private Long yourParticipantId;

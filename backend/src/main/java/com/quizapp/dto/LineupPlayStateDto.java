@@ -1,5 +1,8 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -10,6 +13,7 @@ import java.util.List;
 // path (those three always start at their defaults, since there's no
 // attempt to attach to - see LineupPlayService for the split, mirroring
 // GridPlayStateDto's play vs. multiplayer-start distinction).
+@Translated(type = ContentTranslation.TYPE_LINEUP, fields = {"title", "competition"})
 public class LineupPlayStateDto {
 
     private Long id;

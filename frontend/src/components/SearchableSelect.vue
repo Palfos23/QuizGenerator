@@ -23,12 +23,13 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
   options: { type: Array, default: () => [] },
-  placeholder: { type: String, default: 'Søk…' }
+  placeholder: { type: String, default: _t('Søk…') }
 })
 const emit = defineEmits(['update:modelValue'])
 

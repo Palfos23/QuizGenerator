@@ -5,10 +5,10 @@
       <h2>{{ state?.categoryTitle }}</h2>
       <p v-if="state?.categoryDescription" class="fiveoo-description">{{ state.categoryDescription }}</p>
       <p v-if="lastUpdatedLabel" class="fiveoo-description" style="font-size:0.75rem;">{{ lastUpdatedLabel }}</p>
-      <p class="fiveoo-rules-reminder">Første som kommer ut mellom 0 og -10 vinner</p>
+      <p class="fiveoo-rules-reminder">{{ $t('Første som kommer ut mellom 0 og -10 vinner') }}</p>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
@@ -20,11 +20,11 @@
           :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId, 'you-row': p.participantId === state.windowReacherParticipantId, disconnected: p.connected === false && p.participantId !== props.yourParticipantId }"
         >
           <strong>{{ p.name }}</strong>
-          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Frakoblet</span>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">{{ $t('Frakoblet§OnlineFiveOhOneGameT') }}</span>
           <div style="font-size:1.8rem; font-weight:700; margin-top:4px;" :style="{ color: p.total <= 0 && p.total >= -10 ? 'var(--teal)' : 'var(--text)' }">
             {{ p.total }}
           </div>
-          <div v-if="p.participantId === state.windowReacherParticipantId" style="font-size:0.78rem; color:var(--gold); margin-top:2px;">I vinduet!</div>
+          <div v-if="p.participantId === state.windowReacherParticipantId" style="font-size:0.78rem; color:var(--gold); margin-top:2px;">{{ $t('I vinduet!') }}</div>
           <div v-if="recentThrowsFor(p.name).length" class="fiveoo-recent-throws">
             <span
               v-for="(t, i) in recentThrowsFor(p.name)"
@@ -38,17 +38,17 @@
 
       <div v-if="isYourTurn" class="guess-box-center">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
-          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">Din kasting</p>
+          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ $t('Din kasting') }}</p>
           <p v-if="state.bestAvailableScore !== null && state.bestAvailableScore !== undefined" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
-            Beste tilgjengelige poengsum: <strong style="color:var(--text);">{{ state.bestAvailableScore }}</strong>
+            {{ $t('Beste tilgjengelige poengsum:') }} <strong style="color:var(--text);">{{ state.bestAvailableScore }}</strong>
           </p>
           <p v-if="state.checkoutCount !== null && state.checkoutCount !== undefined" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
-            <strong style="color:var(--text);">{{ state.checkoutCount }}</strong> mulig utsjekk<span v-if="state.checkoutCount !== 1">s</span> igjen
+            <strong style="color:var(--text);">{{ state.checkoutCount }}</strong> {{ $t('mulig utsjekk') }}<span v-if="state.checkoutCount !== 1">s</span> {{ $t('igjen') }}
           </p>
           <input
             type="text"
             v-model="searchTerm"
-            placeholder="Søk etter et navn…"
+            :placeholder="$t('Søk etter et navn…')"
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"
@@ -57,14 +57,14 @@
           <!-- A throw has to be a picked entry, so unlike Tension there's no typing-it-anyway fallback -
                the player needs to see why the list isn't there and be able to retry it. -->
           <div v-if="entriesStatus === 'loading'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px; text-align:center;">
-            Laster svarlisten…
+            {{ $t('Laster svarlisten…') }}
           </div>
           <div v-else-if="entriesStatus === 'error'" style="color:var(--coral); font-size:0.85rem; margin-top:8px; text-align:center;">
-            Kunne ikke laste svarlisten.
-            <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryEntries">Prøv igjen</button>
+            {{ $t('Kunne ikke laste svarlisten.') }}
+            <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryEntries">{{ $t('Prøv igjen') }}</button>
           </div>
           <div v-else-if="entriesStatus === 'empty'" style="color:var(--coral); font-size:0.85rem; margin-top:8px; text-align:center;">
-            Denne kategorien har ingen svar å velge mellom - be verten starte en annen.
+            {{ $t('Denne kategorien har ingen svar å velge mellom - be verten starte en annen.') }}
           </div>
           <div v-if="searchResults.length" class="guess-results">
             <button
@@ -78,21 +78,21 @@
         </div>
       </div>
       <div v-else class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
-        Venter på {{ currentTurnName }}sin tur…
+        {{ $t('Venter på') }} {{ currentTurnName }}{{ $t('sin tur…') }}
       </div>
 
       <div v-if="lastThrow" style="text-align:center; margin-top:16px; color:var(--text-dim); font-size:0.9rem;">
         <span v-if="lastThrow.bust" style="color:var(--coral); font-weight:600;">BUST!</span>
         <template v-else>
-          {{ lastThrow.playerName }} kastet {{ lastThrow.entryName }} ({{ lastThrow.rawValue }})
-          <span v-if="lastThrow.score === 0" style="color:var(--coral);"> - får 0</span>
-          <span v-else> - får {{ lastThrow.score }}</span>
+          {{ lastThrow.playerName }} {{ $t('kastet') }} {{ lastThrow.entryName }} ({{ lastThrow.rawValue }})
+          <span v-if="lastThrow.score === 0" style="color:var(--coral);"> {{ $t('- får 0') }}</span>
+          <span v-else> {{ $t('- får') }} {{ lastThrow.score }}</span>
         </template>
       </div>
     </template>
 
     <div v-else-if="state && state.finished" class="fiveoo-gameover">
-      <div class="darts-win-label">Vinner</div>
+      <div class="darts-win-label">{{ $t('Vinner') }}</div>
       <div class="darts-win-name">{{ winnerName }}</div>
 
       <div class="score-square-grid">
@@ -103,23 +103,23 @@
       </div>
 
       <button v-if="isHost" class="btn btn-primary" style="margin-top:8px; min-width:220px;" @click="finish">
-        Spill igjen
+        {{ $t('Spill igjen') }}
       </button>
-      <p v-else class="page-subtitle" style="margin-top:8px;">Venter på at verten skal starte en ny runde, eller forlat spillet under.</p>
+      <p v-else class="page-subtitle" style="margin-top:8px;">{{ $t('Venter på at verten skal starte en ny runde, eller forlat spillet under.') }}</p>
     </div>
 
     <details v-if="state" class="advanced-disclosure" style="margin-top:20px;">
-      <summary>Kastehistorikk</summary>
+      <summary>{{ $t('Kastehistorikk') }}</summary>
       <div style="margin-top:10px; max-height:220px; overflow-y:auto;">
         <div v-for="(t, i) in [...state.throwHistory].reverse()" :key="i" style="font-size:0.85rem; color:var(--text-dim); padding:3px 0;">
           <strong style="color:var(--text);">{{ t.playerName }}</strong>
-          {{ t.bust ? 'bustet på' : 'kastet' }} {{ t.entryName }} ({{ t.rawValue }})
-          <span v-if="!t.bust">→ fikk {{ t.score }}, nå på {{ t.resultingTotal }}</span>
+          {{ t.bust ? $t('bustet på') : $t('kastet') }} {{ t.entryName }} ({{ t.rawValue }})
+          <span v-if="!t.bust">{{ $t('→ fikk') }} {{ t.score }}{{ $t(', nå på') }} {{ t.resultingTotal }}</span>
         </div>
       </div>
     </details>
 
-    <button class="btn btn-secondary btn-sm no-print" style="margin-top:20px;" @click="leave">← Forlat spillet</button>
+    <button class="btn btn-secondary btn-sm no-print" style="margin-top:20px;" @click="leave">{{ $t('← Forlat spillet') }}</button>
 
     <div v-if="throwOverlay" class="fiveoo-throw-overlay" :class="throwOverlay.kind">
       <div class="fiveoo-overlay-text">{{ throwOverlay.text }}</div>
@@ -129,6 +129,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, ref } from 'vue'
 import api from '../services/api'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
@@ -156,7 +157,7 @@ const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.categoryU
 // a single failed or discarded fetch left the answer list empty for the entire game.
 const { items: categoryEntries, status: entriesStatus, load: loadEntries, retry: retryEntries } = useReferenceList({
   area: '501-answers',
-  failureToast: "Kunne ikke laste svarlisten - prøver igjen."
+  failureToast: _t('Kunne ikke laste svarlisten - prøver igjen.')
 })
 const loading = ref(true)
 const error = ref('')
@@ -207,7 +208,7 @@ async function poll() {
     const fresh = await api.getFiveOhOneOnlineState(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = 'Mistet forbindelsen til rommet - prøver igjen…'
+    error.value = _t('Mistet forbindelsen til rommet - prøver igjen…')
   } finally {
     loading.value = false
   }
@@ -257,7 +258,7 @@ async function submitThrow(entry) {
     }
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke sende inn kastet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke sende inn kastet.')
   } finally {
     throwing.value = false
   }

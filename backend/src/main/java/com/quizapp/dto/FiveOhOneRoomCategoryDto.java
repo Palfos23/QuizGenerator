@@ -1,5 +1,9 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
+@Translated(type = ContentTranslation.TYPE_FIVEOHONE, fields = {"title"})
 public class FiveOhOneRoomCategoryDto {
 
     private Long id;

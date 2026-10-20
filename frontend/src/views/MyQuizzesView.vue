@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Mine quizer</h1>
+    <h1>{{ $t('Mine quizer') }}</h1>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -8,35 +8,35 @@
     <section v-if="!openQuiz">
       <div class="view-tabs" v-if="showTemplatesTab">
         <button type="button" class="view-tab" :class="{ active: activeTab === 'mine' }" @click="activeTab = 'mine'">
-          Mine quizer <span class="view-tab-count">{{ quizzes.length }}</span>
+          {{ $t('Mine quizer') }} <span class="view-tab-count">{{ quizzes.length }}</span>
         </button>
         <button type="button" class="view-tab" :class="{ active: activeTab === 'templates' }" @click="activeTab = 'templates'">
-          Quizmaler <span class="view-tab-count">{{ templates.length }}</span>
+          {{ $t('Quizmaler') }} <span class="view-tab-count">{{ templates.length }}</span>
         </button>
       </div>
 
       <template v-if="activeTab === 'templates' && showTemplatesTab">
-        <p class="page-subtitle" style="margin-top:0;">Publisert av en administrator - kopier en for å få din egen versjon du kan redigere.</p>
+        <p class="page-subtitle" style="margin-top:0;">{{ $t('Publisert av en administrator - kopier en for å få din egen versjon du kan redigere.') }}</p>
         <div class="saved-quiz-list">
           <div v-for="t in templates" :key="t.id" class="saved-quiz-row">
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ t.title }}</div>
-              <div class="saved-quiz-meta">{{ languageLabel(t.language) }} · {{ t.questionCount }} spørsmål</div>
+              <div class="saved-quiz-meta">{{ languageLabel(t.language) }} · {{ t.questionCount }} {{ $t('spørsmål§MyQuizzesViewT') }}</div>
             </div>
             <button class="btn btn-secondary btn-sm" :disabled="copyingId === t.id" @click="copyTemplate(t)">
-              {{ copyingId === t.id ? 'Kopierer…' : 'Kopier til Mine quizer' }}
+              {{ copyingId === t.id ? $t('Kopierer…') : $t('Kopier til Mine quizer') }}
             </button>
           </div>
         </div>
       </template>
 
       <template v-else>
-        <p class="page-subtitle" style="margin-top:0;">Quizer du har lagret selv. Å lage en quiz lagrer den ikke automatisk.</p>
+        <p class="page-subtitle" style="margin-top:0;">{{ $t('Quizer du har lagret selv. Å lage en quiz lagrer den ikke automatisk.') }}</p>
 
-        <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+        <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
         <div v-else-if="!quizzes.length" class="empty-state friendly">
-          Ingen lagrede quizer ennå. Lag en på siden <router-link to="/generate">Lag en quiz</router-link> , og trykk deretter «Lagre i Mine quizer»<template v-if="showTemplatesTab">, eller kopier en <a href="#" @click.prevent="activeTab = 'templates'">quizmal</a> for å komme i gang</template>.
+          {{ $t('Ingen lagrede quizer ennå. Lag en på siden') }} <router-link to="/generate">{{ $t('Lag en quiz') }}</router-link> {{ $t(', og trykk deretter «Lagre i Mine quizer»') }}<template v-if="showTemplatesTab">{{ $t(', eller kopier en') }} <a href="#" @click.prevent="activeTab = 'templates'">{{ $t('quizmal') }}</a> {{ $t('for å komme i gang') }}</template>.
         </div>
 
         <div v-else class="saved-quiz-list">
@@ -44,19 +44,19 @@
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ q.title }}</div>
               <div class="saved-quiz-meta">
-                {{ flagFor(q.language) }} {{ languageLabel(q.language) }} · {{ q.questionCount }} spørsmål · lagret {{ formatDate(q.createdAt) }}
+                {{ flagFor(q.language) }} {{ languageLabel(q.language) }} · {{ q.questionCount }} {{ $t('spørsmål · lagret') }} {{ formatDate(q.createdAt) }}
               </div>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn btn-secondary btn-sm" @click="openOne(q.id)">Vis og rediger</button>
+              <button class="btn btn-secondary btn-sm" @click="openOne(q.id)">{{ $t('Vis og rediger') }}</button>
               <button
                 class="btn btn-secondary btn-sm"
                 :disabled="duplicatingId === q.id"
                 @click="duplicateAndRegenerate(q)"
               >
-                {{ duplicatingId === q.id ? 'Lager på nytt…' : 'Dupliser og lag på nytt' }}
+                {{ duplicatingId === q.id ? $t('Lager på nytt…') : $t('Dupliser og lag på nytt') }}
               </button>
-              <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Slett</button>
+              <button class="btn btn-danger btn-sm" @click="requestDelete(q)">{{ $t('Slett') }}</button>
             </div>
           </div>
         </div>
@@ -72,11 +72,11 @@
             v-model="openQuiz.title"
             @input="dirty = true"
             class="title-edit-input"
-            aria-label="Quiztittel"
+            :aria-label="$t('Quiztittel')"
           />
-          <span style="color:var(--text-dim); font-size:0.9rem;">{{ openQuiz.questions.length }} spørsmål</span>
+          <span style="color:var(--text-dim); font-size:0.9rem;">{{ openQuiz.questions.length }} {{ $t('spørsmål§MyQuizzesViewT') }}</span>
         </div>
-        <button class="btn btn-secondary btn-sm no-print" @click="backToList">← Tilbake til listen</button>
+        <button class="btn btn-secondary btn-sm no-print" @click="backToList">{{ $t('← Tilbake til listen') }}</button>
       </div>
 
       <div v-if="openQuiz.warnings && openQuiz.warnings.length" class="banner error">
@@ -84,8 +84,8 @@
       </div>
 
       <p class="page-subtitle" style="margin-top:-10px;">
-        <template v-if="isDraft">Dette er en nylig laget kopi - trykk «Lagre som ny» når du er fornøyd med den.</template>
-        <template v-else>Bruk knappene ↑ / ↓ for å endre rekkefølgen, eller forkast/bytt ut spørsmål - trykk deretter «Oppdater» for å lagre endringene.</template>
+        <template v-if="isDraft">{{ $t('Dette er en nylig laget kopi - trykk «Lagre som ny» når du er fornøyd med den.') }}</template>
+        <template v-else>{{ $t('Bruk knappene ↑ / ↓ for å endre rekkefølgen, eller forkast/bytt ut spørsmål - trykk deretter «Oppdater» for å lagre endringene.') }}</template>
       </p>
 
       <QuizReviewEditor
@@ -97,11 +97,11 @@
           <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
             <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; font-size:0.9rem; color:var(--text-dim);">
               <input type="checkbox" v-model="includeAnswersInPdf" style="width:auto;" />
-              Ta med svar i PDF
+              {{ $t('Ta med svar i PDF') }}
             </label>
             <div style="display:flex; gap:12px; flex-wrap:wrap;">
               <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
-                {{ exportingPdf ? 'Forbereder PDF…' : 'Last ned som PDF' }}
+                {{ exportingPdf ? $t('Forbereder PDF…') : $t('Last ned som PDF') }}
               </button>
               <button
                 v-if="isDraft"
@@ -110,7 +110,7 @@
                 :disabled="updating"
                 @click="saveAsNew"
               >
-                {{ updating ? 'Lagrer…' : justUpdated ? 'Lagret ✓' : 'Lagre som ny' }}
+                {{ updating ? $t('Lagrer…') : justUpdated ? $t('Lagret ✓') : $t('Lagre som ny') }}
               </button>
               <button
                 v-else
@@ -119,7 +119,7 @@
                 :disabled="updating"
                 @click="updateQuiz"
               >
-                {{ updating ? 'Oppdaterer…' : justUpdated ? 'Oppdatert ✓' : 'Oppdater' }}
+                {{ updating ? $t('Oppdaterer…§MyQuizzesViewM') : justUpdated ? $t('Oppdatert ✓') : $t('Oppdater§MyQuizzesViewM') }}
               </button>
             </div>
           </div>
@@ -129,26 +129,26 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Slette denne quizen?"
-      :message="`«${pendingDelete.title}» fjernes for godt. Dette kan ikke angres.`"
+      :title="$t('Slette denne quizen?')"
+      :message="$t('«{0}» fjernes for godt. Dette kan ikke angres.', [pendingDelete.title])"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
 
     <ConfirmModal
       v-if="showUnsavedConfirm"
-      title="Forkaste endringene?"
-      message="Du har ulagrede endringer i denne quizen. Hvis du går tilbake, mister du dem med mindre du lagrer først."
-      confirm-text="Forkast og gå tilbake"
+      :title="$t('Forkaste endringene?')"
+      :message="$t('Du har ulagrede endringer i denne quizen. Hvis du går tilbake, mister du dem med mindre du lagrer først.')"
+      :confirm-text="$t('Forkast og gå tilbake')"
       @confirm="confirmBackToList"
       @cancel="showUnsavedConfirm = false"
     />
 
     <ConfirmModal
       v-if="showLeaveConfirm"
-      title="Forlate denne quizen?"
-      message="Du har ulagrede endringer i denne quizen. Hvis du forlater siden, mister du dem med mindre du lagrer først."
-      confirm-text="Forlat likevel"
+      :title="$t('Forlate denne quizen?')"
+      :message="$t('Du har ulagrede endringer i denne quizen. Hvis du forlater siden, mister du dem med mindre du lagrer først.')"
+      :confirm-text="$t('Forlat likevel')"
       @confirm="confirmLeave"
       @cancel="cancelLeave"
     />
@@ -156,6 +156,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import api from '../services/api'
@@ -245,10 +246,10 @@ async function copyTemplate(t) {
   error.value = ''
   try {
     await api.copyQuizTemplate(t.id)
-    toast.show(`«${t.title}» er lagt til i Mine quizer.`)
+    toast.show(_t('«{0}» er lagt til i Mine quizer.', [t.title]))
     loadList()
   } catch (e) {
-    error.value = 'Kunne ikke kopiere malen.'
+    error.value = _t('Kunne ikke kopiere malen.')
   } finally {
     copyingId.value = null
   }
@@ -260,7 +261,7 @@ async function loadList() {
   try {
     quizzes.value = await api.listSavedQuizzes()
   } catch (e) {
-    error.value = 'Kunne ikke laste de lagrede quizene dine.'
+    error.value = _t('Kunne ikke laste de lagrede quizene dine.')
   } finally {
     loading.value = false
   }
@@ -271,7 +272,7 @@ function flagFor(code) {
 }
 
 function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('nb-NO', { year: 'numeric', month: 'short', day: 'numeric' })
+  return new Date(iso).toLocaleDateString(window.QUIZ_LOCALE, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 async function openOne(id) {
@@ -280,7 +281,7 @@ async function openOne(id) {
     openQuiz.value = await api.getSavedQuiz(id)
     dirty.value = false
   } catch (e) {
-    error.value = 'Kunne ikke laste quizen.'
+    error.value = _t('Kunne ikke laste quizen.')
   }
 }
 
@@ -302,7 +303,7 @@ async function duplicateAndRegenerate(summary) {
       .map(([category, numberOfQuestions]) => ({ category, numberOfQuestions }))
 
     const result = await api.generateQuiz({
-      title: `${full.title} (kopi)`,
+      title: _t('{0} (kopi)', [full.title]),
       language: full.language,
       minDifficulty: 1,
       maxDifficulty: 10,
@@ -311,7 +312,7 @@ async function duplicateAndRegenerate(summary) {
     openQuiz.value = result
     dirty.value = true
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke lage quizen på nytt.'
+    error.value = e.response?.data?.message || _t('Kunne ikke lage quizen på nytt.')
   } finally {
     duplicatingId.value = null
   }
@@ -343,10 +344,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.deleteSavedQuiz(q.id)
-    toast.show('Quizen er slettet.')
+    toast.show(_t('Quizen er slettet.'))
     loadList()
   } catch (e) {
-    error.value = 'Kunne ikke slette quizen.'
+    error.value = _t('Kunne ikke slette quizen.')
   }
 }
 
@@ -362,7 +363,7 @@ async function downloadPdf() {
     a.click()
     window.URL.revokeObjectURL(url)
   } catch (e) {
-    error.value = 'Kunne ikke lage PDF-en.'
+    error.value = _t('Kunne ikke lage PDF-en.')
   } finally {
     exportingPdf.value = false
   }
@@ -377,7 +378,7 @@ async function updateQuiz() {
     justUpdated.value = true
     setTimeout(() => { justUpdated.value = false }, 3000)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke oppdatere quizen.'
+    error.value = e.response?.data?.message || _t('Kunne ikke oppdatere quizen.')
   } finally {
     updating.value = false
   }
@@ -393,7 +394,7 @@ async function saveAsNew() {
     loadList()
     setTimeout(() => { justUpdated.value = false }, 3000)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke lagre quizen.'
+    error.value = e.response?.data?.message || _t('Kunne ikke lagre quizen.')
   } finally {
     updating.value = false
   }

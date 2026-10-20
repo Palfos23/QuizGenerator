@@ -1,17 +1,17 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Forhåndsvisning av et Imposter-brett: et rutenett der et par ruter er avslørt som imposters.">
-    <span class="game-preview-tag">Forhåndsvisning</span>
-    <div class="ip-theme">Tema · «Toppscorere i Premier League, 2023/24»</div>
+  <div class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av et Imposter-brett: et rutenett der et par ruter er avslørt som imposters.')">
+    <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
+    <div class="ip-theme">{{ $t('Tema · «Toppscorere i Premier League, 2023/24»') }}</div>
     <div class="ip-grid">
       <div v-for="t in tiles" :key="t.name" class="ip-tile" :class="t.state">
         <span class="ip-name">{{ t.name }}</span>
-        <span v-if="t.state === 'fit'" class="ip-badge good">✓ passer</span>
+        <span v-if="t.state === 'fit'" class="ip-badge good">{{ $t('✓ passer') }}</span>
         <span v-else-if="t.state === 'imposter'" class="ip-badge bad">✕ imposter</span>
       </div>
     </div>
     <p class="game-preview-caption">
-      Snu ruter sammen — de fleste hører til temaet, noen få gjør det ikke.
-      <strong>Færrest <span class="bad">imposter</span> -treff vinner.</strong>
+      {{ $t('Snu ruter sammen — de fleste hører til temaet, noen få gjør det ikke.') }}
+      <strong>{{ $t('Færrest') }} <span class="bad">imposter</span> {{ $t('-treff vinner.') }}</strong>
     </p>
   </div>
 </template>

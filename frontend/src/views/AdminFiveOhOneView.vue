@@ -2,14 +2,14 @@
   <div>
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-        <h1 style="margin:0;">501-kategorier <span v-if="!loading && categories.length" class="header-count">{{ categories.length }}</span></h1>
-        <button class="btn btn-primary" @click="openCreate">+ Ny kategori</button>
+        <h1 style="margin:0;">{{ $t('501-kategorier') }} <span v-if="!loading && categories.length" class="header-count">{{ categories.length }}</span></h1>
+        <button class="btn btn-primary" @click="openCreate">{{ $t('+ Ny kategori') }}</button>
       </div>
-      <p class="page-subtitle">Hver kategori er et rangert sett med navn og tall - f.eks. "Premier League-kamper".</p>
+      <p class="page-subtitle">{{ $t('Hver kategori er et rangert sett med navn og tall - f.eks. "Premier League-kamper".') }}</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
-      <div v-else-if="!categories.length" class="empty-state friendly">Ingen kategorier ennå - lag den første.</div>
+      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <div v-else-if="!categories.length" class="empty-state friendly">{{ $t('Ingen kategorier ennå - lag den første.') }}</div>
 
       <template v-else>
       <BoardListToolbar
@@ -19,26 +19,26 @@
         :sorts="categorySorts"
         :total-count="categories.length"
         :filtered-count="filteredCategories.length"
-        placeholder="Søk etter kategorier på tittel eller beskrivelse…"
+        :placeholder="$t('Søk etter kategorier på tittel eller beskrivelse…')"
       />
 
-      <div v-if="!filteredCategories.length" class="empty-state">Ingen kategorier samsvarer med søket ditt.</div>
+      <div v-if="!filteredCategories.length" class="empty-state">{{ $t('Ingen kategorier samsvarer med søket ditt.') }}</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="c in pagedCategories" :key="c.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ c.title }}
-              <span v-if="c.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Automatisk utvalg</span>
-              <span v-if="c.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Kan utløpe</span>
+              <span v-if="c.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">{{ $t('Automatisk utvalg') }}</span>
+              <span v-if="c.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">{{ $t('Kan utløpe') }}</span>
             </div>
-            <div class="saved-quiz-meta">{{ c.entryCount }} oppføringer<span v-if="c.description"> · {{ c.description }}</span></div>
+            <div class="saved-quiz-meta">{{ c.entryCount }} {{ $t('oppføringer') }}<span v-if="c.description"> · {{ c.description }}</span></div>
           </div>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-secondary btn-sm" :disabled="openingId === c.id" @click="openEdit(c.id)">
-              {{ openingId === c.id ? 'Laster…' : 'Rediger' }}
+              {{ openingId === c.id ? $t('Laster…') : $t('Rediger') }}
             </button>
-            <button class="btn btn-danger btn-sm" :disabled="openingId === c.id" @click="requestDelete(c)">Slett</button>
+            <button class="btn btn-danger btn-sm" :disabled="openingId === c.id" @click="requestDelete(c)">{{ $t('Slett') }}</button>
           </div>
         </div>
       </div>
@@ -49,22 +49,22 @@
 
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1 style="margin:0;">{{ editingId ? 'Rediger kategori' : 'Ny kategori' }}</h1>
-        <button class="btn btn-secondary" @click="view = 'list'">← Tilbake til listen</button>
+        <h1 style="margin:0;">{{ editingId ? $t('Rediger kategori') : $t('Ny kategori') }}</h1>
+        <button class="btn btn-secondary" @click="view = 'list'">{{ $t('← Tilbake til listen') }}</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Tittel<input type="text" v-model="form.title" placeholder="f.eks. Premier League-kamper" /></label>
+        <label>{{ $t('Tittel') }}<input type="text" v-model="form.title" :placeholder="$t('f.eks. Premier League-kamper')" /></label>
       </div>
 
       <div class="field">
-        <label>Beskrivelse <span class="picker-hint">valgfri smakstekst</span><input type="text" v-model="form.description" placeholder="Vises for spillerne før de velger denne kategorien" /></label>
+        <label>{{ $t('Beskrivelse') }} <span class="picker-hint">{{ $t('valgfri smakstekst') }}</span><input type="text" v-model="form.description" :placeholder="$t('Vises for spillerne før de velger denne kategorien')" /></label>
       </div>
 
       <div class="field">
-        <label>Emnekategori <span class="picker-hint">valgfritt - lar CSV-importerte navn sjekkes mot emnene i denne kategorien</span></label>
+        <label>{{ $t('Emnekategori') }} <span class="picker-hint">{{ $t('valgfritt - lar CSV-importerte navn sjekkes mot emnene i denne kategorien') }}</span></label>
         <div class="language-row">
           <button
             v-for="s in gridCategories.categories.value"
@@ -82,9 +82,9 @@
       <div class="field option-card">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
-          Kan utløpe
+          {{ $t('Kan utløpe') }}
           <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
-            f.eks. "land etter nåværende folketall" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.
+            {{ $t('f.eks. "land etter nåværende folketall" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.') }}
           </div>
         </label>
       </div>
@@ -92,10 +92,10 @@
       <div v-if="form.sport" class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.entireCategoryPool" style="width:auto;" />
-          Bruk alle emner i "{{ form.sport }}" som utvalg
+          {{ $t('Bruk alle emner i "') }}{{ form.sport }}{{ $t('" som utvalg') }}
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
-          Alle emner i "{{ form.sport }}" kan også kastes, inkludert de som legges til senere - ingenting å importere på nytt. Alle som ikke er oppført under med en faktisk utsjekkverdi, gir 0 når de kastes. Du legger fortsatt til de som er verdt en faktisk verdi under.
+          {{ $t('Alle emner i "') }}{{ form.sport }}{{ $t('" kan også kastes, inkludert de som legges til senere - ingenting å importere på nytt. Alle som ikke er oppført under med en faktisk utsjekkverdi, gir 0 når de kastes. Du legger fortsatt til de som er verdt en faktisk verdi under.') }}
         </p>
       </div>
 
@@ -103,7 +103,7 @@
         <input
           type="text"
           v-model="athleteSearchTerm"
-          placeholder="Søk etter emner på navn…"
+          :placeholder="$t('Søk etter emner på navn…')"
           style="flex:1; min-width:180px;"
         />
       </div>
@@ -120,15 +120,15 @@
 
       <div style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" :disabled="importingCsv" @click="triggerCsvUpload">
-          {{ importingCsv ? 'Importerer…' : '+ Importer fra CSV' }}
+          {{ importingCsv ? $t('Importerer…') : $t('+ Importer fra CSV') }}
         </button>
         <input ref="csvInput" type="file" accept=".csv,text/csv" style="display:none;" @change="handleCsvFile" />
         <button v-if="form.sport" class="btn btn-secondary btn-sm" :disabled="!entries.length" @click="checkEntriesAgainstSubjects">
-          Sjekk navn mot emner
+          {{ $t('Sjekk navn mot emner') }}
         </button>
       </div>
       <p class="page-subtitle" style="margin-top:-4px;">
-        CSV-format: én rad per oppføring, <code>name,value</code> - e.g. <code>Mohamed Salah,233</code>. Legger til (eller oppdaterer) det som står under, erstatter det ikke.
+        {{ $t('CSV-format: én rad per oppføring,') }} <code>name,value</code> - e.g. <code>Mohamed Salah,233</code>{{ $t('. Legger til (eller oppdaterer) det som står under, erstatter det ikke.') }}
       </p>
 
       <div v-if="csvUnmatchedNames.length" style="background:rgba(216, 67, 43, 0.1); border:1px solid rgba(216, 67, 43, 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:14px;">
@@ -137,12 +137,12 @@
             {{ csvUnmatchedNames.length }} navn ble ikke funnet i "{{ form.sport }}"
           </strong>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-primary btn-sm" @click="showAddSubjectsModal = true">+ Legg til som emner</button>
-            <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">Lukk</button>
+            <button class="btn btn-primary btn-sm" @click="showAddSubjectsModal = true">{{ $t('+ Legg til som emner') }}</button>
+            <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">{{ $t('Lukk§AdminFiveOhOneViewT') }}</button>
           </div>
         </div>
         <p class="page-subtitle" style="margin:6px 0 10px;">
-          Disse oppføringene er uansett allerede i listen under - dette tilbyr bare å legge dem til i "{{ form.sport }}" også, slik at andre spill kan finne dem som emner.
+          {{ $t('Disse oppføringene er uansett allerede i listen under - dette tilbyr bare å legge dem til i "') }}{{ form.sport }}{{ $t('" også, slik at andre spill kan finne dem som emner.') }}
         </p>
         <ul style="margin:0; padding-left:20px; max-height:200px; overflow-y:auto; line-height:1.8;">
           <li v-for="row in csvUnmatchedNames" :key="row.name">{{ row.name }}</li>
@@ -167,19 +167,19 @@
       />
 
       <div class="field" style="margin-top:20px;">
-        <label>Oppføringer <span class="picker-hint">{{ entries.length }} totalt</span></label>
-        <div v-if="!entries.length" class="empty-state" style="padding:20px;">Ingen oppføringer ennå - importer en CSV over, eller legg til én om gangen under.</div>
+        <label>{{ $t('Oppføringer') }} <span class="picker-hint">{{ entries.length }} {{ $t('totalt') }}</span></label>
+        <div v-if="!entries.length" class="empty-state" style="padding:20px;">{{ $t('Ingen oppføringer ennå - importer en CSV over, eller legg til én om gangen under.') }}</div>
         <div v-else class="candidate-list">
           <input
             type="text"
             v-model="entryFilterTerm"
-            placeholder="Finn noen som allerede er i denne listen…"
+            :placeholder="$t('Finn noen som allerede er i denne listen…')"
             class="search-input"
             style="margin-bottom:12px;"
           />
 
           <div v-if="!filteredEntries.length" class="empty-state" style="padding:20px;">
-            Ingen i denne listen samsvarer med "{{ entryFilterTerm }}".
+            {{ $t('Ingen i denne listen samsvarer med "') }}{{ entryFilterTerm }}".
           </div>
 
           <template v-else>
@@ -188,38 +188,40 @@
               v-if="e.athleteId"
               class="tag"
               style="background:rgba(31, 122, 80, 0.15); color:var(--teal); flex-shrink:0;"
-              title="Koblet til et emne"
-            >✓ Emne</span>
+              :title="$t('Koblet til et emne')"
+            >{{ $t('✓ Emne') }}</span>
             <input
               type="text"
               v-model="e.name"
-              placeholder="Navn"
+              :placeholder="$t('Navn')"
               style="flex:1;"
               @input="e.athleteId = null"
             />
-            <input type="number" v-model.number="e.value" placeholder="Verdi" style="width:100px;" />
+            <input type="number" v-model.number="e.value" :placeholder="$t('Verdi')" style="width:100px;" />
             <button class="btn btn-danger btn-sm" @click="removeEntry(e)">✕</button>
           </div>
           <Pagination v-model:page="entryPage" :page-size="ENTRY_PAGE_SIZE" :total-items="filteredEntries.length" />
           </template>
         </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
-          <button class="btn btn-secondary btn-sm" @click="addBlankEntry">+ Legg til en manuelt</button>
-          <button class="btn btn-secondary btn-sm" :disabled="!entries.length" @click="downloadEntriesCsv">⇩ Last ned CSV</button>
+          <button class="btn btn-secondary btn-sm" @click="addBlankEntry">{{ $t('+ Legg til en manuelt') }}</button>
+          <button class="btn btn-secondary btn-sm" :disabled="!entries.length" @click="downloadEntriesCsv">{{ $t('⇩ Last ned CSV') }}</button>
         </div>
       </div>
 
+      <TranslationEditor v-if="editingId" type="FIVEOHONE" :entity-id="editingId" />
+
       <button class="btn btn-primary" :disabled="saving" @click="saveCategory" style="margin-top:20px;">
-        {{ saving ? 'Lagrer…' : 'Lagre kategori' }}
+        {{ saving ? $t('Lagrer…') : $t('Lagre kategori') }}
       </button>
     </template>
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Slette denne kategorien?"
-      :message="`«${pendingDelete.title}» og alle ${pendingDelete.entryCount} oppføringene fjernes.`"
+      :title="$t('Slette denne kategorien?')"
+      :message="$t('«{0}» og alle {1} oppføringene fjernes.', [pendingDelete.title, pendingDelete.entryCount])"
       :busy="deleting"
-      busy-text="Deleting…"
+      :busy-text="$t('Sletter…')"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -227,6 +229,8 @@
 </template>
 
 <script setup>
+import TranslationEditor from '../components/TranslationEditor.vue'
+import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -251,8 +255,8 @@ const {
   pageSize: 10,
   searchFields: [c => c.title, c => c.description],
   sorts: [
-    { key: 'title', label: 'Tittel', accessor: c => c.title },
-    { key: 'entries', label: 'Oppføringer', accessor: c => c.entryCount, dir: 'desc' }
+    { key: 'title', label: _t('Tittel'), accessor: c => c.title },
+    { key: 'entries', label: _t('Oppføringer'), accessor: c => c.entryCount, dir: 'desc' }
   ]
 })
 const error = ref('')
@@ -297,7 +301,7 @@ async function loadCategories() {
   try {
     categories.value = await api.adminListFiveOhOneCategories()
   } catch (e) {
-    error.value = 'Kunne ikke laste kategorier.'
+    error.value = _t('Kunne ikke laste kategorier.')
   } finally {
     loading.value = false
   }
@@ -347,7 +351,7 @@ async function openEdit(id) {
     entryPage.value = 1
     view.value = 'form'
   } catch (e) {
-    error.value = 'Kunne ikke laste kategorien.'
+    error.value = _t('Kunne ikke laste kategorien.')
   } finally {
     openingId.value = null
   }
@@ -379,7 +383,7 @@ async function handleCsvFile(event) {
   try {
     const rows = parseNameValueCsv(await file.text())
     if (!rows.length) {
-      toast.show('Den CSV-filen hadde ingen gyldige "name,value"-rader å importere.', 'error')
+      toast.show(_t('Den CSV-filen hadde ingen gyldige "name,value"-rader å importere.'), 'error')
       return
     }
 
@@ -399,7 +403,7 @@ async function handleCsvFile(event) {
     pendingImportPool.value = pool
     showImportReviewModal.value = true
   } catch (e) {
-    error.value = 'Kunne ikke lese CSV-filen.'
+    error.value = _t('Kunne ikke lese CSV-filen.')
   } finally {
     importingCsv.value = false
   }
@@ -430,7 +434,7 @@ function applyImportSelection(selectedRows) {
   }
   entryPage.value = 1
   entryFilterTerm.value = ''
-  toast.show(`${pendingImportLabel.value}: ${added} oppføring(er) lagt til, ${updated} oppdatert.`)
+  toast.show(_t('{0}: {1} oppføring(er) lagt til, {2} oppdatert.', [pendingImportLabel.value, added, updated]))
   csvUnmatchedNames.value = unmatched
 }
 
@@ -455,11 +459,11 @@ async function checkEntriesAgainstSubjects() {
     }
     csvUnmatchedNames.value = unmatched
     toast.show(
-      unmatched.length ? `${unmatched.length} navn er ikke emner i "${form.sport}" ennå.` : 'Alle oppføringer er allerede emner.',
+      unmatched.length ? _t('{0} navn er ikke emner i "{1}" ennå.', [unmatched.length, form.sport]) : _t('Alle oppføringer er allerede emner.'),
       unmatched.length ? 'error' : 'success'
     )
   } catch (e) {
-    error.value = 'Kunne ikke sjekke oppføringer mot emner.'
+    error.value = _t('Kunne ikke sjekke oppføringer mot emner.')
   }
 }
 
@@ -525,11 +529,11 @@ async function saveCategory() {
     .filter(e => e.name && Number.isFinite(e.value))
 
   if (!form.title.trim()) {
-    error.value = 'Gi denne kategorien en tittel.'
+    error.value = _t('Gi denne kategorien en tittel.')
     return
   }
   if (!cleanEntries.length) {
-    error.value = 'Legg til minst én oppføring.'
+    error.value = _t('Legg til minst én oppføring.')
     return
   }
 
@@ -545,15 +549,15 @@ async function saveCategory() {
     }
     if (editingId.value) {
       await api.adminUpdateFiveOhOneCategory(editingId.value, payload)
-      toast.show('Kategorien er oppdatert.')
+      toast.show(_t('Kategorien er oppdatert.'))
     } else {
       await api.adminCreateFiveOhOneCategory(payload)
-      toast.show('Kategorien er opprettet.')
+      toast.show(_t('Kategorien er opprettet.'))
     }
     view.value = 'list'
     loadCategories()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke lagre kategorien.'
+    error.value = e.response?.data?.message || _t('Kunne ikke lagre kategorien.§AdminFiveOhOneViewJ')
   } finally {
     saving.value = false
   }
@@ -569,11 +573,11 @@ async function doDelete() {
   try {
     await api.adminDeleteFiveOhOneCategory(c.id)
     pendingDelete.value = null
-    toast.show('Kategorien er slettet.')
+    toast.show(_t('Kategorien er slettet.'))
     loadCategories()
   } catch (e) {
     pendingDelete.value = null
-    error.value = 'Kunne ikke slette kategorien.'
+    error.value = _t('Kunne ikke slette kategorien.')
   } finally {
     deleting.value = false
   }

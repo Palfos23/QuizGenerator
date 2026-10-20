@@ -1,8 +1,12 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import java.time.Instant;
 import java.util.List;
 
+@Translated(type = ContentTranslation.TYPE_BULLSEYE, fields = {"title", "statLabel"})
 public class BullseyeRoundStateDto {
 
     private Long id;

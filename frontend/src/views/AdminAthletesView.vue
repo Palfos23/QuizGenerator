@@ -2,14 +2,14 @@
   <div>
     <header class="admin-head">
       <div>
-        <span class="dq-eyebrow">Innhold</span>
-        <h1 class="dq-title">Emner</h1>
-        <p class="dq-sub">Hvem eller hva et grid handler om - personer, filmer, land, hva som helst - brukt til å bygge kandidatutvalg for ukens grid.</p>
+        <span class="dq-eyebrow">{{ $t('Innhold') }}</span>
+        <h1 class="dq-title">{{ $t('Emner') }}</h1>
+        <p class="dq-sub">{{ $t('Hvem eller hva et grid handler om - personer, filmer, land, hva som helst - brukt til å bygge kandidatutvalg for ukens grid.') }}</p>
       </div>
       <div class="admin-head-actions">
-        <button class="btn btn-secondary" @click="downloadCsv">Last ned CSV</button>
-        <button class="btn btn-secondary" @click="triggerFilePicker">Importer CSV</button>
-        <button class="btn btn-primary" @click="openCreate">+ Legg til emne</button>
+        <button class="btn btn-secondary" @click="downloadCsv">{{ $t('Last ned CSV') }}</button>
+        <button class="btn btn-secondary" @click="triggerFilePicker">{{ $t('Importer CSV') }}</button>
+        <button class="btn btn-primary" @click="openCreate">{{ $t('+ Legg til emne') }}</button>
       </div>
       <input ref="fileInput" type="file" accept=".csv,text/csv" style="display:none;" @change="onFileSelected" />
     </header>
@@ -18,34 +18,34 @@
 
     <div class="filter-bar">
       <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
-        <label>Søk<input type="text" v-model="searchText" placeholder="Søk etter navn eller gruppe…" /></label>
+        <label>{{ $t('Søk') }}<input type="text" v-model="searchText" :placeholder="$t('Søk etter navn eller gruppe…')" /></label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Kategori
+        <label>{{ $t('Kategori') }}
           <select v-model="sportFilter">
-            <option value="ALL">Alle kategorier</option>
+            <option value="ALL">{{ $t('Alle kategorier') }}</option>
             <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
           </select>
         </label>
       </div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
     <div v-else-if="!athletes.length" class="empty-state friendly">
-      Ingen emner ennå. Legg til noen her før du lager et ukentlig grid.
+      {{ $t('Ingen emner ennå. Legg til noen her før du lager et ukentlig grid.') }}
     </div>
 
-    <div v-else-if="!filteredAthletes.length" class="empty-state">Ingen emner samsvarer med disse filtrene.</div>
+    <div v-else-if="!filteredAthletes.length" class="empty-state">{{ $t('Ingen emner samsvarer med disse filtrene.') }}</div>
 
     <div v-else class="table-scroll">
       <table class="table">
         <thead>
           <tr>
-            <th>Bilde</th>
-            <th>Navn</th>
-            <th>Kategori</th>
-            <th>Gruppe</th>
+            <th>{{ $t('Bilde') }}</th>
+            <th>{{ $t('Navn') }}</th>
+            <th>{{ $t('Kategori') }}</th>
+            <th>{{ $t('Gruppe') }}</th>
             <th></th>
           </tr>
         </thead>
@@ -61,8 +61,8 @@
             <td>{{ sportLabel(a.sport) }}</td>
             <td>{{ a.team }}</td>
             <td style="white-space:nowrap;">
-              <button class="btn btn-secondary btn-sm" @click="openEdit(a)">Rediger</button>
-              <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(a)">Slett</button>
+              <button class="btn btn-secondary btn-sm" @click="openEdit(a)">{{ $t('Rediger') }}</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(a)">{{ $t('Slett') }}</button>
             </td>
           </tr>
         </tbody>
@@ -80,46 +80,46 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Slette dette emnet?"
-      :message="`«${pendingDelete.name}» fjernes fra oversikten.`"
+      :title="$t('Slette dette emnet?')"
+      :message="$t('«{0}» fjernes fra oversikten.', [pendingDelete.name])"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
 
     <div v-if="pendingUsage" class="modal-backdrop" @click.self="pendingUsage = null">
       <div class="modal">
-        <h2 style="margin-top:0;">'{{ pendingUsage.athlete.name }}' brukes i {{ pendingUsage.usage.length }} quiz(er)</h2>
+        <h2 style="margin-top:0;">'{{ pendingUsage.athlete.name }}{{ $t('\' brukes i') }} {{ pendingUsage.usage.length }} {{ $t('quiz(er)') }}</h2>
         <p class="page-subtitle" style="margin-top:0;">
-          Å slette dette emnet fjerner det først fra hver quiz som er listet under.
+          {{ $t('Å slette dette emnet fjerner det først fra hver quiz som er listet under.') }}
         </p>
         <ul style="margin:0 0 16px; padding-left:20px; line-height:1.8;">
           <li v-for="(u, idx) in pendingUsage.usage" :key="u.gameType + '-' + u.id + '-' + idx">
             <span class="tag" style="background:rgba(27, 26, 23, 0.08);">{{ u.gameType }}</span>
             {{ u.title }}
-            <span v-if="u.isCorrectAnswer" style="color:var(--coral); font-weight:600;"> - et riktig svar her, ikke bare en avleder</span>
+            <span v-if="u.isCorrectAnswer" style="color:var(--coral); font-weight:600;"> {{ $t('- et riktig svar her, ikke bare en avleder') }}</span>
           </li>
         </ul>
         <p v-if="pendingUsage.usage.some(u => u.isCorrectAnswer)" style="color:var(--coral); font-size:0.9rem;">
-          For quizene som er markert over, endrer dette faktisk fasiten til den quizen - også for alle som allerede har spilt den. Hvis en quiz skal forbli akkurat som den er, bør du vurdere å duplisere den som en ny versjon og redigere kopien i stedet, i stedet for å slette dette emnet direkte.
+          {{ $t('For quizene som er markert over, endrer dette faktisk fasiten til den quizen - også for alle som allerede har spilt den. Hvis en quiz skal forbli akkurat som den er, bør du vurdere å duplisere den som en ny versjon og redigere kopien i stedet, i stedet for å slette dette emnet direkte.') }}
         </p>
         <div style="display:flex; gap:10px; justify-content:flex-end;">
-          <button class="btn btn-secondary" @click="pendingUsage = null">Avbryt</button>
-          <button class="btn btn-danger" @click="confirmForceDelete">Fjern fra disse quizene og slett</button>
+          <button class="btn btn-secondary" @click="pendingUsage = null">{{ $t('Avbryt') }}</button>
+          <button class="btn btn-danger" @click="confirmForceDelete">{{ $t('Fjern fra disse quizene og slett') }}</button>
         </div>
       </div>
     </div>
 
     <div v-if="showImportPreview" class="modal-backdrop" @click.self="closeImportPreview">
       <div class="modal" style="max-width:640px;">
-        <h2 style="margin-top:0;">Importer fra CSV</h2>
+        <h2 style="margin-top:0;">{{ $t('Importer fra CSV') }}</h2>
         <p class="page-subtitle">
-          Forventede kolonner: <code>name, category, group, photoUrl</code> (group og photoUrl er valgfrie) - "group" er det som passer til kategorien: lag, regissør, nasjonalitet, studio, hva som helst. Kategorien må være en av: {{ gridCategories.categories.value.join(', ') }}.
+          {{ $t('Forventede kolonner:') }} <code>name, category, group, photoUrl</code> {{ $t('(group og photoUrl er valgfrie) - "group" er det som passer til kategorien: lag, regissør, nasjonalitet, studio, hva som helst. Kategorien må være en av:') }} {{ gridCategories.categories.value.join(', ') }}.
         </p>
 
         <div v-if="importRows.length" style="max-height:320px; overflow-y:auto; margin-bottom:16px;">
           <table class="table" style="min-width:0; table-layout:fixed;">
             <thead>
-              <tr><th style="width:28%;">Navn</th><th style="width:20%;">Kategori</th><th style="width:28%;">Gruppe</th><th>Status</th></tr>
+              <tr><th style="width:28%;">{{ $t('Navn') }}</th><th style="width:20%;">{{ $t('Kategori') }}</th><th style="width:28%;">{{ $t('Gruppe') }}</th><th>Status</th></tr>
             </thead>
             <tbody>
               <tr v-for="(row, i) in importRows" :key="i" :class="{ 'tension-row-trap': !row.valid }">
@@ -133,14 +133,14 @@
         </div>
 
         <p style="font-size:0.9rem; color:var(--text-dim);">
-          {{ validImportCount }} av {{ importRows.length }} rad(er) ser gyldige ut og blir importert.
-          {{ importRows.length - validImportCount }} blir hoppet over.
+          {{ validImportCount }} {{ $t('av') }} {{ importRows.length }} {{ $t('rad(er) ser gyldige ut og blir importert.') }}
+          {{ importRows.length - validImportCount }} {{ $t('blir hoppet over.') }}
         </p>
 
         <div style="display:flex; gap:10px; justify-content:flex-end;">
-          <button class="btn btn-secondary" @click="closeImportPreview">Avbryt</button>
+          <button class="btn btn-secondary" @click="closeImportPreview">{{ $t('Avbryt') }}</button>
           <button class="btn btn-primary" :disabled="!validImportCount || importing" @click="confirmImport">
-            {{ importing ? `Importerer… (${importProgress}/${validImportCount})` : `Importer ${validImportCount} emne(r)` }}
+            {{ importing ? $t('Importerer… ({0}/{1})', [importProgress, validImportCount]) : $t('Importer {0} emne(r)', [validImportCount]) }}
           </button>
         </div>
       </div>
@@ -149,6 +149,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
@@ -214,7 +215,7 @@ function onFileSelected(event) {
   reader.onload = () => {
     const lines = String(reader.result).split(/\r?\n/).filter(l => l.trim().length > 0)
     if (!lines.length) {
-      error.value = 'Filen ser ut til å være tom.'
+      error.value = _t('Filen ser ut til å være tom.')
       return
     }
 
@@ -225,7 +226,7 @@ function onFileSelected(event) {
     const photoIdx = header.indexOf('photourl')
 
     if (nameIdx === -1 || sportIdx === -1) {
-      error.value = 'CSV trenger minst kolonnene "name" og "sport".'
+      error.value = _t('CSV trenger minst kolonnene "name" og "sport".')
       return
     }
 
@@ -247,10 +248,10 @@ function onFileSelected(event) {
       const key = `${sport}::${name.trim().toLowerCase()}`
 
       let rowError = ''
-      if (!name) rowError = 'Mangler navn'
-      else if (!matchedSport) rowError = `Ugyldig kategori (må være en av: ${validSports.join(', ')})`
-      else if (existingKeys.has(key)) rowError = 'Duplikat - finnes allerede'
-      else if (seenInFile.has(key)) rowError = 'Duplikat - gjentatt i denne filen'
+      if (!name) rowError = _t('Mangler navn')
+      else if (!matchedSport) rowError = _t('Ugyldig kategori (må være en av: {0})', [validSports.join(', ')])
+      else if (existingKeys.has(key)) rowError = _t('Duplikat - finnes allerede')
+      else if (seenInFile.has(key)) rowError = _t('Duplikat - gjentatt i denne filen')
 
       if (!rowError) seenInFile.add(key)
 
@@ -272,7 +273,7 @@ function csvEscape(value) {
 function downloadCsv() {
   const rows = sportFilter.value === 'ALL' ? athletes.value : athletes.value.filter(a => a.sport === sportFilter.value)
   if (!rows.length) {
-    toast.show('Ingen emner å laste ned for den kategorien.', 'error')
+    toast.show(_t('Ingen emner å laste ned for den kategorien.'), 'error')
     return
   }
 
@@ -320,8 +321,8 @@ async function confirmImport() {
   importRows.value = []
   loadAthletes()
   toast.show(failed
-    ? `Importerte ${toImport.length - failed} av ${toImport.length} - ${failed} mislyktes.`
-    : `Importerte ${toImport.length} emne(r).`)
+    ? _t('Importerte {0} av {1} - {2} mislyktes.', [toImport.length - failed, toImport.length, failed])
+    : _t('Importerte {0} emne(r).', [toImport.length]))
 }
 
 const filteredAthletes = computed(() => {
@@ -343,7 +344,7 @@ watch([searchText, sportFilter], () => { page.value = 1 })
 
 const route = useRoute()
 onMounted(() => {
-  // Deep-link support for the "Dupliserte emner" Insights page's "Rediger"
+  // Deep-link support for the 'Dupliserte emner' Insights page's 'Rediger'
   // links (?q=<name>) - prefills the same search box a person would use here
   // themselves, rather than needing a full jump-straight-into-edit-mode flow.
   if (route.query.q) searchText.value = String(route.query.q)
@@ -357,7 +358,7 @@ async function loadAthletes() {
   try {
     athletes.value = await api.adminSearchAthletes()
   } catch (e) {
-    error.value = 'Kunne ikke laste emner.'
+    error.value = _t('Kunne ikke laste emner.')
   } finally {
     loading.value = false
   }
@@ -375,7 +376,7 @@ function openEdit(a) {
 
 function onSaved() {
   showModal.value = false
-  toast.show('Emnet er lagret.')
+  toast.show(_t('Emnet er lagret.'))
   loadAthletes()
 }
 
@@ -389,7 +390,7 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteAthlete(a.id)
-    toast.show('Emnet er slettet.')
+    toast.show(_t('Emnet er slettet.'))
     loadAthletes()
   } catch (e) {
     if (e.response?.status === 400) {
@@ -401,7 +402,7 @@ async function doDelete() {
         // fall through to the generic error below
       }
     }
-    error.value = e.response?.data?.message || 'Kunne ikke slette emnet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke slette emnet.')
   }
 }
 
@@ -411,10 +412,10 @@ async function confirmForceDelete() {
   error.value = ''
   try {
     await api.adminDeleteAthlete(athlete.id, true)
-    toast.show('Emnet er fjernet fra disse quizene og slettet.')
+    toast.show(_t('Emnet er fjernet fra disse quizene og slettet.'))
     loadAthletes()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke slette emnet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke slette emnet.')
   }
 }
 </script>

@@ -1,5 +1,6 @@
 package com.quizapp.service;
 
+import com.quizapp.config.RequestLang;
 import com.quizapp.exception.GameAccessDeniedException;
 import com.quizapp.model.AppUser;
 import com.quizapp.model.BattleGameType;
@@ -48,7 +49,7 @@ public class PlayAccessService {
     }
 
     public void requirePenaltyShootoutAccess(Authentication authentication) {
-        require(authentication, "Straffekonkurranse", AppUser::isCanPlayPenaltyShootout);
+        require(authentication, RequestLang.t("Straffekonkurranse", "Penalty Shootout"), AppUser::isCanPlayPenaltyShootout);
     }
 
     public void requireFlashbackAccess(Authentication authentication) {

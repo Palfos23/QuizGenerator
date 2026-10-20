@@ -1,5 +1,8 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -7,6 +10,7 @@ import java.util.List;
 // response, AND the player-facing round-choices/round-start payload - the
 // full year + hint list is fair game the moment a round is offered, same
 // trust model as Bullseye/Tension (see FlashbackYear's class comment).
+@Translated(type = ContentTranslation.TYPE_FLASHBACK, fields = {"title", "hints"})
 public class FlashbackYearDto {
 
     private Long id;

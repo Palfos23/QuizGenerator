@@ -1,7 +1,11 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import java.time.LocalDate;
 
+@Translated(type = ContentTranslation.TYPE_SHOOTOUT, fields = {"title", "competition"})
 public class PenaltyShootoutSummaryDto {
 
     private Long id;

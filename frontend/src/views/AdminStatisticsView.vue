@@ -3,17 +3,17 @@
     <header class="stat-head">
       <div>
         <span class="dq-eyebrow">Admin</span>
-        <h1 class="dq-title">Statistikk</h1>
-        <p class="dq-sub">Et skrivebeskyttet øyeblikksbilde av spillere, innhold og hva som skjer denne uken.</p>
+        <h1 class="dq-title">{{ $t('Statistikk') }}</h1>
+        <p class="dq-sub">{{ $t('Et skrivebeskyttet øyeblikksbilde av spillere, innhold og hva som skjer denne uken.') }}</p>
       </div>
       <button class="dq-chip-btn" :disabled="loading" @click="load">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-2.3 5.7M20 5v6h-6" /></svg>
-        {{ loading ? 'Oppdaterer…' : 'Oppdater' }}
+        {{ loading ? $t('Oppdaterer…§AdminStatisticsViewM') : $t('Oppdater§AdminStatisticsViewM') }}
       </button>
     </header>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading && !stats" style="color:var(--text-dim);">Laster…</div>
+    <div v-if="loading && !stats" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
     <template v-else-if="stats">
       <!-- Waiting on an admin -->
@@ -22,7 +22,7 @@
           <span class="stat-attn-count">{{ a.count }}</span>
           <span class="stat-attn-text">
             <strong>{{ a.label }}</strong>
-            <small>{{ a.count ? a.hint : 'Alt i orden' }}</small>
+            <small>{{ a.count ? a.hint : $t('Alt i orden') }}</small>
           </span>
           <svg class="dq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg>
         </router-link>
@@ -31,7 +31,7 @@
       <!-- Headline figures -->
       <div class="stat-kpis">
         <div v-for="k in kpis" :key="k.label" class="stat-kpi" :class="`stat-kpi--${k.tone}`">
-          <div class="stat-kpi-value">{{ k.value.toLocaleString('nb-NO') }}</div>
+          <div class="stat-kpi-value">{{ k.value.toLocaleString($locale) }}</div>
           <div class="stat-kpi-label">{{ k.label }}</div>
           <div v-if="k.note" class="stat-kpi-note">{{ k.note }}</div>
         </div>
@@ -41,11 +41,11 @@
       <section class="dq-card stat-section">
         <div class="stat-section-head">
           <div>
-            <h2>Dagens quiz - siste 14 dager</h2>
-            <p>Spillere som ble ferdige hver dag. Hold over en stolpe for dagens gjennomsnittspoeng.</p>
+            <h2>{{ $t('Dagens quiz - siste 14 dager') }}</h2>
+            <p>{{ $t('Spillere som ble ferdige hver dag. Hold over en stolpe for dagens gjennomsnittspoeng.') }}</p>
           </div>
           <div class="stat-summary">
-            <strong>{{ dailyTotalPlayers }}</strong> ferdige<span v-if="dailyAveragePercent !== null"> · <strong>{{ dailyAveragePercent }}%</strong> snitt</span>
+            <strong>{{ dailyTotalPlayers }}</strong> {{ $t('ferdige') }}<span v-if="dailyAveragePercent !== null"> · <strong>{{ dailyAveragePercent }}%</strong> {{ $t('snitt') }}</span>
           </div>
         </div>
         <div class="stat-bars stat-bars--tall">
@@ -53,7 +53,7 @@
             v-for="d in stats.dailyQuizActivity"
             :key="d.date"
             class="stat-bar-col"
-            :title="d.players ? `${formatDay(d.date)}: ${d.players} spillere, ${Math.round(d.averagePercent)}% snitt` : `${formatDay(d.date)}: ingen spilte`"
+            :title="d.players ? $t('{0}: {1} spillere, {2}% snitt', [formatDay(d.date), d.players, Math.round(d.averagePercent)]) : $t('{0}: ingen spilte', [formatDay(d.date)])"
           >
             <div class="stat-bar-col-value">{{ d.players || '' }}</div>
             <div class="stat-bar-col-track">
@@ -66,24 +66,24 @@
 
       <!-- This week's boards -->
       <section class="stat-section stat-section--plain">
-        <h2>Ukens grid</h2>
-        <p class="stat-note">Fullførte forsøk på hvert grid der den aktive uken dekker i dag. Poengsummen teller svar funnet innenfor en spillers liv - funn i overtid teller ikke.</p>
-        <div v-if="!stats.weeklyGrids.length" class="dq-card dq-card--flat dq-empty" style="padding:22px;">Ingen grid er aktive denne uken.</div>
+        <h2>{{ $t('Ukens grid§AdminStatisticsViewT') }}</h2>
+        <p class="stat-note">{{ $t('Fullførte forsøk på hvert grid der den aktive uken dekker i dag. Poengsummen teller svar funnet innenfor en spillers liv - funn i overtid teller ikke.') }}</p>
+        <div v-if="!stats.weeklyGrids.length" class="dq-card dq-card--flat dq-empty" style="padding:22px;">{{ $t('Ingen grid er aktive denne uken.') }}</div>
         <div v-else class="stat-grid-cards">
           <div v-for="g in stats.weeklyGrids" :key="g.gridId" class="dq-card stat-card">
             <div class="stat-card-head">
               <div>
                 <div class="stat-card-title">{{ g.title }}</div>
-                <div class="stat-card-sub">{{ g.category }} · {{ g.entryCount }} svar</div>
+                <div class="stat-card-sub">{{ g.category }} · {{ g.entryCount }} {{ $t('svar') }}</div>
               </div>
-              <span class="dq-pill dq-pill--year">{{ g.players }} spilt</span>
+              <span class="dq-pill dq-pill--year">{{ g.players }} {{ $t('spilt') }}</span>
             </div>
             <template v-if="g.players">
               <div class="stat-card-metrics">
-                <div><span class="stat-num">{{ g.averageScore.toFixed(1) }}</span><span class="stat-num-label">snitt</span></div>
-                <div><span class="stat-num">{{ g.lowestScore }}</span><span class="stat-num-label">lavest</span></div>
-                <div><span class="stat-num">{{ g.highestScore }}</span><span class="stat-num-label">høyest</span></div>
-                <div v-if="g.entryCount"><span class="stat-num">{{ Math.round(g.averageScore / g.entryCount * 100) }}%</span><span class="stat-num-label">av gridet</span></div>
+                <div><span class="stat-num">{{ g.averageScore.toFixed(1) }}</span><span class="stat-num-label">{{ $t('snitt') }}</span></div>
+                <div><span class="stat-num">{{ g.lowestScore }}</span><span class="stat-num-label">{{ $t('lavest') }}</span></div>
+                <div><span class="stat-num">{{ g.highestScore }}</span><span class="stat-num-label">{{ $t('høyest') }}</span></div>
+                <div v-if="g.entryCount"><span class="stat-num">{{ Math.round(g.averageScore / g.entryCount * 100) }}%</span><span class="stat-num-label">{{ $t('av gridet') }}</span></div>
               </div>
               <div v-if="g.entryCount" class="stat-range">
                 <div class="stat-range-track">
@@ -93,30 +93,30 @@
                 <div class="stat-range-ends"><span>0</span><span>{{ g.entryCount }}</span></div>
               </div>
             </template>
-            <div v-else class="stat-card-empty">Ingen fullførte forsøk ennå.</div>
+            <div v-else class="stat-card-empty">{{ $t('Ingen fullførte forsøk ennå.') }}</div>
           </div>
         </div>
       </section>
 
       <section class="stat-section stat-section--plain">
-        <h2>Ukens Starting XI</h2>
-        <p class="stat-note">Fullførte forsøk på brettene som er aktive denne uken. Poengsummen er hvor mange av de elleve spillerne som ble funnet.</p>
-        <div v-if="!stats.weeklyLineups.length" class="dq-card dq-card--flat dq-empty" style="padding:22px;">Ingen Starting XI-brett er aktive denne uken.</div>
+        <h2>{{ $t('Ukens Starting XI') }}</h2>
+        <p class="stat-note">{{ $t('Fullførte forsøk på brettene som er aktive denne uken. Poengsummen er hvor mange av de elleve spillerne som ble funnet.') }}</p>
+        <div v-if="!stats.weeklyLineups.length" class="dq-card dq-card--flat dq-empty" style="padding:22px;">{{ $t('Ingen Starting XI-brett er aktive denne uken.') }}</div>
         <div v-else class="stat-grid-cards">
           <div v-for="g in stats.weeklyLineups" :key="g.gridId" class="dq-card stat-card">
             <div class="stat-card-head">
               <div>
                 <div class="stat-card-title">{{ g.title }}</div>
-                <div class="stat-card-sub">{{ g.category }} · {{ g.entryCount }} spillere</div>
+                <div class="stat-card-sub">{{ g.category }} · {{ g.entryCount }} {{ $t('spillere') }}</div>
               </div>
-              <span class="dq-pill dq-pill--year">{{ g.players }} spilt</span>
+              <span class="dq-pill dq-pill--year">{{ g.players }} {{ $t('spilt') }}</span>
             </div>
             <template v-if="g.players">
               <div class="stat-card-metrics">
-                <div><span class="stat-num">{{ g.averageScore.toFixed(1) }}</span><span class="stat-num-label">snitt</span></div>
-                <div><span class="stat-num">{{ g.lowestScore }}</span><span class="stat-num-label">lavest</span></div>
-                <div><span class="stat-num">{{ g.highestScore }}</span><span class="stat-num-label">høyest</span></div>
-                <div v-if="g.entryCount"><span class="stat-num">{{ Math.round(g.averageScore / g.entryCount * 100) }}%</span><span class="stat-num-label">av laget</span></div>
+                <div><span class="stat-num">{{ g.averageScore.toFixed(1) }}</span><span class="stat-num-label">{{ $t('snitt') }}</span></div>
+                <div><span class="stat-num">{{ g.lowestScore }}</span><span class="stat-num-label">{{ $t('lavest') }}</span></div>
+                <div><span class="stat-num">{{ g.highestScore }}</span><span class="stat-num-label">{{ $t('høyest') }}</span></div>
+                <div v-if="g.entryCount"><span class="stat-num">{{ Math.round(g.averageScore / g.entryCount * 100) }}%</span><span class="stat-num-label">{{ $t('av laget') }}</span></div>
               </div>
               <div v-if="g.entryCount" class="stat-range">
                 <div class="stat-range-track">
@@ -126,15 +126,15 @@
                 <div class="stat-range-ends"><span>0</span><span>{{ g.entryCount }}</span></div>
               </div>
             </template>
-            <div v-else class="stat-card-empty">Ingen fullførte forsøk ennå.</div>
+            <div v-else class="stat-card-empty">{{ $t('Ingen fullførte forsøk ennå.') }}</div>
           </div>
         </div>
       </section>
 
       <div class="stat-two-col">
         <section class="dq-card stat-section">
-          <h2>Nye registreringer per måned</h2>
-          <p class="stat-note">Siste 12 måneder.</p>
+          <h2>{{ $t('Nye registreringer per måned') }}</h2>
+          <p class="stat-note">{{ $t('Siste 12 måneder.') }}</p>
           <div class="stat-bars">
             <div v-for="m in stats.usersByMonth" :key="m.label" class="stat-bar-col" :title="`${shortMonth(m.label)}: ${m.count}`">
               <div class="stat-bar-col-value">{{ m.count }}</div>
@@ -147,43 +147,44 @@
         </section>
 
         <section class="dq-card stat-section">
-          <h2>Spilte Battle-spill</h2>
-          <p class="stat-note">Fullførte spill, på nett og der enheten sendes rundt, til sammen.</p>
+          <h2>{{ $t('Spilte Battle-spill') }}</h2>
+          <p class="stat-note">{{ $t('Fullførte spill, på nett og der enheten sendes rundt, til sammen.') }}</p>
           <StatBarList :items="stats.battleGamesPlayed" color="var(--teal)" />
         </section>
       </div>
 
       <div class="stat-two-col">
         <section class="dq-card stat-section">
-          <h2>Brett etter spillmodus</h2>
+          <h2>{{ $t('Brett etter spillmodus') }}</h2>
           <StatBarList :items="stats.boardsByGameMode" color="var(--gold)" />
         </section>
         <section class="dq-card stat-section">
-          <h2>Spørsmål etter språk</h2>
-          <StatBarList :items="stats.questionsByLanguage" color="#3d4f9f" empty="Ingen spørsmål ennå." />
+          <h2>{{ $t('Spørsmål etter språk') }}</h2>
+          <StatBarList :items="stats.questionsByLanguage" color="#3d4f9f" :empty="$t('Ingen spørsmål ennå.')" />
         </section>
       </div>
 
       <div class="stat-two-col">
         <section class="dq-card stat-section">
-          <h2>Emner etter kategori</h2>
+          <h2>{{ $t('Emner etter kategori') }}</h2>
           <StatBarList :items="stats.subjectsByCategory" color="var(--teal)" />
         </section>
         <section class="dq-card stat-section">
-          <h2>Grids etter kategori</h2>
-          <StatBarList :items="stats.gridsByCategory" color="var(--violet)" empty="Ingen grids ennå." />
+          <h2>{{ $t('Grids etter kategori') }}</h2>
+          <StatBarList :items="stats.gridsByCategory" color="var(--violet)" :empty="$t('Ingen grids ennå.')" />
         </section>
       </div>
 
       <section class="dq-card stat-section">
-        <h2>Tension-spørsmål etter kategori</h2>
-        <StatBarList :items="stats.tensionQuestionsByCategory" color="var(--coral)" empty="Ingen Tension-spørsmål ennå." />
+        <h2>{{ $t('Tension-spørsmål etter kategori') }}</h2>
+        <StatBarList :items="stats.tensionQuestionsByCategory" color="var(--coral)" :empty="$t('Ingen Tension-spørsmål ennå.')" />
       </section>
     </template>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
 import StatBarList from '../components/StatBarList.vue'
@@ -202,20 +203,20 @@ const totalBattleGamesPlayed = computed(() =>
 
 // Things waiting on an admin, each linking to where it gets handled.
 const attention = computed(() => [
-  { label: 'Gjennomganger av dagens quiz', count: stats.value.dailyQuizPendingReviews, hint: 'svar venter på en avgjørelse', to: '/admin/daily-quiz-review' },
-  { label: 'Innsendte spørsmål', count: stats.value.pendingSubmissions, hint: 'venter på godkjenning', to: '/admin/question-submissions' },
-  { label: 'Åpne rapporter', count: stats.value.openReports, hint: 'problemer meldt av spillere', to: '/admin/reports' }
+  { label: _t('Gjennomganger av dagens quiz'), count: stats.value.dailyQuizPendingReviews, hint: _t('svar venter på en avgjørelse'), to: '/admin/daily-quiz-review' },
+  { label: _t('Innsendte spørsmål§AdminStatisticsViewJ'), count: stats.value.pendingSubmissions, hint: _t('venter på godkjenning'), to: '/admin/question-submissions' },
+  { label: _t('Åpne rapporter'), count: stats.value.openReports, hint: _t('problemer meldt av spillere'), to: '/admin/reports' }
 ])
 
 const kpis = computed(() => {
   const s = stats.value
   return [
-    { label: 'Registrerte brukere', value: s.totalUsers, tone: 'gold', note: s.newUsersLast7Days ? `+${s.newUsersLast7Days} de siste 7 dagene` : 'Ingen nye registreringer denne uken' },
-    { label: 'Aktive denne uken', value: s.activePlayersThisWeek, tone: 'teal', note: s.totalUsers ? `${Math.round(s.activePlayersThisWeek / s.totalUsers * 100)}% av alle brukere` : '' },
-    { label: 'Spørsmål i banken', value: s.totalQuestions, tone: 'violet' },
-    { label: 'Brett, alle spillmodi', value: totalBoards.value, tone: 'coral' },
-    { label: 'Emner i oversikten', value: s.totalSubjects, tone: 'teal' },
-    { label: 'Spilte Battle-spill', value: totalBattleGamesPlayed.value, tone: 'gold' }
+    { label: _t('Registrerte brukere'), value: s.totalUsers, tone: 'gold', note: s.newUsersLast7Days ? _t('+{0} de siste 7 dagene', [s.newUsersLast7Days]) : _t('Ingen nye registreringer denne uken') },
+    { label: _t('Aktive denne uken'), value: s.activePlayersThisWeek, tone: 'teal', note: s.totalUsers ? _t('{0}% av alle brukere', [Math.round(s.activePlayersThisWeek / s.totalUsers * 100)]) : '' },
+    { label: _t('Spørsmål i banken'), value: s.totalQuestions, tone: 'violet' },
+    { label: _t('Brett, alle spillmodi'), value: totalBoards.value, tone: 'coral' },
+    { label: _t('Emner i oversikten'), value: s.totalSubjects, tone: 'teal' },
+    { label: _t('Spilte Battle-spill'), value: totalBattleGamesPlayed.value, tone: 'gold' }
   ]
 })
 
@@ -232,11 +233,11 @@ function dayBarHeight(players) {
   return players ? Math.max(4, players / maxDayPlayers.value * 100) + '%' : '2px'
 }
 function formatDay(iso) {
-  return new Date(iso).toLocaleDateString('nb-NO', { weekday: 'short', day: 'numeric', month: 'short' })
+  return new Date(iso).toLocaleDateString(window.QUIZ_LOCALE, { weekday: 'short', day: 'numeric', month: 'short' })
 }
 function dayLabel(iso) {
   const d = new Date(iso)
-  return `${d.toLocaleDateString('nb-NO', { weekday: 'short' }).slice(0, 2)} ${d.getDate()}`
+  return `${d.toLocaleDateString(window.QUIZ_LOCALE, { weekday: 'short' }).slice(0, 2)} ${d.getDate()}`
 }
 
 const maxMonth = computed(() =>
@@ -250,7 +251,7 @@ function monthBarHeight(count) {
 function shortMonth(label) {
   // label is "YYYY-MM"
   const [y, m] = label.split('-')
-  const name = ['jan', 'feb', 'mar', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'des'][Number(m) - 1]
+  const name = [_t('jan'), _t('feb'), _t('mar'), _t('apr'), _t('mai'), _t('jun'), _t('jul'), _t('aug'), _t('sep'), _t('okt'), _t('nov'), _t('des')][Number(m) - 1]
   return `${name} ${y.slice(2)}`
 }
 
@@ -260,7 +261,7 @@ async function load() {
   try {
     stats.value = await api.adminGetStatistics()
   } catch (e) {
-    error.value = 'Kunne ikke laste statistikk.'
+    error.value = _t('Kunne ikke laste statistikk.')
   } finally {
     loading.value = false
   }

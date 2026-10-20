@@ -1,11 +1,20 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import com.quizapp.model.RoomStatus;
 
 import java.time.Instant;
 import java.util.List;
 
+@Translated(type = ContentTranslation.TYPE_TENSION, id = "questionId", fields = {"questionTitle:title", "source", "tiebreaker"})
 public class TensionOnlineStateDto {
+    // Lets the translation overlay find this board's admin-written versions (see config/Translated).
+    private Long questionId;
+    public Long getQuestionId() { return questionId; }
+    public void setQuestionId(Long questionId) { this.questionId = questionId; }
+
     private String roomCode;
     private RoomStatus status;
     private Long yourParticipantId;

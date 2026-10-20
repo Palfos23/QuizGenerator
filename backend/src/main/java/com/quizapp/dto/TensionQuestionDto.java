@@ -1,5 +1,8 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -7,6 +10,7 @@ import jakarta.validation.constraints.NotEmpty;
 import java.time.Instant;
 import java.util.List;
 
+@Translated(type = ContentTranslation.TYPE_TENSION, fields = {"title", "source", "tiebreaker"})
 public class TensionQuestionDto {
 
     private Long id;

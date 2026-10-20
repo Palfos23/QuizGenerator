@@ -1,24 +1,24 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Forhåndsvisning av Bullseye: et måltall, der hver spillers gjetning rangeres etter hvor langt unna den er.">
-    <span class="game-preview-tag">Forhåndsvisning</span>
+  <div class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av Bullseye: et måltall, der hver spillers gjetning rangeres etter hvor langt unna den er.')">
+    <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
 
     <div class="bp-target">
       <span class="bp-rings"></span>
       <span class="bp-val">13</span>
-      <span class="bp-cap">mål · Premier League 2024/25</span>
+      <span class="bp-cap">{{ $t('mål · Premier League 2024/25') }}</span>
     </div>
 
     <div class="bp-guesses">
       <div v-for="g in guesses" :key="g.name" class="bp-guess" :class="g.state">
         <span class="bp-who">{{ g.name }}</span>
         <span class="bp-pick">{{ g.pick }} <i>· {{ g.stat }}</i></span>
-        <span class="bp-off">bom med {{ g.off }}</span>
-        <span class="bp-flag">{{ g.state === 'out' ? 'ute' : g.state === 'best' ? 'nærmest' : 'trygg' }}</span>
+        <span class="bp-off">{{ $t('bom med') }} {{ g.off }}</span>
+        <span class="bp-flag">{{ g.state === 'out' ? $t('ute§BullseyePreviewM') : g.state === 'best' ? $t('nærmest') : $t('trygg') }}</span>
       </div>
     </div>
 
     <p class="game-preview-caption">
-      Bytt på å nevne noen nær målet. Hver runde blir den <span class="bad">lengst unna</span> slått ut — <strong>siste spiller igjen vinner.</strong>
+      {{ $t('Bytt på å nevne noen nær målet. Hver runde blir den') }} <span class="bad">{{ $t('lengst unna') }}</span> {{ $t('slått ut —') }} <strong>{{ $t('siste spiller igjen vinner.') }}</strong>
     </p>
   </div>
 </template>

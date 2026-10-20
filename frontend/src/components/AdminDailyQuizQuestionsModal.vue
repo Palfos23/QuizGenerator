@@ -2,10 +2,10 @@
   <div class="modal-backdrop" @click.self="emit('close')">
     <div class="modal dq-modal dq-modal--wide" role="dialog" aria-modal="true" :aria-label="title">
       <h2 class="dq-modal-title">{{ title }}</h2>
-      <p class="dq-modal-sub">Rett opp et feil spørsmål eller svar her - det er samme spørsmål som i spørsmålsbanken.</p>
+      <p class="dq-modal-sub">{{ $t('Rett opp et feil spørsmål eller svar her - det er samme spørsmål som i spørsmålsbanken.') }}</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
       <div v-else class="dq-qlist">
         <article v-for="(q, i) in questions" :key="q.id" class="dq-qrow">
@@ -13,15 +13,15 @@
           <div class="dq-qrow-body">
             <div class="dq-qrow-text">{{ q.questionText }}</div>
             <img v-if="q.photoUrl" :src="q.photoUrl" alt="" class="dq-photo dq-photo--small" @error="e => e.target.style.display = 'none'" />
-            <div class="dq-qrow-answer"><span>Svar</span><b>{{ q.answer }}</b></div>
+            <div class="dq-qrow-answer"><span>{{ $t('Svar§AdminDailyQuizQuestionsModalT') }}</span><b>{{ q.answer }}</b></div>
             <DailyQuizEasyMeter v-if="statFor(q.id)" :percent="statFor(q.id).percentCorrect" :players="statFor(q.id).players" />
           </div>
-          <button class="dq-chip-btn" @click="editing = q">Rediger</button>
+          <button class="dq-chip-btn" @click="editing = q">{{ $t('Rediger') }}</button>
         </article>
       </div>
 
       <div class="dq-modal-actions">
-        <button class="btn btn-secondary" @click="emit('close')">Lukk</button>
+        <button class="btn btn-secondary" @click="emit('close')">{{ $t('Lukk§AdminDailyQuizQuestionsModalT') }}</button>
       </div>
     </div>
 
@@ -30,6 +30,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -41,7 +42,7 @@ import { useEscapeKey } from '../composables/useEscapeKey'
 // bank), for fixing a mistake spotted while reviewing - without searching the bank for it.
 const props = defineProps({
   setId: { type: [Number, String], required: true },
-  title: { type: String, default: 'Quizspørsmål' }
+  title: { type: String, default: _t('Quizspørsmål') }
 })
 const emit = defineEmits(['close'])
 
@@ -64,7 +65,7 @@ onMounted(async () => {
     questions.value = list
     statsByQuestion.value = Object.fromEntries(stats.map(st => [st.questionId, st]))
   } catch (e) {
-    error.value = 'Kunne ikke laste spørsmålene til denne quizen.'
+    error.value = _t('Kunne ikke laste spørsmålene til denne quizen.')
   } finally {
     loading.value = false
   }
@@ -74,6 +75,6 @@ function onSaved(saved) {
   const i = questions.value.findIndex(q => q.id === saved.id)
   if (i !== -1) questions.value[i] = saved
   editing.value = null
-  toast.show('Spørsmålet er oppdatert.')
+  toast.show(_t('Spørsmålet er oppdatert.'))
 }
 </script>

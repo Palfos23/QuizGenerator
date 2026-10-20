@@ -3,35 +3,35 @@
     <div class="dq-topbar">
       <router-link to="/daily-quiz" class="dq-back">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-        Alle daglige quizer
+        {{ $t('Alle daglige quizer') }}
       </router-link>
       <div v-if="state" class="dq-topbar-actions">
         <button class="dq-chip-btn" @click="openScoreboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
-          Toppliste
+          {{ $t('Toppliste') }}
         </button>
       </div>
     </div>
 
     <header v-if="state" class="dq-hero">
-      <span class="dq-eyebrow">Dagens quiz</span>
+      <span class="dq-eyebrow">{{ $t('Dagens quiz§DailyQuizPlayViewT') }}</span>
       <h1 class="dq-title">{{ formatDate(state.quizDate) }}</h1>
       <p class="dq-sub">{{ subtitle }}</p>
     </header>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <LoadingState v-if="loading" full message="Laster denne quizen…" />
+    <LoadingState v-if="loading" full :message="$t('Laster denne quizen…')" />
 
     <template v-else-if="state">
       <!-- ---------- Answering ---------- -->
       <form v-if="state.attemptStatus === 'IN_PROGRESS'" @submit.prevent="showSubmitConfirm = true">
         <div class="dq-progress">
           <div class="dq-progress-label">
-            <span><strong>{{ answeredCount }}</strong> av {{ state.questions.length }} besvart</span>
-            <span v-if="answeredCount === state.questions.length">Alt ferdig - klar til å sendes inn</span>
+            <span><strong>{{ answeredCount }}</strong> {{ $t('av') }} {{ state.questions.length }} {{ $t('besvart') }}</span>
+            <span v-if="answeredCount === state.questions.length">{{ $t('Alt ferdig - klar til å sendes inn') }}</span>
             <button type="button" class="dq-save-chip" :class="{ 'is-saved': !dirty && savedAt }" :disabled="saving || submitting || !dirty" @click="saveDraft">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" v-if="!dirty && savedAt" /><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2zM17 21v-8H7v8M7 3v5h8" v-else /></svg>
-              {{ saving ? 'Lagrer…' : (!dirty && savedAt ? 'Lagret' : 'Lagre') }}
+              {{ saving ? $t('Lagrer…') : (!dirty && savedAt ? $t('Lagret') : $t('Lagre')) }}
             </button>
           </div>
           <div class="dq-progress-track"><div class="dq-progress-fill" :style="{ width: progressPct + '%' }"></div></div>
@@ -49,15 +49,15 @@
               <div v-if="q.yearQuestion || q.photoUrl" class="dq-q-pills">
                 <span v-if="q.yearQuestion" class="dq-pill dq-pill--year">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
-                  Årstallsspørsmål
+                  {{ $t('Årstallsspørsmål') }}
                 </span>
                 <span v-if="q.photoUrl" class="dq-pill dq-pill--gold">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="1.6" /><path d="M21 16l-5-5-8 8" /></svg>
-                  Bildespørsmål
+                  {{ $t('Bildespørsmål') }}
                 </span>
               </div>
               <label class="dq-q-text" :for="`dq-a-${q.questionId}`">{{ q.text }}</label>
-              <p v-if="q.yearQuestion" class="dq-q-hint">Gjett året - blink er 2 poeng, ett år unna er 1 poeng.</p>
+              <p v-if="q.yearQuestion" class="dq-q-hint">{{ $t('Gjett året - blink er 2 poeng, ett år unna er 1 poeng.') }}</p>
             </div>
           </div>
 
@@ -70,20 +70,20 @@
             v-model="answers[q.questionId]"
             autocomplete="off"
             :inputmode="q.yearQuestion ? 'numeric' : undefined"
-            :placeholder="q.yearQuestion ? 'År, f.eks. 1994' : 'Ditt svar'"
+            :placeholder="q.yearQuestion ? $t('År, f.eks. 1994') : $t('Ditt svar')"
           />
         </div>
 
         <div class="dq-submit">
           <button type="submit" class="btn btn-primary" :disabled="submitting">
-            {{ submitting ? 'Sender inn…' : 'Send inn svar' }}
+            {{ submitting ? $t('Sender inn…') : $t('Send inn svar') }}
           </button>
           <button type="button" class="btn btn-secondary dq-save-btn" :disabled="saving || submitting || !dirty" @click="saveDraft">
-            {{ saving ? 'Lagrer…' : (!dirty && savedAt ? 'Fremgang lagret' : 'Lagre til senere') }}
+            {{ saving ? $t('Lagrer…') : (!dirty && savedAt ? $t('Fremgang lagret') : $t('Lagre til senere')) }}
           </button>
           <p class="dq-submit-note">
-            Ikke klar til å levere? Lagre svarene dine og fortsett senere - på hvilken som helst enhet.<br />
-            Du kan ikke endre svarene dine etter at de er sendt inn.
+            {{ $t('Ikke klar til å levere? Lagre svarene dine og fortsett senere - på hvilken som helst enhet.') }}<br />
+            {{ $t('Du kan ikke endre svarene dine etter at de er sendt inn.') }}
           </p>
         </div>
       </form>
@@ -91,7 +91,7 @@
       <!-- ---------- Results ---------- -->
       <template v-else-if="state.result">
         <div v-if="state.result.score !== null" class="dq-card dq-score-hero">
-          <div class="dq-ring" :aria-label="`${state.result.score} av ${state.result.maxScore} poeng`">
+          <div class="dq-ring" :aria-label="$t('{0} av {1} poeng', [state.result.score, state.result.maxScore])">
             <svg viewBox="0 0 120 120">
               <circle class="dq-ring-track" cx="60" cy="60" r="52" />
               <circle
@@ -104,12 +104,12 @@
             </svg>
             <div class="dq-ring-label">
               <strong>{{ state.result.score }}</strong>
-              <span>av {{ state.result.maxScore }}</span>
+              <span>{{ $t('av') }} {{ state.result.maxScore }}</span>
             </div>
           </div>
           <div class="dq-score-copy">
             <h2>{{ scoreHeadline }}</h2>
-            <p>Du fikk {{ correctCount }} av {{ state.result.answers.length }} spørsmål riktig. Se hvordan du ligger an på topplisten.</p>
+            <p>{{ $t('Du fikk§DailyQuizPlayViewT') }} {{ correctCount }} {{ $t('av') }} {{ state.result.answers.length }} {{ $t('spørsmål riktig. Se hvordan du ligger an på topplisten.') }}</p>
           </div>
         </div>
 
@@ -118,8 +118,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
           </div>
           <div class="dq-score-copy">
-            <h2>Svarene dine er sendt inn</h2>
-            <p>En administrator sjekker {{ pendingCount === 1 ? 'ett svar' : `${pendingCount} svar` }}. Poengsummen din og de riktige svarene vises når alt er sjekket - kom tilbake senere.</p>
+            <h2>{{ $t('Svarene dine er sendt inn') }}</h2>
+            <p>{{ $t('En administrator sjekker') }} {{ pendingCount === 1 ? $t('ett svar') : $t('{0} svar', [pendingCount]) }}{{ $t('. Poengsummen din og de riktige svarene vises når alt er sjekket - kom tilbake senere.') }}</p>
           </div>
         </div>
 
@@ -142,11 +142,11 @@
               <div class="dq-answer-q">{{ a.questionText }}</div>
               <img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="dq-photo dq-photo--small" @error="e => e.target.style.display = 'none'" />
               <div class="dq-answer-line">
-                <span class="label">Ditt svar</span>
-                <b>{{ a.yourAnswer || '(tomt)' }}</b>
+                <span class="label">{{ $t('Ditt svar') }}</span>
+                <b>{{ a.yourAnswer || $t('(tomt)') }}</b>
               </div>
               <div v-if="showCorrect(a)" class="dq-answer-line">
-                <span class="label">Riktig svar</span>
+                <span class="label">{{ $t('Riktig svar§DailyQuizPlayViewT') }}</span>
                 <b>{{ a.correctAnswer }}</b>
               </div>
               <DailyQuizEasyMeter :percent="a.percentCorrect" :players="a.playersCounted" />
@@ -155,16 +155,16 @@
               <template v-if="!underReview">
               <span v-if="a.verdict === 'PENDING'" class="dq-pill dq-pill--wait">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-                Til gjennomgang
+                {{ $t('Til gjennomgang') }}
               </span>
               <span v-else-if="a.yearQuestion" class="dq-pill" :class="a.pointsAwarded > 0 ? 'dq-pill--ok' : 'dq-pill--bad'">
-                {{ a.pointsAwarded }} {{ a.pointsAwarded === 1 ? 'poeng' : 'poeng' }}
+                {{ $t('{0} poeng¦{0} poeng', [a.pointsAwarded]) }}
               </span>
               <span v-else class="dq-pill" :class="a.verdict === 'CORRECT' ? 'dq-pill--ok' : 'dq-pill--bad'">
-                {{ a.verdict === 'CORRECT' ? 'Riktig' : 'Feil' }}
+                {{ a.verdict === 'CORRECT' ? $t('Riktig§DailyQuizPlayViewM') : $t('Feil§DailyQuizPlayViewM') }}
               </span>
               </template>
-              <span v-if="a.yearQuestion" class="dq-pill dq-pill--year">Årstall</span>
+              <span v-if="a.yearQuestion" class="dq-pill dq-pill--year">{{ $t('Årstall') }}</span>
             </div>
           </article>
         </div>
@@ -174,23 +174,23 @@
     <!-- Submitting is final (the backend rejects a second submission), so ask first - and call out any
          blank boxes, which are marked wrong rather than skipped. -->
     <div v-if="showSubmitConfirm" class="modal-backdrop" @click.self="!submitting && (showSubmitConfirm = false)">
-      <div class="modal dq-modal" role="alertdialog" aria-modal="true" aria-label="Sende inn svarene dine?">
+      <div class="modal dq-modal" role="alertdialog" aria-modal="true" :aria-label="$t('Sende inn svarene dine?')">
         <div class="dq-modal-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.7 2.7L16 9.5" /></svg>
         </div>
-        <h2 class="dq-modal-title">Sende inn svarene dine?</h2>
+        <h2 class="dq-modal-title">{{ $t('Sende inn svarene dine?') }}</h2>
         <p class="dq-modal-sub">
-          Du har svart på {{ answeredCount }} av {{ state?.questions?.length }}. Du kan ikke endre dem etter at de er sendt inn.
+          {{ $t('Du har svart på') }} {{ answeredCount }} {{ $t('av') }} {{ state?.questions?.length }}{{ $t('. Du kan ikke endre dem etter at de er sendt inn.') }}
         </p>
         <div v-if="blankCount" class="dq-note">
-          {{ blankCount }} spørsmål{{ blankCount === 1 ? ' er' : ' er' }} fortsatt ubesvart - ubesvarte spørsmål teller som feil.
+          {{ $t('{0} spørsmål er fortsatt ubesvart - ubesvarte spørsmål teller som feil.¦{0} spørsmål er fortsatt ubesvart - ubesvarte spørsmål teller som feil.', [blankCount]) }}
         </div>
         <div class="dq-modal-actions">
           <button class="btn btn-secondary" :disabled="submitting" @click="showSubmitConfirm = false">
-            {{ blankCount ? 'Fortsett å svare' : 'Gå tilbake' }}
+            {{ blankCount ? $t('Fortsett å svare') : $t('Gå tilbake') }}
           </button>
           <button class="btn btn-primary" :disabled="submitting" @click="submit">
-            {{ submitting ? 'Sender inn…' : 'Send inn' }}
+            {{ submitting ? $t('Sender inn…') : $t('Send inn') }}
           </button>
         </div>
       </div>
@@ -198,7 +198,7 @@
 
     <DailyQuizScoreboardModal
       v-if="showScoreboard"
-      title="Toppliste"
+      :title="$t('Toppliste')"
       compact
       :data="scoreboardData"
       :loading="scoreboardLoading"
@@ -210,6 +210,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import api from '../services/api'
@@ -247,9 +248,9 @@ const progressPct = computed(() => {
 const subtitle = computed(() => {
   if (!state.value) return ''
   if (state.value.attemptStatus === 'IN_PROGRESS') {
-    return `${state.value.questions.length} spørsmål i pubquiz-stil - skriv svarene dine, ingen flervalg.`
+    return _t('{0} spørsmål i pubquiz-stil - skriv svarene dine, ingen flervalg.', [state.value.questions.length])
   }
-  return state.value.result?.score == null ? 'Innsendt - venter på at en administrator skal bli ferdig med å sjekke.' : 'Slik gikk det.'
+  return state.value.result?.score == null ? _t('Innsendt - venter på at en administrator skal bli ferdig med å sjekke.') : _t('Slik gikk det.')
 })
 
 // ---- save for later ----
@@ -276,9 +277,9 @@ async function saveDraft() {
     await api.saveDailyQuizDraft(quizId, payload)
     savedSnapshot.value = snapshot
     savedAt.value = Date.now()
-    toast.show('Lagret - du kan fortsette senere.')
+    toast.show(_t('Lagret - du kan fortsette senere.'))
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke lagre svarene dine. Prøv igjen.')
+    toast.show(e.response?.data?.message || _t('Kunne ikke lagre svarene dine. Prøv igjen.'))
   } finally {
     saving.value = false
   }
@@ -295,7 +296,7 @@ window.addEventListener('beforeunload', warnBeforeUnload)
 onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnload))
 onBeforeRouteLeave(() => {
   if (dirty.value && !submitting.value) {
-    return window.confirm('Du har svar som ikke er lagret. Forlate siden uten å lagre?')
+    return window.confirm(_t('Du har svar som ikke er lagret. Forlate siden uten å lagre?'))
   }
 })
 
@@ -312,7 +313,7 @@ async function load() {
       if (Object.keys(state.value.draftAnswers).length) savedAt.value = Date.now()
     }
   } catch (e) {
-    error.value = 'Kunne ikke laste denne quizen.'
+    error.value = _t('Kunne ikke laste denne quizen.')
   } finally {
     loading.value = false
   }
@@ -326,7 +327,7 @@ async function submit() {
     state.value = await api.submitDailyQuizAnswers(quizId, payload)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke sende inn svarene dine.'
+    error.value = e.response?.data?.message || _t('Kunne ikke sende inn svarene dine.')
   } finally {
     submitting.value = false
     showSubmitConfirm.value = false
@@ -343,10 +344,10 @@ const scorePct = computed(() => {
 })
 const scoreHeadline = computed(() => {
   const pct = scorePct.value
-  if (pct >= 0.9) return 'Strålende!'
-  if (pct >= 0.7) return 'Flott runde!'
-  if (pct >= 0.4) return 'Bra jobba'
-  return 'Bra innsats - vi sees i morgen'
+  if (pct >= 0.9) return _t('Strålende!')
+  if (pct >= 0.7) return _t('Flott runde!')
+  if (pct >= 0.4) return _t('Bra jobba')
+  return _t('Bra innsats - vi sees i morgen')
 })
 const correctCount = computed(() => (state.value?.result?.answers || []).filter(a => a.verdict === 'CORRECT').length)
 // The real number still waiting on an admin - until it's zero every row reads "pending", so counting rows would just say "all of them".
@@ -368,7 +369,7 @@ function showCorrect(a) {
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('nb-NO', { weekday: 'long', day: 'numeric', month: 'long' })
+  return new Date(dateStr).toLocaleDateString(window.QUIZ_LOCALE, { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
 // ---- leaderboard ----
@@ -403,7 +404,7 @@ async function updateLeaderboardPreference(include) {
     await api.setDailyQuizLeaderboardPreference(quizId, include)
     scoreboardData.value = await api.getDailyQuizScoreboard(quizId)
   } catch (e) {
-    toast.show('Kunne ikke oppdatere innstillingen for topplisten.')
+    toast.show(_t('Kunne ikke oppdatere innstillingen for topplisten.'))
     leaderboardOptIn.value = previous
   }
 }

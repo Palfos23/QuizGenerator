@@ -1,21 +1,21 @@
 <template>
   <div>
-    <h1 style="margin:0;">Spørsmålsetiketter</h1>
+    <h1 style="margin:0;">{{ $t('Spørsmålsetiketter') }}</h1>
     <p class="page-subtitle">
-      Gjenbrukbare merkelapper som kan gå på tvers av kategorier - f.eks. «Ringenes herre» på både et litteraturspørsmål og et filmspørsmål. Når du lager en quiz, kan du filtrere på bare spørsmål merket med en eller flere av disse.
+      {{ $t('Gjenbrukbare merkelapper som kan gå på tvers av kategorier - f.eks. «Ringenes herre» på både et litteraturspørsmål og et filmspørsmål. Når du lager en quiz, kan du filtrere på bare spørsmål merket med en eller flere av disse.') }}
     </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div class="field" style="display:flex; gap:10px; align-items:flex-end; max-width:420px;">
       <div style="flex:1;">
-        <label>Ny etikett<input type="text" v-model="newName" placeholder="f.eks. Ringenes herre" @keyup.enter="createLabel" /></label>
+        <label>{{ $t('Ny etikett') }}<input type="text" v-model="newName" :placeholder="$t('f.eks. Ringenes herre')" @keyup.enter="createLabel" /></label>
       </div>
-      <button class="btn btn-primary" :disabled="!newName.trim() || saving" @click="createLabel">+ Legg til</button>
+      <button class="btn btn-primary" :disabled="!newName.trim() || saving" @click="createLabel">{{ $t('+ Legg til') }}</button>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim); margin-top:20px;">Laster…</div>
-    <div v-else-if="!labels.length" class="empty-state friendly">Ingen etiketter ennå - legg til din første over.</div>
+    <div v-if="loading" style="color:var(--text-dim); margin-top:20px;">{{ $t('Laster…') }}</div>
+    <div v-else-if="!labels.length" class="empty-state friendly">{{ $t('Ingen etiketter ennå - legg til din første over.') }}</div>
 
     <div v-else class="saved-quiz-list" style="margin-top:20px;">
       <div v-for="l in labels" :key="l.id" class="saved-quiz-row">
@@ -33,12 +33,12 @@
         </div>
         <div style="display:flex; gap:8px;">
           <template v-if="editingId === l.id">
-            <button class="btn btn-primary btn-sm" :disabled="!editingName.trim() || saving" @click="confirmRename(l)">Lagre</button>
-            <button class="btn btn-secondary btn-sm" @click="editingId = null">Avbryt</button>
+            <button class="btn btn-primary btn-sm" :disabled="!editingName.trim() || saving" @click="confirmRename(l)">{{ $t('Lagre') }}</button>
+            <button class="btn btn-secondary btn-sm" @click="editingId = null">{{ $t('Avbryt') }}</button>
           </template>
           <template v-else>
-            <button class="btn btn-secondary btn-sm" @click="startRename(l)">Gi nytt navn</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(l)">Slett</button>
+            <button class="btn btn-secondary btn-sm" @click="startRename(l)">{{ $t('Gi nytt navn') }}</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(l)">{{ $t('Slett') }}</button>
           </template>
         </div>
       </div>
@@ -46,8 +46,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Slette denne etiketten?"
-      :message="`«${pendingDelete.name}» fjernes fra alle spørsmål den er knyttet til nå.`"
+      :title="$t('Slette denne etiketten?')"
+      :message="$t('«{0}» fjernes fra alle spørsmål den er knyttet til nå.', [pendingDelete.name])"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -55,6 +55,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -77,7 +78,7 @@ async function loadLabels() {
   try {
     labels.value = await api.adminListQuestionLabels()
   } catch (e) {
-    error.value = 'Kunne ikke laste etiketter.'
+    error.value = _t('Kunne ikke laste etiketter.')
   } finally {
     loading.value = false
   }
@@ -91,10 +92,10 @@ async function createLabel() {
   try {
     await api.adminCreateQuestionLabel(name)
     newName.value = ''
-    toast.show('Etiketten er lagt til.')
+    toast.show(_t('Etiketten er lagt til.'))
     loadLabels()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke legge til etiketten.'
+    error.value = e.response?.data?.message || _t('Kunne ikke legge til etiketten.')
   } finally {
     saving.value = false
   }
@@ -113,10 +114,10 @@ async function confirmRename(l) {
   try {
     await api.adminUpdateQuestionLabel(l.id, name)
     editingId.value = null
-    toast.show('Etiketten har fått nytt navn.')
+    toast.show(_t('Etiketten har fått nytt navn.'))
     loadLabels()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke gi etiketten nytt navn.'
+    error.value = e.response?.data?.message || _t('Kunne ikke gi etiketten nytt navn.')
   } finally {
     saving.value = false
   }
@@ -132,10 +133,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteQuestionLabel(l.id)
-    toast.show('Etiketten er slettet.')
+    toast.show(_t('Etiketten er slettet.'))
     loadLabels()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke slette etiketten.'
+    error.value = e.response?.data?.message || _t('Kunne ikke slette etiketten.')
   }
 }
 </script>

@@ -1,12 +1,12 @@
 <template>
-  <div v-if="cookieConsent.isUnknown.value" class="cookie-banner" role="dialog" aria-label="Cookie-innstillinger">
+  <div v-if="cookieConsent.isUnknown.value" class="cookie-banner" role="dialog" :aria-label="$t('Cookie-innstillinger§CookieConsentBannerA')">
     <p class="cookie-banner-text">
-      Dette nettstedet setter ingen egne informasjonskapsler. Innlogging med Google laster Googles eget innloggingsskript, som kan sette informasjonskapsler på Googles domene - det lastes først etter at du godtar nedenfor. Hvis du avslår, bruker du i stedet «Fortsett med e-post». Se våre
-      <router-link to="/cookies">retningslinjer for informasjonskapsler</router-link>.
+      {{ $t('Dette nettstedet setter ingen egne informasjonskapsler. Innlogging med Google laster Googles eget innloggingsskript, som kan sette informasjonskapsler på Googles domene - det lastes først etter at du godtar nedenfor. Hvis du avslår, bruker du i stedet «Fortsett med e-post». Se våre') }}
+      <router-link to="/cookies">{{ $t('retningslinjer for informasjonskapsler') }}</router-link>.
     </p>
     <div class="cookie-banner-actions">
-      <button type="button" class="btn btn-secondary btn-sm" @click="cookieConsent.decline()">Avslå</button>
-      <button type="button" class="btn btn-primary btn-sm" @click="cookieConsent.accept()">Godta</button>
+      <button type="button" class="btn btn-secondary btn-sm" @click="cookieConsent.decline()">{{ $t('Avslå') }}</button>
+      <button type="button" class="btn btn-primary btn-sm" @click="cookieConsent.accept()">{{ $t('Godta') }}</button>
     </div>
   </div>
 </template>

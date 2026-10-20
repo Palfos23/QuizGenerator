@@ -1,6 +1,7 @@
 import axios from 'axios'
 import auth from './auth'
 import router from '../router'
+import { lang } from '../i18n'
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
@@ -11,6 +12,8 @@ const client = axios.create({
 const OPTIONS_TIMEOUT_MS = 15000
 
 client.interceptors.request.use(config => {
+  // Lets the server answer in the language the page is showing (error messages, emails, PDF labels)
+  config.headers['Accept-Language'] = lang === 'en' ? 'en' : 'nb'
   if (auth.state.token) {
     config.headers.Authorization = `Bearer ${auth.state.token}`
   }
@@ -29,6 +32,14 @@ client.interceptors.response.use(
 )
 
 export default {
+  // --- Admin: Norwegian / English versions of a game board's text (see TranslationEditor) ---
+  adminGetTranslations(type, id) {
+    return client.get(`/admin/translations/${type}/${id}`).then(r => r.data)
+  },
+  adminSaveTranslations(type, id, values) {
+    return client.put(`/admin/translations/${type}/${id}`, values).then(r => r.data)
+  },
+
   // --- Auth ---
   loginWithGoogle(idToken) {
     return client.post('/auth/google', { idToken }).then(r => r.data)

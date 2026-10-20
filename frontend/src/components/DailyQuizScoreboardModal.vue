@@ -4,21 +4,21 @@
       <h2 class="dq-modal-title">{{ title }}</h2>
       <p class="dq-modal-sub">{{ subtitle }}</p>
 
-      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
       <div v-else-if="!entries.length" class="dq-empty" style="padding:22px 0;">
-        <strong>Ingen resultater ennå</strong>
+        <strong>{{ $t('Ingen resultater ennå') }}</strong>
         {{ emptyText }}
       </div>
 
       <template v-else>
         <div class="dq-stat">
-          <span>Snitt</span>
+          <span>{{ $t('Snitt') }}</span>
           <strong>{{ data.averageScore.toFixed(1) }} / {{ data.maxScore }}</strong>
         </div>
         <!-- Only for a viewer who is on the board - hidden for admins and anyone who hasn't played. -->
         <p v-if="yourDelta !== null" class="dq-delta" :class="{ 'is-up': yourDelta > 0, 'is-down': yourDelta < 0 }">
-          {{ yourDelta === 0 ? 'Akkurat på snittet' : `Du er ${Math.abs(yourDelta)} ${yourDelta > 0 ? 'over' : 'under'} snittet` }}
+          {{ yourDelta === 0 ? $t('Akkurat på snittet') : (yourDelta > 0 ? $t('Du er {0} over snittet', [Math.abs(yourDelta)]) : $t('Du er {0} under snittet', [Math.abs(yourDelta)])) }}
         </p>
 
         <div class="dq-board">
@@ -29,7 +29,7 @@
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3z" /></svg>
               </span>
               <div style="min-width:0;">
-                <div class="dq-board-name">Eksperten<small>Ikke rangert</small></div>
+                <div class="dq-board-name">{{ $t('Eksperten') }}<small>{{ $t('Ikke rangert') }}</small></div>
                 <div class="dq-board-bar"><i :style="{ width: barWidth(row) }"></i></div>
               </div>
               <div class="dq-board-score">{{ row.score }}<small> / {{ row.maxScore }}</small></div>
@@ -39,7 +39,7 @@
               <span class="dq-rank" :class="row.rank <= 3 ? `dq-rank--${row.rank}` : ''">{{ row.rank }}</span>
               <div style="min-width:0;">
                 <div class="dq-board-name">
-                  {{ displayName(row.entry.userName) }}<small v-if="row.entry.isYou">Det er deg</small>
+                  {{ displayName(row.entry.userName) }}<small v-if="row.entry.isYou">{{ $t('Det er deg') }}</small>
                 </div>
                 <div class="dq-board-bar"><i :style="{ width: barWidth(row.entry) }"></i></div>
               </div>
@@ -52,7 +52,7 @@
             <div class="dq-board-row is-you">
               <span class="dq-rank">{{ yourRank.rank }}</span>
               <div style="min-width:0;">
-                <div class="dq-board-name">{{ displayName(yourRank.entry.userName) }}<small>Det er deg</small></div>
+                <div class="dq-board-name">{{ displayName(yourRank.entry.userName) }}<small>{{ $t('Det er deg') }}</small></div>
                 <div class="dq-board-bar"><i :style="{ width: barWidth(yourRank.entry) }"></i></div>
               </div>
               <div class="dq-board-score">{{ yourRank.entry.score }}<small> / {{ yourRank.entry.maxScore }}</small></div>
@@ -66,32 +66,33 @@
       <label v-if="preference !== null && preference !== undefined" class="dq-switch">
         <input type="checkbox" :checked="preference" @change="emit('update:preference', $event.target.checked)" />
         <span class="dq-switch-track" aria-hidden="true"></span>
-        <span>Vis navnet mitt på denne topplisten</span>
+        <span>{{ $t('Vis navnet mitt på denne topplisten') }}</span>
       </label>
 
       <div class="dq-modal-actions">
-        <button class="btn btn-secondary" @click="emit('close')">Lukk</button>
+        <button class="btn btn-secondary" @click="emit('close')">{{ $t('Lukk§DailyQuizScoreboardModalT') }}</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed } from 'vue'
 import { useEscapeKey } from '../composables/useEscapeKey'
 import { shortNames } from '../services/displayNames'
 
-// One scoreboard for the player's "Toppliste" button and both admin views. `compact` is the player
+// One scoreboard for the player's 'Toppliste' button and both admin views. `compact` is the player
 // view (top five, plus your own row if you're further down, first names only); the admin view lists
 // everyone with full names.
 const props = defineProps({
-  title: { type: String, default: 'Toppliste' },
+  title: { type: String, default: _t('Toppliste') },
   data: { type: Object, default: null },
   loading: { type: Boolean, default: false },
   compact: { type: Boolean, default: false },
   preference: { type: Boolean, default: null },
-  subtitle: { type: String, default: 'Hvordan det gikk med alle på denne quizen.' },
-  emptyText: { type: String, default: 'Ingen er ferdig rettet ennå.' }
+  subtitle: { type: String, default: _t('Hvordan det gikk med alle på denne quizen.') },
+  emptyText: { type: String, default: _t('Ingen er ferdig rettet ennå.') }
 })
 const emit = defineEmits(['close', 'update:preference'])
 

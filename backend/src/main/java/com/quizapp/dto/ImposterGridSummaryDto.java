@@ -1,7 +1,11 @@
 package com.quizapp.dto;
 
+import com.quizapp.config.Translated;
+import com.quizapp.model.ContentTranslation;
+
 import java.time.Instant;
 
+@Translated(type = ContentTranslation.TYPE_IMPOSTER, fields = {"title", "description"})
 public class ImposterGridSummaryDto {
     private Long id;
     private String title;

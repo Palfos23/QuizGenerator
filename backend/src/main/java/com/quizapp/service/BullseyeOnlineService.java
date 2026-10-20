@@ -150,6 +150,7 @@ public class BullseyeOnlineService {
 
         Long currentQuestionId = state.getQuestionIds().get(state.getCurrentQuestionIndex());
         BullseyeRoundStateDto question = bullseyePlayService.getMultiplayerStartState(currentQuestionId);
+        dto.setQuestionId(currentQuestionId);
         dto.setSport(question.getSport());
         dto.setTargetValue(question.getTargetValue());
         dto.setStatLabel(question.getStatLabel());

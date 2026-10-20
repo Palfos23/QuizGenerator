@@ -14,18 +14,19 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { useEscapeKey } from '../composables/useEscapeKey'
 
 const props = defineProps({
-  title: { type: String, default: 'Er du sikker?' },
+  title: { type: String, default: _t('Er du sikker?') },
   message: { type: String, required: true },
-  confirmText: { type: String, default: 'Slett' },
-  cancelText: { type: String, default: 'Avbryt' },
+  confirmText: { type: String, default: _t('Slett') },
+  cancelText: { type: String, default: _t('Avbryt') },
   // Optional - a caller passes :busy="deleting" (plus a busyText if "Jobber…"
   // isn't the right verb) so the modal visibly reflects an in-flight request
   // instead of just sitting there or vanishing with no feedback while it waits.
   busy: { type: Boolean, default: false },
-  busyText: { type: String, default: 'Jobber…' }
+  busyText: { type: String, default: _t('Jobber…') }
 })
 
 const emit = defineEmits(['confirm', 'cancel'])

@@ -4,21 +4,21 @@
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
         <div>
-          <h1>Ukentlige grids <span v-if="!loading && grids.length" class="header-count">{{ grids.length }}</span></h1>
+          <h1>{{ $t('Ukentlige grids') }} <span v-if="!loading && grids.length" class="header-count">{{ grids.length }}</span></h1>
           <p class="page-subtitle">
-            Lag og administrer de ukentlige gjette-grid-utfordringene.
-            <router-link to="/admin/clubs">Administrer klubber →</router-link>
+            {{ $t('Lag og administrer de ukentlige gjette-grid-utfordringene.') }}
+            <router-link to="/admin/clubs">{{ $t('Administrer klubber →') }}</router-link>
           </p>
         </div>
-        <button class="btn btn-primary" @click="openCreate">+ Lag grid</button>
+        <button class="btn btn-primary" @click="openCreate">{{ $t('+ Lag grid') }}</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
-      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
       <div v-else-if="!grids.length" class="empty-state friendly">
-        Ingen grids ennå. Legg til noen emner på siden Emner, og lag ditt første grid her.
+        {{ $t('Ingen grids ennå. Legg til noen emner på siden Emner, og lag ditt første grid her.') }}
       </div>
 
       <template v-else>
@@ -29,26 +29,26 @@
         :sorts="gridSorts"
         :total-count="grids.length"
         :filtered-count="filteredGrids.length"
-        placeholder="Søk etter grids på tittel eller kategori…"
+        :placeholder="$t('Søk etter grids på tittel eller kategori…')"
       />
 
-      <div v-if="!filteredGrids.length" class="empty-state">Ingen grids samsvarer med søket ditt.</div>
+      <div v-if="!filteredGrids.length" class="empty-state">{{ $t('Ingen grids samsvarer med søket ditt.') }}</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="g in pagedGrids" :key="g.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ g.title }}
-              <span v-if="g.excludedFromGridBattle" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">Ikke i Grid Battle</span>
-              <span v-if="g.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Automatisk utvalg</span>
-              <span v-if="g.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Kan utløpe</span>
+              <span v-if="g.excludedFromGridBattle" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">{{ $t('Ikke i Grid Battle') }}</span>
+              <span v-if="g.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">{{ $t('Automatisk utvalg') }}</span>
+              <span v-if="g.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">{{ $t('Kan utløpe') }}</span>
             </div>
-            <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} oppføringer · {{ g.maxStrikes }} {{ g.maxStrikes === 1 ? 'liv' : 'liv' }} · uke {{ g.weekStartDate }}</div>
+            <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} {{ $t('oppføringer ·') }} {{ $t('{0} liv¦{0} liv', [g.maxStrikes]) }} {{ $t('· uke') }} {{ g.weekStartDate }}</div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(g.id)">Rediger</button>
-            <button class="btn btn-secondary btn-sm" @click="duplicateGrid(g.id)">⧉ Dupliser</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(g)">Slett</button>
+            <button class="btn btn-secondary btn-sm" @click="openEdit(g.id)">{{ $t('Rediger') }}</button>
+            <button class="btn btn-secondary btn-sm" @click="duplicateGrid(g.id)">{{ $t('⧉ Dupliser') }}</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(g)">{{ $t('Slett') }}</button>
           </div>
         </div>
       </div>
@@ -60,22 +60,22 @@
     <!-- Builder view -->
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-        <h1 style="margin:0;">{{ editingGridId ? 'Rediger grid' : 'Lag grid' }}</h1>
-        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til listen</button>
+        <h1 style="margin:0;">{{ editingGridId ? $t('Rediger grid') : $t('Lag grid') }}</h1>
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">{{ $t('← Tilbake til listen') }}</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Tittel<input type="text" v-model="form.title" placeholder="f.eks. Tottenham-spillere med 10+ mål" /></label>
+        <label>{{ $t('Tittel') }}<input type="text" v-model="form.title" :placeholder="$t('f.eks. Tottenham-spillere med 10+ mål')" /></label>
       </div>
 
       <div class="field">
-        <label>Tema / instruksjoner<textarea v-model="form.theme" placeholder="Nevn hver Tottenham-spiller med mer enn 10 mål."></textarea></label>
+        <label>{{ $t('Tema / instruksjoner') }}<textarea v-model="form.theme" :placeholder="$t('Nevn hver Tottenham-spiller med mer enn 10 mål.')"></textarea></label>
       </div>
 
       <div class="field">
-        <label>Kategori <span class="picker-hint">velg en</span></label>
+        <label>{{ $t('Kategori') }} <span class="picker-hint">{{ $t('velg en') }}</span></label>
         <div class="language-row">
           <button
             v-for="s in gridCategories.categories.value"
@@ -91,27 +91,27 @@
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:180px;">
-          <label>Startdato for uken<input type="date" v-model="form.weekStartDate" /></label>
+          <label>{{ $t('Startdato for uken') }}<input type="date" v-model="form.weekStartDate" /></label>
           <p v-if="weekConflict" style="margin:6px 0 0; color:var(--coral); font-size:0.82rem;">
-            ⚠ '{{ weekConflict.title }}' bruker allerede denne uken.
+            ⚠ '{{ weekConflict.title }}{{ $t('\' bruker allerede denne uken.') }}
           </p>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>Maks liv<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
+          <label>{{ $t('Maks liv') }}<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
         </div>
       </div>
 
       <div class="field">
-        <label>Rekkefølge på rutene <span class="picker-hint">hvordan rutene sorteres, eller om de rangeres i det hele tatt</span></label>
+        <label>{{ $t('Rekkefølge på rutene') }} <span class="picker-hint">{{ $t('hvordan rutene sorteres, eller om de rangeres i det hele tatt') }}</span></label>
         <div class="language-row">
           <button type="button" class="language-btn" :class="{ active: form.ranked && !form.sortAscending }" @click="form.ranked = true; form.sortAscending = false">
-            Høyest først <span style="color:var(--text-dim); font-weight:400;">(mål, kamper…)</span>
+            {{ $t('Høyest først') }} <span style="color:var(--text-dim); font-weight:400;">{{ $t('(mål, kamper…)') }}</span>
           </button>
           <button type="button" class="language-btn" :class="{ active: form.ranked && form.sortAscending }" @click="form.ranked = true; form.sortAscending = true">
-            Lavest først <span style="color:var(--text-dim); font-weight:400;">(sluttplassering…)</span>
+            {{ $t('Lavest først') }} <span style="color:var(--text-dim); font-weight:400;">{{ $t('(sluttplassering…)') }}</span>
           </button>
           <button type="button" class="language-btn" :class="{ active: !form.ranked }" @click="form.ranked = false">
-            Ingen rangering <span style="color:var(--text-dim); font-weight:400;">(bildet er hintet - filmplakater…)</span>
+            {{ $t('Ingen rangering') }} <span style="color:var(--text-dim); font-weight:400;">{{ $t('(bildet er hintet - filmplakater…)') }}</span>
           </button>
         </div>
       </div>
@@ -119,31 +119,31 @@
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.excludedFromGridBattle" style="width:auto;" />
-          Utelat fra Grid Battle
+          {{ $t('Utelat fra Grid Battle') }}
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
-          Bruk dette når et grids tropp er utdatert (f.eks. en spiller passerte en statistikkgrense) - det forblir helt intakt for alle som allerede har spilt det, og vises fortsatt i det vanlige arkivet for Ukens grid, men slutter å tilbys i Grid Battles tilfeldige eller manuelle valg. Dupliser det først for å lage en oppdatert versjon med samme innhold å redigere.
+          {{ $t('Bruk dette når et grids tropp er utdatert (f.eks. en spiller passerte en statistikkgrense) - det forblir helt intakt for alle som allerede har spilt det, og vises fortsatt i det vanlige arkivet for Ukens grid, men slutter å tilbys i Grid Battles tilfeldige eller manuelle valg. Dupliser det først for å lage en oppdatert versjon med samme innhold å redigere.') }}
         </p>
       </div>
 
       <div class="field option-card">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
-          Kan utløpe
+          {{ $t('Kan utløpe') }}
           <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
-            f.eks. "nåværende all-time toppscorer" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.
+            {{ $t('f.eks. "nåværende all-time toppscorer" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.§AdminGridsViewT') }}
           </div>
         </label>
       </div>
 
       <div class="field">
-        <label>Rutehint <span class="picker-hint">det en spiller ser før den gjetter denne oppføringen</span></label>
+        <label>{{ $t('Rutehint') }} <span class="picker-hint">{{ $t('det en spiller ser før den gjetter denne oppføringen') }}</span></label>
         <div class="language-row">
           <button type="button" class="language-btn" :class="{ active: form.revealMode === 'PHOTO' }" @click="form.revealMode = 'PHOTO'">
-            Bilde <span style="color:var(--text-dim); font-weight:400;">(det vanlige, for grids uten rangering)</span>
+            {{ $t('Bilde') }} <span style="color:var(--text-dim); font-weight:400;">{{ $t('(det vanlige, for grids uten rangering)') }}</span>
           </button>
           <button type="button" class="language-btn" :class="{ active: form.revealMode === 'DESCRIPTION' }" @click="form.revealMode = 'DESCRIPTION'">
-            Beskrivelse <span style="color:var(--text-dim); font-weight:400;">(et sitat vist som hint - for bøker osv.)</span>
+            {{ $t('Beskrivelse') }} <span style="color:var(--text-dim); font-weight:400;">{{ $t('(et sitat vist som hint - for bøker osv.)') }}</span>
           </button>
         </div>
       </div>
@@ -151,28 +151,28 @@
       <div v-if="form.revealMode === 'PHOTO'" class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.fitImages" style="width:auto;" />
-          Tilpass hele bildet i hver rute
+          {{ $t('Tilpass hele bildet i hver rute') }}
         </label>
         <p class="picker-hint" style="margin:4px 0 0;">
-          For flagg og logoer i full ramme - viser hele bildet med litt luft i stedet for å beskjære det til å fylle ruten. La stå av for portrettbilder.
+          {{ $t('For flagg og logoer i full ramme - viser hele bildet med litt luft i stedet for å beskjære det til å fylle ruten. La stå av for portrettbilder.') }}
         </p>
       </div>
 
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.entireCategoryPool" style="width:auto;" @change="onEntireCategoryToggle" />
-          Bruk alle emner i "{{ form.sport || '…' }}" som utvalg
+          {{ $t('Bruk alle emner i "') }}{{ form.sport || '…' }}{{ $t('" som utvalg') }}
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
-          Alle emner i denne kategorien kan gjettes automatisk, inkludert de som legges til senere - ingenting å importere på nytt. Du velger fortsatt hvilke som er de riktige svarene under.
+          {{ $t('Alle emner i denne kategorien kan gjettes automatisk, inkludert de som legges til senere - ingenting å importere på nytt. Du velger fortsatt hvilke som er de riktige svarene under.') }}
         </p>
       </div>
 
       <div class="field">
         <label>
-          {{ form.entireCategoryPool ? 'Riktige svar' : 'Kandidatutvalg' }}
+          {{ form.entireCategoryPool ? $t('Riktige svar') : $t('Kandidatutvalg') }}
           <span class="picker-hint">
-            {{ form.entireCategoryPool ? 'søk for å markere et emne som riktig svar' : 'alle som kan gjettes i dette gridet - riktige og avledere' }}
+            {{ form.entireCategoryPool ? $t('søk for å markere et emne som riktig svar') : $t('alle som kan gjettes i dette gridet - riktige og avledere') }}
           </span>
         </label>
 
@@ -180,7 +180,7 @@
           <input
             type="text"
             v-model="athleteSearchTerm"
-            :placeholder="form.entireCategoryPool ? 'Søk etter emner å markere som riktig svar…' : 'Søk etter emner på navn…'"
+            :placeholder="form.entireCategoryPool ? $t('Søk etter emner å markere som riktig svar…') : $t('Søk etter emner på navn…')"
             style="flex:1; min-width:180px;"
           />
         </div>
@@ -188,22 +188,22 @@
         <template v-if="!form.entireCategoryPool">
           <div v-if="poolsForSport.length" style="margin-bottom:10px;">
             <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
-              ...eller importer fra et lagret utvalg
+              {{ $t('...eller importer fra et lagret utvalg') }}
             </label>
             <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
               <select v-model="selectedPoolId" style="flex:1; min-width:200px;">
-                <option :value="null">Velg et utvalg…</option>
+                <option :value="null">{{ $t('Velg et utvalg…') }}</option>
                 <option v-for="p in poolsForSport" :key="p.id" :value="p.id">{{ p.name }} ({{ p.memberCount }})</option>
               </select>
               <button class="btn btn-secondary btn-sm" :disabled="!selectedPoolId" @click="importFromPool">
-                + Importer utvalg
+                {{ $t('+ Importer utvalg') }}
               </button>
             </div>
           </div>
 
           <div style="margin-bottom:10px;">
             <button class="btn btn-secondary btn-sm" :disabled="!form.sport || importingAllInCategory" @click="importAllInCategory">
-              {{ importingAllInCategory ? 'Importerer…' : `+ Importer alle emner i "${form.sport || '…'}"` }}
+              {{ importingAllInCategory ? $t('Importerer…') : $t('+ Importer alle emner i "{0}"', [form.sport || '…']) }}
             </button>
           </div>
         </template>
@@ -220,20 +220,20 @@
         </div>
 
         <div v-if="!candidates.length" class="empty-state" style="padding:20px;">
-          {{ form.entireCategoryPool ? 'Ingen riktige svar markert ennå - søk over.' : 'Ingen emner lagt til ennå - søk over, eller importer et lagret utvalg.' }}
+          {{ form.entireCategoryPool ? $t('Ingen riktige svar markert ennå - søk over.') : $t('Ingen emner lagt til ennå - søk over, eller importer et lagret utvalg.') }}
         </div>
 
         <div v-else class="candidate-list">
           <input
             type="text"
             v-model="candidateFilterTerm"
-            placeholder="Finn noen som allerede er i dette utvalget…"
+            :placeholder="$t('Finn noen som allerede er i dette utvalget…')"
             class="search-input"
             style="margin-bottom:12px;"
           />
 
           <div v-if="!filteredCandidatesForEditing.length" class="empty-state" style="padding:20px;">
-            Ingen i dette utvalget samsvarer med "{{ candidateFilterTerm }}".
+            {{ $t('Ingen i dette utvalget samsvarer med "') }}{{ candidateFilterTerm }}".
           </div>
 
           <template v-else>
@@ -246,27 +246,27 @@
               {{ c.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ c.team }}</span>
             </div>
             <div v-if="c.correct" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-              <input type="text" v-model="c.hintLabel" placeholder="Etikett (valgfritt, f.eks. FW)" style="width:110px;" />
-              <input v-if="form.ranked" type="number" v-model.number="c.hintValue" placeholder="Verdi" style="width:80px;" />
+              <input type="text" v-model="c.hintLabel" :placeholder="$t('Etikett (valgfritt, f.eks. FW)')" style="width:110px;" />
+              <input v-if="form.ranked" type="number" v-model.number="c.hintValue" :placeholder="$t('Verdi')" style="width:80px;" />
               <select :value="logoSelectValue(c)" @change="onLogoSelectChange(c, $event.target.value)" style="width:190px;">
-                <option value="none">Ingen logo</option>
-                <option v-if="c.photoUrl" value="own">Bruk emnets eget bilde</option>
+                <option value="none">{{ $t('Ingen logo') }}</option>
+                <option v-if="c.photoUrl" value="own">{{ $t('Bruk emnets eget bilde') }}</option>
                 <option v-for="club in clubOptions" :key="club.id" :value="String(club.id)">{{ club.name }}</option>
               </select>
               <select v-if="c.additionalPhotos && c.additionalPhotos.length" v-model="c.selectedPhotoId" style="width:190px;">
-                <option :value="null">Standardbilde</option>
-                <option v-for="p in c.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Bilde uten tittel' }}</option>
+                <option :value="null">{{ $t('Standardbilde') }}</option>
+                <option v-for="p in c.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || $t('Bilde uten tittel') }}</option>
               </select>
               <select v-if="form.revealMode === 'DESCRIPTION' && c.additionalDescriptions && c.additionalDescriptions.length" v-model="c.selectedDescriptionId" style="width:190px;">
-                <option :value="null">Første beskrivelse</option>
+                <option :value="null">{{ $t('Første beskrivelse') }}</option>
                 <option v-for="d in c.additionalDescriptions" :key="d.id" :value="d.id">{{ d.label || (d.text.length > 30 ? d.text.slice(0, 30) + '…' : d.text) }}</option>
               </select>
               <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400; font-size:0.82rem; color:var(--text-dim); margin:0;">
                 <input type="checkbox" v-model="c.showLogo" style="width:auto;" :disabled="!c.clubId && !c.useOwnPhotoAsLogo" />
-                Vis logo
+                {{ $t('Vis logo') }}
               </label>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="openEditAthlete(c)">Rediger</button>
+            <button class="btn btn-secondary btn-sm" @click="openEditAthlete(c)">{{ $t('Rediger') }}</button>
             <button class="btn btn-danger btn-sm" @click="removeCandidate(c)">✕</button>
           </div>
 
@@ -275,15 +275,17 @@
         </div>
       </div>
 
+      <TranslationEditor v-if="editingGridId" type="GRID" :entity-id="editingGridId" />
+
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" :disabled="!correctCandidates.length" @click="showPreview = true">
-          Forhåndsvisning ({{ correctCandidates.length }} ruter)
+          {{ $t('Forhåndsvisning (') }}{{ correctCandidates.length }} {{ $t('ruter)') }}
         </button>
         <button v-if="editingGridId" class="btn btn-secondary" @click="duplicateAsNewVersion">
-          ⧉ Dupliser som ny versjon
+          {{ $t('⧉ Dupliser som ny versjon') }}
         </button>
         <button class="btn btn-primary" :disabled="saving" @click="saveGrid">
-          {{ saving ? 'Lagrer…' : 'Lagre grid' }}
+          {{ saving ? $t('Lagrer…') : $t('Lagre grid') }}
         </button>
       </div>
     </template>
@@ -291,21 +293,21 @@
     <div v-if="showPreview" class="modal-backdrop" @click.self="showPreview = false">
       <div class="modal" style="max-width:800px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <h2 style="margin:0;">{{ form.title || 'Grid uten tittel' }}</h2>
-          <button class="btn btn-secondary btn-sm" @click="showPreview = false">Lukk</button>
+          <h2 style="margin:0;">{{ form.title || $t('Grid uten tittel') }}</h2>
+          <button class="btn btn-secondary btn-sm" @click="showPreview = false">{{ $t('Lukk§AdminGridsViewT') }}</button>
         </div>
         <p class="page-subtitle" style="margin-top:0;">
-          Alt vist avslørt, for en rask sjekk av at hint, logoer og bilder ser riktige ut.
+          {{ $t('Alt vist avslørt, for en rask sjekk av at hint, logoer og bilder ser riktige ut.') }}
         </p>
 
         <div v-if="!correctCandidates.length" class="empty-state" style="padding:20px;">
-          Ingen ruter markert som «riktig» ennå - huk av ved en kandidat over.
+          {{ $t('Ingen ruter markert som «riktig» ennå - huk av ved en kandidat over.') }}
         </div>
         <div v-else class="grid-tiles">
           <div v-for="c in sortedCorrectCandidates" :key="c.athleteId" class="grid-tile correct">
             <span class="grid-tile-status correct">✓</span>
             <div v-if="form.revealMode === 'DESCRIPTION'" class="grid-tile-description">
-              {{ previewDescription(c) || '(ingen sitat satt for dette emnet)' }}
+              {{ previewDescription(c) || $t('(ingen sitat satt for dette emnet)') }}
             </div>
             <img
               v-else-if="previewImage(c)"
@@ -333,8 +335,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Slette dette gridet?"
-      :message="`«${pendingDelete.title}» og alles fremgang på det fjernes for godt.`"
+      :title="$t('Slette dette gridet?')"
+      :message="$t('«{0}» og alles fremgang på det fjernes for godt.', [pendingDelete.title])"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -342,6 +344,8 @@
 </template>
 
 <script setup>
+import TranslationEditor from '../components/TranslationEditor.vue'
+import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -369,10 +373,10 @@ const {
   pageSize: 10,
   searchFields: [g => g.title, g => g.sport],
   sorts: [
-    { key: 'week', label: 'Uke', accessor: g => g.weekStartDate, dir: 'desc' },
-    { key: 'title', label: 'Tittel', accessor: g => g.title },
-    { key: 'category', label: 'Kategori', accessor: g => g.sport },
-    { key: 'entries', label: 'Oppføringer', accessor: g => g.entryCount, dir: 'desc' }
+    { key: 'week', label: _t('Uke'), accessor: g => g.weekStartDate, dir: 'desc' },
+    { key: 'title', label: _t('Tittel'), accessor: g => g.title },
+    { key: 'category', label: _t('Kategori'), accessor: g => g.sport },
+    { key: 'entries', label: _t('Oppføringer'), accessor: g => g.entryCount, dir: 'desc' }
   ]
 })
 
@@ -521,7 +525,7 @@ function onAthleteEdited(saved) {
     c.additionalPhotos = saved.additionalPhotos || []
     c.additionalDescriptions = saved.additionalDescriptions || []
   }
-  toast.show('Emnet er oppdatert.')
+  toast.show(_t('Emnet er oppdatert.'))
 }
 
 function removeCandidate(c) {
@@ -570,7 +574,7 @@ async function loadGrids() {
   try {
     grids.value = await api.adminListGrids()
   } catch (e) {
-    error.value = 'Kunne ikke laste grids.'
+    error.value = _t('Kunne ikke laste grids.')
   } finally {
     loading.value = false
   }
@@ -652,10 +656,10 @@ async function importFromPool() {
     const pool = await api.adminGetAthletePool(selectedPoolId.value)
     const added = addCandidatesBulk(pool.members)
     if (!linkedPoolIds.value.includes(pool.id)) linkedPoolIds.value.push(pool.id)
-    toast.show(`Importerte ${added} emne(r) fra "${pool.name}". Dette gridet får nå automatisk nye medlemmer som legges til i det utvalget senere.`)
+    toast.show(_t('Importerte {0} emne(r) fra "{1}". Dette gridet får nå automatisk nye medlemmer som legges til i det utvalget senere.', [added, pool.name]))
     selectedPoolId.value = null
   } catch (e) {
-    error.value = 'Kunne ikke importere utvalget.'
+    error.value = _t('Kunne ikke importere utvalget.')
   }
 }
 
@@ -667,9 +671,9 @@ async function importAllInCategory() {
   try {
     const all = await api.adminSearchAthletes({ sport: form.sport })
     const added = addCandidatesBulk(all)
-    toast.show(`Importerte ${added} emne(r) fra "${form.sport}" (${all.length - added} var allerede i dette gridet).`)
+    toast.show(_t('Importerte {0} emne(r) fra "{1}" ({2} var allerede i dette gridet).', [added, form.sport, all.length - added]))
   } catch (e) {
-    error.value = 'Kunne ikke importere emner for den kategorien.'
+    error.value = _t('Kunne ikke importere emner for den kategorien.')
   } finally {
     importingAllInCategory.value = false
   }
@@ -754,7 +758,7 @@ async function openEdit(id) {
     loadAthletePools()
     rebuildCandidateDisplayOrder()
   } catch (e) {
-    error.value = 'Kunne ikke laste gridet.'
+    error.value = _t('Kunne ikke laste gridet.')
   }
 }
 
@@ -774,24 +778,24 @@ function duplicateAsNewVersion() {
   // completely untouched until you separately go back and check "Exclude
   // from Grid Battle" on it once you're happy with this copy.
   editingGridId.value = null
-  form.title = form.title + ' (oppdatert)'
+  form.title = form.title + _t(' (oppdatert)')
   form.excludedFromGridBattle = false
-  toast.show('Du redigerer nå en ny duplikat - det opprinnelige gridet er urørt. Husk å lagre denne kopien.')
+  toast.show(_t('Du redigerer nå en ny duplikat - det opprinnelige gridet er urørt. Husk å lagre denne kopien.'))
 }
 
 async function saveGrid() {
   error.value = ''
   if (!form.title.trim() || !form.weekStartDate) {
-    error.value = 'Tittel og startdato for uken må fylles ut.'
+    error.value = _t('Tittel og startdato for uken må fylles ut.')
     return
   }
   const entries = candidates.value.filter(c => c.correct)
   if (!entries.length) {
-    error.value = 'Marker minst én kandidat som riktig svar.'
+    error.value = _t('Marker minst én kandidat som riktig svar.')
     return
   }
   if (form.ranked && entries.some(c => c.hintValue === null || c.hintValue === '')) {
-    error.value = 'Hvert riktige svar trenger en hintverdi (etiketten er valgfri).'
+    error.value = _t('Hvert riktige svar trenger en hintverdi (etiketten er valgfri).')
     return
   }
 
@@ -824,11 +828,11 @@ async function saveGrid() {
     } else {
       await api.adminCreateGrid(payload)
     }
-    toast.show('Gridet er lagret.')
+    toast.show(_t('Gridet er lagret.'))
     view.value = 'list'
     loadGrids()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Kunne ikke lagre gridet.'
+    error.value = e.response?.data?.message || _t('Kunne ikke lagre gridet.')
   } finally {
     saving.value = false
   }
@@ -844,10 +848,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteGrid(g.id)
-    toast.show('Gridet er slettet.')
+    toast.show(_t('Gridet er slettet.'))
     loadGrids()
   } catch (e) {
-    error.value = 'Kunne ikke slette gridet.'
+    error.value = _t('Kunne ikke slette gridet.')
   }
 }
 </script>

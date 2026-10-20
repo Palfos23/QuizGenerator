@@ -1,39 +1,39 @@
 <template>
   <div>
-    <LoadingState v-if="loadingChoices" message="Laster spørsmålsvalg…" full />
+    <LoadingState v-if="loadingChoices" :message="$t('Laster spørsmålsvalg…')" full />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
-        Spørsmål {{ currentQuestionIndex + 1 }} / {{ roundCount }}
+        {{ $t('Spørsmål§TensionGameT') }} {{ currentQuestionIndex + 1 }} / {{ roundCount }}
       </div>
-      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ rotatedPlayers[0] }}</strong>, velg et spørsmål</h2>
+      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ rotatedPlayers[0] }}</strong>{{ $t(', velg et spørsmål') }}</h2>
       <div class="tension-choice-grid">
         <button v-for="q in roundChoices" :key="q.id" class="tension-choice-card" @click="chooseQuestion(q)">
           {{ q.title }}
         </button>
       </div>
       <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="rerolling" @click="rerollChoices">
-        {{ rerolling ? 'Finner flere…' : '↻ Vis 3 andre spørsmål' }}
+        {{ rerolling ? $t('Finner flere…') : $t('↻ Vis 3 andre spørsmål') }}
       </button>
     </div>
 
     <div v-else-if="!question" class="empty-state">
-      <p>Kunne ikke laste spørsmålene til denne runden.</p>
-      <button class="btn btn-primary" @click="loadRoundChoices">Prøv igjen</button>
+      <p>{{ $t('Kunne ikke laste spørsmålene til denne runden.') }}</p>
+      <button class="btn btn-primary" @click="loadRoundChoices">{{ $t('Prøv igjen') }}</button>
     </div>
 
     <template v-else>
     <div class="grid-status-bar">
-      <div class="grid-progress">Spørsmål {{ currentQuestionIndex + 1 }} / {{ roundCount }}</div>
-      <div style="color:var(--text-dim); font-size:0.85rem;">Tension-svar: {{ question.tensionAnswers.length }}</div>
+      <div class="grid-progress">{{ $t('Spørsmål§TensionGameT') }} {{ currentQuestionIndex + 1 }} / {{ roundCount }}</div>
+      <div style="color:var(--text-dim); font-size:0.85rem;">{{ $t('Tension-svar:') }} {{ question.tensionAnswers.length }}</div>
     </div>
 
     <h1 style="text-align:center; margin:6px 0 4px;">{{ question.title }}</h1>
     <p v-if="question.source" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
-      Tilleggsinformasjon: {{ question.source }}
+      {{ $t('Tilleggsinformasjon:') }} {{ question.source }}
     </p>
     <p v-if="question.tiebreaker" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
-      Avgjørende spørsmål: {{ question.tiebreaker }}
+      {{ $t('Avgjørende spørsmål:') }} {{ question.tiebreaker }}
     </p>
     <p v-if="lastUpdatedLabel" style="text-align:center; margin:0 0 20px; color:var(--text-dim); font-size:0.75rem;">
       {{ lastUpdatedLabel }}
@@ -49,7 +49,7 @@
         >
           <div>
             <strong>{{ player }}</strong>
-            <div class="tension-player-answer">{{ answerTextFor(player) || '— venter —' }}</div>
+            <div class="tension-player-answer">{{ answerTextFor(player) || $t('— venter —') }}</div>
           </div>
           <div style="text-align:right;">
             <div
@@ -57,13 +57,13 @@
               class="tension-round-score"
               :class="{ positive: (scoreFor(player) ?? 0) > 0, negative: (scoreFor(player) ?? 0) < 0 }"
             >{{ formatScore(scoreFor(player)) }}</div>
-            <div style="font-size:0.8rem; color:var(--text-dim);">Totalt: {{ scores[player] }}</div>
+            <div style="font-size:0.8rem; color:var(--text-dim);">{{ $t('Totalt:') }} {{ scores[player] }}</div>
           </div>
         </div>
       </div>
 
       <div class="tension-answers-panel">
-        <h3 style="text-align:center; margin-top:0;">Svar</h3>
+        <h3 style="text-align:center; margin-top:0;">{{ $t('Svar§TensionGameT') }}</h3>
         <div class="tension-reveal-list">
           <div
             v-for="(ans, idx) in allAnswersList"
@@ -73,13 +73,13 @@
           >
             <div class="tension-reveal-rank">{{ idx + 1 }}</div>
             <div class="tension-reveal-main">
-              <div class="tension-reveal-answer">{{ revealIndex > idx ? ans.text : 'Skjult til avsløringen' }}</div>
+              <div class="tension-reveal-answer">{{ revealIndex > idx ? ans.text : $t('Skjult til avsløringen') }}</div>
               <div v-if="revealIndex > idx" class="tension-reveal-tag" :class="ans.tension ? 'trap' : 'safe'">
-                {{ ans.tension ? 'Tension-svar' : 'Trygt svar' }}
+                {{ ans.tension ? $t('Tension-svar§TensionGameM') : $t('Trygt svar') }}
               </div>
             </div>
             <div v-if="revealIndex > idx" class="tension-reveal-guessers">
-              <span v-if="!guessersFor(ans).length" class="tension-reveal-nobody">Ingen gjettet dette</span>
+              <span v-if="!guessersFor(ans).length" class="tension-reveal-nobody">{{ $t('Ingen gjettet dette') }}</span>
               <span
                 v-for="g in guessersFor(ans)"
                 :key="g.name"
@@ -97,24 +97,24 @@
 
     <div style="text-align:center; margin-top:24px;">
       <div v-if="countdown !== null && !revealed" style="font-size:1.4rem; font-weight:700;">
-        Svar om {{ countdown }}…
+        {{ $t('Svar om') }} {{ countdown }}…
       </div>
 
       <button v-if="revealed && revealIndex < allAnswersList.length" class="btn btn-secondary" @click="skipReveal">
-        Hopp over avsløringen
+        {{ $t('Hopp over avsløringen') }}
       </button>
 
       <button v-if="readyForStandings && !isLastQuestion" class="btn btn-primary" @click="openStandingsModal">
-        Vis stillingen
+        {{ $t('Vis stillingen') }}
       </button>
       <button v-if="readyForStandings && isLastQuestion" class="btn btn-primary" @click="nextQuestion">
-        Avslutt
+        {{ $t('Avslutt') }}
       </button>
     </div>
 
     <div v-if="showStandingsModal" class="modal-backdrop">
       <div class="modal">
-        <h2 style="text-align:center;">Stilling</h2>
+        <h2 style="text-align:center;">{{ $t('Stilling') }}</h2>
         <TransitionGroup name="standing" tag="div" class="tension-standings-list">
           <div
             v-for="(entry, i) in displayedStandings"
@@ -134,18 +134,18 @@
         </TransitionGroup>
 
         <button class="btn btn-primary" style="width:100%; margin-top:20px;" @click="closeStandingsAndContinue">
-          {{ currentQuestionIndex + 1 < roundCount ? 'Neste spørsmål' : 'Fullfør spillet' }}
+          {{ currentQuestionIndex + 1 < roundCount ? $t('Neste spørsmål') : $t('Fullfør spillet') }}
         </button>
       </div>
     </div>
 
     <div v-if="showIntro" class="tension-intro-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:10px;">
-        Spørsmål {{ currentQuestionIndex + 1 }} / {{ roundCount }}
+        {{ $t('Spørsmål§TensionGameT') }} {{ currentQuestionIndex + 1 }} / {{ roundCount }}
       </div>
       <h1 style="max-width:80%; margin:0 auto;">{{ question.title }}</h1>
-      <p style="margin-top:20px; font-size:1.1rem;">Først ut: <strong>{{ rotatedPlayers[0] }}</strong></p>
-      <p style="margin-top:20px; color:var(--text-dim);">Starter om {{ introCountdown }}s…</p>
+      <p style="margin-top:20px; font-size:1.1rem;">{{ $t('Først ut:') }} <strong>{{ rotatedPlayers[0] }}</strong></p>
+      <p style="margin-top:20px; color:var(--text-dim);">{{ $t('Starter om') }} {{ introCountdown }}s…</p>
     </div>
 
     <TensionAnswerModal
@@ -166,6 +166,7 @@
 </template>
 
 <script setup>
+import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -406,7 +407,7 @@ async function loadRoundChoices() {
       3, props.category, props.excludeCategories, chosenQuestions.value.map(q => q.id)
     )
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke laste neste runde - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke laste neste runde - prøv igjen.'), 'error')
   } finally {
     loadingChoices.value = false
   }
@@ -424,10 +425,10 @@ async function rerollChoices() {
     if (fresh.length) {
       roundChoices.value = fresh
     } else {
-      toast.show('Ingen andre spørsmål igjen å vise.', 'error')
+      toast.show(_t('Ingen andre spørsmål igjen å vise.'), 'error')
     }
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Kunne ikke laste andre spørsmål - prøv igjen.', 'error')
+    toast.show(e.response?.data?.message || _t('Kunne ikke laste andre spørsmål - prøv igjen.'), 'error')
   } finally {
     rerolling.value = false
   }

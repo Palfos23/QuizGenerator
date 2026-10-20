@@ -1,8 +1,8 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Forhåndsvisning av XI Battle: en fotballbane med en startellever, noen drakter avslørt og noen fortsatt skjult.">
-    <span class="game-preview-tag">Forhåndsvisning</span>
+  <div class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av XI Battle: en fotballbane med en startellever, noen drakter avslørt og noen fortsatt skjult.')">
+    <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
     <div class="xp-head">
-      <span class="xp-match">Arsenal XI · Community Shield 2014</span>
+      <span class="xp-match">{{ $t('Arsenal XI · Community Shield 2014') }}</span>
       <span class="xp-lives">
         <span v-for="n in 5" :key="n" class="xp-heart" :class="{ lost: n > 4 }">♥</span>
       </span>
@@ -24,8 +24,8 @@
     </div>
 
     <p class="game-preview-caption">
-      Gjett hvem som startet en ekte kamp. <span class="good">Riktig</span> avslører drakten og gir poeng;
-      <span class="bad">feil</span> koster et liv. Høyest totalsum på 2–4 brett vinner.
+      {{ $t('Gjett hvem som startet en ekte kamp.') }} <span class="good">{{ $t('Riktig§XiBattlePreviewT') }}</span> {{ $t('avslører drakten og gir poeng;') }}
+      <span class="bad">{{ $t('feil') }}</span> {{ $t('koster et liv. Høyest totalsum på 2–4 brett vinner.') }}
     </p>
   </div>
 </template>

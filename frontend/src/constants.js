@@ -1,9 +1,10 @@
+import { t as _t } from './i18n'
 export const LANGUAGES = [
-  { code: 'EN', label: 'Engelsk', flag: '🇬🇧' },
-  { code: 'DE', label: 'Tysk', flag: '🇩🇪' },
-  { code: 'FR', label: 'Fransk', flag: '🇫🇷' },
-  { code: 'ES', label: 'Spansk', flag: '🇪🇸' },
-  { code: 'NO', label: 'Norsk', flag: '🇳🇴' }
+  { code: 'EN', label: _t('Engelsk'), flag: '🇬🇧' },
+  { code: 'DE', label: _t('Tysk'), flag: '🇩🇪' },
+  { code: 'FR', label: _t('Fransk'), flag: '🇫🇷' },
+  { code: 'ES', label: _t('Spansk'), flag: '🇪🇸' },
+  { code: 'NO', label: _t('Norsk'), flag: '🇳🇴' }
 ]
 
 export function languageLabel(code) {
@@ -19,7 +20,7 @@ export function formatLastUpdated(isoString) {
   if (!isoString) return ''
   const d = new Date(isoString)
   if (Number.isNaN(d.getTime())) return ''
-  return 'Oppdatert ' + d.toLocaleDateString('nb-NO', { month: 'short', year: 'numeric' })
+  return _t('Oppdatert') + ' ' + d.toLocaleDateString(window.QUIZ_LOCALE, { month: 'short', year: 'numeric' })
 }
 
 // Categories are now an open, admin-managed list (see services/gridCategories.js)
