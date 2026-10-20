@@ -1,59 +1,50 @@
 <template>
   <div style="max-width:760px; margin:0 auto;">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
-      <h1 style="margin:0;">Cookie Policy</h1>
-      <router-link to="/" class="btn btn-secondary btn-sm">← Back</router-link>
+      <h1 style="margin:0;">Retningslinjer for informasjonskapsler</h1>
+      <router-link to="/" class="btn btn-secondary btn-sm">← Tilbake</router-link>
     </div>
 
-    <p class="page-subtitle">Last updated: 2026-09-24.</p>
+    <p class="page-subtitle">Sist oppdatert: 24.09.2026.</p>
 
-    <h2>The short version</h2>
+    <h2>Kortversjonen</h2>
     <p>
-      This site doesn't set any cookies of its own. It uses your browser's local storage instead (functionally
-      similar, and treated the same way under Norwegian/EU cookie law) to keep you signed in and remember a few
-      preferences. The only thing here that can set an actual cookie is Google's sign-in button - and it only loads
-      after you accept below.
+      Dette nettstedet setter ingen egne informasjonskapsler. Det bruker i stedet nettleserens lokale lagring (funksjonelt lignende, og behandlet på samme måte etter norsk og europeisk lovgivning om informasjonskapsler) for å holde deg innlogget og huske noen innstillinger. Det eneste her som kan sette en faktisk informasjonskapsel er Googles innloggingsknapp - og den lastes først etter at du godtar nedenfor.
     </p>
 
-    <h2>What we store, and why</h2>
+    <h2>Hva vi lagrer, og hvorfor</h2>
     <table class="table" style="width:100%;">
       <thead>
-        <tr><th>What</th><th>Purpose</th><th>Kept until</th></tr>
+        <tr><th>Hva</th><th>Formål</th><th>Beholdes til</th></tr>
       </thead>
       <tbody>
-        <tr><td>Sign-in session</td><td>Keeps you logged in between visits</td><td>You log out, or it expires</td></tr>
-        <tr><td>Display name &amp; role</td><td>Shows your name in the app, remembers guest/admin status</td><td>Same as above</td></tr>
-        <tr><td>In-progress game state</td><td>Lets you resume a pass-and-play game or rejoin an active room</td><td>Until the game finishes</td></tr>
-        <tr><td>Quiz draft</td><td>Autosaves an in-progress "Create a quiz" form</td><td>Until you finish or clear it</td></tr>
-        <tr><td>Cookie preference</td><td>Remembers your choice below, so we don't ask every visit</td><td>Until you change it</td></tr>
+        <tr><td>Innloggingsøkt</td><td>Holder deg innlogget mellom besøk</td><td>Du logger ut, eller den utløper</td></tr>
+        <tr><td>Visningsnavn og rolle</td><td>Viser navnet ditt i appen, husker gjest-/administratorstatus</td><td>Som over</td></tr>
+        <tr><td>Pågående spilltilstand</td><td>Lar deg fortsette et spill der enheten sendes rundt, eller gå tilbake til et aktivt rom</td><td>Til spillet er ferdig</td></tr>
+        <tr><td>Quizutkast</td><td>Lagrer automatisk et pågående «Lag en quiz»-skjema</td><td>Til du fullfører eller tømmer det</td></tr>
+        <tr><td>Cookie-valg</td><td>Husker valget ditt nedenfor, slik at vi ikke spør ved hvert besøk</td><td>Til du endrer det</td></tr>
       </tbody>
     </table>
     <p style="color:var(--text-dim); font-size:0.85rem;">
-      All of the above is "strictly necessary" for a feature you're actively using - the kind of storage that both
-      Norwegian law (ekomloven §2-7b) and GDPR's cookie rules exempt from needing separate consent, the same way a
-      shopping cart doesn't need one.
+      Alt det ovenstående er «strengt nødvendig» for en funksjon du aktivt bruker - den typen lagring som både norsk lov (ekomloven §2-7b) og personvernforordningens regler om informasjonskapsler unntar fra krav om eget samtykke, på samme måte som en handlekurv ikke trenger det.
     </p>
 
-    <h2>Google Sign-In</h2>
+    <h2>Google-innlogging</h2>
     <p>
-      If you choose "Continue with Google" and accept the prompt, we load Google's own sign-in script. From that
-      point on, Google can set cookies on its own domain (accounts.google.com) as part of running that sign-in flow -
-      this is Google's cookie, not ours, and governed by
-      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's own privacy policy</a>.
-      If you decline, the script never loads, and you can still sign in with "Continue with email" instead.
+      Hvis du velger «Fortsett med Google» og godtar forespørselen, laster vi Googles eget innloggingsskript. Fra da av kan Google sette informasjonskapsler på sitt eget domene (accounts.google.com) som en del av innloggingen - dette er Googles informasjonskapsel, ikke vår, og styres av
+      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Googles egen personvernerklæring</a>. Hvis du avslår, lastes aldri skriptet, og du kan fortsatt logge inn med «Fortsett med e-post» i stedet.
     </p>
 
-    <h2>Fonts</h2>
+    <h2>Skrifttyper</h2>
     <p>
-      The typefaces used on this site are hosted directly by us, not loaded live from Google Fonts - so simply
-      viewing a page here never sends your IP address to Google just to render text.
+      Skrifttypene som brukes på dette nettstedet hostes direkte av oss og lastes ikke live fra Google Fonts - så å bare se på en side her sender aldri IP-adressen din til Google bare for å vise tekst.
     </p>
 
-    <h2>Changing your choice</h2>
+    <h2>Endre valget ditt</h2>
     <p>
-      Click <strong>"Cookie settings"</strong> in the footer of any page to see the choice again and change it.
+      Klikk på <strong>«Cookie-innstillinger»</strong> nederst på en hvilken som helst side for å se valget igjen og endre det.
     </p>
 
-    <p>See also our <router-link to="/privacy">Privacy Policy</router-link>.</p>
+    <p>Se også vår <router-link to="/privacy">personvernerklæring</router-link>.</p>
   </div>
 </template>

@@ -44,7 +44,7 @@ public class LoginRateLimiter {
             long secondsLeft = Duration.between(Instant.now(), attempt.windowStart.plus(WINDOW)).getSeconds();
             long minutesLeft = Math.max(1, (secondsLeft + 59) / 60);
             throw new TooManyAttemptsException(
-                    "Too many failed login attempts. Try again in " + minutesLeft + " minute(s).");
+                    "For mange mislykkede innloggingsforsøk. Prøv igjen om " + minutesLeft + " minutt(er).");
         }
     }
 

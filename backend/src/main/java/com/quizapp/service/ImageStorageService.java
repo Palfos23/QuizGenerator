@@ -59,15 +59,15 @@ public class ImageStorageService {
 
     /** Validates, shrinks and re-encodes; throws IllegalArgumentException (shown to the admin) for anything unusable. */
     static Prepared prepare(byte[] original) {
-        if (original == null || original.length == 0) throw new IllegalArgumentException("That file is empty.");
-        if (original.length > MAX_UPLOAD_BYTES) throw new IllegalArgumentException("That picture is too large - the limit is 8 MB.");
+        if (original == null || original.length == 0) throw new IllegalArgumentException("Den filen er tom.");
+        if (original.length > MAX_UPLOAD_BYTES) throw new IllegalArgumentException("Bildet er for stort - grensen er 8 MB.");
         BufferedImage image;
         try {
             image = ImageIO.read(new ByteArrayInputStream(original)); // decides by content, not by file name
         } catch (IOException e) {
             image = null;
         }
-        if (image == null) throw new IllegalArgumentException("That doesn't look like a picture - use a JPG, PNG, WebP or GIF.");
+        if (image == null) throw new IllegalArgumentException("Det ser ikke ut som et bilde - bruk JPG, PNG, WebP eller GIF.");
 
         int w = image.getWidth();
         int h = image.getHeight();
@@ -94,14 +94,14 @@ public class ImageStorageService {
             if (!ImageIO.write(out, format, bos)) throw new IOException("no writer for " + format);
             return new Prepared(bos.toByteArray(), hasAlpha ? "image/png" : "image/jpeg", format);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Couldn't process that picture - try a different file.");
+            throw new IllegalArgumentException("Kunne ikke behandle bildet - prøv en annen fil.");
         }
     }
 
     /** Stores the picture and returns its public URL. */
     public String upload(byte[] original) {
         if (!isConfigured()) {
-            throw new IllegalStateException("Picture uploads aren't set up yet - add the storage settings (see the README) or paste a link instead.");
+            throw new IllegalStateException("Bildeopplasting er ikke satt opp ennå - legg til lagringsinnstillingene (se README) eller lim inn en lenke i stedet.");
         }
         Prepared p = prepare(original);
         String path = UUID.randomUUID() + "." + p.extension();
@@ -121,14 +121,14 @@ public class ImageStorageService {
             HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() / 100 != 2) {
                 log.warn("Supabase storage upload failed: HTTP {} {}", response.statusCode(), response.body());
-                throw new IllegalStateException("The picture store rejected the upload (HTTP " + response.statusCode() + "). Check the storage settings and that the bucket exists.");
+                throw new IllegalStateException("Bildelageret avviste opplastingen (HTTP " + response.statusCode() + "). Sjekk lagringsinnstillingene og at bøtten finnes.");
             }
         } catch (IOException e) {
             log.warn("Supabase storage upload failed", e);
-            throw new IllegalStateException("Couldn't reach the picture store - try again in a moment.");
+            throw new IllegalStateException("Kunne ikke nå bildelageret - prøv igjen om litt.");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("The upload was interrupted.");
+            throw new IllegalStateException("Opplastingen ble avbrutt.");
         }
         return supabaseUrl + "/storage/v1/object/public/" + bucket + "/" + path;
     }

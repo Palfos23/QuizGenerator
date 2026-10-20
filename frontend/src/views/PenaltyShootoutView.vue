@@ -2,25 +2,24 @@
   <GameAccessGate game="penalty-shootout">
   <div>
     <template v-if="stage === 'landing'">
-      <h1>Penalty Shootout</h1>
+      <h1>Straffekonkurranse</h1>
       <p class="page-subtitle">
-        Guess who took each penalty, in real order - get it right and the kick reveals (and you score a point),
-        get it wrong and you lose a life. Play solo, or pass the device around and take turns.
+        Gjett hvem som tok hvert straffespark, i riktig rekkefølge - gjetter du riktig, avsløres sparket (og du får ett poeng), gjetter du feil, mister du et liv. Spill alene, eller send enheten rundt og bytt på.
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div v-if="savedPassAndPlay" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <span>You have a shootout in progress.</span>
+        <span>Du har en straffekonkurranse i gang.</span>
         <div style="display:flex; gap:8px;">
-          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Resume</button>
-          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">Dismiss</button>
+          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Fortsett</button>
+          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">Lukk</button>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
-          <label>Players <span class="picker-hint">1 = solo</span>
+          <label>Spillere <span class="picker-hint">1 = alene</span>
             <select v-model.number="numPlayers">
               <option v-for="n in [1,2,3,4]" :key="n" :value="n">{{ n }}</option>
             </select>
@@ -29,72 +28,69 @@
       </div>
 
       <div class="field">
-        <label>How should the shootout be picked?</label>
+        <label>Hvordan skal konkurransen velges?</label>
         <div class="language-row">
-          <button class="language-btn" :class="{ active: pickMode === 'random' }" @click="pickMode = 'random'">Random</button>
-          <button class="language-btn" :class="{ active: pickMode === 'manual' }" @click="pickMode = 'manual'">Pick my own</button>
+          <button class="language-btn" :class="{ active: pickMode === 'random' }" @click="pickMode = 'random'">Tilfeldig</button>
+          <button class="language-btn" :class="{ active: pickMode === 'manual' }" @click="pickMode = 'manual'">Velg selv</button>
         </div>
       </div>
 
       <button class="btn btn-primary" :disabled="checkingPool" @click="goToSetup">
-        {{ checkingPool ? 'Checking…' : (numPlayers === 1 ? 'Play →' : 'Next →') }}
+        {{ checkingPool ? 'Sjekker…' : (numPlayers === 1 ? 'Spill →' : 'Neste →') }}
       </button>
 
       <details class="advanced-disclosure" style="margin-top:24px;">
-        <summary>Not sure how it works? See an example</summary>
+        <summary>Usikker på hvordan det fungerer? Se et eksempel</summary>
         <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgba(27, 26, 23, 0.06);">
           <p style="margin-top:0;">
-            A shootout board shows every kick in the real order it happened, split by side - a small badge already
-            shows whether each one was <strong style="color:var(--teal);">scored</strong> or
-            <strong style="color:var(--coral);">missed</strong>, but not who took it.
+            Et konkurransebrett viser hvert spark i den virkelige rekkefølgen, delt på lag - et lite merke viser allerede om hvert enkelt ble <strong style="color:var(--teal);">scoret</strong> eller
+            <strong style="color:var(--coral);">bommet</strong>, men ikke hvem som tok det.
           </p>
-          <p>Search for a player you think took one of the hidden kicks and submit a guess.</p>
+          <p>Søk etter en spiller du tror tok ett av de skjulte sparkene, og send inn en gjetning.</p>
           <ul style="margin:0 0 14px; padding-left:20px; line-height:1.7;">
-            <li><strong style="color:var(--teal);">Guess right</strong> - that kick reveals their name and photo, and you score a point.</li>
-            <li><strong style="color:var(--coral);">Guess wrong</strong> - you lose one of your lives (5 by default).</li>
+            <li><strong style="color:var(--teal);">Gjett riktig</strong> - sparket avslører navnet og bildet deres, og du får ett poeng.</li>
+            <li><strong style="color:var(--coral);">Gjett feil</strong> - du mister ett av livene dine (5 som standard).</li>
           </ul>
           <p style="margin-bottom:0;">
-            Playing solo, it's just you against the board. With friends, the turn passes to the next player after
-            every guess - each player has their own separate lives, so the shootout keeps going until it's either
-            fully solved, or everyone's out of lives.
+            Spiller du alene, er det bare deg mot brettet. Med venner går turen videre til neste spiller etter hver gjetning - hver spiller har sine egne liv, så konkurransen fortsetter til den enten er helt løst, eller alle er tomme for liv.
           </p>
         </div>
       </details>
     </template>
 
     <template v-else-if="stage === 'setup'">
-      <h1>Who's playing?</h1>
-      <p class="page-subtitle" v-if="duplicateNames">Two players can't have the same name.</p>
+      <h1>Hvem spiller?</h1>
+      <p class="page-subtitle" v-if="duplicateNames">To spillere kan ikke ha samme navn.</p>
 
       <div v-for="(p, i) in setupPlayers" :key="i" class="field">
-        <input type="text" v-model="p.name" :placeholder="`Player ${i + 1}`" />
+        <input type="text" v-model="p.name" :placeholder="`Spiller ${i + 1}`" />
       </div>
 
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="stage = 'landing'">← Back</button>
+        <button class="btn btn-secondary" @click="stage = 'landing'">← Tilbake</button>
         <button class="btn btn-primary" :disabled="!allNamed || duplicateNames" @click="goToShootoutChoice">
-          Next →
+          Neste →
         </button>
       </div>
     </template>
 
     <template v-else-if="stage === 'pickShootout'">
-      <h1>Choose a shootout</h1>
+      <h1>Velg en straffekonkurranse</h1>
 
       <LoadingState v-if="loadingShootouts" full />
-      <div v-else-if="!availableShootouts.length" class="empty-state">No shootouts available yet.</div>
+      <div v-else-if="!availableShootouts.length" class="empty-state">Ingen straffekonkurranser tilgjengelige ennå.</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="s in availableShootouts" :key="s.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ s.title }}</div>
-            <div class="saved-quiz-meta">{{ s.teamName }} vs {{ s.opponentName }} · {{ s.kickCount }} kicks</div>
+            <div class="saved-quiz-meta">{{ s.teamName }} mot {{ s.opponentName }} · {{ s.kickCount }} spark</div>
           </div>
-          <button class="btn btn-primary btn-sm" @click="chooseShootout(s)">Play</button>
+          <button class="btn btn-primary btn-sm" @click="chooseShootout(s)">Spill</button>
         </div>
       </div>
 
-      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'setup'">← Back</button>
+      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'setup'">← Tilbake</button>
     </template>
 
     <PenaltyShootoutGame
@@ -109,7 +105,7 @@
     <template v-else-if="stage === 'done'">
       <div class="modal-backdrop">
         <div class="completion-popup" :class="{ 'podium-host': setupPlayers.length > 1 }">
-          <h2 style="margin-top:0;">{{ setupPlayers.length > 1 ? 'Game over!' : 'Nice work!' }}</h2>
+          <h2 style="margin-top:0;">{{ setupPlayers.length > 1 ? 'Spillet er over!' : 'Bra jobba!' }}</h2>
 
           <template v-if="setupPlayers.length > 1">
             <div class="podium-row">
@@ -127,10 +123,10 @@
             </div>
           </template>
           <p v-else class="page-subtitle" style="text-align:center;">
-            You found {{ sortedScores[0]?.[1] ?? 0 }} kick{{ sortedScores[0]?.[1] === 1 ? '' : 's' }}.
+            Du fant {{ sortedScores[0]?.[1] ?? 0 }} spark.
           </p>
 
-          <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="resetGame">Play again</button>
+          <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="resetGame">Spill igjen</button>
         </div>
       </div>
     </template>
@@ -150,13 +146,13 @@ import GameAccessGate from '../components/GameAccessGate.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },
-  { hex: '#7C7CFC', name: 'Light indigo' },
-  { hex: '#F22C05', name: 'Red' },
-  { hex: '#F2BB05', name: 'Yellow' },
-  { hex: '#032E8A', name: 'Blue' },
-  { hex: '#05D6F2', name: 'Light blue' },
-  { hex: '#f43f5e', name: 'Pink' },
-  { hex: '#5D038A', name: 'Purple' }
+  { hex: '#7C7CFC', name: 'Lys indigo' },
+  { hex: '#F22C05', name: 'Rød' },
+  { hex: '#F2BB05', name: 'Gul' },
+  { hex: '#032E8A', name: 'Blå' },
+  { hex: '#05D6F2', name: 'Lyseblå' },
+  { hex: '#f43f5e', name: 'Rosa' },
+  { hex: '#5D038A', name: 'Lilla' }
 ]
 
 const stage = ref('landing')
@@ -196,7 +192,7 @@ const duplicateNames = computed(() => {
 function rebuildSetupPlayers() {
   setupPlayers.length = 0
   if (numPlayers.value === 1) {
-    setupPlayers.push({ name: 'You', color: colorOptions[0].hex })
+    setupPlayers.push({ name: 'Du', color: colorOptions[0].hex })
     return
   }
   const shuffled = [...colorOptions].sort(() => Math.random() - 0.5)
@@ -205,7 +201,7 @@ function rebuildSetupPlayers() {
   }
 }
 
-// Solo mode skips naming entirely - "You" needs no picker, so this goes
+// Solo mode skips naming entirely - "Du" needs no picker, so this goes
 // straight from the landing screen to picking a shootout.
 async function goToSetup() {
   error.value = ''
@@ -225,7 +221,7 @@ async function loadAvailableShootouts() {
   try {
     availableShootouts.value = await api.fetchPenaltyShootouts()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not load shootouts.'
+    error.value = e.response?.data?.message || 'Kunne ikke laste straffekonkurranser.'
   } finally {
     loadingShootouts.value = false
   }
@@ -250,7 +246,7 @@ async function goToShootoutChoice() {
       return
     }
     if (!pool.length) {
-      error.value = 'No shootouts available yet - try picking your own, or ask an admin to add some.'
+      error.value = 'Ingen straffekonkurranser tilgjengelige ennå - prøv å velge selv, eller be en administrator legge til noen.'
       stage.value = 'landing'
       return
     }
@@ -274,10 +270,10 @@ async function swapShootout() {
     if (pool.length) {
       startGame(pool[0].id)
     } else {
-      toast.show('No other shootouts available.', 'error')
+      toast.show('Ingen andre straffekonkurranser tilgjengelige.', 'error')
     }
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Could not load another shootout.', 'error')
+    toast.show(e.response?.data?.message || 'Kunne ikke laste en annen straffekonkurranse.', 'error')
   }
 }
 

@@ -1,33 +1,32 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Preview of Tension: a hidden ranked list of ten answers, with a trap answer just past the end.">
-    <span class="game-preview-tag">Preview</span>
-    <div class="tp-q">“Name one of the 10 most-searched recipe ingredients”</div>
+  <div class="game-preview" role="img" aria-label="Forhåndsvisning av Tension: en skjult rangert liste med ti svar, med et fellesvar rett etter slutten.">
+    <span class="game-preview-tag">Forhåndsvisning</span>
+    <div class="tp-q">«Nevn en av de 10 mest søkte ingrediensene i oppskrifter»</div>
 
     <div class="tp-track">
       <div class="tp-fill"></div>
       <div class="tp-danger">
-        <span>Tension zone</span>
+        <span>Tension-sone</span>
       </div>
 
       <div class="tp-pin safe" style="left: 8%;">
         <span class="tp-dot"></span>
-        <span class="tp-label">Salt<b>rank 1 · +1</b></span>
+        <span class="tp-label">Salt<b>plass 1 · +1</b></span>
       </div>
       <div class="tp-pin safe hi" style="left: 60%;">
         <span class="tp-dot"></span>
-        <span class="tp-label">Basil<b>rank 10 · +10</b></span>
+        <span class="tp-label">Basilikum<b>plass 10 · +10</b></span>
       </div>
       <div class="tp-pin trap" style="left: 82%;">
         <span class="tp-dot"></span>
-        <span class="tp-label">Oregano<b class="bad">trap · −5</b></span>
+        <span class="tp-label">Oregano<b class="bad">felle · −5</b></span>
       </div>
     </div>
 
-    <div class="tp-scale"><span>safe · low reward</span><span>risky · high reward</span><span>overshoot</span></div>
+    <div class="tp-scale"><span>trygt · lav belønning</span><span>risikabelt · høy belønning</span><span>for langt</span></div>
 
     <p class="game-preview-caption">
-      Guess as close to <strong>rank 10</strong> as you dare — the closer you push, the more points.
-      Overshoot into <span class="bad">tension</span> territory and it costs you.
+      Gjett så nær <strong>plass 10</strong> som du tør — jo nærmere du går, jo flere poeng. Går du for langt inn i <span class="bad">tension</span> -sonen, koster det deg.
     </p>
   </div>
 </template>

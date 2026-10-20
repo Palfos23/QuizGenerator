@@ -1,31 +1,30 @@
 <template>
   <div>
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
-      <h1 style="margin:0;">Suggest a question</h1>
-      <router-link to="/dashboard" class="btn btn-secondary btn-sm">← Back to dashboard</router-link>
+      <h1 style="margin:0;">Foreslå et spørsmål</h1>
+      <router-link to="/dashboard" class="btn btn-secondary btn-sm">← Tilbake til oversikten</router-link>
     </div>
     <p class="page-subtitle">
-      Submit a question for admin review. If it's approved, it joins the shared question bank for everyone.
-      If it's rejected, you'll see why here - and you can still use it in your own quizzes either way.
+      Send inn et spørsmål til gjennomgang av en administrator. Hvis det godkjennes, blir det en del av den felles spørsmålsbanken for alle. Hvis det avvises, ser du hvorfor her - og du kan uansett bruke det i dine egne quizer.
     </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div class="field">
-      <label>Question<input type="text" v-model="form.questionText" placeholder="e.g. What is the capital of Norway?" /></label>
+      <label>Spørsmål<input type="text" v-model="form.questionText" placeholder="f.eks. Hva er hovedstaden i Norge?" /></label>
     </div>
 
     <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
       <div style="flex:1; min-width:160px;">
-        <label>Category<input type="text" v-model="form.category" placeholder="e.g. Geography" /></label>
+        <label>Kategori<input type="text" v-model="form.category" placeholder="f.eks. Geografi" /></label>
       </div>
       <div style="flex:1; min-width:160px;">
-        <label>Difficulty <span class="picker-hint">1 (easy) - 10 (hard)</span><input type="number" min="1" max="10" v-model.number="form.difficultyLevel" /></label>
+        <label>Vanskelighetsgrad <span class="picker-hint">1 (lett) - 10 (vanskelig)</span><input type="number" min="1" max="10" v-model.number="form.difficultyLevel" /></label>
       </div>
     </div>
 
     <div class="field">
-      <label>Language <span class="picker-hint">choose one</span></label>
+      <label>Språk <span class="picker-hint">velg en</span></label>
       <div class="language-row">
         <button
           v-for="lang in LANGUAGES"
@@ -40,34 +39,34 @@
     </div>
 
     <div class="field">
-      <label>Answer<input type="text" v-model="form.answer" /></label>
+      <label>Svar<input type="text" v-model="form.answer" /></label>
     </div>
 
     <div class="field">
       <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400;">
         <input type="checkbox" v-model="form.couldChange" style="width:auto;" />
-        This answer could change over time (e.g. a current record or title-holder)
+        Dette svaret kan endre seg over tid (f.eks. en gjeldende rekord eller tittelinnehaver)
       </label>
     </div>
 
     <button class="btn btn-primary" :disabled="submitting" @click="submit">
-      {{ submitting ? 'Submitting…' : 'Submit for review' }}
+      {{ submitting ? 'Sender inn…' : 'Send inn til gjennomgang' }}
     </button>
 
-    <h2 style="margin-top:40px;">Your submissions</h2>
+    <h2 style="margin-top:40px;">Dine innsendinger</h2>
 
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
-    <div v-else-if="!submissions.length" class="empty-state">You haven't submitted any questions yet.</div>
+    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+    <div v-else-if="!submissions.length" class="empty-state">Du har ikke sendt inn noen spørsmål ennå.</div>
 
     <div v-else class="saved-quiz-list">
       <div v-for="s in submissions" :key="s.id" class="saved-quiz-row" style="align-items:flex-start;">
         <div class="saved-quiz-info">
           <div class="saved-quiz-title">{{ s.questionText }}</div>
           <div class="saved-quiz-meta">
-            {{ s.category }} · {{ languageLabel(s.language) }} · difficulty {{ s.difficultyLevel }}
+            {{ s.category }} · {{ languageLabel(s.language) }} · vanskelighetsgrad {{ s.difficultyLevel }}
           </div>
           <div v-if="s.status === 'REJECTED'" style="color:var(--coral); font-size:0.85rem; margin-top:6px;">
-            Rejected: {{ s.rejectionReason }}
+            Avvist: {{ s.rejectionReason }}
           </div>
         </div>
         <span
@@ -100,7 +99,7 @@ async function loadMine() {
   try {
     submissions.value = await api.myQuestionSubmissions()
   } catch (e) {
-    error.value = 'Could not load your submissions.'
+    error.value = 'Kunne ikke laste innsendingene dine.'
   } finally {
     loading.value = false
   }
@@ -109,27 +108,27 @@ async function loadMine() {
 async function submit() {
   error.value = ''
   if (!form.questionText.trim() || !form.category.trim() || !form.answer.trim()) {
-    error.value = 'Question, category and answer are all required.'
+    error.value = 'Spørsmål, kategori og svar må fylles ut.'
     return
   }
   submitting.value = true
   try {
     await api.submitQuestion(form)
-    toast.show('Submitted for review.')
+    toast.show('Sendt inn til gjennomgang.')
     form.questionText = ''
     form.category = ''
     form.answer = ''
     form.couldChange = false
     loadMine()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not submit that question.'
+    error.value = e.response?.data?.message || 'Kunne ikke sende inn spørsmålet.'
   } finally {
     submitting.value = false
   }
 }
 
 function statusLabel(status) {
-  return { PENDING: 'Pending review', APPROVED: 'Approved', REJECTED: 'Rejected' }[status] || status
+  return { PENDING: 'Venter på gjennomgang', APPROVED: 'Godkjent', REJECTED: 'Avvist' }[status] || status
 }
 function statusStyle(status) {
   if (status === 'APPROVED') return { background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }

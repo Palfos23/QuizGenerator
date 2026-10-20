@@ -1,17 +1,17 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Preview of an Imposter board: a grid of tiles where a couple are revealed as imposters.">
-    <span class="game-preview-tag">Preview</span>
-    <div class="ip-theme">Theme · “Premier League top scorers, 2023/24”</div>
+  <div class="game-preview" role="img" aria-label="Forhåndsvisning av et Imposter-brett: et rutenett der et par ruter er avslørt som imposters.">
+    <span class="game-preview-tag">Forhåndsvisning</span>
+    <div class="ip-theme">Tema · «Toppscorere i Premier League, 2023/24»</div>
     <div class="ip-grid">
       <div v-for="t in tiles" :key="t.name" class="ip-tile" :class="t.state">
         <span class="ip-name">{{ t.name }}</span>
-        <span v-if="t.state === 'fit'" class="ip-badge good">✓ fits</span>
+        <span v-if="t.state === 'fit'" class="ip-badge good">✓ passer</span>
         <span v-else-if="t.state === 'imposter'" class="ip-badge bad">✕ imposter</span>
       </div>
     </div>
     <p class="game-preview-caption">
-      Flip tiles as a group — most belong to the theme, a few don’t.
-      <strong>Fewest <span class="bad">imposter</span> hits wins.</strong>
+      Snu ruter sammen — de fleste hører til temaet, noen få gjør det ikke.
+      <strong>Færrest <span class="bad">imposter</span> -treff vinner.</strong>
     </p>
   </div>
 </template>

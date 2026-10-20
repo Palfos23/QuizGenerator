@@ -1,6 +1,6 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Preview of Flashback: a mystery year revealed through clues, guessed correctly on the second one.">
-    <span class="game-preview-tag">Preview</span>
+  <div class="game-preview" role="img" aria-label="Forhåndsvisning av Flashback: et mysterieår avslørt gjennom hint, gjettet riktig på det andre.">
+    <span class="game-preview-tag">Forhåndsvisning</span>
 
     <div class="fp-clues">
       <div v-for="c in clues" :key="c.num" class="fp-clue" :class="{ win: c.winner }">
@@ -17,13 +17,13 @@
     </div>
 
     <div class="fp-answer">
-      <span class="fp-answer-label">The year was</span>
+      <span class="fp-answer-label">Året var</span>
       <span class="fp-answer-val">1969</span>
-      <span class="fp-answer-points">+4 pts</span>
+      <span class="fp-answer-points">+4 poeng</span>
     </div>
 
     <p class="game-preview-caption">
-      Nobody nailed clue 1, so clue 2 revealed - guess right on an <strong>earlier</strong> clue for more points.
+      Ingen traff på hint 1, så hint 2 ble vist - gjetter du riktig på et <strong>tidligere</strong> hint, får du flere poeng.
     </p>
   </div>
 </template>
@@ -32,7 +32,7 @@
 const clues = [
   {
     num: 1,
-    text: 'A famous "one small step" was taken this year',
+    text: 'Et berømt «ett lite skritt» ble tatt dette året',
     winner: false,
     guesses: [
       { name: 'Jo', year: 1958, win: false },
@@ -41,7 +41,7 @@ const clues = [
   },
   {
     num: 2,
-    text: 'The space race between the US and USSR was in full swing',
+    text: 'Kappløpet om verdensrommet mellom USA og Sovjetunionen var i full gang',
     winner: true,
     guesses: [
       { name: 'Jo', year: 1969, win: true }

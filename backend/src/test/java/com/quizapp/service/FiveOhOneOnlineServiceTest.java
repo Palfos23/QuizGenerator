@@ -63,7 +63,7 @@ class FiveOhOneOnlineServiceTest {
 
         assertThatThrownBy(() -> fiveOhOneOnlineService.rerollCategory(room, GUEST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Only the host");
+                .hasMessageContaining("Bare verten");
     }
 
     @Test
@@ -76,7 +76,7 @@ class FiveOhOneOnlineServiceTest {
 
         assertThatThrownBy(() -> fiveOhOneOnlineService.rerollCategory(started, HOST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("already started");
+                .hasMessageContaining("allerede startet");
     }
 
     @Autowired

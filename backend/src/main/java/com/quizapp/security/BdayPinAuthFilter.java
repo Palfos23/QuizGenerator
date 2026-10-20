@@ -47,7 +47,7 @@ public class BdayPinAuthFilter extends OncePerRequestFilter {
         String providedPin = request.getHeader("X-Bday-Pin");
         if (expectedPin == null || expectedPin.isBlank() || !expectedPin.equals(providedPin)) {
             rateLimiter.recordFailure(clientKey);
-            writeJson(response, HttpServletResponse.SC_UNAUTHORIZED, "Wrong PIN.");
+            writeJson(response, HttpServletResponse.SC_UNAUTHORIZED, "Feil PIN-kode.");
             return;
         }
 

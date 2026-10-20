@@ -6,7 +6,7 @@
       <div class="stat-barlist-track">
         <div class="stat-barlist-fill" :style="{ width: (i.count / max * 100) + '%', backgroundColor: color }"></div>
       </div>
-      <div class="stat-barlist-value">{{ i.count.toLocaleString() }}</div>
+      <div class="stat-barlist-value">{{ i.count.toLocaleString('nb-NO') }}</div>
     </div>
   </div>
 </template>
@@ -17,7 +17,7 @@ import { computed } from 'vue'
 const props = defineProps({
   items: { type: Array, default: () => [] },
   color: { type: String, default: 'var(--gold)' },
-  empty: { type: String, default: 'Nothing to show yet.' }
+  empty: { type: String, default: 'Ingenting å vise ennå.' }
 })
 
 // Bars scale to the largest value in the set.

@@ -2,16 +2,16 @@
   <div>
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-        <h1 style="margin:0;">Imposter boards <span v-if="!loading && grids.length" class="header-count">{{ grids.length }}</span></h1>
-        <button class="btn btn-primary" @click="openCreate">+ New board</button>
+        <h1 style="margin:0;">Imposter-brett <span v-if="!loading && grids.length" class="header-count">{{ grids.length }}</span></h1>
+        <button class="btn btn-primary" @click="openCreate">+ Nytt brett</button>
       </div>
       <p class="page-subtitle">
-        A set of visible tiles where most subjects fit a theme and a few are deliberate imposters.
+        Et sett med synlige ruter der de fleste emnene passer til et tema og noen få er bevisste imposters.
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
-      <div v-else-if="!grids.length" class="empty-state friendly">No boards yet - create your first one above.</div>
+      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+      <div v-else-if="!grids.length" class="empty-state friendly">Ingen brett ennå - lag ditt første over.</div>
 
       <template v-else>
       <BoardListToolbar
@@ -21,28 +21,28 @@
         :sorts="gridSorts"
         :total-count="grids.length"
         :filtered-count="filteredGrids.length"
-        placeholder="Search boards by title or category…"
+        placeholder="Søk etter brett på tittel eller kategori…"
       />
 
-      <div v-if="!filteredGrids.length" class="empty-state">No boards match your search.</div>
+      <div v-if="!filteredGrids.length" class="empty-state">Ingen brett samsvarer med søket ditt.</div>
 
       <table v-else class="table">
         <thead>
-          <tr><th>Title</th><th>Category</th><th>Tiles</th><th>Imposters</th><th></th></tr>
+          <tr><th>Tittel</th><th>Kategori</th><th>Ruter</th><th>Imposters</th><th></th></tr>
         </thead>
         <tbody>
           <tr v-for="g in pagedGrids" :key="g.id">
             <td>
               {{ g.title }}
-              <span v-if="g.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Can expire</span>
+              <span v-if="g.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Kan utløpe</span>
             </td>
             <td>{{ g.sport }}</td>
             <td>{{ g.tileCount }}</td>
             <td>{{ g.imposterCount }}</td>
             <td style="text-align:right; white-space:nowrap;">
-              <button class="btn btn-secondary btn-sm" @click="openEdit(g.id)">Edit</button>
-              <button class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="duplicateBoard(g.id)">⧉ Duplicate</button>
-              <button class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="confirmDelete(g)">Delete</button>
+              <button class="btn btn-secondary btn-sm" @click="openEdit(g.id)">Rediger</button>
+              <button class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="duplicateBoard(g.id)">⧉ Dupliser</button>
+              <button class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="confirmDelete(g)">Slett</button>
             </td>
           </tr>
         </tbody>
@@ -53,20 +53,20 @@
     </template>
 
     <template v-else>
-      <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Back to boards</button>
+      <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til brett</button>
 
       <div v-if="error" class="banner error" style="margin-top:16px;">{{ error }}</div>
 
       <div class="field" style="margin-top:16px;">
-        <label>Title<input type="text" v-model="form.title" placeholder="e.g. Top 10 Premier League goalscorers" /></label>
+        <label>Tittel<input type="text" v-model="form.title" placeholder="f.eks. Topp 10 målscorere i Premier League" /></label>
       </div>
 
       <div class="field">
-        <label>Description <span class="picker-hint">optional</span><input type="text" v-model="form.description" placeholder="Shown to players above the board" /></label>
+        <label>Beskrivelse <span class="picker-hint">valgfritt</span><input type="text" v-model="form.description" placeholder="Vises for spillerne over brettet" /></label>
       </div>
 
       <div class="field">
-        <label>Category <span class="picker-hint">choose one</span></label>
+        <label>Kategori <span class="picker-hint">velg en</span></label>
         <div class="language-row">
           <button
             v-for="s in gridCategories.categories.value"
@@ -79,14 +79,14 @@
       </div>
 
       <div class="field">
-        <label>Display mode</label>
+        <label>Visningsmodus</label>
         <div class="language-row">
-          <button class="language-btn" :class="{ active: form.displayMode === 'NAME_AND_PHOTO' }" @click="form.displayMode = 'NAME_AND_PHOTO'">Name + photo</button>
-          <button class="language-btn" :class="{ active: form.displayMode === 'NAME_AND_LOGO' }" @click="form.displayMode = 'NAME_AND_LOGO'">Name + logo</button>
-          <button class="language-btn" :class="{ active: form.displayMode === 'PHOTO_ONLY' }" @click="form.displayMode = 'PHOTO_ONLY'">Photo only</button>
-          <button class="language-btn" :class="{ active: form.displayMode === 'NAME_ONLY' }" @click="form.displayMode = 'NAME_ONLY'">Name only</button>
+          <button class="language-btn" :class="{ active: form.displayMode === 'NAME_AND_PHOTO' }" @click="form.displayMode = 'NAME_AND_PHOTO'">Navn + bilde</button>
+          <button class="language-btn" :class="{ active: form.displayMode === 'NAME_AND_LOGO' }" @click="form.displayMode = 'NAME_AND_LOGO'">Navn + logo</button>
+          <button class="language-btn" :class="{ active: form.displayMode === 'PHOTO_ONLY' }" @click="form.displayMode = 'PHOTO_ONLY'">Bare bilde</button>
+          <button class="language-btn" :class="{ active: form.displayMode === 'NAME_ONLY' }" @click="form.displayMode = 'NAME_ONLY'">Bare navn</button>
           <button class="language-btn" :class="{ active: form.displayMode === 'NAME_UNTIL_REVEALED' }" @click="form.displayMode = 'NAME_UNTIL_REVEALED'">
-            Name, then photo on flip
+            Navn, deretter bilde ved snuing
           </button>
         </div>
       </div>
@@ -94,26 +94,25 @@
       <div v-if="form.displayMode !== 'NAME_ONLY'" class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.fitImages" style="width:auto;" />
-          Fit the whole image in each tile
+          Tilpass hele bildet i hver rute
         </label>
         <p class="picker-hint" style="margin:4px 0 0;">
-          For flags and full-frame logos - shows the entire image with a little padding
-          instead of cropping it to fill the square. Leave off for portrait photos.
+          For flagg og logoer i full ramme - viser hele bildet med litt luft i stedet for å beskjære det til å fylle ruten. La stå av for portrettbilder.
         </p>
       </div>
 
       <div class="field option-card">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
-          Can expire
+          Kan utløpe
           <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
-            e.g. "current all-time top goalscorer" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+            f.eks. "nåværende all-time toppscorer" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.
           </div>
         </label>
       </div>
 
       <div class="field" style="position:relative;">
-        <label>Add subjects to the board<input type="text" v-model="athleteSearchTerm" placeholder="Search subjects by name…" /></label>
+        <label>Legg til emner på brettet<input type="text" v-model="athleteSearchTerm" placeholder="Søk etter emner på navn…" /></label>
         <div v-if="athleteSearchResults.length" class="guess-results">
           <button
             v-for="a in athleteSearchResults"
@@ -125,30 +124,30 @@
         </div>
       </div>
 
-      <div v-if="!tiles.length" class="empty-state" style="padding:20px;">No subjects added yet - search above.</div>
+      <div v-if="!tiles.length" class="empty-state" style="padding:20px;">Ingen emner lagt til ennå - søk over.</div>
 
       <div v-for="(t, i) in tiles" :key="i" class="field" style="border:1px solid var(--border); border-radius: 2px; padding:12px 14px;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
           <strong>{{ t.name }}</strong>
           <div style="display:flex; gap:6px;">
-            <button type="button" class="btn btn-secondary btn-sm" @click="openEditAthlete(t)">Edit</button>
+            <button type="button" class="btn btn-secondary btn-sm" @click="openEditAthlete(t)">Rediger</button>
             <button type="button" class="chip-remove-btn" @click="tiles.splice(i, 1)">✕</button>
           </div>
         </div>
 
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400; margin-top:10px;">
           <input type="checkbox" v-model="t.imposter" style="width:auto;" @change="onImposterToggle(t)" />
-          This is an imposter <span class="picker-hint">doesn't actually fit the theme</span>
+          Dette er en imposter <span class="picker-hint">passer egentlig ikke til temaet</span>
         </label>
 
         <div v-if="t.imposter" style="margin-top:10px; position:relative;">
           <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">
-            Which subject did this replace? <span class="picker-hint">revealed to players only after the board is fully flipped</span>
+            Hvilket emne erstattet dette? <span class="picker-hint">vises for spillerne først når brettet er helt snudd</span>
           </label>
           <input
             type="text"
             v-model="t.replacedSearchTerm"
-            placeholder="Search subjects by name…"
+            placeholder="Søk etter emner på navn…"
             style="margin-top:6px;"
             @input="searchReplaced(t)"
           />
@@ -162,46 +161,46 @@
             >{{ a.name }}</button>
           </div>
           <div v-if="t.replacedAthleteId" style="margin-top:6px; color:var(--text-dim); font-size:0.85rem;">
-            Replaces: <strong style="color:var(--text);">{{ t.replacedAthleteName }}</strong>
+            Erstatter: <strong style="color:var(--text);">{{ t.replacedAthleteName }}</strong>
             <button type="button" class="chip-remove-btn" style="margin-left:6px;" @click="t.replacedAthleteId = null; t.replacedAthleteName = ''">✕</button>
           </div>
         </div>
 
         <div v-if="form.displayMode === 'NAME_AND_LOGO'" class="field" style="margin-top:10px; margin-bottom:0;">
-          <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">Club logo for this tile</label>
+          <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">Klubblogo for denne ruten</label>
           <select v-model="t.clubId">
-            <option :value="null">No logo</option>
+            <option :value="null">Ingen logo</option>
             <option v-for="club in clubOptions" :key="club.id" :value="club.id">{{ club.name }}</option>
           </select>
         </div>
 
         <div v-if="form.displayMode !== 'NAME_ONLY' && t.additionalPhotos && t.additionalPhotos.length" class="field" style="margin-top:10px; margin-bottom:0;">
-          <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">Photo for this tile</label>
+          <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">Bilde for denne ruten</label>
           <select v-model="t.selectedPhotoId">
-            <option :value="null">Default photo</option>
-            <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
+            <option :value="null">Standardbilde</option>
+            <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Bilde uten tittel' }}</option>
           </select>
         </div>
 
         <div v-if="form.displayMode !== 'NAME_ONLY' && t.additionalPhotos && t.additionalPhotos.length" class="field" style="margin-top:10px; margin-bottom:0;">
           <label style="text-transform:none; font-weight:400; font-size:0.85rem; color:var(--text-dim);">
-            Photo once revealed as {{ t.imposter ? 'the imposter' : 'correct' }} <span class="picker-hint">optional</span>
+            Bilde når avslørt som {{ t.imposter ? 'imposteren' : 'riktig' }} <span class="picker-hint">valgfritt</span>
           </label>
           <select v-if="t.imposter" v-model="t.revealImposterPhotoId">
-            <option :value="null">Same as above</option>
-            <option :value="'DEFAULT'">Default photo</option>
-            <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
+            <option :value="null">Som over</option>
+            <option :value="'DEFAULT'">Standardbilde</option>
+            <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Bilde uten tittel' }}</option>
           </select>
           <select v-else v-model="t.revealCorrectPhotoId">
-            <option :value="null">Same as above</option>
-            <option :value="'DEFAULT'">Default photo</option>
-            <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Untitled photo' }}</option>
+            <option :value="null">Som over</option>
+            <option :value="'DEFAULT'">Standardbilde</option>
+            <option v-for="p in t.additionalPhotos" :key="p.id" :value="p.id">{{ p.label || 'Bilde uten tittel' }}</option>
           </select>
         </div>
       </div>
 
       <div v-if="tiles.length" style="margin-top:24px;">
-        <h3 style="margin-bottom:10px;">Preview</h3>
+        <h3 style="margin-bottom:10px;">Forhåndsvisning</h3>
         <div class="grid-tiles">
           <div v-for="t in tiles" :key="t.athleteId" class="grid-tile" :class="{ correct: !t.imposter, 'revealed-only': t.imposter }">
             <div v-if="form.displayMode === 'NAME_ONLY'" class="grid-tile-name-fill">{{ t.name }}</div>
@@ -222,10 +221,10 @@
 
       <div style="margin-top:20px; display:flex; align-items:center; gap:16px;">
         <button v-if="editingId" class="btn btn-secondary" @click="duplicateAsNewVersion">
-          ⧉ Duplicate as new version
+          ⧉ Dupliser som ny versjon
         </button>
         <button class="btn btn-primary" :disabled="saving || !canSave" @click="save">
-          {{ saving ? 'Saving…' : 'Save board' }}
+          {{ saving ? 'Lagrer…' : 'Lagre brett' }}
         </button>
       </div>
     </template>
@@ -239,9 +238,9 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this board?"
-      :message="`'${pendingDelete.title}' will be permanently removed.`"
-      confirm-text="Delete"
+      title="Slette dette brettet?"
+      :message="`«${pendingDelete.title}» fjernes for godt.`"
+      confirm-text="Slett"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -272,9 +271,9 @@ const {
   pageSize: 10,
   searchFields: [g => g.title, g => g.sport, g => g.description],
   sorts: [
-    { key: 'title', label: 'Title', accessor: g => g.title },
-    { key: 'category', label: 'Category', accessor: g => g.sport },
-    { key: 'tiles', label: 'Tiles', accessor: g => g.tileCount, dir: 'desc' },
+    { key: 'title', label: 'Tittel', accessor: g => g.title },
+    { key: 'category', label: 'Kategori', accessor: g => g.sport },
+    { key: 'tiles', label: 'Ruter', accessor: g => g.tileCount, dir: 'desc' },
     { key: 'imposters', label: 'Imposters', accessor: g => g.imposterCount, dir: 'desc' }
   ]
 })
@@ -305,7 +304,7 @@ async function loadList() {
   try {
     grids.value = await api.adminListImposterGrids()
   } catch (e) {
-    error.value = 'Could not load boards.'
+    error.value = 'Kunne ikke laste brett.'
   } finally {
     loading.value = false
   }
@@ -356,7 +355,7 @@ async function openEdit(id) {
     await loadClubOptions()
     view.value = 'edit'
   } catch (e) {
-    error.value = 'Could not load that board.'
+    error.value = 'Kunne ikke laste brettet.'
   }
 }
 
@@ -417,7 +416,7 @@ function onAthleteEdited(saved) {
     t.photoUrl = saved.photoUrl
     t.additionalPhotos = saved.additionalPhotos || []
   }
-  toast.show('Subject updated.')
+  toast.show('Emnet er oppdatert.')
 }
 
 function addTile(athlete) {
@@ -479,8 +478,8 @@ async function duplicateBoard(id) {
 // untouched until this copy is saved.
 function duplicateAsNewVersion() {
   editingId.value = null
-  form.value.title = form.value.title + ' (updated)'
-  toast.show('Now editing a new duplicate - the original board is untouched. Remember to save this copy.')
+  form.value.title = form.value.title + ' (oppdatert)'
+  toast.show('Du redigerer nå en ny duplikat - det opprinnelige brettet er urørt. Husk å lagre denne kopien.')
 }
 
 async function save() {
@@ -514,7 +513,7 @@ async function save() {
     await loadList()
     view.value = 'list'
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not save this board.'
+    error.value = e.response?.data?.message || 'Kunne ikke lagre dette brettet.'
   } finally {
     saving.value = false
   }
@@ -531,7 +530,7 @@ async function doDelete() {
     await api.adminDeleteImposterGrid(g.id)
     await loadList()
   } catch (e) {
-    error.value = 'Could not delete that board.'
+    error.value = 'Kunne ikke slette brettet.'
   }
 }
 </script>

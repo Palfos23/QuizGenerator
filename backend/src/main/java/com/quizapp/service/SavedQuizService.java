@@ -30,7 +30,7 @@ public class SavedQuizService {
     @Transactional
     public QuizDto save(String ownerEmail, QuizDto quiz) {
         AppUser owner = appUserRepository.findByEmail(ownerEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("No account found for " + ownerEmail));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke konto for " + ownerEmail));
 
         SavedQuiz entity = new SavedQuiz();
         entity.setOwner(owner);
@@ -47,7 +47,7 @@ public class SavedQuizService {
     @Transactional
     public QuizDto update(String ownerEmail, Long id, QuizDto quiz) {
         SavedQuiz existing = savedQuizRepository.findByIdAndOwner_Email(id, ownerEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("No saved quiz found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke lagret quiz med id " + id));
 
         existing.setTitle(titleOrDefault(quiz));
         existing.setLanguage(quiz.getLanguage());
@@ -58,7 +58,7 @@ public class SavedQuizService {
     }
 
     private String titleOrDefault(QuizDto quiz) {
-        return quiz.getTitle() == null || quiz.getTitle().isBlank() ? "My Quiz" : quiz.getTitle();
+        return quiz.getTitle() == null || quiz.getTitle().isBlank() ? "Min quiz" : quiz.getTitle();
     }
 
     private List<SavedQuizQuestion> buildSnapshot(QuizDto quiz) {
@@ -89,14 +89,14 @@ public class SavedQuizService {
         SavedQuiz quiz = savedQuizRepository.findByIdAndOwner_Email(id, ownerEmail)
                 // Same message/status whether the quiz doesn't exist or belongs to someone else -
                 // don't give an attacker a way to distinguish "not yours" from "doesn't exist".
-                .orElseThrow(() -> new ResourceNotFoundException("No saved quiz found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke lagret quiz med id " + id));
         return toDto(quiz);
     }
 
     @Transactional
     public void delete(String ownerEmail, Long id) {
         SavedQuiz quiz = savedQuizRepository.findByIdAndOwner_Email(id, ownerEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("No saved quiz found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke lagret quiz med id " + id));
         savedQuizRepository.delete(quiz);
     }
 

@@ -171,13 +171,13 @@ public class StatisticsService {
 
     private List<CountEntry> boardsByGameMode() {
         List<CountEntry> out = new ArrayList<>();
-        out.add(new CountEntry("Weekly grids", gridRepository.count()));
+        out.add(new CountEntry("Ukentlige grids", gridRepository.count()));
         out.add(new CountEntry("Starting XI", lineupRepository.count()));
         out.add(new CountEntry("Tension", tensionQuestionRepository.count()));
         out.add(new CountEntry("501", fiveOhOneCategoryRepository.count()));
         out.add(new CountEntry("Imposter", imposterGridRepository.count()));
         out.add(new CountEntry("Bullseye", bullseyeQuestionRepository.count()));
-        out.add(new CountEntry("Penalty Shootout", penaltyShootoutRepository.count()));
+        out.add(new CountEntry("Straffekonkurranse", penaltyShootoutRepository.count()));
         out.add(new CountEntry("Flashback", flashbackYearRepository.count()));
         return out;
     }
@@ -194,7 +194,7 @@ public class StatisticsService {
         out.add(new CountEntry("XI Battle", counts.get(BattleGameType.STARTING_XI_BATTLE)));
         out.add(new CountEntry("Imposter", counts.get(BattleGameType.IMPOSTER)));
         out.add(new CountEntry("Bullseye", counts.get(BattleGameType.BULLSEYE)));
-        out.add(new CountEntry("Penalty Shootout", counts.get(BattleGameType.PENALTY_SHOOTOUT)));
+        out.add(new CountEntry("Straffekonkurranse", counts.get(BattleGameType.PENALTY_SHOOTOUT)));
         out.add(new CountEntry("Flashback", counts.get(BattleGameType.FLASHBACK)));
         out.add(new CountEntry("Tension", counts.get(BattleGameType.TENSION)));
         return out;
@@ -208,7 +208,7 @@ public class StatisticsService {
 
     private List<CountEntry> gridsByCategory() {
         Map<String, Long> byCategory = gridRepository.findAllSummaries().stream()
-                .collect(Collectors.groupingBy(p -> p.getSport() == null ? "Uncategorized" : p.getSport(),
+                .collect(Collectors.groupingBy(p -> p.getSport() == null ? "Uten kategori" : p.getSport(),
                         Collectors.counting()));
         return toSortedEntries(byCategory);
     }
@@ -221,7 +221,7 @@ public class StatisticsService {
 
     private static String tensionCategoryOf(TensionQuestion q) {
         String c = q.getMainCategory();
-        return (c == null || c.isBlank()) ? "Uncategorized" : c;
+        return (c == null || c.isBlank()) ? "Uten kategori" : c;
     }
 
     private List<WeeklyGridStat> weeklyGridStats() {

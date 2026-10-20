@@ -1,28 +1,24 @@
 <template>
   <div>
-    <h1 style="margin:0;">Grid categories</h1>
+    <h1 style="margin:0;">Grid-kategorier</h1>
     <p class="page-subtitle">
-      The list of categories available when creating subjects, clubs, grids, and pools -
-      no longer limited to just Football and Cycling. Renaming a category here automatically
-      updates every subject, club, grid, and pool that already uses it. Each category also has
-      its own "grouping" word - "Team" for a sport, "Continent" for countries, "Label" for
-      artists - used for the bulk-add-a-group feature and shown next to each subject.
+      Listen over kategorier som er tilgjengelige når du lager emner, klubber, grids og utvalg - ikke lenger begrenset til bare fotball og sykling. Å gi en kategori nytt navn her oppdaterer automatisk alle emner, klubber, grids og utvalg som allerede bruker den. Hver kategori har også sitt eget «grupperings»-ord - «Team» for en sport, «Continent» for land, «Label» for artister - brukt til funksjonen for å legge til en hel gruppe og vist ved siden av hvert emne.
     </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div class="field" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; max-width:560px;">
       <div style="flex:1; min-width:200px;">
-        <label>New category<input type="text" v-model="newName" placeholder="e.g. Countries by population" /></label>
+        <label>Ny kategori<input type="text" v-model="newName" placeholder="f.eks. Land etter folketall" /></label>
       </div>
       <div style="flex:1; min-width:160px;">
-        <label>Grouping word <span class="picker-hint">optional, defaults to "Team"</span><input type="text" v-model="newGroupLabel" placeholder="e.g. Continent" @keyup.enter="createCategory" /></label>
+        <label>Grupperingsord <span class="picker-hint">valgfritt, standard er «Team»</span><input type="text" v-model="newGroupLabel" placeholder="f.eks. Kontinent" @keyup.enter="createCategory" /></label>
       </div>
-      <button class="btn btn-primary" :disabled="!newName.trim() || saving" @click="createCategory">+ Add</button>
+      <button class="btn btn-primary" :disabled="!newName.trim() || saving" @click="createCategory">+ Legg til</button>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim); margin-top:20px;">Loading…</div>
-    <div v-else-if="!categories.length" class="empty-state friendly">No categories yet - add your first one above.</div>
+    <div v-if="loading" style="color:var(--text-dim); margin-top:20px;">Laster…</div>
+    <div v-else-if="!categories.length" class="empty-state friendly">Ingen kategorier ennå - legg til din første over.</div>
 
     <div v-else class="saved-quiz-list" style="margin-top:20px;">
       <div v-for="c in categories" :key="c.id" class="saved-quiz-row">
@@ -38,7 +34,7 @@
             <input
               type="text"
               v-model="editingGroupLabel"
-              placeholder="Grouping word, e.g. Team"
+              placeholder="Grupperingsord, f.eks. Lag"
               style="width:100%; background:transparent; border:1px solid var(--border); border-radius: 2px; padding:4px 8px; font-size:0.85rem;"
               @keyup.enter="confirmRename(c)"
               @keyup.esc="editingId = null"
@@ -46,17 +42,17 @@
           </template>
           <template v-else>
             <div class="saved-quiz-title">{{ c.name }}</div>
-            <div class="saved-quiz-meta">Grouping word: {{ c.groupLabel }}</div>
+            <div class="saved-quiz-meta">Grupperingsord: {{ c.groupLabel }}</div>
           </template>
         </div>
         <div style="display:flex; gap:8px;">
           <template v-if="editingId === c.id">
-            <button class="btn btn-primary btn-sm" :disabled="!editingName.trim() || saving" @click="confirmRename(c)">Save</button>
-            <button class="btn btn-secondary btn-sm" @click="editingId = null">Cancel</button>
+            <button class="btn btn-primary btn-sm" :disabled="!editingName.trim() || saving" @click="confirmRename(c)">Lagre</button>
+            <button class="btn btn-secondary btn-sm" @click="editingId = null">Avbryt</button>
           </template>
           <template v-else>
-            <button class="btn btn-secondary btn-sm" @click="startRename(c)">Rename</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(c)">Delete</button>
+            <button class="btn btn-secondary btn-sm" @click="startRename(c)">Gi nytt navn</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(c)">Slett</button>
           </template>
         </div>
       </div>
@@ -64,8 +60,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this category?"
-      :message="`'${pendingDelete.name}' will be removed. If any subject, club, grid, or pool still uses it, this will be blocked until you reassign them first.`"
+      title="Slette denne kategorien?"
+      :message="`«${pendingDelete.name}» fjernes. Hvis et emne, en klubb, et grid eller et utvalg fortsatt bruker den, blokkeres dette til du har flyttet dem først.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -98,7 +94,7 @@ async function loadCategories() {
   try {
     categories.value = await api.adminListGridCategories()
   } catch (e) {
-    error.value = 'Could not load categories.'
+    error.value = 'Kunne ikke laste kategorier.'
   } finally {
     loading.value = false
   }
@@ -113,11 +109,11 @@ async function createCategory() {
     await api.adminCreateGridCategory(name, newGroupLabel.value.trim())
     newName.value = ''
     newGroupLabel.value = ''
-    toast.show('Category added.')
+    toast.show('Kategorien er lagt til.')
     gridCategories.invalidate()
     loadCategories()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not add that category.'
+    error.value = e.response?.data?.message || 'Kunne ikke legge til kategorien.'
   } finally {
     saving.value = false
   }
@@ -139,11 +135,11 @@ async function confirmRename(c) {
   try {
     await api.adminUpdateGridCategory(c.id, name, editingGroupLabel.value.trim())
     editingId.value = null
-    toast.show('Category updated - changes applied everywhere it was already used.')
+    toast.show('Kategorien er oppdatert - endringene er brukt overalt den allerede ble brukt.')
     gridCategories.invalidate()
     loadCategories()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not update that category.'
+    error.value = e.response?.data?.message || 'Kunne ikke oppdatere kategorien.'
   } finally {
     saving.value = false
   }
@@ -159,11 +155,11 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteGridCategory(c.id)
-    toast.show('Category deleted.')
+    toast.show('Kategorien er slettet.')
     gridCategories.invalidate()
     loadCategories()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not delete that category.'
+    error.value = e.response?.data?.message || 'Kunne ikke slette kategorien.'
   }
 }
 </script>

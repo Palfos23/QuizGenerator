@@ -28,7 +28,7 @@ import { computed, ref, watch } from 'vue'
 const props = defineProps({
   modelValue: { type: String, default: '' },
   options: { type: Array, default: () => [] },
-  placeholder: { type: String, default: 'Search…' }
+  placeholder: { type: String, default: 'Søk…' }
 })
 const emit = defineEmits(['update:modelValue'])
 

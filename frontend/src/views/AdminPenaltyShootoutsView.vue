@@ -4,18 +4,18 @@
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
         <div>
-          <h1>Penalty Shootouts <span v-if="!loading && shootouts.length" class="header-count">{{ shootouts.length }}</span></h1>
+          <h1>Straffekonkurranser <span v-if="!loading && shootouts.length" class="header-count">{{ shootouts.length }}</span></h1>
           <p class="page-subtitle">
-            Create and manage "guess the penalty taker" boards for a specific shootout.
+            Lag og administrer «gjett straffeskytteren»-brett for en bestemt straffekonkurranse.
           </p>
         </div>
-        <button class="btn btn-primary" @click="openCreate">+ Create shootout</button>
+        <button class="btn btn-primary" @click="openCreate">+ Lag straffekonkurranse</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
       <div v-else-if="!shootouts.length" class="empty-state friendly">
-        No penalty shootouts yet. Add some football subjects on the Subjects page, then create your first shootout here.
+        Ingen straffekonkurranser ennå. Legg til noen fotballemner på siden Emner, og lag din første straffekonkurranse her.
       </div>
 
       <template v-else>
@@ -26,25 +26,25 @@
         :sorts="shootoutSorts"
         :total-count="shootouts.length"
         :filtered-count="filteredShootouts.length"
-        placeholder="Search shootouts by title or team…"
+        placeholder="Søk etter straffekonkurranser på tittel eller lag…"
       />
 
-      <div v-if="!filteredShootouts.length" class="empty-state">No shootouts match your search.</div>
+      <div v-if="!filteredShootouts.length" class="empty-state">Ingen straffekonkurranser samsvarer med søket ditt.</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="s in pagedShootouts" :key="s.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ s.title }}</div>
             <div class="saved-quiz-meta">
-              {{ s.teamName }} vs {{ s.opponentName }}
-              <template v-if="s.teamPensScored != null && s.opponentPensScored != null"> ({{ s.teamPensScored }}-{{ s.opponentPensScored }} pens)</template>
-              · {{ s.kickCount }} kick{{ s.kickCount === 1 ? '' : 's' }} · {{ s.maxStrikes }} {{ s.maxStrikes === 1 ? 'life' : 'lives' }}
+              {{ s.teamName }} mot {{ s.opponentName }}
+              <template v-if="s.teamPensScored != null && s.opponentPensScored != null"> ({{ s.teamPensScored }}-{{ s.opponentPensScored }} straffer)</template>
+              · {{ s.kickCount }} spark · {{ s.maxStrikes }} {{ s.maxStrikes === 1 ? 'liv' : 'liv' }}
             </div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(s.id)">Edit</button>
-            <button class="btn btn-secondary btn-sm" @click="duplicateShootout(s.id)">⧉ Duplicate</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(s)">Delete</button>
+            <button class="btn btn-secondary btn-sm" @click="openEdit(s.id)">Rediger</button>
+            <button class="btn btn-secondary btn-sm" @click="duplicateShootout(s.id)">⧉ Dupliser</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(s)">Slett</button>
           </div>
         </div>
       </div>
@@ -56,62 +56,62 @@
     <!-- Builder view -->
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-        <h1 style="margin:0;">{{ editingShootoutId ? 'Edit penalty shootout' : 'Create penalty shootout' }}</h1>
-        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Back to list</button>
+        <h1 style="margin:0;">{{ editingShootoutId ? 'Rediger straffekonkurranse' : 'Lag straffekonkurranse' }}</h1>
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til listen</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title<input type="text" v-model="form.title" placeholder="e.g. 2006 World Cup Final" /></label>
+        <label>Tittel<input type="text" v-model="form.title" placeholder="f.eks. VM-finalen 2006" /></label>
       </div>
 
       <div class="field">
-        <label>Competition / context <span class="picker-hint">optional</span><textarea v-model="form.competition" placeholder="e.g. Italy win 5-3 on penalties after a 1-1 draw."></textarea></label>
+        <label>Turnering / sammenheng <span class="picker-hint">valgfritt</span><textarea v-model="form.competition" placeholder="f.eks. Italia vinner 5-3 på straffer etter 1-1."></textarea></label>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:160px;">
-          <label>Match date <span class="picker-hint">optional</span><input type="date" v-model="form.matchDate" /></label>
+          <label>Kampdato <span class="picker-hint">valgfritt</span><input type="date" v-model="form.matchDate" /></label>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>Max strikes<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
+          <label>Maks liv<input type="number" min="1" max="20" v-model.number="form.maxStrikes" /></label>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <label>Team<input type="text" v-model="form.teamName" placeholder="e.g. Italy" /></label>
+          <label>Lag<input type="text" v-model="form.teamName" placeholder="f.eks. Italia" /></label>
         </div>
         <div style="flex:1; min-width:220px;">
-          <label>Team crest URL <span class="picker-hint">optional</span><input type="text" v-model="form.teamCrestUrl" placeholder="https://…" /></label>
-          <div class="photo-upload-row"><PhotoUploadButton label="Upload a crest" @uploaded="url => form.teamCrestUrl = url" /></div>
+          <label>URL til lagets emblem <span class="picker-hint">valgfritt</span><input type="text" v-model="form.teamCrestUrl" placeholder="https://…" /></label>
+          <div class="photo-upload-row"><PhotoUploadButton label="Last opp et emblem" @uploaded="url => form.teamCrestUrl = url" /></div>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <label>Opponent<input type="text" v-model="form.opponentName" placeholder="e.g. France" /></label>
+          <label>Motstander<input type="text" v-model="form.opponentName" placeholder="f.eks. Frankrike" /></label>
         </div>
         <div style="flex:1; min-width:220px;">
-          <label>Opponent crest URL <span class="picker-hint">optional</span><input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" /></label>
-          <div class="photo-upload-row"><PhotoUploadButton label="Upload a crest" @uploaded="url => form.opponentCrestUrl = url" /></div>
+          <label>URL til motstanderens emblem <span class="picker-hint">valgfritt</span><input type="text" v-model="form.opponentCrestUrl" placeholder="https://…" /></label>
+          <div class="photo-upload-row"><PhotoUploadButton label="Last opp et emblem" @uploaded="url => form.opponentCrestUrl = url" /></div>
         </div>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:140px;">
-          <label>{{ form.teamName || 'Team' }} pens scored <span class="picker-hint">optional, e.g. "5"</span><input type="number" min="0" v-model.number="form.teamPensScored" /></label>
+          <label>{{ form.teamName || 'Lag' }} scorede straffer <span class="picker-hint">valgfritt, f.eks. "5"</span><input type="number" min="0" v-model.number="form.teamPensScored" /></label>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label>{{ form.opponentName || 'Opponent' }} pens scored <span class="picker-hint">optional, e.g. "3"</span><input type="number" min="0" v-model.number="form.opponentPensScored" /></label>
+          <label>{{ form.opponentName || 'Motstander' }} scorede straffer <span class="picker-hint">valgfritt, f.eks. "3"</span><input type="number" min="0" v-model.number="form.opponentPensScored" /></label>
         </div>
       </div>
 
       <div class="field">
-        <label>Kicks <span class="picker-hint">in real shootout order - search adds to the end, reorder with the arrows</span></label>
+        <label>Spark <span class="picker-hint">i riktig rekkefølge - søk legger til på slutten, endre rekkefølge med pilene</span></label>
 
-        <input type="text" v-model="kickSearchTerm" placeholder="Search for who took a kick…" style="width:100%; margin-bottom:10px;" />
+        <input type="text" v-model="kickSearchTerm" placeholder="Søk etter hvem som tok et spark…" style="width:100%; margin-bottom:10px;" />
 
         <div v-if="kickSearchResults.length" class="guess-results" style="margin-bottom:10px;">
           <button v-for="a in kickSearchResults" :key="a.id" class="guess-result-row" @click="addKick(a)">
@@ -120,7 +120,7 @@
         </div>
 
         <div v-if="!kicks.length" class="empty-state" style="padding:20px;">
-          No kicks added yet - search above for the first kicker.
+          Ingen spark lagt til ennå - søk over etter den første skytteren.
         </div>
 
         <div v-else>
@@ -131,17 +131,17 @@
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <div class="language-row" style="gap:6px;">
-                <button type="button" class="language-btn" :class="{ active: k.forTeam }" @click="k.forTeam = true">{{ form.teamName || 'Team' }}</button>
-                <button type="button" class="language-btn" :class="{ active: !k.forTeam }" @click="k.forTeam = false">{{ form.opponentName || 'Opponent' }}</button>
+                <button type="button" class="language-btn" :class="{ active: k.forTeam }" @click="k.forTeam = true">{{ form.teamName || 'Lag' }}</button>
+                <button type="button" class="language-btn" :class="{ active: !k.forTeam }" @click="k.forTeam = false">{{ form.opponentName || 'Motstander' }}</button>
               </div>
               <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400; font-size:0.82rem; color:var(--text-dim); margin:0;">
                 <input type="checkbox" v-model="k.scored" style="width:auto;" />
-                Scored
+                Scoret
               </label>
             </div>
             <div style="display:flex; gap:4px;">
-              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === 0" @click="moveKick(i, -1)" aria-label="Move up">↑</button>
-              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === kicks.length - 1" @click="moveKick(i, 1)" aria-label="Move down">↓</button>
+              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === 0" @click="moveKick(i, -1)" aria-label="Flytt opp">↑</button>
+              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === kicks.length - 1" @click="moveKick(i, 1)" aria-label="Flytt ned">↓</button>
               <button class="btn btn-danger btn-sm" @click="kicks.splice(i, 1)">✕</button>
             </div>
           </div>
@@ -150,13 +150,13 @@
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" :disabled="!kicks.length" @click="showPreview = true">
-          Preview ({{ kicks.length }} kick{{ kicks.length === 1 ? '' : 's' }})
+          Forhåndsvisning ({{ kicks.length }} spark)
         </button>
         <button v-if="editingShootoutId" class="btn btn-secondary" @click="duplicateAsNewVersion">
-          ⧉ Duplicate as new version
+          ⧉ Dupliser som ny versjon
         </button>
         <button class="btn btn-primary" :disabled="saving" @click="saveShootout">
-          {{ saving ? 'Saving…' : 'Save shootout' }}
+          {{ saving ? 'Lagrer…' : 'Lagre straffekonkurranse' }}
         </button>
       </div>
     </template>
@@ -164,10 +164,10 @@
     <div v-if="showPreview" class="modal-backdrop" @click.self="showPreview = false">
       <div class="modal" style="max-width:640px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <h2 style="margin:0;">{{ form.title || 'Untitled shootout' }}</h2>
-          <button class="btn btn-secondary btn-sm" @click="showPreview = false">Close</button>
+          <h2 style="margin:0;">{{ form.title || 'Straffekonkurranse uten tittel' }}</h2>
+          <button class="btn btn-secondary btn-sm" @click="showPreview = false">Lukk</button>
         </div>
-        <p class="page-subtitle" style="margin-top:0;">Everything shown revealed, for a quick check that kicks and order look right.</p>
+        <p class="page-subtitle" style="margin-top:0;">Alt vist avslørt, for en rask sjekk av at spark og rekkefølge ser riktige ut.</p>
 
         <PenaltyShootoutBoard
           :team-name="form.teamName"
@@ -181,8 +181,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this shootout?"
-      :message="`'${pendingDelete.title}' will be permanently removed.`"
+      title="Slette denne straffekonkurransen?"
+      :message="`«${pendingDelete.title}» fjernes for godt.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -213,9 +213,9 @@ const {
   pageSize: 10,
   searchFields: [s => s.title, s => s.teamName, s => s.opponentName],
   sorts: [
-    { key: 'date', label: 'Match date', accessor: s => s.matchDate, dir: 'desc' },
-    { key: 'title', label: 'Title', accessor: s => s.title },
-    { key: 'team', label: 'Team', accessor: s => s.teamName }
+    { key: 'date', label: 'Kampdato', accessor: s => s.matchDate, dir: 'desc' },
+    { key: 'title', label: 'Tittel', accessor: s => s.title },
+    { key: 'team', label: 'Lag', accessor: s => s.teamName }
   ]
 })
 const error = ref('')
@@ -258,7 +258,7 @@ async function loadShootouts() {
   try {
     shootouts.value = await api.adminListPenaltyShootouts()
   } catch (e) {
-    error.value = 'Could not load penalty shootouts.'
+    error.value = 'Kunne ikke laste straffekonkurranser.'
   } finally {
     loading.value = false
   }
@@ -350,7 +350,7 @@ async function openEdit(id) {
     editingShootoutId.value = id
     view.value = 'builder'
   } catch (e) {
-    error.value = 'Could not load that shootout.'
+    error.value = 'Kunne ikke laste straffekonkurransen.'
   }
 }
 
@@ -362,22 +362,22 @@ async function duplicateShootout(id) {
 
 function duplicateAsNewVersion() {
   editingShootoutId.value = null
-  form.title = form.title + ' (updated)'
-  toast.show('Now editing a new duplicate - the original shootout is untouched. Remember to save this copy.')
+  form.title = form.title + ' (oppdatert)'
+  toast.show('Du redigerer nå en ny duplikat - den opprinnelige straffekonkurransen er urørt. Husk å lagre denne kopien.')
 }
 
 async function saveShootout() {
   error.value = ''
   if (!form.title.trim()) {
-    error.value = 'Title is required.'
+    error.value = 'Tittel må fylles ut.'
     return
   }
   if (!form.teamName.trim() || !form.opponentName.trim()) {
-    error.value = 'Team and opponent are both required.'
+    error.value = 'Lag og motstander må fylles ut.'
     return
   }
   if (!kicks.value.length) {
-    error.value = 'Add at least one kick.'
+    error.value = 'Legg til minst ett spark.'
     return
   }
 
@@ -406,11 +406,11 @@ async function saveShootout() {
     } else {
       await api.adminCreatePenaltyShootout(payload)
     }
-    toast.show('Penalty shootout saved.')
+    toast.show('Straffekonkurransen er lagret.')
     view.value = 'list'
     loadShootouts()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not save this shootout.'
+    error.value = e.response?.data?.message || 'Kunne ikke lagre straffekonkurransen.'
   } finally {
     saving.value = false
   }
@@ -426,10 +426,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeletePenaltyShootout(s.id)
-    toast.show('Shootout deleted.')
+    toast.show('Straffekonkurransen er slettet.')
     loadShootouts()
   } catch (e) {
-    error.value = 'Could not delete that shootout.'
+    error.value = 'Kunne ikke slette straffekonkurransen.'
   }
 }
 </script>

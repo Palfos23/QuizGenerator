@@ -62,7 +62,7 @@ export function useDebouncedSearch(fetcher, { delay = 250, minLength = 2, postFi
         // Once per run of failures, not once per keystroke - typing several
         // letters while offline shouldn't re-trigger the same toast each time.
         if (!toastShownForThisFailureStreak) {
-          toast.show("Couldn't search - check your connection and try again.", 'error')
+          toast.show("Kunne ikke søke - sjekk tilkoblingen og prøv igjen.", 'error')
           toastShownForThisFailureStreak = true
         }
       } finally {

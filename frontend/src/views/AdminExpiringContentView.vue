@@ -1,17 +1,15 @@
 <template>
   <div>
-    <h1>Can expire</h1>
+    <h1>Kan utløpe</h1>
     <p class="page-subtitle">
-      Every quiz board across all the games that's been flagged as containing a time-sensitive fact
-      (e.g. "current all-time top scorer") - use this to periodically recheck them. Flag a board as
-      "Can expire" from its own edit screen in each game's admin page.
+      Hvert quizbrett på tvers av alle spillene som er merket som å inneholde et tidssensitivt faktum (f.eks. «nåværende all-time toppscorer») - bruk dette til å sjekke dem jevnlig. Merk et brett som «Kan utløpe» fra sin egen redigeringsskjerm på hvert spills administrasjonsside.
     </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
     <div v-else-if="!sections.length" class="empty-state friendly">
-      Nothing flagged as "Can expire" yet.
+      Ingenting er merket som «Kan utløpe» ennå.
     </div>
 
     <div v-else>
@@ -22,10 +20,10 @@
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ item.title }}</div>
               <div class="saved-quiz-meta">
-                {{ item.subtitle }}<span v-if="item.subtitle"> · </span>Last updated {{ formatUpdatedAt(item.updatedAt) }}
+                {{ item.subtitle }}<span v-if="item.subtitle"> · </span>Sist oppdatert {{ formatUpdatedAt(item.updatedAt) }}
               </div>
             </div>
-            <router-link class="btn btn-secondary btn-sm" :to="s.to">Open in {{ s.label }} →</router-link>
+            <router-link class="btn btn-secondary btn-sm" :to="s.to">Åpne i {{ s.label }} →</router-link>
           </div>
         </div>
       </div>
@@ -46,7 +44,7 @@ const error = ref('')
 // has different fields worth showing at a glance here).
 const GAMES = [
   {
-    label: 'Weekly grids',
+    label: 'Ukentlige grids',
     to: '/admin/grids',
     load: () => api.adminListGrids(),
     subtitle: g => [g.sport, g.weekStartDate].filter(Boolean).join(' · ')
@@ -61,7 +59,7 @@ const GAMES = [
     label: 'Tension',
     to: '/admin/tension-questions',
     load: () => api.adminListTensionQuestions(),
-    subtitle: q => q.mainCategory || 'Uncategorized'
+    subtitle: q => q.mainCategory || 'Uten kategori'
   },
   {
     label: '501',
@@ -93,7 +91,7 @@ onMounted(load)
 
 function formatUpdatedAt(value) {
   if (!value) return 'unknown'
-  return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+  return new Date(value).toLocaleDateString('nb-NO', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 async function load() {
@@ -111,7 +109,7 @@ async function load() {
     }))
     sections.value = results.filter(s => s.items.length)
   } catch (e) {
-    error.value = 'Could not load "can expire" content across the games.'
+    error.value = 'Kunne ikke laste innhold som kan utløpe på tvers av spillene.'
   } finally {
     loading.value = false
   }

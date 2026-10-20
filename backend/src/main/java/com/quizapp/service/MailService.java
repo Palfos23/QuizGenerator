@@ -42,18 +42,18 @@ public class MailService {
      * here is still visible - just server-side, in the logs - not in the HTTP response.
      */
     public void sendPasswordResetEmail(String toEmail, String resetLink) {
-        send(toEmail, "Reset your Quizzes password",
-                "Someone (hopefully you) asked to reset the password on your Quizzes account.\n\n" +
-                "Reset it here - this link works for 30 minutes:\n" + resetLink + "\n\n" +
-                "If you didn't request this, you can safely ignore this email - your password won't change.");
+        send(toEmail, "Nullstill passordet ditt på Quizzes",
+                "Noen (forhåpentligvis deg) ba om å nullstille passordet på Quizzes-kontoen din.\n\n" +
+                "Nullstill det her - denne lenken virker i 30 minutter:\n" + resetLink + "\n\n" +
+                "Hvis du ikke ba om dette, kan du trygt ignorere denne e-posten - passordet ditt endres ikke.");
     }
 
     /** Same swallow-and-log approach as sendPasswordResetEmail - see its comment. */
     public void sendVerificationEmail(String toEmail, String verifyLink) {
-        send(toEmail, "Verify your Quizzes email",
-                "Welcome to Quizzes! Confirm this is your email address to finish setting up your account.\n\n" +
-                "Verify it here - this link works for 30 minutes:\n" + verifyLink + "\n\n" +
-                "If you didn't create this account, you can safely ignore this email.");
+        send(toEmail, "Bekreft e-postadressen din på Quizzes",
+                "Velkommen til Quizzes! Bekreft at dette er e-postadressen din for å fullføre oppsettet av kontoen din.\n\n" +
+                "Bekreft den her - denne lenken virker i 30 minutter:\n" + verifyLink + "\n\n" +
+                "Hvis du ikke opprettet denne kontoen, kan du trygt ignorere denne e-posten.");
     }
 
     private void send(String toEmail, String subject, String body) {

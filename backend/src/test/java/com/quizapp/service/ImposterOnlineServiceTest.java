@@ -105,14 +105,14 @@ class ImposterOnlineServiceTest {
 
         assertThatThrownBy(() -> imposterOnlineService.chooseGrid(room, GUEST, offeredId))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("not your turn");
+                .hasMessageContaining("ikke din tur");
 
         ImposterGrid notOffered = imposterGridRepository.findAll().stream()
                 .filter(g -> state.getGridChoices().stream().noneMatch(c -> c.getId().equals(g.getId())))
                 .findFirst().orElseThrow();
         assertThatThrownBy(() -> imposterOnlineService.chooseGrid(room, HOST, notOffered.getId()))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("offered");
+                .hasMessageContaining("tilbudte");
     }
 
     @Test
@@ -207,7 +207,7 @@ class ImposterOnlineServiceTest {
 
         assertThatThrownBy(() -> imposterOnlineService.rerollChoices(room, GUEST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("not your turn");
+                .hasMessageContaining("ikke din tur");
 
         ImposterOnlineStateDto rerolled = imposterOnlineService.rerollChoices(room, HOST);
 

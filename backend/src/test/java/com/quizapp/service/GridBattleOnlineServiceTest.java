@@ -118,14 +118,14 @@ class GridBattleOnlineServiceTest {
 
         assertThatThrownBy(() -> gridBattleOnlineService.chooseGrid(room, GUEST, offeredId))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("not your turn");
+                .hasMessageContaining("ikke din tur");
 
         Grid notOffered = gridRepository.findAll().stream()
                 .filter(g -> state.getGridChoices().stream().noneMatch(c -> c.getId().equals(g.getId())))
                 .findFirst().orElseThrow();
         assertThatThrownBy(() -> gridBattleOnlineService.chooseGrid(room, HOST, notOffered.getId()))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("offered");
+                .hasMessageContaining("tilbudte");
     }
 
     @Test
@@ -249,7 +249,7 @@ class GridBattleOnlineServiceTest {
 
         assertThatThrownBy(() -> gridBattleOnlineService.rerollChoices(room, GUEST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("not your turn");
+                .hasMessageContaining("ikke din tur");
     }
 
     @Test
@@ -260,6 +260,6 @@ class GridBattleOnlineServiceTest {
 
         assertThatThrownBy(() -> gridBattleOnlineService.rerollChoices(room, HOST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("already been chosen");
+                .hasMessageContaining("allerede valgt");
     }
 }

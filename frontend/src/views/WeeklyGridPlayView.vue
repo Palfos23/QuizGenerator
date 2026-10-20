@@ -2,15 +2,15 @@
   <div>
     <div v-if="error" class="banner error">{{ error }}</div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
     <div v-else-if="state" class="grid-page">
       <h1 style="margin:0 0 10px; text-align:center;">{{ state.title }}</h1>
       <div style="display:flex; gap:8px; margin-bottom:6px;" class="no-print">
-        <router-link to="/weekly-grid" class="btn btn-secondary btn-sm">← All grids</router-link>
+        <router-link to="/weekly-grid" class="btn btn-secondary btn-sm">← Alle grids</router-link>
         <button class="dq-chip-btn" @click="openScoreboard">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
-            Leaderboard
+            Toppliste
           </button>
       </div>
       <p class="page-subtitle" style="text-align:center;">{{ state.theme }}</p>
@@ -19,9 +19,9 @@
       <DailyQuizScoreboardModal
         v-if="showScoreboard"
         class="no-print"
-        title="Leaderboard"
-        subtitle="How everyone did on this grid."
-        empty-text="Nobody has completed this grid yet."
+        title="Toppliste"
+        subtitle="Hvordan det gikk med alle på dette gridet."
+        empty-text="Ingen har fullført dette gridet ennå."
         compact
         :data="boardForModal"
         :loading="scoreboardLoading"
@@ -31,24 +31,24 @@
       />
 
       <div class="grid-status-bar">
-        <div class="grid-progress">{{ guessedCount }} / {{ state.entries.length }} found</div>
+        <div class="grid-progress">{{ guessedCount }} / {{ state.entries.length }} funnet</div>
         <LivesHearts :max="state.maxStrikes" :used="state.strikesUsed" />
       </div>
 
       <div v-if="allSolved" class="banner success">
-        <div><strong>Game complete - you found them all!</strong></div>
+        <div><strong>Spillet er ferdig - du fant dem alle!</strong></div>
         <div v-if="overtimeSolvedCount">
-          {{ overtimeSolvedCount }} of those were found during Overtime, so this wasn't a clean solve - but nice work regardless.
+          {{ overtimeSolvedCount }} av dem ble funnet i overtid, så dette var ikke en ren løsning - men bra jobba uansett.
         </div>
       </div>
       <div v-else-if="state.revealed" class="banner error">
-        <div><strong>Game over.</strong> You found {{ guessedCount }} / {{ state.entries.length }} before revealing the rest.</div>
+        <div><strong>Spillet er over.</strong> Du fant {{ guessedCount }} / {{ state.entries.length }} før du viste resten.</div>
       </div>
       <div v-else-if="state.overtime" class="banner" style="background:rgba(61, 79, 159, 0.15); color:var(--violet); border:1px solid rgba(61, 79, 159, 0.35);">
-        Overtime - further guesses don't cost strikes, and won't count toward a clean solve.
+        Overtid - flere gjetninger koster ikke liv, og teller ikke mot en ren løsning.
       </div>
       <div v-else-if="gameOver" class="banner error">
-        <div><strong>Game over - out of strikes.</strong> You found {{ guessedCount }} / {{ state.entries.length }}. Reveal the rest, or keep going in Overtime just for fun.</div>
+        <div><strong>Spillet er over - tom for liv.</strong> Du fant {{ guessedCount }} / {{ state.entries.length }}. Vis resten, eller fortsett i overtid bare for moro skyld.</div>
       </div>
 
       <div v-if="canStillGuess" class="guess-box-wrap no-print">
@@ -56,8 +56,8 @@
           <input
             type="text"
             v-model="searchTerm"
-            placeholder="Search for an answer…"
-            aria-label="Search for an answer"
+            placeholder="Søk etter et svar…"
+            aria-label="Søk etter et svar"
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"
@@ -79,12 +79,12 @@
       </div>
 
       <div v-if="canStillGuess" class="no-print" style="margin-bottom:20px;">
-        <button class="btn btn-secondary btn-sm" :disabled="actionBusy" @click="showGiveUpConfirm = true">Give up &amp; reveal remaining answers</button>
+        <button class="btn btn-secondary btn-sm" :disabled="actionBusy" @click="showGiveUpConfirm = true">Gi opp og vis gjenstående svar</button>
       </div>
 
       <div v-else-if="gameOver" class="no-print" style="margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="btn btn-primary" :disabled="actionBusy" @click="doOvertime">Continue in Overtime</button>
-        <button class="btn btn-secondary" :disabled="actionBusy" @click="doReveal">Reveal remaining answers</button>
+        <button class="btn btn-primary" :disabled="actionBusy" @click="doOvertime">Fortsett i overtid</button>
+        <button class="btn btn-secondary" :disabled="actionBusy" @click="doReveal">Vis gjenstående svar</button>
       </div>
 
       <div class="grid-tiles">
@@ -100,7 +100,7 @@
             'just-solved': e.id === justSolvedId
           }"
         >
-          <span v-if="e.solvedInOvertime" class="grid-tile-status overtime" title="Found during Overtime">OT</span>
+          <span v-if="e.solvedInOvertime" class="grid-tile-status overtime" title="Funnet i overtid">OT</span>
           <span v-else-if="e.guessedByUser" class="grid-tile-status correct">✓</span>
           <span v-else-if="e.solved" class="grid-tile-status wrong">✕</span>
           <div v-if="state.revealMode === 'DESCRIPTION'" class="grid-tile-description">
@@ -125,9 +125,9 @@
 
     <ConfirmModal
       v-if="showGiveUpConfirm"
-      title="Give up on this grid?"
-      message="This ends your attempt and reveals every remaining answer. You won't be able to keep guessing on this board afterward."
-      confirm-text="Give up"
+      title="Gi opp dette gridet?"
+      message="Dette avslutter forsøket ditt og viser alle gjenstående svar. Du kan ikke fortsette å gjette på dette brettet etterpå."
+      confirm-text="Gi opp"
       @confirm="confirmGiveUp"
       @cancel="showGiveUpConfirm = false"
     />
@@ -139,29 +139,29 @@
         </div>
 
         <template v-if="completionPopup === 'full'">
-          <h2>Perfect clear!</h2>
-          <p>You found all {{ state.entries.length }} - no Overtime needed.</p>
+          <h2>Perfekt løst!</h2>
+          <p>Du fant alle {{ state.entries.length }} - uten behov for overtid.</p>
         </template>
         <template v-else-if="completionPopup === 'overtime'">
-          <h2>Got there in the end!</h2>
-          <p>You completed the grid, with a little help from Overtime.</p>
+          <h2>Du kom i mål til slutt!</h2>
+          <p>Du fullførte gridet, med litt hjelp fra overtid.</p>
         </template>
         <template v-else-if="completionPopup === 'given-up'">
-          <h2>No shame in that</h2>
-          <p>You found {{ guessedCount }} / {{ state.entries.length }} - take a look at what you missed below.</p>
+          <h2>Ingen skam i det</h2>
+          <p>Du fant {{ guessedCount }} / {{ state.entries.length }} - ta en titt på det du gikk glipp av under.</p>
         </template>
 
         <div class="stats-panel" style="margin-top:4px;">
-          <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Score</div>
+          <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Poeng</div>
           <div style="font-size:1.6rem; font-weight:700;">{{ guessedCount }} / {{ state.entries.length }}</div>
         </div>
 
-        <button class="btn btn-primary" style="margin-top:8px;" @click="completionPopup = null">Continue</button>
+        <button class="btn btn-primary" style="margin-top:8px;" @click="completionPopup = null">Fortsett</button>
       </div>
     </div>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
-      <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct' : 'Wrong' }}</div>
+      <div class="grid-result-text">{{ resultOverlay.correct ? 'Riktig' : 'Feil' }}</div>
     </div>
   </div>
 </template>
@@ -251,7 +251,7 @@ async function loadState() {
     await preloadImages(fresh.entries.map(tileImage))
     state.value = fresh
   } catch (e) {
-    error.value = 'Could not load this grid.'
+    error.value = 'Kunne ikke laste dette gridet.'
   } finally {
     loading.value = false
   }
@@ -266,7 +266,7 @@ async function submitGuess(athlete) {
   searchResults.value = []
   try {
     const result = await api.submitGridGuess(gridId, athlete.id)
-    toast.show(result.correct ? `Correct - ${result.entry.athleteName}!` : 'Wrong guess', result.correct ? 'success' : 'error')
+    toast.show(result.correct ? `Riktig - ${result.entry.athleteName}!` : 'Feil gjetning', result.correct ? 'success' : 'error')
     showResultOverlay(result.correct)
 
     // Update just the bits that changed locally instead of refetching the whole grid -
@@ -294,7 +294,7 @@ async function submitGuess(athlete) {
       triggerCompletionPopup(overtimeSolvedCount.value > 0 ? 'overtime' : 'full')
     }
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not submit that guess.'
+    error.value = e.response?.data?.message || 'Kunne ikke sende inn gjetningen.'
   } finally {
     guessing.value = false
   }
@@ -308,7 +308,7 @@ async function doOvertime() {
     await preloadImages(fresh.entries.map(tileImage))
     state.value = fresh
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not start overtime.'
+    error.value = e.response?.data?.message || 'Kunne ikke starte overtid.'
   } finally {
     actionBusy.value = false
   }
@@ -323,7 +323,7 @@ async function doReveal() {
     state.value = fresh
     triggerCompletionPopup('given-up')
   } catch (e) {
-    error.value = 'Could not reveal the answers.'
+    error.value = 'Kunne ikke vise svarene.'
   } finally {
     actionBusy.value = false
   }
@@ -388,7 +388,7 @@ async function updateLeaderboardPreference(include) {
     await api.setGridLeaderboardPreference(gridId, include)
     scoreboardData.value = await api.getGridScoreboard(gridId)
   } catch (e) {
-    toast.show('Could not update your leaderboard preference.')
+    toast.show('Kunne ikke oppdatere innstillingen for topplisten.')
     leaderboardOptIn.value = previous
   }
 }

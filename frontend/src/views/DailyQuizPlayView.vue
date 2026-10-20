@@ -3,35 +3,35 @@
     <div class="dq-topbar">
       <router-link to="/daily-quiz" class="dq-back">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-        All daily quizzes
+        Alle daglige quizer
       </router-link>
       <div v-if="state" class="dq-topbar-actions">
         <button class="dq-chip-btn" @click="openScoreboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
-          Leaderboard
+          Toppliste
         </button>
       </div>
     </div>
 
     <header v-if="state" class="dq-hero">
-      <span class="dq-eyebrow">Daily quiz</span>
+      <span class="dq-eyebrow">Dagens quiz</span>
       <h1 class="dq-title">{{ formatDate(state.quizDate) }}</h1>
       <p class="dq-sub">{{ subtitle }}</p>
     </header>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <LoadingState v-if="loading" full message="Loading this quiz…" />
+    <LoadingState v-if="loading" full message="Laster denne quizen…" />
 
     <template v-else-if="state">
       <!-- ---------- Answering ---------- -->
       <form v-if="state.attemptStatus === 'IN_PROGRESS'" @submit.prevent="showSubmitConfirm = true">
         <div class="dq-progress">
           <div class="dq-progress-label">
-            <span><strong>{{ answeredCount }}</strong> of {{ state.questions.length }} answered</span>
-            <span v-if="answeredCount === state.questions.length">All done - ready to submit</span>
+            <span><strong>{{ answeredCount }}</strong> av {{ state.questions.length }} besvart</span>
+            <span v-if="answeredCount === state.questions.length">Alt ferdig - klar til å sendes inn</span>
             <button type="button" class="dq-save-chip" :class="{ 'is-saved': !dirty && savedAt }" :disabled="saving || submitting || !dirty" @click="saveDraft">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" v-if="!dirty && savedAt" /><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2zM17 21v-8H7v8M7 3v5h8" v-else /></svg>
-              {{ saving ? 'Saving…' : (!dirty && savedAt ? 'Saved' : 'Save') }}
+              {{ saving ? 'Lagrer…' : (!dirty && savedAt ? 'Lagret' : 'Lagre') }}
             </button>
           </div>
           <div class="dq-progress-track"><div class="dq-progress-fill" :style="{ width: progressPct + '%' }"></div></div>
@@ -49,15 +49,15 @@
               <div v-if="q.yearQuestion || q.photoUrl" class="dq-q-pills">
                 <span v-if="q.yearQuestion" class="dq-pill dq-pill--year">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
-                  Year question
+                  Årstallsspørsmål
                 </span>
                 <span v-if="q.photoUrl" class="dq-pill dq-pill--gold">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="1.6" /><path d="M21 16l-5-5-8 8" /></svg>
-                  Picture question
+                  Bildespørsmål
                 </span>
               </div>
               <label class="dq-q-text" :for="`dq-a-${q.questionId}`">{{ q.text }}</label>
-              <p v-if="q.yearQuestion" class="dq-q-hint">Guess the year - spot on is 2 points, one year off is 1 point.</p>
+              <p v-if="q.yearQuestion" class="dq-q-hint">Gjett året - blink er 2 poeng, ett år unna er 1 poeng.</p>
             </div>
           </div>
 
@@ -70,20 +70,20 @@
             v-model="answers[q.questionId]"
             autocomplete="off"
             :inputmode="q.yearQuestion ? 'numeric' : undefined"
-            :placeholder="q.yearQuestion ? 'Year, e.g. 1994' : 'Your answer'"
+            :placeholder="q.yearQuestion ? 'År, f.eks. 1994' : 'Ditt svar'"
           />
         </div>
 
         <div class="dq-submit">
           <button type="submit" class="btn btn-primary" :disabled="submitting">
-            {{ submitting ? 'Submitting…' : 'Submit answers' }}
+            {{ submitting ? 'Sender inn…' : 'Send inn svar' }}
           </button>
           <button type="button" class="btn btn-secondary dq-save-btn" :disabled="saving || submitting || !dirty" @click="saveDraft">
-            {{ saving ? 'Saving…' : (!dirty && savedAt ? 'Progress saved' : 'Save for later') }}
+            {{ saving ? 'Lagrer…' : (!dirty && savedAt ? 'Fremgang lagret' : 'Lagre til senere') }}
           </button>
           <p class="dq-submit-note">
-            Not ready to hand in? Save your answers and pick this up again later - on any device.<br />
-            You can't change your answers once they're submitted.
+            Ikke klar til å levere? Lagre svarene dine og fortsett senere - på hvilken som helst enhet.<br />
+            Du kan ikke endre svarene dine etter at de er sendt inn.
           </p>
         </div>
       </form>
@@ -91,7 +91,7 @@
       <!-- ---------- Results ---------- -->
       <template v-else-if="state.result">
         <div v-if="state.result.score !== null" class="dq-card dq-score-hero">
-          <div class="dq-ring" :aria-label="`${state.result.score} out of ${state.result.maxScore} points`">
+          <div class="dq-ring" :aria-label="`${state.result.score} av ${state.result.maxScore} poeng`">
             <svg viewBox="0 0 120 120">
               <circle class="dq-ring-track" cx="60" cy="60" r="52" />
               <circle
@@ -104,12 +104,12 @@
             </svg>
             <div class="dq-ring-label">
               <strong>{{ state.result.score }}</strong>
-              <span>of {{ state.result.maxScore }}</span>
+              <span>av {{ state.result.maxScore }}</span>
             </div>
           </div>
           <div class="dq-score-copy">
             <h2>{{ scoreHeadline }}</h2>
-            <p>You got {{ correctCount }} of {{ state.result.answers.length }} questions right. Check how you stack up on the leaderboard.</p>
+            <p>Du fikk {{ correctCount }} av {{ state.result.answers.length }} spørsmål riktig. Se hvordan du ligger an på topplisten.</p>
           </div>
         </div>
 
@@ -118,8 +118,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
           </div>
           <div class="dq-score-copy">
-            <h2>Your answers are in</h2>
-            <p>An admin is checking {{ pendingCount === 1 ? 'one answer' : `${pendingCount} answers` }}. Your score and the correct answers are shown once everything has been checked - come back later.</p>
+            <h2>Svarene dine er sendt inn</h2>
+            <p>En administrator sjekker {{ pendingCount === 1 ? 'ett svar' : `${pendingCount} svar` }}. Poengsummen din og de riktige svarene vises når alt er sjekket - kom tilbake senere.</p>
           </div>
         </div>
 
@@ -142,11 +142,11 @@
               <div class="dq-answer-q">{{ a.questionText }}</div>
               <img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="dq-photo dq-photo--small" @error="e => e.target.style.display = 'none'" />
               <div class="dq-answer-line">
-                <span class="label">Your answer</span>
-                <b>{{ a.yourAnswer || '(blank)' }}</b>
+                <span class="label">Ditt svar</span>
+                <b>{{ a.yourAnswer || '(tomt)' }}</b>
               </div>
               <div v-if="showCorrect(a)" class="dq-answer-line">
-                <span class="label">Correct</span>
+                <span class="label">Riktig svar</span>
                 <b>{{ a.correctAnswer }}</b>
               </div>
               <DailyQuizEasyMeter :percent="a.percentCorrect" :players="a.playersCounted" />
@@ -155,16 +155,16 @@
               <template v-if="!underReview">
               <span v-if="a.verdict === 'PENDING'" class="dq-pill dq-pill--wait">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-                Under review
+                Til gjennomgang
               </span>
               <span v-else-if="a.yearQuestion" class="dq-pill" :class="a.pointsAwarded > 0 ? 'dq-pill--ok' : 'dq-pill--bad'">
-                {{ a.pointsAwarded }} {{ a.pointsAwarded === 1 ? 'point' : 'points' }}
+                {{ a.pointsAwarded }} {{ a.pointsAwarded === 1 ? 'poeng' : 'poeng' }}
               </span>
               <span v-else class="dq-pill" :class="a.verdict === 'CORRECT' ? 'dq-pill--ok' : 'dq-pill--bad'">
-                {{ a.verdict === 'CORRECT' ? 'Correct' : 'Wrong' }}
+                {{ a.verdict === 'CORRECT' ? 'Riktig' : 'Feil' }}
               </span>
               </template>
-              <span v-if="a.yearQuestion" class="dq-pill dq-pill--year">Year</span>
+              <span v-if="a.yearQuestion" class="dq-pill dq-pill--year">Årstall</span>
             </div>
           </article>
         </div>
@@ -174,23 +174,23 @@
     <!-- Submitting is final (the backend rejects a second submission), so ask first - and call out any
          blank boxes, which are marked wrong rather than skipped. -->
     <div v-if="showSubmitConfirm" class="modal-backdrop" @click.self="!submitting && (showSubmitConfirm = false)">
-      <div class="modal dq-modal" role="alertdialog" aria-modal="true" aria-label="Submit your answers?">
+      <div class="modal dq-modal" role="alertdialog" aria-modal="true" aria-label="Sende inn svarene dine?">
         <div class="dq-modal-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.7 2.7L16 9.5" /></svg>
         </div>
-        <h2 class="dq-modal-title">Submit your answers?</h2>
+        <h2 class="dq-modal-title">Sende inn svarene dine?</h2>
         <p class="dq-modal-sub">
-          You've answered {{ answeredCount }} of {{ state?.questions?.length }}. You can't change them once they're submitted.
+          Du har svart på {{ answeredCount }} av {{ state?.questions?.length }}. Du kan ikke endre dem etter at de er sendt inn.
         </p>
         <div v-if="blankCount" class="dq-note">
-          {{ blankCount }} question{{ blankCount === 1 ? ' is' : 's are' }} still blank - blank answers count as wrong.
+          {{ blankCount }} spørsmål{{ blankCount === 1 ? ' er' : ' er' }} fortsatt ubesvart - ubesvarte spørsmål teller som feil.
         </div>
         <div class="dq-modal-actions">
           <button class="btn btn-secondary" :disabled="submitting" @click="showSubmitConfirm = false">
-            {{ blankCount ? 'Keep answering' : 'Go back' }}
+            {{ blankCount ? 'Fortsett å svare' : 'Gå tilbake' }}
           </button>
           <button class="btn btn-primary" :disabled="submitting" @click="submit">
-            {{ submitting ? 'Submitting…' : 'Submit' }}
+            {{ submitting ? 'Sender inn…' : 'Send inn' }}
           </button>
         </div>
       </div>
@@ -198,7 +198,7 @@
 
     <DailyQuizScoreboardModal
       v-if="showScoreboard"
-      title="Leaderboard"
+      title="Toppliste"
       compact
       :data="scoreboardData"
       :loading="scoreboardLoading"
@@ -247,9 +247,9 @@ const progressPct = computed(() => {
 const subtitle = computed(() => {
   if (!state.value) return ''
   if (state.value.attemptStatus === 'IN_PROGRESS') {
-    return `${state.value.questions.length} questions, pub-quiz style - type your answers, no multiple choice.`
+    return `${state.value.questions.length} spørsmål i pubquiz-stil - skriv svarene dine, ingen flervalg.`
   }
-  return state.value.result?.score == null ? 'Submitted - waiting for an admin to finish checking.' : 'Here\'s how you did.'
+  return state.value.result?.score == null ? 'Innsendt - venter på at en administrator skal bli ferdig med å sjekke.' : 'Slik gikk det.'
 })
 
 // ---- save for later ----
@@ -276,9 +276,9 @@ async function saveDraft() {
     await api.saveDailyQuizDraft(quizId, payload)
     savedSnapshot.value = snapshot
     savedAt.value = Date.now()
-    toast.show('Saved - you can pick this up again later.')
+    toast.show('Lagret - du kan fortsette senere.')
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Could not save your answers. Try again.')
+    toast.show(e.response?.data?.message || 'Kunne ikke lagre svarene dine. Prøv igjen.')
   } finally {
     saving.value = false
   }
@@ -295,7 +295,7 @@ window.addEventListener('beforeunload', warnBeforeUnload)
 onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnload))
 onBeforeRouteLeave(() => {
   if (dirty.value && !submitting.value) {
-    return window.confirm('You have answers that aren\'t saved. Leave without saving?')
+    return window.confirm('Du har svar som ikke er lagret. Forlate siden uten å lagre?')
   }
 })
 
@@ -312,7 +312,7 @@ async function load() {
       if (Object.keys(state.value.draftAnswers).length) savedAt.value = Date.now()
     }
   } catch (e) {
-    error.value = 'Could not load this quiz.'
+    error.value = 'Kunne ikke laste denne quizen.'
   } finally {
     loading.value = false
   }
@@ -326,7 +326,7 @@ async function submit() {
     state.value = await api.submitDailyQuizAnswers(quizId, payload)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not submit your answers.'
+    error.value = e.response?.data?.message || 'Kunne ikke sende inn svarene dine.'
   } finally {
     submitting.value = false
     showSubmitConfirm.value = false
@@ -343,10 +343,10 @@ const scorePct = computed(() => {
 })
 const scoreHeadline = computed(() => {
   const pct = scorePct.value
-  if (pct >= 0.9) return 'Brilliant!'
-  if (pct >= 0.7) return 'Great round!'
-  if (pct >= 0.4) return 'Nice work'
-  return 'Good effort - see you tomorrow'
+  if (pct >= 0.9) return 'Strålende!'
+  if (pct >= 0.7) return 'Flott runde!'
+  if (pct >= 0.4) return 'Bra jobba'
+  return 'Bra innsats - vi sees i morgen'
 })
 const correctCount = computed(() => (state.value?.result?.answers || []).filter(a => a.verdict === 'CORRECT').length)
 // The real number still waiting on an admin - until it's zero every row reads "pending", so counting rows would just say "all of them".
@@ -368,7 +368,7 @@ function showCorrect(a) {
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
+  return new Date(dateStr).toLocaleDateString('nb-NO', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
 // ---- leaderboard ----
@@ -403,7 +403,7 @@ async function updateLeaderboardPreference(include) {
     await api.setDailyQuizLeaderboardPreference(quizId, include)
     scoreboardData.value = await api.getDailyQuizScoreboard(quizId)
   } catch (e) {
-    toast.show('Could not update your leaderboard preference.')
+    toast.show('Kunne ikke oppdatere innstillingen for topplisten.')
     leaderboardOptIn.value = previous
   }
 }

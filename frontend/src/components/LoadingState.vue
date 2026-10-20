@@ -11,7 +11,7 @@
 
 <script setup>
 defineProps({
-  message: { type: String, default: 'Loading…' },
+  message: { type: String, default: 'Laster…' },
   subtitle: { type: String, default: '' },
   full: { type: Boolean, default: false }
 })

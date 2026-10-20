@@ -54,7 +54,7 @@ public class AthletePoolService {
     @Transactional(readOnly = true)
     public AthletePoolDto getOne(Long id) {
         return toDto(poolRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No pool found with id " + id)));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke utvalg med id " + id)));
     }
 
     @Transactional
@@ -67,7 +67,7 @@ public class AthletePoolService {
     @Transactional
     public AthletePoolDto update(Long id, AthletePoolRequest request) {
         AthletePool pool = poolRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No pool found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke utvalg med id " + id));
         Set<Athlete> before = new HashSet<>(pool.getMembers());
         applyRequest(pool, request);
         AthletePoolDto dto = toDto(poolRepository.save(pool));
@@ -137,7 +137,7 @@ public class AthletePoolService {
     @Transactional
     public void delete(Long id) {
         if (!poolRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No pool found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke utvalg med id " + id);
         }
         poolRepository.deleteById(id);
     }
@@ -152,7 +152,7 @@ public class AthletePoolService {
             List<Long> missing = request.getAthleteIds().stream()
                     .filter(aid -> !foundIds.contains(aid))
                     .collect(Collectors.toList());
-            throw new IllegalArgumentException("No athlete found with id(s) " + missing);
+            throw new IllegalArgumentException("Fant ikke emne med id(er) " + missing);
         }
         // Plain @ManyToMany join table, no owned child entities - a straight
         // replacement here is safe and simple, none of the orphan-removal/

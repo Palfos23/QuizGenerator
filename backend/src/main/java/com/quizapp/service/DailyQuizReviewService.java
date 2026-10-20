@@ -55,7 +55,7 @@ public class DailyQuizReviewService {
     public List<com.quizapp.dto.DailyQuizQuestionStatDto> listQuestionStatsForSet(Long setId) {
         setRepository.findById(setId)
                 .filter(found -> !DailyQuizService.isExpired(found.getQuizDate()))
-                .orElseThrow(() -> new ResourceNotFoundException("No daily quiz found with id " + setId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke daglig quiz med id " + setId));
         return new java.util.ArrayList<>(dailyQuizService.questionStats(setId).values());
     }
 
@@ -66,7 +66,7 @@ public class DailyQuizReviewService {
     public List<QuestionDto> listQuestionsForSet(Long setId) {
         DailyQuizSet set = setRepository.findById(setId)
                 .filter(found -> !DailyQuizService.isExpired(found.getQuizDate()))
-                .orElseThrow(() -> new ResourceNotFoundException("No daily quiz found with id " + setId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke daglig quiz med id " + setId));
         Map<Long, Question> byId = questionRepository.findAllById(set.getQuestionIds()).stream()
                 .collect(Collectors.toMap(Question::getId, q -> q));
         return set.getQuestionIds().stream()
@@ -104,7 +104,7 @@ public class DailyQuizReviewService {
     public DailyQuizAttemptDetailDto getAttemptDetail(Long attemptId) {
         DailyQuizAttempt attempt = attemptRepository.findById(attemptId)
                 .filter(a -> !DailyQuizService.isExpired(a.getSet().getQuizDate()))
-                .orElseThrow(() -> new ResourceNotFoundException("No attempt found with id " + attemptId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke forsøk med id " + attemptId));
         List<DailyQuizAnswer> answers = answerRepository.findByAttempt_IdOrderByIdAsc(attemptId);
 
         Map<Long, com.quizapp.dto.DailyQuizQuestionStatDto> stats = dailyQuizService.questionStats(attempt.getSet().getId());
@@ -134,7 +134,7 @@ public class DailyQuizReviewService {
     public DailyQuizDayAttemptsDto listAttemptsForSet(Long setId) {
         DailyQuizSet set = setRepository.findById(setId)
                 .filter(found -> !DailyQuizService.isExpired(found.getQuizDate()))
-                .orElseThrow(() -> new ResourceNotFoundException("No daily quiz found with id " + setId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke daglig quiz med id " + setId));
         List<DailyQuizAttempt> attempts = attemptRepository.findBySet_Id(setId).stream()
                 .filter(a -> a.getStatus() != DailyQuizAttemptStatus.IN_PROGRESS)
                 .collect(Collectors.toList());
@@ -178,9 +178,9 @@ public class DailyQuizReviewService {
     public void resolve(Long answerId, boolean correct) {
         DailyQuizAnswer answer = answerRepository.findById(answerId)
                 .filter(a -> !DailyQuizService.isExpired(a.getAttempt().getSet().getQuizDate()))
-                .orElseThrow(() -> new ResourceNotFoundException("No answer found with id " + answerId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke svar med id " + answerId));
         if (!isReviewable(answer)) {
-            throw new IllegalStateException("This answer is graded automatically and can't be changed.");
+            throw new IllegalStateException("Dette svaret rettes automatisk og kan ikke endres.");
         }
         DailyQuizAnswerVerdict decision = correct ? DailyQuizAnswerVerdict.CORRECT : DailyQuizAnswerVerdict.INCORRECT;
         if (answer.getVerdict() == decision) {

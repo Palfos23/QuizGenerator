@@ -1,16 +1,16 @@
 <template>
   <div class="modal-backdrop" @click.self="$emit('close')">
     <div class="modal">
-      <h2>{{ isEdit ? 'Edit club' : 'Add a club' }}</h2>
+      <h2>{{ isEdit ? 'Rediger klubb' : 'Legg til en klubb' }}</h2>
 
       <div v-if="localError" class="banner error">{{ localError }}</div>
 
       <div class="field">
-        <label>Name<input type="text" v-model="local.name" placeholder="e.g. Tottenham Hotspur, or Warner Bros." /></label>
+        <label>Navn<input type="text" v-model="local.name" placeholder="f.eks. Tottenham Hotspur eller Warner Bros." /></label>
       </div>
 
       <div class="field">
-        <label>Category <span class="picker-hint">choose one</span></label>
+        <label>Kategori <span class="picker-hint">velg en</span></label>
         <div class="language-row">
           <button
             v-for="s in gridCategories.categories.value"
@@ -25,31 +25,31 @@
       </div>
 
       <div class="field">
-        <label>Logo URL <span class="picker-hint">a hosted image link - or upload one below</span><input type="text" v-model="local.logoUrl" placeholder="https://…" /></label>
+        <label>Logo-URL <span class="picker-hint">en lenke til et bilde på nett - eller last opp et under</span><input type="text" v-model="local.logoUrl" placeholder="https://…" /></label>
         <div class="photo-upload-row">
-          <PhotoUploadButton label="Upload a logo" @uploaded="url => local.logoUrl = url" />
-          <span class="photo-upload-hint">or paste a link above</span>
+          <PhotoUploadButton label="Last opp en logo" @uploaded="url => local.logoUrl = url" />
+          <span class="photo-upload-hint">eller lim inn en lenke over</span>
         </div>
         <div v-if="local.logoUrl" style="margin-top:10px;">
           <img :src="local.logoUrl" alt="" class="club-logo-preview" @error="previewFailed = true" />
           <span v-if="previewFailed" style="color:var(--coral); font-size:0.85rem; margin-left:8px;">
-            Couldn't load that image - double-check the URL.
+            Kunne ikke laste bildet - sjekk URL-en.
           </span>
         </div>
       </div>
 
       <div class="field">
-        <label>Hint badge color <span class="picker-hint">shown on grid tiles instead of the default gold</span></label>
+        <label>Farge på hintmerket <span class="picker-hint">vises på grid-rutene i stedet for standard gull</span></label>
         <div style="display:flex; align-items:center; gap:10px;">
           <input type="color" v-model="colorValue" style="width:52px; height:38px; padding:2px; cursor:pointer;" />
-          <input type="text" v-model="local.color" placeholder="#d8432b (leave blank for default gold)" style="flex:1;" />
+          <input type="text" v-model="local.color" placeholder="#d8432b (la stå tom for standard gull)" style="flex:1;" />
         </div>
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-secondary" @click="$emit('close')">Cancel</button>
+        <button class="btn btn-secondary" @click="$emit('close')">Avbryt</button>
         <button class="btn btn-primary" :disabled="saving" @click="save">
-          {{ saving ? 'Saving…' : 'Save' }}
+          {{ saving ? 'Lagrer…' : 'Lagre' }}
         </button>
       </div>
     </div>
@@ -93,7 +93,7 @@ const colorValue = computed({
 async function save() {
   localError.value = ''
   if (!local.name.trim()) {
-    localError.value = 'Name is required.'
+    localError.value = 'Navn må fylles ut.'
     return
   }
   saving.value = true
@@ -103,7 +103,7 @@ async function save() {
       : await api.adminCreateClub(local)
     emit('saved', saved)
   } catch (e) {
-    localError.value = e.response?.data?.message || 'Could not save the club.'
+    localError.value = e.response?.data?.message || 'Kunne ikke lagre klubben.'
   } finally {
     saving.value = false
   }

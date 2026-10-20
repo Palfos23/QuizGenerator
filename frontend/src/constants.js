@@ -1,9 +1,9 @@
 export const LANGUAGES = [
-  { code: 'EN', label: 'English', flag: '🇬🇧' },
-  { code: 'DE', label: 'German', flag: '🇩🇪' },
-  { code: 'FR', label: 'French', flag: '🇫🇷' },
-  { code: 'ES', label: 'Spanish', flag: '🇪🇸' },
-  { code: 'NO', label: 'Norwegian', flag: '🇳🇴' }
+  { code: 'EN', label: 'Engelsk', flag: '🇬🇧' },
+  { code: 'DE', label: 'Tysk', flag: '🇩🇪' },
+  { code: 'FR', label: 'Fransk', flag: '🇫🇷' },
+  { code: 'ES', label: 'Spansk', flag: '🇪🇸' },
+  { code: 'NO', label: 'Norsk', flag: '🇳🇴' }
 ]
 
 export function languageLabel(code) {
@@ -19,7 +19,7 @@ export function formatLastUpdated(isoString) {
   if (!isoString) return ''
   const d = new Date(isoString)
   if (Number.isNaN(d.getTime())) return ''
-  return 'Updated ' + d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+  return 'Oppdatert ' + d.toLocaleDateString('nb-NO', { month: 'short', year: 'numeric' })
 }
 
 // Categories are now an open, admin-managed list (see services/gridCategories.js)

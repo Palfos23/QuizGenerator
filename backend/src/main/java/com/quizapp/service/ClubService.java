@@ -45,7 +45,7 @@ public class ClubService {
     @Transactional
     public ClubDto update(Long id, ClubDto dto) {
         Club club = clubRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No club found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke klubb med id " + id));
         club.setName(dto.getName());
         club.setSport(dto.getSport());
         club.setLogoUrl(dto.getLogoUrl());
@@ -56,7 +56,7 @@ public class ClubService {
     @Transactional
     public void delete(Long id) {
         if (!clubRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No club found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke klubb med id " + id);
         }
         if (gridEntryRepository.existsByClub_Id(id)) {
             throw new IllegalArgumentException(

@@ -56,7 +56,7 @@ public class FlashbackAdminService {
     @Transactional
     public void delete(Long id) {
         if (!flashbackYearRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No Flashback year found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke Flashback-år med id " + id);
         }
         flashbackYearRepository.deleteById(id);
     }
@@ -67,10 +67,10 @@ public class FlashbackAdminService {
                 .filter(h -> !h.isEmpty())
                 .collect(Collectors.toList());
         if (hints.isEmpty()) {
-            throw new IllegalArgumentException("Add at least 1 hint.");
+            throw new IllegalArgumentException("Legg til minst 1 hint.");
         }
         if (hints.size() > MAX_HINTS) {
-            throw new IllegalArgumentException("A year can have at most " + MAX_HINTS + " hints.");
+            throw new IllegalArgumentException("Et år kan ha høyst " + MAX_HINTS + " hint.");
         }
 
         year.setTitle(request.getTitle());
@@ -83,7 +83,7 @@ public class FlashbackAdminService {
 
     private FlashbackYear findYear(Long id) {
         return flashbackYearRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No Flashback year found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke Flashback-år med id " + id));
     }
 
     static FlashbackYearDto toDto(FlashbackYear year) {

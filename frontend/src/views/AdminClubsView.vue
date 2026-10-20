@@ -2,44 +2,44 @@
   <div>
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
       <div>
-        <h1>Clubs</h1>
-        <p class="page-subtitle">Crests used as logo hints on weekly grid tiles.</p>
+        <h1>Klubber</h1>
+        <p class="page-subtitle">Emblemer brukt som logohint på rutene i ukens grid.</p>
       </div>
-      <button class="btn btn-primary" @click="openCreate">+ Add club</button>
+      <button class="btn btn-primary" @click="openCreate">+ Legg til klubb</button>
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div class="filter-bar">
       <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
-        <label>Search<input type="text" v-model="searchText" placeholder="Search name…" /></label>
+        <label>Søk<input type="text" v-model="searchText" placeholder="Søk etter navn…" /></label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Category
+        <label>Kategori
           <select v-model="sportFilter">
-            <option value="ALL">All categories</option>
+            <option value="ALL">Alle kategorier</option>
             <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
           </select>
         </label>
       </div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
     <div v-else-if="!clubs.length" class="empty-state friendly">
-      No clubs yet. Add one here, then pick it as a logo hint when building a weekly grid.
+      Ingen klubber ennå. Legg til en her, og velg den som logohint når du lager et ukentlig grid.
     </div>
 
-    <div v-else-if="!filteredClubs.length" class="empty-state">No clubs match those filters.</div>
+    <div v-else-if="!filteredClubs.length" class="empty-state">Ingen klubber samsvarer med disse filtrene.</div>
 
     <div v-else class="table-scroll">
       <table class="table">
         <thead>
           <tr>
             <th>Logo</th>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Color</th>
+            <th>Navn</th>
+            <th>Kategori</th>
+            <th>Farge</th>
             <th></th>
           </tr>
         </thead>
@@ -55,8 +55,8 @@
             <td>{{ sportLabel(c.sport) }}</td>
             <td><span class="color-swatch" :style="{ background: c.color || 'var(--gold)' }"></span></td>
             <td style="white-space:nowrap;">
-              <button class="btn btn-secondary btn-sm" @click="openEdit(c)">Edit</button>
-              <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(c)">Delete</button>
+              <button class="btn btn-secondary btn-sm" @click="openEdit(c)">Rediger</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(c)">Slett</button>
             </td>
           </tr>
         </tbody>
@@ -74,8 +74,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this club?"
-      :message="`'${pendingDelete.name}' will be removed.`"
+      title="Slette denne klubben?"
+      :message="`«${pendingDelete.name}» fjernes.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -130,7 +130,7 @@ async function loadClubs() {
   try {
     clubs.value = await api.adminSearchClubs()
   } catch (e) {
-    error.value = 'Could not load clubs.'
+    error.value = 'Kunne ikke laste klubber.'
   } finally {
     loading.value = false
   }
@@ -148,7 +148,7 @@ function openEdit(c) {
 
 function onSaved() {
   showModal.value = false
-  toast.show('Club saved.')
+  toast.show('Klubben er lagret.')
   loadClubs()
 }
 
@@ -162,10 +162,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteClub(c.id)
-    toast.show('Club deleted.')
+    toast.show('Klubben er slettet.')
     loadClubs()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not delete that club.'
+    error.value = e.response?.data?.message || 'Kunne ikke slette klubben.'
   }
 }
 </script>

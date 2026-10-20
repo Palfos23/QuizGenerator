@@ -61,19 +61,19 @@ public class QuizService {
             picked.addAll(candidates.subList(0, available));
 
             if (available < wanted) {
-                warnings.add("Only found " + available + " of the " + wanted +
-                        " requested \"" + selection.getCategory() + "\" question(s) in that language/difficulty range.");
+                warnings.add("Fant bare " + available + " av de " + wanted +
+                        " forespurte \"" + selection.getCategory() + "\"-spørsmålene i det språket/vanskelighetsområdet.");
             }
         }
 
         if (picked.isEmpty()) {
             throw new IllegalArgumentException(
-                    "No questions in the bank match those categories/labels/language/difficulty yet. " +
-                            "Ask an admin to add some first.");
+                    "Ingen spørsmål i banken samsvarer med disse kategoriene/etikettene/språket/vanskelighetsgraden ennå. " +
+                            "Be en administrator legge til noen først.");
         }
 
         QuizDto quiz = new QuizDto();
-        quiz.setTitle(request.getTitle() == null || request.getTitle().isBlank() ? "My Quiz" : request.getTitle());
+        quiz.setTitle(request.getTitle() == null || request.getTitle().isBlank() ? "Min quiz" : request.getTitle());
         quiz.setLanguage(request.getLanguage());
         quiz.setQuestions(picked);
         quiz.setWarnings(warnings);
@@ -117,7 +117,7 @@ public class QuizService {
                 .findFirst()
                 .map(QuestionMapper::toDto)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "No other \"" + request.getCategory() + "\" question is available to replace this one with."));
+                        "Ingen andre \"" + request.getCategory() + "\"-spørsmål er tilgjengelige å erstatte dette med."));
     }
 
     /**

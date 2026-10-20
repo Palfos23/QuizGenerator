@@ -8,7 +8,7 @@
       <div v-if="teamPensScored != null && opponentPensScored != null" class="pitch-scoreline-score">
         <span>{{ teamPensScored }}</span><span class="dash">-</span><span>{{ opponentPensScored }}</span>
       </div>
-      <div v-else class="pitch-scoreline-vs">vs</div>
+      <div v-else class="pitch-scoreline-vs">mot</div>
       <div class="pitch-scoreline-team away">
         <GameImage v-if="opponentCrestUrl" :src="opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
         <span>{{ opponentName }}</span>
@@ -27,7 +27,7 @@
           :class="{ correct: k.solved, 'revealed-only': k.solved && !k.guessedByUser, 'just-solved': k.id === justSolvedId }"
         >
           <span class="pen-kick-order">{{ k.kickOrder }}</span>
-          <span class="pen-kick-outcome" :class="k.scored ? 'scored' : 'missed'" :title="k.scored ? 'Scored' : 'Missed'">
+          <span class="pen-kick-outcome" :class="k.scored ? 'scored' : 'missed'" :title="k.scored ? 'Scoret' : 'Bommet'">
             {{ k.scored ? '✓' : '✕' }}
           </span>
           <GameImage v-if="k.solved && k.athletePhotoUrl" :src="k.athletePhotoUrl" alt="" class="pen-kick-photo" />

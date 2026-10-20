@@ -74,13 +74,13 @@ public class AccountService {
     static String cleanDisplayName(String raw) {
         String name = raw == null ? "" : raw.trim().replaceAll("\\s+", " ");
         if (name.length() < MIN_NAME_LENGTH) {
-            throw new IllegalArgumentException("Your name needs at least " + MIN_NAME_LENGTH + " characters.");
+            throw new IllegalArgumentException("Navnet ditt må ha minst " + MIN_NAME_LENGTH + " tegn.");
         }
         if (name.length() > MAX_NAME_LENGTH) {
-            throw new IllegalArgumentException("Your name can be at most " + MAX_NAME_LENGTH + " characters.");
+            throw new IllegalArgumentException("Navnet ditt kan ha høyst " + MAX_NAME_LENGTH + " tegn.");
         }
         if (name.chars().anyMatch(c -> Character.isISOControl(c) || c == '<' || c == '>')) {
-            throw new IllegalArgumentException("Your name can't contain those characters.");
+            throw new IllegalArgumentException("Navnet ditt kan ikke inneholde disse tegnene.");
         }
         return name;
     }
@@ -151,7 +151,7 @@ public class AccountService {
 
         if (user.getPasswordHash() != null) {
             if (password == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
-                throw new IllegalArgumentException("Incorrect password.");
+                throw new IllegalArgumentException("Feil passord.");
             }
         }
 
@@ -182,6 +182,6 @@ public class AccountService {
 
     private AppUser requireUser(String email) {
         return appUserRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("No account found for " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke konto for " + email));
     }
 }

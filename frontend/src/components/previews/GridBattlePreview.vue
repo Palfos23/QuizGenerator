@@ -1,8 +1,8 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Preview of Grid Battle: a grid of hidden tiles, some solved with a player photo and name, each with a small hint.">
-    <span class="game-preview-tag">Preview</span>
+  <div class="game-preview" role="img" aria-label="Forhåndsvisning av Grid Battle: et grid med skjulte ruter, noen løst med spillerbilde og navn, hver med et lite hint.">
+    <span class="game-preview-tag">Forhåndsvisning</span>
     <div class="gb-head">
-      <span class="gb-theme">Grid · “Spurs top scorers, 2023/24”</span>
+      <span class="gb-theme">Grid · «Toppscorere for Spurs, 2023/24»</span>
       <span class="gb-lives">
         <span v-for="n in 5" :key="n" class="gb-heart" :class="{ lost: n > 3 }">♥</span>
       </span>
@@ -23,8 +23,8 @@
     </div>
 
     <p class="game-preview-caption">
-      Take turns naming players that fit. <span class="good">Right</span> flips the tile and scores;
-      <span class="bad">wrong</span> costs a life. Highest total across 2–4 grids wins.
+      Bytt på å nevne spillere som passer. <span class="good">Riktig</span> snur ruten og gir poeng;
+      <span class="bad">feil</span> koster et liv. Høyest totalsum på 2–4 grids vinner.
     </p>
   </div>
 </template>

@@ -7,9 +7,9 @@
 
   <div v-else-if="state === 'guestRestricted'" class="empty-state" style="max-width:480px; margin:80px auto; padding:32px 28px; text-align:center;">
     <p style="margin:0 0 16px; font-size:1.05rem;">
-      As a guest, you can only join a game using a room code from the host - not create one or browse other games.
+      Som gjest kan du bare bli med i et spill med en romkode fra verten - ikke opprette spill eller se andre spill.
     </p>
-    <router-link to="/join" class="btn btn-primary">Join a game with a code →</router-link>
+    <router-link to="/join" class="btn btn-primary">Bli med i et spill med kode →</router-link>
   </div>
 
   <slot v-else />
@@ -79,7 +79,7 @@ onMounted(async () => {
     await api.checkGameAccess(props.game)
     state.value = 'allowed'
   } catch (e) {
-    message.value = e.response?.data?.message || "You don't currently have access to this game - contact an administrator."
+    message.value = e.response?.data?.message || "Du har ikke tilgang til dette spillet akkurat nå - kontakt en administrator."
     state.value = 'denied'
   }
 })

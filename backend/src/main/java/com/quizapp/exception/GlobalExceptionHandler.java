@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(io.jsonwebtoken.JwtException.class)
     public ResponseEntity<Map<String, Object>> handleJwtException(io.jsonwebtoken.JwtException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(body(HttpStatus.UNAUTHORIZED, "Session expired - please sign in again."));
+                .body(body(HttpStatus.UNAUTHORIZED, "Økten er utløpt - logg inn igjen."));
     }
 
     // Used for routine "not allowed right now" rejections (wrong turn, host-only
@@ -61,14 +61,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
     public ResponseEntity<Map<String, Object>> handleUploadTooLarge(org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body(body(HttpStatus.PAYLOAD_TOO_LARGE, "That picture is too large - the limit is 8 MB."));
+                .body(body(HttpStatus.PAYLOAD_TOO_LARGE, "Bildet er for stort - grensen er 8 MB."));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(fe -> fieldErrors.put(fe.getField(), fe.getDefaultMessage()));
-        Map<String, Object> body = body(HttpStatus.BAD_REQUEST, "Validation failed");
+        Map<String, Object> body = body(HttpStatus.BAD_REQUEST, "Validering mislyktes");
         body.put("fieldErrors", fieldErrors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
@@ -81,7 +81,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         log.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(body(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong. Please try again."));
+                .body(body(HttpStatus.INTERNAL_SERVER_ERROR, "Noe gikk galt. Prøv igjen."));
     }
 
     private Map<String, Object> body(HttpStatus status, String message) {

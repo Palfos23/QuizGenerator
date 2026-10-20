@@ -2,46 +2,46 @@
   <div>
     <header class="admin-head">
       <div>
-        <span class="dq-eyebrow">Questions</span>
-        <h1 class="dq-title">Question bank</h1>
+        <span class="dq-eyebrow">Spørsmål</span>
+        <h1 class="dq-title">Spørsmålsbank</h1>
         <p class="dq-sub">
-          Every question here is available to the quiz generator.
-          <router-link to="/admin/question-submissions">Review user submissions →</router-link> ·
-          <router-link to="/admin/quiz-templates">Manage quiz templates →</router-link>
+          Alle spørsmål her er tilgjengelige for quizgeneratoren.
+          <router-link to="/admin/question-submissions">Gå gjennom innsendte spørsmål →</router-link> ·
+          <router-link to="/admin/quiz-templates">Administrer quizmaler →</router-link>
         </p>
       </div>
       <div class="admin-head-actions">
         <button class="btn btn-secondary" @click="triggerImport" :disabled="importing">
-          {{ importing ? 'Importing…' : 'Import CSV' }}
+          {{ importing ? 'Importerer…' : 'Importer CSV' }}
         </button>
         <input ref="fileInput" type="file" accept=".csv,text/csv" style="display:none;" @change="onFileChosen" />
-        <button class="btn btn-primary" @click="openCreate">+ Add question</button>
+        <button class="btn btn-primary" @click="openCreate">+ Legg til spørsmål</button>
       </div>
     </header>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div v-if="importResult" class="banner" :class="importResult.errors.length ? 'error' : 'success'">
-      <div>Imported {{ importResult.imported }} question(s){{ importResult.skipped ? `, skipped ${importResult.skipped}` : '' }}.</div>
+      <div>Importerte {{ importResult.imported }} spørsmål{{ importResult.skipped ? `, hoppet over ${importResult.skipped}` : '' }}.</div>
       <ul v-if="importResult.errors.length" style="margin:8px 0 0; padding-left:18px;">
         <li v-for="(e, i) in importResult.errors" :key="i">{{ e }}</li>
       </ul>
-      <button class="btn btn-secondary btn-sm" style="margin-top:10px;" @click="importResult = null">Dismiss</button>
+      <button class="btn btn-secondary btn-sm" style="margin-top:10px;" @click="importResult = null">Lukk</button>
     </div>
 
     <!-- Bank overview / coverage -->
     <div class="stats-panel">
       <button class="btn btn-secondary btn-sm" @click="showStats = !showStats">
-        {{ showStats ? 'Hide' : 'Show' }} bank overview
+        {{ showStats ? 'Skjul' : 'Vis' }} bankoversikt
       </button>
       <div v-if="showStats" class="table-scroll" style="margin-top:14px;">
         <table class="table">
           <thead>
             <tr>
-              <th>Category</th>
-              <th>Language</th>
-              <th>Questions</th>
-              <th>Difficulty range</th>
+              <th>Kategori</th>
+              <th>Språk</th>
+              <th>Spørsmål</th>
+              <th>Vanskelighetsgrad</th>
             </tr>
           </thead>
           <tbody>
@@ -50,7 +50,7 @@
               <td>{{ flagFor(s.language) }} {{ s.language }}</td>
               <td>
                 <span :class="{ 'stat-low': s.count < 3 }">{{ s.count }}</span>
-                <span v-if="s.count < 3" class="tag changeable" style="margin-left:8px;">Low coverage</span>
+                <span v-if="s.count < 3" class="tag changeable" style="margin-left:8px;">Lav dekning</span>
               </td>
               <td>{{ s.minDifficulty }}-{{ s.maxDifficulty }}</td>
             </tr>
@@ -61,46 +61,46 @@
 
     <div class="filter-bar">
       <div class="field" style="margin-bottom:0; flex:2; min-width:200px;">
-        <label>Search<input type="text" v-model="searchText" placeholder="Search question, category or answer…" /></label>
+        <label>Søk<input type="text" v-model="searchText" placeholder="Søk etter spørsmål, kategori eller svar…" /></label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Language
+        <label>Språk
           <select v-model="languageFilter">
-            <option value="ALL">All languages</option>
+            <option value="ALL">Alle språk</option>
             <option v-for="lang in LANGUAGES" :key="lang.code" :value="lang.code">{{ lang.flag }} {{ lang.label }}</option>
           </select>
         </label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Category
+        <label>Kategori
           <select v-model="categoryFilter">
-            <option value="ALL">All categories</option>
+            <option value="ALL">Alle kategorier</option>
             <option v-for="c in availableCategories" :key="c" :value="c">{{ c }}</option>
           </select>
         </label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>Could change?
+        <label>Kan endre seg?
           <select v-model="couldChangeFilter">
-            <option value="ALL">Any</option>
-            <option value="YES">May change</option>
-            <option value="NO">Stable</option>
+            <option value="ALL">Alle</option>
+            <option value="YES">Kan endre seg</option>
+            <option value="NO">Stabil</option>
           </select>
         </label>
       </div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
     <div v-else-if="!questions.length" class="empty-state friendly">
-      <p style="margin-top:0;">No questions in the bank yet.</p>
+      <p style="margin-top:0;">Ingen spørsmål i banken ennå.</p>
       <button class="btn btn-primary" :disabled="seedingStarterPack" @click="addStarterPack">
-        {{ seedingStarterPack ? 'Adding…' : 'Add a starter pack of sample questions' }}
+        {{ seedingStarterPack ? 'Legger til…' : 'Legg til en startpakke med eksempelspørsmål' }}
       </button>
     </div>
 
     <div v-else-if="!filteredQuestions.length" class="empty-state">
-      No questions match those filters.
+      Ingen spørsmål samsvarer med disse filtrene.
     </div>
 
     <template v-else>
@@ -108,12 +108,12 @@
         <table class="table">
           <thead>
             <tr>
-              <th class="sortable" @click="toggleSort('questionText')">Question{{ sortArrow('questionText') }}</th>
-              <th class="sortable" @click="toggleSort('category')">Category{{ sortArrow('category') }}</th>
-              <th>Lang</th>
-              <th class="sortable" @click="toggleSort('difficultyLevel')">Difficulty{{ sortArrow('difficultyLevel') }}</th>
-              <th>Answer</th>
-              <th class="sortable" @click="toggleSort('couldChange')">Could change?{{ sortArrow('couldChange') }}</th>
+              <th class="sortable" @click="toggleSort('questionText')">Spørsmål{{ sortArrow('questionText') }}</th>
+              <th class="sortable" @click="toggleSort('category')">Kategori{{ sortArrow('category') }}</th>
+              <th>Språk</th>
+              <th class="sortable" @click="toggleSort('difficultyLevel')">Vanskelighetsgrad{{ sortArrow('difficultyLevel') }}</th>
+              <th>Svar</th>
+              <th class="sortable" @click="toggleSort('couldChange')">Kan endre seg?{{ sortArrow('couldChange') }}</th>
               <th></th>
             </tr>
           </thead>
@@ -125,12 +125,12 @@
               <td><span class="tag difficulty-tag" :style="{ background: difficultyColor(q.difficultyLevel), color: difficultyTextColor(q.difficultyLevel) }">{{ q.difficultyLevel }}/10</span></td>
               <td v-html="highlight(q.answer)"></td>
               <td>
-                <span v-if="q.couldChange" class="tag changeable">May change</span>
-                <span v-else style="color:var(--text-dim); font-size:0.85rem;">Stable</span>
+                <span v-if="q.couldChange" class="tag changeable">Kan endre seg</span>
+                <span v-else style="color:var(--text-dim); font-size:0.85rem;">Stabil</span>
               </td>
               <td style="white-space:nowrap;">
-                <button class="btn btn-secondary btn-sm" @click="openEdit(q)">Edit</button>
-                <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(q)">Delete</button>
+                <button class="btn btn-secondary btn-sm" @click="openEdit(q)">Rediger</button>
+                <button class="btn btn-danger btn-sm" style="margin-left:6px;" @click="requestDelete(q)">Slett</button>
               </td>
             </tr>
           </tbody>
@@ -138,11 +138,11 @@
       </div>
 
       <div class="pagination-bar" v-if="totalPages > 1">
-        <button class="btn btn-secondary btn-sm" :disabled="page === 1" @click="page--">← Prev</button>
-        <span>Page {{ page }} of {{ totalPages }} · {{ filteredQuestions.length }} questions</span>
-        <button class="btn btn-secondary btn-sm" :disabled="page === totalPages" @click="page++">Next →</button>
+        <button class="btn btn-secondary btn-sm" :disabled="page === 1" @click="page--">← Forrige</button>
+        <span>Side {{ page }} av {{ totalPages }} · {{ filteredQuestions.length }} spørsmål</span>
+        <button class="btn btn-secondary btn-sm" :disabled="page === totalPages" @click="page++">Neste →</button>
       </div>
-      <p v-else style="color:var(--text-dim); font-size:0.85rem;">{{ filteredQuestions.length }} question(s)</p>
+      <p v-else style="color:var(--text-dim); font-size:0.85rem;">{{ filteredQuestions.length }} spørsmål</p>
     </template>
 
     <QuestionFormModal
@@ -154,8 +154,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this question?"
-      :message="`'${pendingDelete.questionText}' will be permanently removed from the bank.`"
+      title="Slette dette spørsmålet?"
+      :message="`«${pendingDelete.questionText}» fjernes fra banken for godt.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -293,7 +293,7 @@ async function loadQuestions() {
   try {
     questions.value = await api.adminListQuestions()
   } catch (e) {
-    error.value = 'Could not load questions from the server.'
+    error.value = 'Kunne ikke laste spørsmål fra serveren.'
   } finally {
     loading.value = false
   }
@@ -352,7 +352,7 @@ function openEdit(q) {
 
 function onSaved() {
   showModal.value = false
-  toast.show('Question saved.')
+  toast.show('Spørsmålet er lagret.')
   loadQuestions()
   loadStats()
 }
@@ -367,11 +367,11 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteQuestion(q.id)
-    toast.show('Question deleted.')
+    toast.show('Spørsmålet er slettet.')
     loadQuestions()
     loadStats()
   } catch (e) {
-    error.value = 'Could not delete the question.'
+    error.value = 'Kunne ikke slette spørsmålet.'
   }
 }
 
@@ -380,11 +380,11 @@ async function addStarterPack() {
   error.value = ''
   try {
     const result = await api.adminAddStarterPack()
-    toast.show(`Added ${result.added} sample questions across all five languages.`)
+    toast.show(`La til ${result.added} eksempelspørsmål på alle fem språk.`)
     loadQuestions()
     loadStats()
   } catch (e) {
-    error.value = 'Could not add the starter pack.'
+    error.value = 'Kunne ikke legge til startpakken.'
   } finally {
     seedingStarterPack.value = false
   }
@@ -407,7 +407,7 @@ async function onFileChosen(event) {
     loadQuestions()
     loadStats()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not import that file.'
+    error.value = e.response?.data?.message || 'Kunne ikke importere filen.'
   } finally {
     importing.value = false
   }

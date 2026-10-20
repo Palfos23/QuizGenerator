@@ -1,7 +1,7 @@
 <template>
-  <div v-if="percent !== null && percent !== undefined" class="dq-easy" :title="`Based on ${players} players' answers`">
+  <div v-if="percent !== null && percent !== undefined" class="dq-easy" :title="`Basert på svarene til ${players} spillere`">
     <span class="dq-easy-track"><i :style="{ width: percent + '%' }"></i></span>
-    <span class="dq-easy-text"><b>{{ percent }}%</b> got it right</span>
+    <span class="dq-easy-text"><b>{{ percent }}%</b> svarte riktig</span>
   </div>
 </template>
 

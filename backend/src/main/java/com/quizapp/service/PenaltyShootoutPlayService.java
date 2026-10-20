@@ -176,7 +176,7 @@ public class PenaltyShootoutPlayService {
 
     private PenaltyShootout findShootout(Long id) {
         return penaltyShootoutRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No penalty shootout found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke straffekonkurranse med id " + id));
     }
 
     private Comparator<PenaltyKick> kickOrder() {

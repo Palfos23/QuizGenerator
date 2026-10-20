@@ -16,7 +16,7 @@ import { useReferenceList } from './useReferenceList'
 export function useAnswerOptions() {
   const list = useReferenceList({
     area: 'tension-suggestions',
-    failureToast: "Couldn't load the suggestions - retrying. You can still type your answer."
+    failureToast: "Kunne ikke laste forslagene - prøver igjen. Du kan fortsatt skrive svaret ditt."
   })
 
   const unavailable = computed(() => list.status.value === 'error' || list.status.value === 'empty')

@@ -7,19 +7,19 @@
       <div v-if="loggingIn" class="login-progress">
         <span class="spinner"></span>
         <div>
-          <div>Signing you in…</div>
+          <div>Logger deg inn…</div>
           <div v-if="slowLogin" style="color:var(--text-dim); font-size:0.85rem; margin-top:4px;">
-            Still working - this is taking longer than usual.
+            Jobber fortsatt - dette tar lengre tid enn vanlig.
           </div>
         </div>
       </div>
 
       <template v-if="!loggingIn">
         <div class="landing-login-head">
-          <h2>Welcome</h2>
-          <p>Sign in to save your scores and quizzes.</p>
+          <h2>Velkommen</h2>
+          <p>Logg inn for å lagre poengene og quizene dine.</p>
         </div>
-        <div v-if="loadingScript" style="color:var(--text-dim); font-size:0.9rem; text-align:center;">Loading sign-in…</div>
+        <div v-if="loadingScript" style="color:var(--text-dim); font-size:0.9rem; text-align:center;">Laster innlogging…</div>
 
         <!-- Google's own rendered button keeps changing appearance out from under us (a
              filled_black pill on first paint, then Chrome silently swaps it for its own
@@ -33,9 +33,9 @@
           v-show="clientIdConfigured && cookieConsent.state.status !== 'accepted'"
           style="text-align:center; padding:14px; border:1px solid var(--border); border-radius: 2px; color:var(--text-dim); font-size:0.85rem;"
         >
-          Sign in with Google needs the optional cookie setting turned on.
+          Innlogging med Google krever at den valgfrie cookie-innstillingen er slått på.
           <div style="margin-top:8px;">
-            <button type="button" class="btn btn-secondary btn-sm" @click="cookieConsent.accept()">Accept cookies</button>
+            <button type="button" class="btn btn-secondary btn-sm" @click="cookieConsent.accept()">Godta informasjonskapsler</button>
           </div>
         </div>
 
@@ -49,14 +49,14 @@
                 <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
               </svg>
             </span>
-            <span>Continue with Google</span>
+            <span>Fortsett med Google</span>
           </button>
           <div class="google-real-overlay" ref="buttonEl"></div>
         </div>
 
         <p v-if="!clientIdConfigured" style="color:var(--text-dim); font-size:0.85rem; text-align:center;">
-          Google sign-in isn't configured yet - set <code>VITE_GOOGLE_CLIENT_ID</code> in the frontend's
-          <code>.env</code> file.
+          Google-innlogging er ikke satt opp ennå - sett <code>VITE_GOOGLE_CLIENT_ID</code> i frontendens
+          <code>.env</code> -fil.
         </p>
 
         <!-- Collapsed by default - only expands once someone actually wants the
@@ -66,14 +66,14 @@
              a real secondary button (not a small link) so it reads as a peer
              option to Google, not fine print. -->
         <template v-if="!emailFormOpen">
-          <div class="landing-login-divider"><span>or</span></div>
+          <div class="landing-login-divider"><span>eller</span></div>
           <button type="button" class="btn btn-secondary landing-login-option" @click="emailFormOpen = true">
-            Continue with email
+            Fortsett med e-post
           </button>
         </template>
 
         <template v-else>
-          <div class="landing-login-divider"><span>or</span></div>
+          <div class="landing-login-divider"><span>eller</span></div>
 
           <!-- Email + password: a second, independent sign-in method on the same
                account table - registering or signing in either way works even if
@@ -81,25 +81,25 @@
           <template v-if="passwordStage === 'signin'">
             <form @submit.prevent="submitPasswordLogin">
               <div class="field">
-                <label>Email<input type="email" v-model="loginEmail" autocomplete="email" placeholder="you@example.com" /></label>
+                <label>E-post<input type="email" v-model="loginEmail" autocomplete="email" placeholder="du@eksempel.no" /></label>
               </div>
               <div class="field">
-                <label>Password<input type="password" v-model="loginPassword" autocomplete="current-password" placeholder="Your password" /></label>
+                <label>Passord<input type="password" v-model="loginPassword" autocomplete="current-password" placeholder="Passordet ditt" /></label>
               </div>
               <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="passwordBusy">
-                {{ passwordBusy ? 'Signing in…' : 'Sign in' }}
+                {{ passwordBusy ? 'Logger inn…' : 'Logg inn' }}
               </button>
             </form>
             <p v-if="needsVerification && !resendSent" style="text-align:center; margin-top:10px; font-size:0.9rem;">
-              <a href="#" @click.prevent="submitResendVerification">Resend verification email</a>
+              <a href="#" @click.prevent="submitResendVerification">Send bekreftelses-e-posten på nytt</a>
             </p>
             <p v-else-if="resendSent" class="page-subtitle" style="text-align:center; margin-top:10px;">
-              If that email needs verifying, we've sent a fresh link.
+              Hvis den e-postadressen må bekreftes, har vi sendt en ny lenke.
             </p>
             <p style="text-align:center; margin-top:10px; font-size:0.9rem;">
-              <a href="#" @click.prevent="passwordStage = 'forgot'">Forgot password?</a>
+              <a href="#" @click.prevent="passwordStage = 'forgot'">Glemt passord?</a>
               &nbsp;·&nbsp;
-              <a href="#" @click.prevent="switchToRegister">Create an account</a>
+              <a href="#" @click.prevent="switchToRegister">Opprett en konto</a>
             </p>
           </template>
 
@@ -107,62 +107,61 @@
             <template v-if="!registerSent">
               <form @submit.prevent="submitRegister">
                 <div class="field">
-                  <label>Name<input type="text" v-model="registerName" placeholder="Your name" /></label>
+                  <label>Navn<input type="text" v-model="registerName" placeholder="Navnet ditt" /></label>
                 </div>
                 <div class="field">
-                  <label>Email<input type="email" v-model="registerEmail" autocomplete="email" placeholder="you@example.com" /></label>
+                  <label>E-post<input type="email" v-model="registerEmail" autocomplete="email" placeholder="du@eksempel.no" /></label>
                 </div>
                 <div class="field">
-                  <label>Password<input type="password" v-model="registerPassword" autocomplete="new-password" placeholder="At least 8 characters" /></label>
+                  <label>Passord<input type="password" v-model="registerPassword" autocomplete="new-password" placeholder="Minst 8 tegn" /></label>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="passwordBusy">
-                  {{ passwordBusy ? 'Creating account…' : 'Create account' }}
+                  {{ passwordBusy ? 'Oppretter konto…' : 'Opprett konto' }}
                 </button>
               </form>
             </template>
             <p v-else class="page-subtitle" style="margin-top:0;">
-              Almost there - check your email for a verification link (it works for 30 minutes) before signing in.
+              Nesten ferdig - sjekk e-posten din for en bekreftelseslenke (den virker i 30 minutter) før du logger inn.
             </p>
             <p style="text-align:center; margin-top:10px; font-size:0.9rem;">
-              <a href="#" @click.prevent="passwordStage = 'signin'">{{ registerSent ? 'Back to sign in' : 'Already have an account? Sign in' }}</a>
+              <a href="#" @click.prevent="passwordStage = 'signin'">{{ registerSent ? 'Tilbake til innlogging' : 'Har du allerede en konto? Logg inn' }}</a>
             </p>
           </template>
 
           <template v-else-if="passwordStage === 'forgot'">
             <template v-if="!forgotSent">
               <div class="field">
-                <label>Email<input type="email" v-model="forgotEmail" autocomplete="email" placeholder="you@example.com" /></label>
+                <label>E-post<input type="email" v-model="forgotEmail" autocomplete="email" placeholder="du@eksempel.no" /></label>
               </div>
               <button class="btn btn-primary" style="width:100%;" :disabled="passwordBusy || !forgotEmail.trim()" @click="submitForgotPassword">
-                {{ passwordBusy ? 'Sending…' : 'Send reset link' }}
+                {{ passwordBusy ? 'Sender…' : 'Send lenke for å nullstille' }}
               </button>
             </template>
             <p v-else class="page-subtitle" style="margin-top:0;">
-              If that email has an account with a password, we've sent a reset link to it.
+              Hvis den e-postadressen har en konto med passord, har vi sendt en lenke for å nullstille det.
             </p>
             <p style="text-align:center; margin-top:10px; font-size:0.9rem;">
-              <a href="#" @click.prevent="passwordStage = 'signin'">← Back to sign in</a>
+              <a href="#" @click.prevent="passwordStage = 'signin'">← Tilbake til innlogging</a>
             </p>
           </template>
         </template>
 
-        <div class="landing-login-divider"><span>or</span></div>
+        <div class="landing-login-divider"><span>eller</span></div>
         <router-link to="/join" class="btn btn-secondary landing-login-option">
-          Join as a guest
+          Bli med som gjest
         </router-link>
-        <p class="landing-login-guest-hint">Got a room code from someone hosting a game? No account needed.</p>
+        <p class="landing-login-guest-hint">Har du fått en romkode fra noen som er vert for et spill? Du trenger ingen konto.</p>
       </template>
     </section>
 
     <section class="landing-hero">
       <span class="landing-eyebrow">
         <span class="landing-eyebrow-dot"></span>
-        A new daily quiz, every day
+        En ny daglig quiz, hver dag
       </span>
-      <h1>Quiz night, <span class="landing-hero-accent">every night.</span></h1>
+      <h1>Quizkveld, <span class="landing-hero-accent">hver kveld.</span></h1>
       <p class="page-subtitle landing-lede">
-        Take the daily quiz, build your own from a shared question bank, or pass the phone around
-        for a party game - on one screen or each on your own.
+        Ta den daglige quizen, lag din egen fra en felles spørsmålsbank, eller send telefonen rundt for et selskapsspill - på én skjerm eller hver på sin egen.
       </p>
     </section>
 
@@ -172,37 +171,37 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4M8 15h3" /></svg>
         </span>
         <div>
-          <h3>Daily quiz</h3>
-          <p>15 pub-quiz questions, fresh every day. Type your answers, see how you scored, and compete for the weekly win.</p>
+          <h3>Dagens quiz</h3>
+          <p>15 pubquiz-spørsmål, nye hver dag. Skriv svarene dine, se hvordan det gikk, og kjemp om ukens seier.</p>
         </div>
       </article>
       <article class="feature-card feature-card--violet">
         <span class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7" /><path d="M17 15l2 2 3-4" /></svg>
         </span>
-        <h3>Create a quiz</h3>
-        <p>Mix categories, set a difficulty, then reorder or swap out anything before you print it.</p>
+        <h3>Lag en quiz</h3>
+        <p>Bland kategorier, velg vanskelighetsgrad, og endre rekkefølge eller bytt ut spørsmål før du skriver ut.</p>
       </article>
       <article class="feature-card feature-card--teal">
         <span class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
         </span>
-        <h3>Weekly grid</h3>
-        <p>Guess every answer that fits the week's theme before you run out of strikes.</p>
+        <h3>Ukens grid</h3>
+        <p>Gjett alle svarene som passer ukens tema før du går tom for forsøk.</p>
       </article>
       <article class="feature-card feature-card--coral">
         <span class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><circle cx="17.5" cy="9.5" r="2.5" /><path d="M16.5 14.2c2.7.2 4.5 2.3 4.5 5" /></svg>
         </span>
-        <h3>Party games</h3>
-        <p>Tension, Imposter, Bullseye and more - pass the device around, or play together online with a room code.</p>
+        <h3>Selskapsspill</h3>
+        <p>Tension, Imposter, Bullseye og mer - send enheten rundt, eller spill sammen på nett med en romkode.</p>
       </article>
       <article class="feature-card feature-card--gold">
         <span class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
         </span>
-        <h3>Suggest a question</h3>
-        <p>Add to the shared bank yourself - admin-reviewed, and usable in your own quizzes either way.</p>
+        <h3>Foreslå et spørsmål</h3>
+        <p>Legg til i den felles banken selv - gjennomgås av en administrator, og kan uansett brukes i dine egne quizer.</p>
       </article>
     </section>
     </div>
@@ -280,7 +279,7 @@ async function loadGoogleButton() {
     })
     googleLoaded.value = true
   } catch (e) {
-    error.value = 'Could not load Google Sign-In - check your connection and try refreshing.'
+    error.value = 'Kunne ikke laste Google-innlogging - sjekk tilkoblingen og prøv å laste siden på nytt.'
   } finally {
     loadingScript.value = false
   }
@@ -292,7 +291,7 @@ onMounted(async () => {
     return
   }
   if (route.query.sessionExpired) {
-    error.value = 'Your session expired - please sign in again.'
+    error.value = 'Økten din utløp - logg inn igjen.'
   }
   if (!clientIdConfigured) {
     return
@@ -323,7 +322,7 @@ async function handleCredentialResponse(response) {
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
     router.push(safeRedirectTarget(route, '/dashboard'))
   } catch (e) {
-    error.value = e.response?.data?.message || 'Sign-in failed. Please try again.'
+    error.value = e.response?.data?.message || 'Innloggingen mislyktes. Prøv igjen.'
     loggingIn.value = false
   } finally {
     clearTimeout(slowTimer)
@@ -369,9 +368,9 @@ async function submitPasswordLogin() {
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
     router.push(safeRedirectTarget(route, '/dashboard'))
   } catch (e) {
-    const message = e.response?.data?.message || 'Sign-in failed. Please try again.'
+    const message = e.response?.data?.message || 'Innloggingen mislyktes. Prøv igjen.'
     error.value = message
-    needsVerification.value = message.toLowerCase().includes('verify your email')
+    needsVerification.value = message.toLowerCase().includes('bekreft e-postadressen')
   } finally {
     passwordBusy.value = false
   }
@@ -384,7 +383,7 @@ async function submitResendVerification() {
     await api.resendVerification(loginEmail.value.trim())
     resendSent.value = true
   } catch (e) {
-    error.value = e.response?.data?.message || 'Something went wrong - please try again.'
+    error.value = e.response?.data?.message || 'Noe gikk galt - prøv igjen.'
   } finally {
     passwordBusy.value = false
   }
@@ -397,7 +396,7 @@ async function submitRegister() {
     await api.register(registerEmail.value.trim(), registerPassword.value, registerName.value.trim())
     registerSent.value = true
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not create your account. Please try again.'
+    error.value = e.response?.data?.message || 'Kunne ikke opprette kontoen din. Prøv igjen.'
   } finally {
     passwordBusy.value = false
   }
@@ -413,7 +412,7 @@ async function submitForgotPassword() {
     // The backend always responds the same way regardless of whether the email
     // exists (see AuthService#requestPasswordReset) - a genuine error here
     // means something else went wrong (network, validation), worth surfacing.
-    error.value = e.response?.data?.message || 'Something went wrong - please try again.'
+    error.value = e.response?.data?.message || 'Noe gikk galt - prøv igjen.'
   } finally {
     passwordBusy.value = false
   }

@@ -51,10 +51,10 @@ public class BdayQuizService {
     public BdayGuestDto addGuest(String rawName) {
         String name = rawName == null ? "" : rawName.trim();
         if (name.isEmpty()) {
-            throw new IllegalArgumentException("Enter a name.");
+            throw new IllegalArgumentException("Skriv inn et navn.");
         }
         if (guestRepository.existsByNameIgnoreCase(name)) {
-            throw new IllegalArgumentException("\"" + name + "\" is already on the guest list.");
+            throw new IllegalArgumentException("\"" + name + "\" står allerede på gjestelisten.");
         }
         BdayGuest guest = new BdayGuest();
         guest.setName(name);
@@ -64,9 +64,9 @@ public class BdayQuizService {
     @Transactional
     public void deleteGuest(Long id) {
         BdayGuest guest = guestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No guest found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke gjest med id " + id));
         if (guest.getStatus() != BdayGuest.Status.PENDING) {
-            throw new IllegalStateException("This guest has already finished the quiz.");
+            throw new IllegalStateException("Denne gjesten har allerede fullført quizen.");
         }
         guestRepository.delete(guest);
     }
@@ -75,13 +75,13 @@ public class BdayQuizService {
     @Transactional
     public BdayGuestDto setScore(Long id, int score) {
         BdayGuest guest = guestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No guest found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke gjest med id " + id));
         if (guest.getStatus() != BdayGuest.Status.DONE) {
-            throw new IllegalStateException("Only a guest who has finished can have their score changed.");
+            throw new IllegalStateException("Bare en gjest som er ferdig kan få endret poengsummen.");
         }
         int max = BdayQuestionCatalog.maxTotalScore();
         if (score < 0 || score > max) {
-            throw new IllegalArgumentException("The score must be between 0 and " + max + ".");
+            throw new IllegalArgumentException("Poengsummen må være mellom 0 og " + max + ".");
         }
         guest.setScore(score);
         return toDto(guestRepository.save(guest));
@@ -94,7 +94,7 @@ public class BdayQuizService {
     @Transactional
     public BdayGuestDto resetGuest(Long id) {
         BdayGuest guest = guestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No guest found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke gjest med id " + id));
         if (guest.getStatus() == BdayGuest.Status.DONE) {
             answerRepository.deleteByGuest_Id(guest.getId());
             guest.setStatus(BdayGuest.Status.PENDING);
@@ -197,9 +197,9 @@ public class BdayQuizService {
 
     private BdayGuest requirePendingGuest(Long guestId) {
         BdayGuest guest = guestRepository.findById(guestId)
-                .orElseThrow(() -> new ResourceNotFoundException("No guest found with id " + guestId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke gjest med id " + guestId));
         if (guest.getStatus() != BdayGuest.Status.PENDING) {
-            throw new IllegalStateException("This guest has already finished the quiz.");
+            throw new IllegalStateException("Denne gjesten har allerede fullført quizen.");
         }
         return guest;
     }

@@ -1,15 +1,15 @@
 <template>
   <div class="dashboard">
-    <p class="dashboard-welcome">Welcome back, <strong>{{ auth.state.displayName }}</strong></p>
+    <p class="dashboard-welcome">Velkommen tilbake, <strong>{{ auth.state.displayName }}</strong></p>
 
     <div class="dashboard-hero-row">
       <section class="dashboard-hero">
-        <h1>Create a quiz</h1>
+        <h1>Lag en quiz</h1>
         <p class="page-subtitle landing-lede">
-          Build a custom quiz for friends, colleagues, or your local pub night.
+          Lag en egen quiz for venner, kolleger eller quizkvelden på lokalpuben.
         </p>
         <div class="dashboard-hero-actions">
-          <router-link to="/generate" class="btn btn-primary btn-lg">Create a quiz →</router-link>
+          <router-link to="/generate" class="btn btn-primary btn-lg">Lag en quiz →</router-link>
         </div>
       </section>
 
@@ -18,9 +18,9 @@
            the entry point into the games/rooms side of the app. Still gets
            top billing of its own instead, right beside the other hero. -->
       <section class="dashboard-join-card">
-        <h2>Join a game</h2>
-        <p class="page-subtitle">Got a room code from someone hosting? Jump straight in.</p>
-        <router-link to="/join" class="btn btn-secondary btn-lg">Join with a code →</router-link>
+        <h2>Bli med i et spill</h2>
+        <p class="page-subtitle">Har du fått en romkode fra en vert? Hopp rett inn.</p>
+        <router-link to="/join" class="btn btn-secondary btn-lg">Bli med med kode →</router-link>
       </section>
     </div>
 
@@ -42,7 +42,7 @@
           >
             <h3>{{ card.title }}</h3>
             <p>{{ card.description }}</p>
-            <span class="dashboard-feature-play">Play →</span>
+            <span class="dashboard-feature-play">Spill →</span>
           </router-link>
         </div>
       </div>
@@ -54,22 +54,22 @@
          obvious/findable version of the same link. -->
     <router-link to="/report-problem" class="dashboard-report-callout">
       <div>
-        <h3>Found a bug or something confusing?</h3>
-        <p>Let us know and we'll take a look.</p>
+        <h3>Funnet en feil eller noe forvirrende?</h3>
+        <p>Si fra, så tar vi en titt.</p>
       </div>
-      <span class="btn btn-secondary">Report a problem →</span>
+      <span class="btn btn-secondary">Meld fra om et problem →</span>
     </router-link>
 
     <!-- "Your quiz has been reviewed": an admin has finished checking answers the player had waiting, so
          their score is final. Shown until they've dismissed it or opened the quiz (that's tracked on
          the server, so it follows them across devices) - and instead of the nudge below, never both. -->
     <div v-if="reviewNotifications.length" class="modal-backdrop" @click.self="dismissReviewNotifications">
-      <div class="modal dq-modal" style="max-width:400px; text-align:center;" role="dialog" aria-modal="true" aria-label="Your daily quiz has been reviewed">
+      <div class="modal dq-modal" style="max-width:400px; text-align:center;" role="dialog" aria-modal="true" aria-label="Dagens quiz er gjennomgått">
         <div class="dq-empty-icon" style="margin:0 auto 14px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
         </div>
-        <h2 class="dq-modal-title" style="margin-bottom:6px;">Your {{ reviewNotifications.length === 1 ? 'quiz has' : 'quizzes have' }} been reviewed</h2>
-        <p class="dq-modal-sub">An admin has finished checking your answers - your score is final.</p>
+        <h2 class="dq-modal-title" style="margin-bottom:6px;"> {{ reviewNotifications.length === 1 ? 'Quizen din er' : 'Quizene dine er' }} gjennomgått</h2>
+        <p class="dq-modal-sub">En administrator er ferdig med å sjekke svarene dine - poengsummen din er endelig.</p>
         <div class="dq-list" style="margin:16px 0 20px;">
           <router-link
             v-for="n in reviewNotifications"
@@ -80,7 +80,7 @@
           >
             <div class="dq-row-main" style="text-align:left;">
               <div class="dq-row-title">{{ formatQuizDate(n.quizDate) }}</div>
-              <div class="dq-row-meta">See your answers</div>
+              <div class="dq-row-meta">Se svarene dine</div>
             </div>
             <div class="dq-row-end">
               <span class="dq-pill dq-pill--ok">{{ n.score }} / {{ n.maxScore }}</span>
@@ -88,7 +88,7 @@
             </div>
           </router-link>
         </div>
-        <button class="btn btn-secondary" style="width:100%;" @click="dismissReviewNotifications">Close</button>
+        <button class="btn btn-secondary" style="width:100%;" @click="dismissReviewNotifications">Lukk</button>
       </div>
     </div>
 
@@ -98,15 +98,15 @@
          show this at all (see the onMounted guard below). -->
     <div v-if="showDailyQuizNudge" class="modal-backdrop" @click.self="dismissDailyQuizNudge">
       <div class="modal" style="max-width:380px; text-align:center;">
-        <h2 style="margin-top:0;">Today's Daily Quiz is waiting</h2>
+        <h2 style="margin-top:0;">Dagens quiz venter på deg</h2>
         <p class="page-subtitle">
-          {{ dailyQuizNudge.questionCount }} questions, pub-quiz style -
-          {{ dailyQuizNudge.status === 'IN_PROGRESS' ? "pick up where you left off." : "takes just a few minutes." }}
+          {{ dailyQuizNudge.questionCount }} spørsmål i pubquiz-stil -
+          {{ dailyQuizNudge.status === 'IN_PROGRESS' ? "fortsett der du slapp." : "tar bare noen minutter." }}
         </p>
         <div style="display:flex; gap:8px; margin-top:16px;">
-          <button class="btn btn-secondary" style="flex:1;" @click="dismissDailyQuizNudge">Maybe later</button>
+          <button class="btn btn-secondary" style="flex:1;" @click="dismissDailyQuizNudge">Kanskje senere</button>
           <router-link :to="`/daily-quiz/${dailyQuizNudge.id}`" class="btn btn-primary" style="flex:1;" @click="dismissDailyQuizNudge">
-            {{ dailyQuizNudge.status === 'IN_PROGRESS' ? 'Continue' : 'Play now' }}
+            {{ dailyQuizNudge.status === 'IN_PROGRESS' ? 'Fortsett' : 'Spill nå' }}
           </router-link>
         </div>
       </div>
@@ -130,33 +130,33 @@ const QUIZ_MANAGEMENT_ACCENT = 'var(--gold)'
 
 const dashboardSectionDefs = [
   {
-    title: 'Daily & weekly quizzes',
+    title: 'Daglige og ukentlige quizer',
     cards: [
-      { to: '/daily-quiz', title: 'Daily quiz', description: '15 random questions, pub-quiz style - free text, a fresh set every day.', accent: WEEKLY_QUIZ_ACCENT },
-      { to: '/weekly-grid', title: 'Weekly grid', description: "Guess every answer that fits this week's theme before you run out of strikes.", accent: WEEKLY_QUIZ_ACCENT },
-      { to: '/starting-xi', title: 'Starting XI', description: "Guess a full lineup, position by position, before the week's board runs out of lives.", accent: WEEKLY_QUIZ_ACCENT }
+      { to: '/daily-quiz', title: 'Dagens quiz', description: '15 tilfeldige spørsmål i pubquiz-stil - fritekst, et nytt sett hver dag.', accent: WEEKLY_QUIZ_ACCENT },
+      { to: '/weekly-grid', title: 'Ukens grid', description: "Gjett alle svarene som passer ukens tema før du går tom for liv.", accent: WEEKLY_QUIZ_ACCENT },
+      { to: '/starting-xi', title: 'Starting XI', description: "Gjett en hel startellever, posisjon for posisjon, før ukens brett går tom for liv.", accent: WEEKLY_QUIZ_ACCENT }
     ]
   },
   {
-    title: 'Games',
+    title: 'Spill',
     cards: [
-      { to: '/grid-battle', title: 'Grid Battle', description: 'A pass-the-device multiplayer version of Weekly Grid - take turns, or lose a life trying.', accent: GAME_ACCENT },
-      { to: '/starting-xi-battle', title: 'XI Battle', description: 'Same idea as Grid Battle, for a Starting XI board - take turns naming the lineup.', accent: GAME_ACCENT },
-      { to: '/tension', title: 'Tension', description: 'A pass-the-device party quiz - push for a high-value guess, or play it safe.', accent: GAME_ACCENT },
-      { to: '/501', title: '501', description: 'A darts-style countdown from 501 - 1v1, checkout between 0 and -10 to win.', accent: GAME_ACCENT },
-      { to: '/imposter', title: 'Imposter', description: "One player doesn't get the answer - find out who by asking around the table.", accent: GAME_ACCENT },
-      { to: '/bullseye', title: 'Bullseye', description: 'Everyone answers, lowest score is eliminated each round, until one player is left.', accent: GAME_ACCENT },
+      { to: '/grid-battle', title: 'Grid Battle', description: 'En flerspillerversjon av Ukens grid der enheten sendes rundt - bytt på, eller mist et liv i forsøket.', accent: GAME_ACCENT },
+      { to: '/starting-xi-battle', title: 'XI Battle', description: 'Samme idé som Grid Battle, men for et Starting XI-brett - bytt på å nevne laget.', accent: GAME_ACCENT },
+      { to: '/tension', title: 'Tension', description: 'En selskapsquiz der enheten sendes rundt - gå for en gjetning med høy verdi, eller spill det trygt.', accent: GAME_ACCENT },
+      { to: '/501', title: '501', description: 'En dartlignende nedtelling fra 501 - én mot én, sjekk ut mellom 0 og -10 for å vinne.', accent: GAME_ACCENT },
+      { to: '/imposter', title: 'Imposter', description: "Én spiller får ikke svaret - finn ut hvem ved å spørre rundt bordet.", accent: GAME_ACCENT },
+      { to: '/bullseye', title: 'Bullseye', description: 'Alle svarer, den med lavest poengsum slås ut hver runde, til én spiller er igjen.', accent: GAME_ACCENT },
       // No standalone card for Penalty Shootout - it's reached from the XI
       // Battle card above instead, not as its own destination.
-      { to: '/flashback', title: 'Flashback', description: "Guess the exact year from a clue - it gets easier each round, but the points don't wait.", accent: GAME_ACCENT }
+      { to: '/flashback', title: 'Flashback', description: "Gjett det nøyaktige året ut fra et hint - det blir lettere hver runde, men poengene venter ikke.", accent: GAME_ACCENT }
     ]
   },
   {
-    title: 'Manage your quizzes',
+    title: 'Administrer quizene dine',
     cards: [
-      { to: '/my-quizzes?tab=templates', title: 'Quiz templates', description: 'Pre-made quizzes published by an admin - download a PDF right away, or copy one to edit.', accent: QUIZ_MANAGEMENT_ACCENT },
-      { to: '/my-quizzes', title: 'My quizzes', description: "Revisit, edit or re-download anything you've saved.", accent: QUIZ_MANAGEMENT_ACCENT },
-      { to: '/suggest-question', title: 'Suggest a question', description: 'Add to the shared question bank - admin-reviewed, and usable in your own quizzes either way.', accent: QUIZ_MANAGEMENT_ACCENT }
+      { to: '/my-quizzes?tab=templates', title: 'Quizmaler', description: 'Ferdiglagde quizer publisert av en administrator - last ned en PDF med en gang, eller kopier en for å redigere.', accent: QUIZ_MANAGEMENT_ACCENT },
+      { to: '/my-quizzes', title: 'Mine quizer', description: "Se på, rediger eller last ned på nytt alt du har lagret.", accent: QUIZ_MANAGEMENT_ACCENT },
+      { to: '/suggest-question', title: 'Foreslå et spørsmål', description: 'Legg til i den felles spørsmålsbanken - gjennomgås av en administrator, og kan uansett brukes i dine egne quizer.', accent: QUIZ_MANAGEMENT_ACCENT }
     ]
   }
 ]
@@ -189,7 +189,7 @@ const DAILY_QUIZ_NUDGE_KEY = 'daily_quiz_nudge_dismissed_date'
 const reviewNotifications = ref([])
 
 function formatQuizDate(iso) {
-  return new Date(iso).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
+  return new Date(iso).toLocaleDateString('nb-NO', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
 async function dismissReviewNotifications() {

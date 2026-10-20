@@ -6,7 +6,7 @@
       <div v-if="lastUpdatedLabel" style="color:var(--text-dim); font-size:0.75rem; text-align:center; width:100%;">{{ lastUpdatedLabel }}</div>
     </div>
 
-    <LoadingState v-if="loading" full message="Loading the grid…" />
+    <LoadingState v-if="loading" full message="Laster gridet…" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
@@ -15,7 +15,7 @@
           <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
             Grid {{ state.currentGridIndex + 1 }} / {{ state.totalGrids }}
           </div>
-          <h2 style="margin:0 0 24px;">Choose a grid</h2>
+          <h2 style="margin:0 0 24px;">Velg et grid</h2>
           <div class="tension-choice-grid">
             <button
               v-for="g in state.gridChoices"
@@ -25,15 +25,15 @@
               @click="chooseGrid(g)"
             >
               <strong>{{ g.title }}</strong>
-              <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ sportLabel(g.sport) }} · {{ g.entryCount }} to find</div>
+              <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ sportLabel(g.sport) }} · {{ g.entryCount }} å finne</div>
             </button>
           </div>
           <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="choosing || rerolling" @click="rerollChoices">
-            {{ rerolling ? 'Finding more…' : '↻ Show 3 different grids' }}
+            {{ rerolling ? 'Finner flere…' : '↻ Vis 3 andre grids' }}
           </button>
         </template>
         <div v-else class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
-          Waiting for <strong style="color:var(--gold);">{{ pickerName }}</strong> to choose a grid…
+          Venter på <strong style="color:var(--gold);">{{ pickerName }}</strong> å velge et grid…
         </div>
       </div>
 
@@ -47,21 +47,21 @@
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Frakoblet</span>
           <LivesHearts :max="state.maxStrikes" :used="p.livesUsed" style="margin-top:4px;" />
-          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ p.totalScore }}</div>
+          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Totalt: {{ p.totalScore }}</div>
         </div>
       </div>
 
       <div v-if="!state.gridComplete && isYourTurn" class="guess-box-wrap no-print">
-        <p class="guess-box-turn-label">Your turn</p>
+        <p class="guess-box-turn-label">Din tur</p>
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <div class="guess-box-row">
             <input
               type="text"
               v-model="searchTerm"
-              placeholder="Search for an answer…"
-              aria-label="Search for an answer"
+              placeholder="Søk etter et svar…"
+              aria-label="Søk etter et svar"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -73,7 +73,7 @@
               class="btn btn-danger-solid btn-sm no-print guess-box-skip-btn"
               :disabled="guessing"
               @click="showSkipConfirm = true"
-            >Pass turn</button>
+            >Gi videre</button>
           </div>
           <div v-if="searchResults.length" class="guess-results">
             <button
@@ -91,21 +91,21 @@
 
       <ConfirmModal
         v-if="showSkipConfirm"
-        title="Pass your turn?"
-        message="You'll lose a life, same as a wrong guess."
-        confirm-text="Pass turn"
-        cancel-text="Keep guessing"
+        title="Gi turen videre?"
+        message="Du mister et liv, akkurat som ved en feil gjetning."
+        confirm-text="Gi videre"
+        cancel-text="Fortsett å gjette"
         @confirm="confirmSkipTurn"
         @cancel="showSkipConfirm = false"
       />
 
       <div v-if="!state.gridComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
-        Waiting for {{ currentTurnName }}'s turn…
+        Venter på {{ currentTurnName }}sin tur…
       </div>
 
       <div v-if="state.gridComplete" class="modal-backdrop">
         <div class="completion-popup">
-          <h2 style="margin-top:0;">Grid complete!</h2>
+          <h2 style="margin-top:0;">Gridet er ferdig!</h2>
           <div class="score-square-grid">
             <div v-for="(p, i) in leaderboardForGrid" :key="p.name" class="score-square" :class="{ leader: i === 0 }">
               <div class="score-square-name">{{ p.name }}</div>
@@ -116,7 +116,7 @@
 
           <template v-if="recapTiles.length && recapSolvedCount < recapTiles.length">
             <div class="grid-recap-label">
-              {{ recapSolvedCount }} / {{ recapTiles.length }} found — <span style="color:var(--coral);">red</span> tiles went unguessed
+              {{ recapSolvedCount }} / {{ recapTiles.length }} funnet — <span style="color:var(--coral);">røde</span> ruter ble ikke gjettet
             </div>
             <div class="grid-tiles-recap">
               <div
@@ -148,9 +148,9 @@
           </template>
 
           <button v-if="isHost" class="btn btn-primary" style="margin-top:12px; width:100%;" :disabled="advancing" @click="nextGrid">
-            {{ advancing ? 'Loading…' : (state.currentGridIndex + 1 < state.totalGrids ? 'Next grid' : 'Finish game') }}
+            {{ advancing ? 'Laster…' : (state.currentGridIndex + 1 < state.totalGrids ? 'Neste grid' : 'Fullfør spillet') }}
           </button>
-          <div v-else style="margin-top:8px; color:var(--text-dim);">Waiting for the host to continue…</div>
+          <div v-else style="margin-top:8px; color:var(--text-dim);">Venter på at verten skal fortsette…</div>
         </div>
       </div>
 
@@ -185,12 +185,12 @@
     </template>
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm no-print" @click="leave">← Leave game</button>
-      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">Room: {{ roomCode }}</span>
+      <button class="btn btn-secondary btn-sm no-print" @click="leave">← Forlat spillet</button>
+      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">Rom: {{ roomCode }}</span>
     </div>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
-      <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct' : 'Wrong' }}</div>
+      <div class="grid-result-text">{{ resultOverlay.correct ? 'Riktig' : 'Feil' }}</div>
     </div>
   </div>
 </template>
@@ -296,7 +296,7 @@ async function poll() {
     const fresh = await api.getGridBattleState(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = 'Lost connection to the room - retrying…'
+    error.value = 'Mistet forbindelsen til rommet - prøver igjen…'
   } finally {
     loading.value = false
   }
@@ -363,7 +363,7 @@ async function submitGuess(athlete) {
     }
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not submit that guess.'
+    error.value = e.response?.data?.message || 'Kunne ikke sende inn gjetningen.'
   } finally {
     guessing.value = false
   }
@@ -380,7 +380,7 @@ async function rerollChoices() {
     const fresh = await api.rerollGridBattleChoices(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Could not load other grids - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Kunne ikke laste andre grids - prøv igjen.', 'error')
   } finally {
     rerolling.value = false
   }
@@ -393,7 +393,7 @@ async function chooseGrid(g) {
     const fresh = await api.chooseGridBattleGrid(props.roomCode, g.id)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not choose that grid.'
+    error.value = e.response?.data?.message || 'Kunne ikke velge dette gridet.'
   } finally {
     choosing.value = false
   }
@@ -414,7 +414,7 @@ async function skipTurn() {
     const fresh = await api.skipGridBattleTurn(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not skip your turn.'
+    error.value = e.response?.data?.message || 'Kunne ikke hoppe over turen din.'
   } finally {
     guessing.value = false
   }
@@ -427,7 +427,7 @@ async function nextGrid() {
     const fresh = await api.advanceGridBattleGrid(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not advance to the next grid.'
+    error.value = e.response?.data?.message || 'Kunne ikke gå videre til neste grid.'
   } finally {
     advancing.value = false
   }

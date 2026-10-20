@@ -88,11 +88,11 @@ public class BullseyeOnlineService {
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can start the game.");
+            throw new IllegalStateException("Bare verten kan starte spillet.");
         }
         int playerCount = room.getParticipants().size();
         if (playerCount < 2) {
-            throw new IllegalStateException("Need at least 2 players to start.");
+            throw new IllegalStateException("Det trengs minst 2 spillere for å starte.");
         }
 
         // Exactly one elimination per round, so a game with N players always
@@ -101,7 +101,7 @@ public class BullseyeOnlineService {
         List<Long> eligible = new ArrayList<>(bullseyeQuestionRepository.findBattleEligibleIds());
         if (eligible.size() < roundCount) {
             throw new IllegalStateException(
-                    "Not enough Bullseye questions available for " + playerCount + " players yet - ask an admin to add more.");
+                    "Ikke nok Bullseye-spørsmål tilgjengelige for " + playerCount + " spillere ennå - be en administrator legge til flere.");
         }
         Collections.shuffle(eligible);
         List<Long> questionIds = eligible.stream().limit(roundCount).collect(Collectors.toList());
@@ -136,7 +136,7 @@ public class BullseyeOnlineService {
         }
 
         BullseyeRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         List<BullseyeParticipantState> participantStates = participantStateRepository.findByRoomState_Id(state.getId());
 
         dto.setTotalQuestions(state.getQuestionIds().size());
@@ -241,21 +241,21 @@ public class BullseyeOnlineService {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         BullseyeOnlineStateDto currentView = getState(room, requestingEmail);
 
-        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
-        if (currentView.isRoundRevealed()) throw new IllegalStateException("This round is already finished.");
+        if (currentView.isFinished()) throw new IllegalStateException("Dette spillet er allerede ferdig.");
+        if (currentView.isRoundRevealed()) throw new IllegalStateException("Denne runden er allerede ferdig.");
         if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
-            throw new IllegalStateException("It's not your turn.");
+            throw new IllegalStateException("Det er ikke din tur.");
         }
 
         String trimmed = guessedName.trim();
         boolean duplicate = currentView.getAnswersSoFar().stream()
                 .anyMatch(a -> a.getGuessedName().equalsIgnoreCase(trimmed));
         if (duplicate) {
-            throw new IllegalStateException("Someone's already guessed that name this round.");
+            throw new IllegalStateException("Noen har allerede gjettet det navnet denne runden.");
         }
 
         BullseyeRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         BullseyeRoundAnswer answer = new BullseyeRoundAnswer();
         answer.setRoomState(state);
@@ -277,15 +277,15 @@ public class BullseyeOnlineService {
     @Transactional
     public BullseyeOnlineStateDto nextRound(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can move on to the next round.");
+            throw new IllegalStateException("Bare verten kan gå videre til neste runde.");
         }
         BullseyeOnlineStateDto current = getState(room, requestingEmail);
         if (!current.isRoundRevealed()) {
-            throw new IllegalStateException("Not everyone has answered yet.");
+            throw new IllegalStateException("Ikke alle har svart ennå.");
         }
 
         BullseyeRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         roundAnswerRepository.deleteByRoomState_Id(state.getId());
         state.setRoundResolved(false);
@@ -342,21 +342,21 @@ public class BullseyeOnlineService {
     @Transactional
     public BullseyeOnlineStateDto rerollQuestion(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can swap the question.");
+            throw new IllegalStateException("Bare verten kan bytte spørsmålet.");
         }
         BullseyeRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         if (room.getStatus() != RoomStatus.IN_PROGRESS || state.isFinished()) {
-            throw new IllegalStateException("There's no round in progress to swap.");
+            throw new IllegalStateException("Det er ingen runde i gang å bytte.");
         }
         if (state.isRoundResolved() || !roundAnswerRepository.findByRoomState_IdOrderByIdAsc(state.getId()).isEmpty()) {
-            throw new IllegalStateException("It's too late to swap - someone has already answered this round.");
+            throw new IllegalStateException("Det er for sent å bytte - noen har allerede svart denne runden.");
         }
 
         List<Long> candidates = new ArrayList<>(bullseyeQuestionRepository.findBattleEligibleIds());
         candidates.removeAll(state.getQuestionIds());
         if (candidates.isEmpty()) {
-            throw new IllegalStateException("No other questions left to swap to.");
+            throw new IllegalStateException("Ingen andre spørsmål igjen å bytte til.");
         }
         Collections.shuffle(candidates);
         state.getQuestionIds().set(state.getCurrentQuestionIndex(), candidates.get(0));

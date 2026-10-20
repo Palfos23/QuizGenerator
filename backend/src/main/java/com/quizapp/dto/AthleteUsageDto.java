@@ -5,7 +5,7 @@ package com.quizapp.dto;
 // so "this subject is used elsewhere" names the actual quiz instead of just
 // failing. Replaces the old Grid-only AthleteGridUsageDto.
 public class AthleteUsageDto {
-    private String gameType; // "Grid", "Starting XI", "Bullseye", "501", "Imposter", "Penalty Shootout"
+    private String gameType; // "Grid", "Starting XI", "Bullseye", "501", "Imposter", "Straffekonkurranse"
     private Long id;
     private String title;
     private boolean isCorrectAnswer;

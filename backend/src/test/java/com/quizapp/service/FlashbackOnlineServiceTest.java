@@ -115,7 +115,7 @@ class FlashbackOnlineServiceTest {
 
         assertThatThrownBy(() -> flashbackOnlineService.submitGuess(room, GUEST, 2001))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("already answered");
+                .hasMessageContaining("allerede svart");
     }
 
     private Long currentYearId(GameRoom room) {
@@ -165,7 +165,7 @@ class FlashbackOnlineServiceTest {
 
         assertThatThrownBy(() -> flashbackOnlineService.rerollYear(room, GUEST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Only the host");
+                .hasMessageContaining("Bare verten");
     }
 
     @Test
@@ -176,6 +176,6 @@ class FlashbackOnlineServiceTest {
 
         assertThatThrownBy(() -> flashbackOnlineService.rerollYear(room, HOST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("too late");
+                .hasMessageContaining("for sent");
     }
 }

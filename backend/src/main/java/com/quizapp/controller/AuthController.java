@@ -123,7 +123,7 @@ public class AuthController {
         // isn't one GlobalExceptionHandler maps to anything friendlier), not the 400
         // this check is meant to produce.
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Missing bearer token.");
+            throw new IllegalArgumentException("Mangler bearer-token.");
         }
         String oldToken = authorizationHeader.substring(7);
         JwtService.RefreshResult result = jwtService.refresh(oldToken);

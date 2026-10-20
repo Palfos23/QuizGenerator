@@ -56,7 +56,7 @@ public class GridBattleOnlineService {
         state.setRoom(room);
         if (gridIds != null && !gridIds.isEmpty()) {
             if (gridIds.size() < 2 || gridIds.size() > 4) {
-                throw new IllegalArgumentException("Choose 2-4 grids to play.");
+                throw new IllegalArgumentException("Velg 2-4 grids å spille.");
             }
             state.setGridIds(gridIds);
         } else {
@@ -104,13 +104,13 @@ public class GridBattleOnlineService {
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can start the game.");
+            throw new IllegalStateException("Bare verten kan starte spillet.");
         }
         if (room.getParticipants().size() < 2) {
-            throw new IllegalStateException("Need at least 2 players to start.");
+            throw new IllegalStateException("Det trengs minst 2 spillere for å starte.");
         }
         GridBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new IllegalStateException("This room isn't set up yet."));
+                .orElseThrow(() -> new IllegalStateException("Dette rommet er ikke satt opp ennå."));
 
         for (GameRoomParticipant p : room.getParticipants()) {
             GridBattleParticipantState ps = new GridBattleParticipantState();
@@ -137,7 +137,7 @@ public class GridBattleOnlineService {
         }
 
         GridBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         List<GridBattleParticipantState> participantStates = participantStateRepository.findByRoomState_Id(state.getId());
 
         dto.setTotalGrids(state.getRandomTotalCount() != null ? state.getRandomTotalCount() : state.getGridIds().size());
@@ -165,7 +165,7 @@ public class GridBattleOnlineService {
 
         Long currentGridId = state.getGridIds().get(state.getCurrentGridIndex());
         Grid grid = gridRepository.findById(currentGridId)
-                .orElseThrow(() -> new ResourceNotFoundException("Grid no longer exists"));
+                .orElseThrow(() -> new ResourceNotFoundException("Gridet finnes ikke lenger"));
         dto.setCurrentGridId(currentGridId);
         dto.setGridTitle(grid.getTitle());
         dto.setGridTheme(grid.getTheme());
@@ -232,17 +232,17 @@ public class GridBattleOnlineService {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         GridBattleStateDto currentView = getState(room, requestingEmail);
 
-        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
-        if (currentView.isGridComplete()) throw new IllegalStateException("This grid is already finished.");
+        if (currentView.isFinished()) throw new IllegalStateException("Dette spillet er allerede ferdig.");
+        if (currentView.isGridComplete()) throw new IllegalStateException("Dette gridet er allerede ferdig.");
         if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
-            throw new IllegalStateException("It's not your turn.");
+            throw new IllegalStateException("Det er ikke din tur.");
         }
 
         GridBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         Long currentGridId = state.getGridIds().get(state.getCurrentGridIndex());
         Grid grid = gridRepository.findById(currentGridId)
-                .orElseThrow(() -> new ResourceNotFoundException("Grid no longer exists"));
+                .orElseThrow(() -> new ResourceNotFoundException("Gridet finnes ikke lenger"));
 
         Set<Long> solvedEntryIds = solvedEntryRepository.findByRoomState_Id(state.getId()).stream()
                 .map(GridBattleSolvedEntry::getGridEntryId).collect(Collectors.toSet());
@@ -253,7 +253,7 @@ public class GridBattleOnlineService {
 
         GridBattleParticipantState myState = participantStateRepository
                 .findByRoomState_IdAndParticipant_Id(state.getId(), me.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No progress state for you in this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen fremgang for deg i dette rommet"));
 
         if (matched != null) {
             GridBattleSolvedEntry se = new GridBattleSolvedEntry();
@@ -280,18 +280,18 @@ public class GridBattleOnlineService {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         GridBattleStateDto currentView = getState(room, requestingEmail);
 
-        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
-        if (currentView.isGridComplete()) throw new IllegalStateException("This grid is already finished.");
+        if (currentView.isFinished()) throw new IllegalStateException("Dette spillet er allerede ferdig.");
+        if (currentView.isGridComplete()) throw new IllegalStateException("Dette gridet er allerede ferdig.");
         if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
-            throw new IllegalStateException("It's not your turn.");
+            throw new IllegalStateException("Det er ikke din tur.");
         }
 
         GridBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         GridBattleParticipantState myState = participantStateRepository
                 .findByRoomState_IdAndParticipant_Id(state.getId(), me.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No progress state for you in this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen fremgang for deg i dette rommet"));
 
         // Same cost as a wrong guess - passing isn't a free way to stall for time
         // to think without the same strike a bad guess would cost.
@@ -309,15 +309,15 @@ public class GridBattleOnlineService {
     @Transactional
     public GridBattleStateDto advanceToNextGrid(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can move on to the next grid.");
+            throw new IllegalStateException("Bare verten kan gå videre til neste grid.");
         }
         GridBattleStateDto current = getState(room, requestingEmail);
         if (!current.isGridComplete()) {
-            throw new IllegalStateException("This grid isn't finished yet.");
+            throw new IllegalStateException("Dette gridet er ikke ferdig ennå.");
         }
 
         GridBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         solvedEntryRepository.deleteByRoomState_Id(state.getId());
         for (GridBattleParticipantState ps : participantStateRepository.findByRoomState_Id(state.getId())) {
@@ -354,21 +354,21 @@ public class GridBattleOnlineService {
     public GridBattleStateDto chooseGrid(GameRoom room, String requestingEmail, Long gridId) {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         GridBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         if (state.getRandomTotalCount() == null) {
-            throw new IllegalStateException("This room isn't using random grid selection.");
+            throw new IllegalStateException("Dette rommet bruker ikke tilfeldig gridvalg.");
         }
         if (state.getGridIds().size() > state.getCurrentGridIndex()) {
-            throw new IllegalStateException("A grid has already been chosen for this round.");
+            throw new IllegalStateException("Et grid er allerede valgt for denne runden.");
         }
         List<GameRoomParticipant> ordered = room.getParticipants();
         GameRoomParticipant picker = ordered.get(state.getCurrentGridIndex() % ordered.size());
         if (!me.getId().equals(picker.getId())) {
-            throw new IllegalStateException("It's not your turn to choose.");
+            throw new IllegalStateException("Det er ikke din tur til å velge.");
         }
         if (!state.getPendingChoiceIds().contains(gridId)) {
-            throw new IllegalArgumentException("That wasn't one of the offered choices.");
+            throw new IllegalArgumentException("Det var ikke ett av de tilbudte valgene.");
         }
 
         state.getGridIds().add(gridId);
@@ -393,25 +393,25 @@ public class GridBattleOnlineService {
     public GridBattleStateDto rerollChoices(GameRoom room, String requestingEmail) {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         GridBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         if (state.getRandomTotalCount() == null) {
-            throw new IllegalStateException("This room isn't using random grid selection.");
+            throw new IllegalStateException("Dette rommet bruker ikke tilfeldig gridvalg.");
         }
         if (state.getGridIds().size() > state.getCurrentGridIndex()) {
-            throw new IllegalStateException("A grid has already been chosen for this round.");
+            throw new IllegalStateException("Et grid er allerede valgt for denne runden.");
         }
         List<GameRoomParticipant> ordered = room.getParticipants();
         GameRoomParticipant picker = ordered.get(state.getCurrentGridIndex() % ordered.size());
         if (!me.getId().equals(picker.getId())) {
-            throw new IllegalStateException("It's not your turn to choose.");
+            throw new IllegalStateException("Det er ikke din tur til å velge.");
         }
 
         List<Long> exclude = new ArrayList<>(state.getGridIds());
         exclude.addAll(state.getPendingChoiceIds());
         List<GridSummaryDto> fresh = gridPlayService.getBattleRoundChoices(3, exclude);
         if (fresh.isEmpty()) {
-            throw new IllegalStateException("No other grids left to show.");
+            throw new IllegalStateException("Ingen andre grids igjen å vise.");
         }
         state.setPendingChoiceIds(fresh.stream().map(GridSummaryDto::getId).collect(Collectors.toSet()));
         roomStateRepository.save(state);

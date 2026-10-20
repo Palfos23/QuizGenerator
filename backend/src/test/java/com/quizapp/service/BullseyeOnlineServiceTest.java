@@ -112,7 +112,7 @@ class BullseyeOnlineServiceTest {
 
         assertThatThrownBy(() -> bullseyeOnlineService.rerollQuestion(room, GUEST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Only the host");
+                .hasMessageContaining("Bare verten");
     }
 
     @Test
@@ -124,6 +124,6 @@ class BullseyeOnlineServiceTest {
 
         assertThatThrownBy(() -> bullseyeOnlineService.rerollQuestion(room, HOST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("too late");
+                .hasMessageContaining("for sent");
     }
 }

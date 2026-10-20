@@ -323,7 +323,7 @@ public class DailyQuizService {
     private DailyQuizSet requireSet(Long setId) {
         return setRepository.findById(setId)
                 .filter(set -> !isExpired(set.getQuizDate())) // expired = gone, even if the cleanup job hasn't deleted it yet
-                .orElseThrow(() -> new ResourceNotFoundException("No daily quiz found with id " + setId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke daglig quiz med id " + setId));
     }
 
     private DailyQuizPlayStateDto toPlayStateDto(DailyQuizSet set, DailyQuizAttempt attempt) {
@@ -444,7 +444,7 @@ public class DailyQuizService {
         DailyQuizSet set = requireSet(setId);
         DailyQuizAttempt attempt = findOrCreateAttempt(set, userEmail);
         if (attempt.getStatus() != DailyQuizAttemptStatus.IN_PROGRESS) {
-            throw new IllegalStateException("You've already submitted this quiz.");
+            throw new IllegalStateException("Du har allerede sendt inn denne quizen.");
         }
 
         List<Question> questions = questionRepository.findAllById(set.getQuestionIds());
@@ -488,9 +488,9 @@ public class DailyQuizService {
         if (pendingCount > 0) {
             attempt.setStatus(DailyQuizAttemptStatus.SUBMITTED);
             adminNotificationService.notifyAdmin(
-                    "Daily quiz needs review",
-                    attempt.getUser().getName() + " submitted the daily quiz - "
-                            + pendingCount + " answer" + (pendingCount == 1 ? "" : "s") + " to review.",
+                    "Dagens quiz trenger gjennomgang",
+                    attempt.getUser().getName() + " har levert dagens quiz - "
+                            + pendingCount + " svar" + "" + " til gjennomgang.",
                     "/admin/daily-quiz-review");
         } else {
             gradeAttempt(attempt);
@@ -508,7 +508,7 @@ public class DailyQuizService {
         DailyQuizSet set = requireSet(setId);
         DailyQuizAttempt attempt = findOrCreateAttempt(set, userEmail);
         if (attempt.getStatus() != DailyQuizAttemptStatus.IN_PROGRESS) {
-            throw new IllegalStateException("You've already submitted this quiz.");
+            throw new IllegalStateException("Du har allerede sendt inn denne quizen.");
         }
         Set<Long> allowed = Set.copyOf(set.getQuestionIds());
         Map<Long, String> draft = new LinkedHashMap<>();
@@ -523,7 +523,7 @@ public class DailyQuizService {
         try {
             attempt.setDraftAnswers(draft.isEmpty() ? null : DRAFT_MAPPER.writeValueAsString(draft));
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-            throw new IllegalStateException("Could not save your answers.", e);
+            throw new IllegalStateException("Kunne ikke lagre svarene dine.", e);
         }
         attemptRepository.save(attempt);
     }
@@ -553,7 +553,7 @@ public class DailyQuizService {
     @Transactional
     public void setLeaderboardPreference(Long setId, String userEmail, boolean includeOnLeaderboard) {
         DailyQuizAttempt attempt = attemptRepository.findBySet_IdAndUser_Email(setId, userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("No attempt found for this daily quiz."));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke forsøk for denne daglige quizen."));
         attempt.setIncludeOnLeaderboard(includeOnLeaderboard);
         attemptRepository.save(attempt);
         resultService.setIncludeOnLeaderboard(attempt, includeOnLeaderboard);
@@ -615,7 +615,7 @@ public class DailyQuizService {
         return attemptRepository.findBySet_IdAndUser_Email(set.getId(), userEmail)
                 .orElseGet(() -> {
                     AppUser owner = appUserRepository.findByEmail(userEmail)
-                            .orElseThrow(() -> new ResourceNotFoundException("No account found for " + userEmail));
+                            .orElseThrow(() -> new ResourceNotFoundException("Fant ikke konto for " + userEmail));
                     DailyQuizAttempt fresh = new DailyQuizAttempt();
                     fresh.setSet(set);
                     fresh.setUser(owner);

@@ -2,34 +2,32 @@
   <GameAccessGate game="bullseye">
   <div>
     <div v-if="onlineRoom && (stage === 'onlineLobby' || stage === 'onlineGame')" style="display:flex; justify-content:flex-end; margin-bottom:8px;">
-      <button class="btn btn-secondary btn-sm" @click="openPlayersModal">Manage players</button>
+      <button class="btn btn-secondary btn-sm" @click="openPlayersModal">Administrer spillere</button>
     </div>
 
     <template v-if="stage === 'modeChoice'">
       <h1>Bullseye</h1>
       <p class="page-subtitle">
-        Each round shows a target number, like <em>"13 goals in the Premier League 2024/25"</em>.
-        Take turns naming a player you think is close to it - whoever's answer is
-        farthest off is eliminated. Play continues until one player remains.
+        Hver runde viser et måltall, for eksempel <em>«13 mål i Premier League 2024/25»</em>. Bytt på å nevne en spiller du tror er nær det - den som svarer lengst unna blir slått ut. Spillet fortsetter til én spiller er igjen.
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div v-if="savedRoomCode" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <span>You have a game in progress in room <strong>{{ savedRoomCode }}</strong>.</span>
+        <span>Du har et spill i gang i rom <strong>{{ savedRoomCode }}</strong>.</span>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-primary btn-sm" :disabled="rejoining" @click="rejoinSavedRoom">
-            {{ rejoining ? 'Rejoining…' : 'Rejoin' }}
+            {{ rejoining ? 'Går inn igjen…' : 'Gå inn igjen' }}
           </button>
-          <button class="btn btn-secondary btn-sm" @click="dismissSavedRoom">Dismiss</button>
+          <button class="btn btn-secondary btn-sm" @click="dismissSavedRoom">Lukk</button>
         </div>
       </div>
 
       <div v-if="savedPassAndPlay" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <span>You have a pass-the-device game in progress.</span>
+        <span>Du har et spill der enheten sendes rundt, i gang.</span>
         <div style="display:flex; gap:8px;">
-          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Resume</button>
-          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">Dismiss</button>
+          <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Fortsett</button>
+          <button class="btn btn-secondary btn-sm" @click="dismissPassAndPlay">Lukk</button>
         </div>
       </div>
 
@@ -38,12 +36,12 @@
 
         <div class="mode-choice-row">
           <button class="mode-choice-card" @click="stage = 'landing'">
-            <h3>Same device</h3>
-            <p>Pass the phone around - everyone takes their turn on one screen.</p>
+            <h3>Samme enhet</h3>
+            <p>Send telefonen rundt - alle tar turen sin på én skjerm.</p>
           </button>
           <button class="mode-choice-card" @click="stage = 'onlineChoice'">
-            <h3>Play online</h3>
-            <p>Everyone plays from their own device with a shared room code.</p>
+            <h3>Spill på nett</h3>
+            <p>Alle spiller fra sin egen enhet med en felles romkode.</p>
           </button>
         </div>
       </div>
@@ -52,27 +50,26 @@
     <template v-else-if="stage === 'landing'">
       <h1>Bullseye</h1>
       <p class="page-subtitle">
-        A pass-the-device party quiz. Each round shows a target number - take turns naming
-        someone close to it, farthest off is eliminated, until one player remains.
+        En selskapsquiz der enheten sendes rundt. Hver runde viser et måltall - bytt på å nevne noen nær det, den lengst unna blir slått ut, til én spiller er igjen.
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Players
+        <label>Spillere
           <select v-model.number="numPlayers">
             <option v-for="n in [2,3,4,5,6,7,8]" :key="n" :value="n">{{ n }}</option>
           </select>
         </label>
       </div>
       <p class="page-subtitle" style="margin-top:-8px;">
-        {{ numPlayers }} players means {{ numPlayers - 1 }} round{{ numPlayers - 1 > 1 ? 's' : '' }} - one elimination per round.
+        {{ numPlayers }} spillere gir {{ numPlayers - 1 }} runde{{ numPlayers - 1 > 1 ? 'r' : '' }} - én utslåing per runde.
       </p>
 
       <div v-if="bullseyeCategories.length" class="field">
         <label style="text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.85rem;">
-          Exclude any categories you'd rather not get questions from
-          <span class="picker-hint" v-if="excludeCategories.length">{{ excludeCategories.length }} excluded</span>
+          Utelat kategorier du helst ikke vil ha spørsmål fra
+          <span class="picker-hint" v-if="excludeCategories.length">{{ excludeCategories.length }} utelatt</span>
         </label>
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
           <button
@@ -87,68 +84,67 @@
       </div>
 
       <div class="field">
-        <label>How should the questions be picked?</label>
+        <label>Hvordan skal spørsmålene velges?</label>
         <div class="language-row">
-          <button class="language-btn" :class="{ active: bullseyeMode === 'random' }" @click="bullseyeMode = 'random'">Random</button>
-          <button class="language-btn" :class="{ active: bullseyeMode === 'manual' }" @click="bullseyeMode = 'manual'">Pick my own</button>
+          <button class="language-btn" :class="{ active: bullseyeMode === 'random' }" @click="bullseyeMode = 'random'">Tilfeldig</button>
+          <button class="language-btn" :class="{ active: bullseyeMode === 'manual' }" @click="bullseyeMode = 'manual'">Velg selv</button>
         </div>
       </div>
 
-      <button class="btn btn-secondary" @click="stage = 'modeChoice'">← Back</button>
-      <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">Create game</button>
+      <button class="btn btn-secondary" @click="stage = 'modeChoice'">← Tilbake</button>
+      <button class="btn btn-primary" style="margin-left:10px;" @click="goToSetup">Opprett spill</button>
     </template>
 
     <template v-else-if="stage === 'onlineChoice'">
-      <h1>Play online</h1>
-      <p class="page-subtitle">Same game, different devices - share a room code with friends instead of passing one phone around.</p>
+      <h1>Spill på nett</h1>
+      <p class="page-subtitle">Samme spill, ulike enheter - del en romkode med venner i stedet for å sende én telefon rundt.</p>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="btn btn-primary" @click="stage = 'onlineCreate'">+ Create a room</button>
-        <button class="btn btn-secondary" @click="stage = 'onlineJoin'">Join with a code</button>
+        <button class="btn btn-primary" @click="stage = 'onlineCreate'">+ Opprett et rom</button>
+        <button class="btn btn-secondary" @click="stage = 'onlineJoin'">Bli med med kode</button>
       </div>
-      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'modeChoice'">← Back</button>
+      <button class="btn btn-secondary" style="margin-top:16px;" @click="stage = 'modeChoice'">← Tilbake</button>
     </template>
 
     <template v-else-if="stage === 'onlineCreate'">
-      <h1>Create a room</h1>
+      <h1>Opprett et rom</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Your name <span class="picker-hint">shown to other players</span><input type="text" v-model="onlineDisplayName" placeholder="Your name" /></label>
+        <label>Navnet ditt <span class="picker-hint">vises for andre spillere</span><input type="text" v-model="onlineDisplayName" placeholder="Navnet ditt" /></label>
       </div>
       <p class="page-subtitle">
-        The round count is set once everyone's joined and you start the game - one elimination
-        per round, so it always ends with exactly one player left.
+        Antall runder settes når alle har blitt med og du starter spillet - én utslåing per runde, så det ender alltid med nøyaktig én spiller igjen.
       </p>
 
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>
+        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Tilbake</button>
         <button class="btn btn-primary" :disabled="creatingRoom || !onlineDisplayName.trim()" @click="createOnlineRoom">
-          {{ creatingRoom ? 'Creating…' : 'Create room' }}
+          {{ creatingRoom ? 'Oppretter…' : 'Opprett rom' }}
         </button>
       </div>
     </template>
 
     <template v-else-if="stage === 'onlineJoin'">
-      <h1>Join a room</h1>
+      <h1>Bli med i et rom</h1>
       <div v-if="error" class="banner error">{{ error }}</div>
       <div class="field">
-        <label>Your name <span class="picker-hint">shown to other players</span><input type="text" v-model="onlineDisplayName" placeholder="Your name" /></label>
+        <label>Navnet ditt <span class="picker-hint">vises for andre spillere</span><input type="text" v-model="onlineDisplayName" placeholder="Navnet ditt" /></label>
       </div>
       <div class="field">
-        <label>Room code<input type="text" v-model="joinCode" placeholder="e.g. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" /></label>
+        <label>Romkode<input type="text" v-model="joinCode" placeholder="f.eks. ABCDE" style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;" maxlength="5" /></label>
       </div>
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Back</button>
+        <button class="btn btn-secondary" @click="stage = 'onlineChoice'">← Tilbake</button>
         <button class="btn btn-primary" :disabled="!joinCode.trim() || !onlineDisplayName.trim() || joiningRoom" @click="joinOnlineRoom()">
-          {{ joiningRoom ? 'Joining…' : 'Join' }}
+          {{ joiningRoom ? 'Blir med…' : 'Bli med' }}
         </button>
       </div>
     </template>
 
     <template v-else-if="stage === 'onlineLobby'">
-      <h1>Room {{ onlineRoom?.roomCode }}</h1>
-      <p class="page-subtitle">Share this code with your friends. Everyone needs to join before the host starts.</p>
+      <h1>Rom {{ onlineRoom?.roomCode }}</h1>
+      <p class="page-subtitle">Del denne koden med vennene dine. Alle må bli med før verten starter.</p>
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="saved-quiz-list" style="max-width:420px;">
@@ -159,26 +155,26 @@
               {{ p.displayName }}
             </div>
           </div>
-          <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">Disconnected</span>
-            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">In room</span>
+          <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">Frakoblet</span>
+            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">I rommet</span>
         </div>
       </div>
 
       <p style="color:var(--text-dim); font-size:0.9rem; margin-top:16px;">
-        {{ (onlineRoom?.participants || []).length }} joined ·
-        {{ (onlineRoom?.participants || []).length >= 2 ? (onlineRoom.participants.length - 1) + ' round(s) if you start now' : 'need at least 2 to start' }}
+        {{ (onlineRoom?.participants || []).length }} har blitt med ·
+        {{ (onlineRoom?.participants || []).length >= 2 ? (onlineRoom.participants.length - 1) + ' runde(r) hvis du starter nå' : 'minst 2 trengs for å starte' }}
       </p>
 
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="leaveLobby">← Leave</button>
+        <button class="btn btn-secondary" @click="leaveLobby">← Forlat</button>
         <InviteLinkButton v-if="onlineRoom" :room-code="onlineRoom.roomCode" />
         <button
           v-if="isHost"
           class="btn btn-primary"
           :disabled="(onlineRoom?.participants || []).length < 2 || startingRoom"
           @click="startOnlineRoom"
-        >{{ startingRoom ? 'Starting…' : 'Start game' }}</button>
-        <span v-else style="color:var(--text-dim); align-self:center;">Waiting for the host to start…</span>
+        >{{ startingRoom ? 'Starter…' : 'Start spillet' }}</button>
+        <span v-else style="color:var(--text-dim); align-self:center;">Venter på at verten skal starte…</span>
       </div>
     </template>
 
@@ -192,35 +188,35 @@
     />
 
     <template v-else-if="stage === 'setup'">
-      <h1>Who's playing?</h1>
-      <p class="page-subtitle" v-if="duplicateNames">Two players can't have the same name.</p>
+      <h1>Hvem spiller?</h1>
+      <p class="page-subtitle" v-if="duplicateNames">To spillere kan ikke ha samme navn.</p>
 
       <div v-for="(p, i) in setupPlayers" :key="i" class="field">
-        <input type="text" v-model="p.name" :placeholder="`Player ${i + 1}`" />
+        <input type="text" v-model="p.name" :placeholder="`Spiller ${i + 1}`" />
       </div>
 
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-secondary" @click="stage = 'landing'">← Back</button>
+        <button class="btn btn-secondary" @click="stage = 'landing'">← Tilbake</button>
         <button class="btn btn-primary" :disabled="!allNamed || duplicateNames || checkingPool" @click="goToQuestionChoice">
-          Next →
+          Neste →
         </button>
       </div>
-      <LoadingState v-if="checkingPool" full message="Shuffling your questions…" subtitle="First round starts in just a moment." />
+      <LoadingState v-if="checkingPool" full message="Stokker spørsmålene dine…" subtitle="Første runde starter om et øyeblikk." />
     </template>
 
     <template v-else-if="stage === 'pickQuestions'">
-      <h1>Choose {{ roundsNeeded }} question{{ roundsNeeded > 1 ? 's' : '' }}</h1>
-      <p class="page-subtitle">{{ chosenQuestions.length }} / {{ roundsNeeded }} selected</p>
+      <h1>Velg {{ roundsNeeded }} spørsmål</h1>
+      <p class="page-subtitle">{{ chosenQuestions.length }} / {{ roundsNeeded }} valgt</p>
 
       <LoadingState v-if="loadingQuestions" full />
-      <div v-else-if="!availableQuestions.length" class="empty-state">No questions available yet.</div>
+      <div v-else-if="!availableQuestions.length" class="empty-state">Ingen spørsmål tilgjengelige ennå.</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="q in availableQuestions" :key="q.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ q.title }}</div>
             <div class="saved-quiz-meta">
-              {{ sportLabel(q.sport) }} · {{ q.entryCount }} answers · "{{ q.groupDigits === false ? q.targetValue : formatNumber(q.targetValue) }} {{ q.statLabel }}"
+              {{ sportLabel(q.sport) }} · {{ q.entryCount }} svar · «{{ q.groupDigits === false ? q.targetValue : formatNumber(q.targetValue) }} {{ q.statLabel }}"
             </div>
           </div>
           <button
@@ -228,18 +224,18 @@
             :class="isChosenQuestion(q) ? 'btn-primary' : 'btn-secondary'"
             :disabled="!isChosenQuestion(q) && chosenQuestions.length >= roundsNeeded"
             @click="toggleChosenQuestion(q)"
-          >{{ isChosenQuestion(q) ? 'Selected ✓' : '+ Select' }}</button>
+          >{{ isChosenQuestion(q) ? 'Valgt ✓' : '+ Velg' }}</button>
         </div>
       </div>
 
       <div class="board-picker-actions">
-        <button class="btn btn-secondary" @click="stage = 'setup'">← Back</button>
+        <button class="btn btn-secondary" @click="stage = 'setup'">← Tilbake</button>
         <button
           class="btn btn-primary"
           :class="{ 'btn-ready-pulse': chosenQuestions.length === roundsNeeded }"
           :disabled="chosenQuestions.length !== roundsNeeded"
           @click="startManualGame"
-        >{{ chosenQuestions.length === roundsNeeded ? `Start game ✓ (${chosenQuestions.length}/${roundsNeeded})` : `Start game (${chosenQuestions.length}/${roundsNeeded})` }}</button>
+        >{{ chosenQuestions.length === roundsNeeded ? `Start spillet ✓ (${chosenQuestions.length}/${roundsNeeded})` : `Start spillet (${chosenQuestions.length}/${roundsNeeded})` }}</button>
       </div>
     </template>
 
@@ -255,7 +251,7 @@
     <template v-else-if="stage === 'done'">
       <div class="modal-backdrop">
         <div class="completion-popup podium-host">
-          <h2 style="margin-top:0;">Game over!</h2>
+          <h2 style="margin-top:0;">Spillet er over!</h2>
 
           <div class="podium-row">
             <div v-for="(entry, i) in sortedScores.slice(0, 3)" :key="entry[0]" class="podium-block" :class="`rank-${i + 1}`">
@@ -274,16 +270,16 @@
 
           <template v-if="lastGameWasOnline && onlineRoom">
             <p class="page-subtitle" style="margin:16px 0 0;">
-              {{ isHost ? `Room ${onlineRoom.roomCode} is still open - play again with the same group, or leave.` : 'Waiting for the host to start a new round, or leave the room.' }}
+              {{ isHost ? `Rom ${onlineRoom.roomCode} er fortsatt åpent - spill igjen med samme gruppe, eller forlat det.` : 'Venter på at verten skal starte en ny runde, eller forlat rommet.' }}
             </p>
             <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px;">
               <button v-if="isHost" class="btn btn-primary" :disabled="restartingRoom" @click="restartOnlineRoom">
-                {{ restartingRoom ? 'Restarting…' : 'Play again' }}
+                {{ restartingRoom ? 'Starter på nytt…' : 'Spill igjen' }}
               </button>
-              <button class="btn btn-secondary" @click="leaveLobby">← Leave</button>
+              <button class="btn btn-secondary" @click="leaveLobby">← Forlat</button>
             </div>
           </template>
-          <button v-else class="btn btn-primary" style="margin-top:16px; width:100%;" @click="resetGame">Play again</button>
+          <button v-else class="btn btn-primary" style="margin-top:16px; width:100%;" @click="resetGame">Spill igjen</button>
         </div>
       </div>
     </template>
@@ -321,13 +317,13 @@ import BullseyePreview from '../components/previews/BullseyePreview.vue'
 
 const colorOptions = [
   { hex: '#4f46e5', name: 'Indigo' },
-  { hex: '#7C7CFC', name: 'Light indigo' },
-  { hex: '#F22C05', name: 'Red' },
-  { hex: '#F2BB05', name: 'Yellow' },
-  { hex: '#032E8A', name: 'Blue' },
-  { hex: '#05D6F2', name: 'Light blue' },
-  { hex: '#f43f5e', name: 'Pink' },
-  { hex: '#5D038A', name: 'Purple' }
+  { hex: '#7C7CFC', name: 'Lys indigo' },
+  { hex: '#F22C05', name: 'Rød' },
+  { hex: '#F2BB05', name: 'Gul' },
+  { hex: '#032E8A', name: 'Blå' },
+  { hex: '#05D6F2', name: 'Lyseblå' },
+  { hex: '#f43f5e', name: 'Rosa' },
+  { hex: '#5D038A', name: 'Lilla' }
 ]
 
 const stage = ref('modeChoice')
@@ -416,9 +412,9 @@ async function goToQuestionChoice() {
     }
     if (poolSize < roundsNeeded.value) {
       const reason = excludeCategories.value.length
-        ? 'Try excluding fewer categories, or ask an admin to add more Bullseye questions.'
-        : 'Ask an admin to add more Bullseye questions.'
-      error.value = `Only found ${poolSize} question(s) - need at least ${roundsNeeded.value} for ${setupPlayers.length} players. ${reason}`
+        ? 'Prøv å utelate færre kategorier, eller be en administrator legge til flere Bullseye-spørsmål.'
+        : 'Be en administrator legge til flere Bullseye-spørsmål.'
+      error.value = `Fant bare ${poolSize} spørsmål - trenger minst ${roundsNeeded.value} for ${setupPlayers.length} spillere. ${reason}`
       stage.value = 'landing'
       return
     }
@@ -439,7 +435,7 @@ async function loadAvailableQuestions() {
   try {
     availableQuestions.value = await api.getBattleEligibleBullseyeQuestions(excludeCategories.value)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not load questions.'
+    error.value = e.response?.data?.message || 'Kunne ikke laste spørsmål.'
   } finally {
     loadingQuestions.value = false
   }
@@ -515,7 +511,7 @@ async function openPlayersModal() {
     playersModalParticipants.value = fresh.participants
     showPlayersModal.value = true
   } catch (e) {
-    error.value = 'Could not load the player list.'
+    error.value = 'Kunne ikke laste spillerlisten.'
   }
 }
 function onPlayersModalChanged(dto) {
@@ -546,7 +542,7 @@ async function createOnlineRoom() {
     stage.value = 'onlineLobby'
     startLobbyChannel()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not create the room.'
+    error.value = e.response?.data?.message || 'Kunne ikke opprette rommet.'
   } finally {
     creatingRoom.value = false
   }
@@ -576,7 +572,7 @@ async function joinOnlineRoom(codeOverride) {
       startLobbyChannel()
     }
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not join that room - check the code and try again.'
+    error.value = e.response?.data?.message || 'Kunne ikke bli med i rommet - sjekk koden og prøv igjen.'
     activeRoom.clear()
     savedRoomCode.value = ''
   } finally {
@@ -642,7 +638,7 @@ async function startOnlineRoom() {
     stopLobbyChannel()
     stage.value = 'onlineGame'
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not start the game.'
+    error.value = e.response?.data?.message || 'Kunne ikke starte spillet.'
   } finally {
     startingRoom.value = false
   }
@@ -692,7 +688,7 @@ async function restartOnlineRoom() {
     const dto = await api.restartRoom(onlineRoom.value.roomCode)
     applyLobbyUpdate(dto)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not restart the game.'
+    error.value = e.response?.data?.message || 'Kunne ikke starte spillet på nytt.'
   } finally {
     restartingRoom.value = false
   }

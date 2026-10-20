@@ -319,19 +319,19 @@ public class AthleteService {
             }
             if (best == 0) break;
         }
-        if (best == 0) return "Same name once special letters/accents are normalized";
+        if (best == 0) return "Samme navn når spesialtegn/aksenter normaliseres";
         if (best <= maxDistance) {
-            return best + (best == 1 ? " character" : " characters") + " different once normalized";
+            return best + (best == 1 ? " tegn" : " tegn") + " forskjell etter normalisering";
         }
         for (String a : variantsA) {
             List<String> tokensA = List.of(a.split(" "));
             for (String b : variantsB) {
                 List<String> tokensB = List.of(b.split(" "));
                 if (tokensA.size() == 1 && tokensB.size() > 1 && tokensA.get(0).equals(tokensB.get(tokensB.size() - 1))) {
-                    return "One entry looks like a last-name-only version of the other";
+                    return "Én oppføring ser ut som en versjon av den andre med bare etternavn";
                 }
                 if (tokensB.size() == 1 && tokensA.size() > 1 && tokensB.get(0).equals(tokensA.get(tokensA.size() - 1))) {
-                    return "One entry looks like a last-name-only version of the other";
+                    return "Én oppføring ser ut som en versjon av den andre med bare etternavn";
                 }
             }
         }
@@ -416,12 +416,12 @@ public class AthleteService {
     @Transactional
     public AthleteDto update(Long id, AthleteDto dto) {
         Athlete athlete = athleteRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No athlete found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke emne med id " + id));
         String newName = dto.getName() != null ? dto.getName().trim() : null;
         if (newName != null && !newName.isBlank()
                 && athleteRepository.existsBySportAndNameIgnoreCaseAndIdNot(dto.getSport(), newName, id)) {
             throw new IllegalArgumentException(
-                    "Another subject named \"" + newName + "\" already exists in \"" + dto.getSport() + "\".");
+                    "Et annet emne med navnet \"" + newName + "\" finnes allerede i \"" + dto.getSport() + "\".");
         }
         athlete.setName(newName);
         athlete.setSport(dto.getSport());
@@ -472,7 +472,7 @@ public class AthleteService {
             usage.add(new AthleteUsageDto("Imposter", t.getImposterGrid().getId(), t.getImposterGrid().getTitle(), true));
         }
         for (PenaltyKick k : penaltyKickRepository.findByAthlete_Id(athleteId)) {
-            usage.add(new AthleteUsageDto("Penalty Shootout", k.getShootout().getId(), k.getShootout().getTitle(), true));
+            usage.add(new AthleteUsageDto("Straffekonkurranse", k.getShootout().getId(), k.getShootout().getTitle(), true));
         }
         return usage;
     }
@@ -480,7 +480,7 @@ public class AthleteService {
     @Transactional
     public void delete(Long id, boolean force) {
         if (!athleteRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No athlete found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke emne med id " + id);
         }
         boolean blocked = gridCandidateRepository.existsByAthlete_Id(id)
                 || lineupCandidateRepository.existsByAthlete_Id(id)

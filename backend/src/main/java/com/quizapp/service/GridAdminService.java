@@ -69,7 +69,7 @@ public class GridAdminService {
     @Transactional(readOnly = true)
     public GridAdminDetailDto getOne(Long id) {
         Grid grid = gridRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + id));
         return toDetailDto(grid);
     }
 
@@ -85,7 +85,7 @@ public class GridAdminService {
     public GridAdminDetailDto update(Long id, GridRequest request) {
         validateDateNotTaken(request.getWeekStartDate(), id);
         Grid grid = gridRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + id));
         applyRequest(grid, request);
         return toDetailDto(gridRepository.save(grid));
     }
@@ -96,14 +96,14 @@ public class GridAdminService {
         boolean taken = gridRepository.findByWeekStartDate(weekStartDate).stream()
                 .anyMatch(g -> !g.getId().equals(excludeGridId));
         if (taken) {
-            throw new IllegalStateException("Another grid already uses the week of " + weekStartDate + ".");
+            throw new IllegalStateException("Et annet grid bruker allerede uken som starter " + weekStartDate + ".");
         }
     }
 
     @Transactional
     public void delete(Long id) {
         if (!gridRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No grid found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke grid med id " + id);
         }
         gridRepository.deleteById(id);
     }
@@ -144,7 +144,7 @@ public class GridAdminService {
                 : request.getCandidateAthleteIds().stream().distinct().collect(Collectors.toList());
         if (!request.isEntireCategoryPool() && candidateAthleteIds.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Add at least one candidate, or switch on \"every subject in this category\".");
+                    "Legg til minst én kandidat, eller slå på \"alle emner i denne kategorien\".");
         }
         List<Athlete> foundAthletes = athleteRepository.findAllById(candidateAthleteIds);
         Map<Long, Athlete> athleteById = foundAthletes.stream()
@@ -153,7 +153,7 @@ public class GridAdminService {
             List<Long> missing = candidateAthleteIds.stream()
                     .filter(id -> !athleteById.containsKey(id))
                     .collect(Collectors.toList());
-            throw new IllegalArgumentException("No athlete found with id(s) " + missing);
+            throw new IllegalArgumentException("Fant ikke emne med id(er) " + missing);
         }
 
         if (request.isEntireCategoryPool()) {
@@ -177,7 +177,7 @@ public class GridAdminService {
                     })
                     .collect(Collectors.toSet());
             if (candidates.stream().anyMatch(c -> c.getAthlete() == null)) {
-                throw new IllegalStateException("Internal error building the candidate list - please try saving again.");
+                throw new IllegalStateException("Intern feil ved bygging av kandidatlisten - prøv å lagre på nytt.");
             }
             grid.setCandidates(candidates);
         }
@@ -197,7 +197,7 @@ public class GridAdminService {
                 // allow an entry's athlete even if the admin forgot to also list it as a
                 // candidate - fetch it directly rather than rejecting the whole grid
                 athlete = athleteRepository.findById(input.getAthleteId())
-                        .orElseThrow(() -> new IllegalArgumentException("No athlete found with id " + input.getAthleteId()));
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke emne med id " + input.getAthleteId()));
             }
             GridEntry entry = existingByAthleteId.getOrDefault(input.getAthleteId(), new GridEntry());
             entry.setAthlete(athlete);
@@ -205,7 +205,7 @@ public class GridAdminService {
             if (request.isRanked()) {
                 if (input.getHintValue() == null) {
                     throw new IllegalArgumentException(
-                            "'" + athlete.getName() + "' is missing a hint value - required for a ranked grid.");
+                            "'" + athlete.getName() + "' mangler en hintverdi - kreves for et rangert grid.");
                 }
                 entry.setHintValue(input.getHintValue());
             } else {
@@ -219,7 +219,7 @@ public class GridAdminService {
 
             if (input.getClubId() != null) {
                 Club club = clubRepository.findById(input.getClubId())
-                        .orElseThrow(() -> new IllegalArgumentException("No club found with id " + input.getClubId()));
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke klubb med id " + input.getClubId()));
                 entry.setClub(club);
             } else {
                 entry.setClub(null);
@@ -232,7 +232,7 @@ public class GridAdminService {
                 AthletePhoto photo = athletePhotoRepository.findById(input.getSelectedPhotoId())
                         .filter(p -> p.getAthlete().getId().equals(entryAthlete.getId()))
                         .orElseThrow(() -> new IllegalArgumentException(
-                                "That photo doesn't belong to '" + entryAthlete.getName() + "'."));
+                                "Det bildet hører ikke til '" + entryAthlete.getName() + "'."));
                 entry.setSelectedPhoto(photo);
             } else {
                 entry.setSelectedPhoto(null);
@@ -243,7 +243,7 @@ public class GridAdminService {
                 AthleteDescription description = athleteDescriptionRepository.findById(input.getSelectedDescriptionId())
                         .filter(d -> d.getAthlete().getId().equals(entryAthlete.getId()))
                         .orElseThrow(() -> new IllegalArgumentException(
-                                "That description doesn't belong to '" + entryAthlete.getName() + "'."));
+                                "Den beskrivelsen hører ikke til '" + entryAthlete.getName() + "'."));
                 entry.setSelectedDescription(description);
             } else {
                 entry.setSelectedDescription(null);

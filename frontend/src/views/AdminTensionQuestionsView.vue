@@ -3,33 +3,33 @@
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
         <div>
-          <h1>Tension questions</h1>
+          <h1>Tension-spørsmål</h1>
           <p class="page-subtitle">
-            Each question needs up to 10 ranked safe answers, plus any number of tension (trap) answers.
-            <router-link to="/admin/tension-categories">Manage answer categories →</router-link>
+            Hvert spørsmål trenger opptil 10 rangerte trygge svar, pluss et hvilket som helst antall tension-svar (feller).
+            <router-link to="/admin/tension-categories">Administrer svarkategorier →</router-link>
           </p>
         </div>
-        <button class="btn btn-primary" @click="openCreate">+ Create question</button>
+        <button class="btn btn-primary" @click="openCreate">+ Lag spørsmål</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
       <div v-else-if="!questions.length" class="empty-state friendly">
-        No tension questions yet. Create your first one to be able to start a game.
+        Ingen Tension-spørsmål ennå. Lag ditt første for å kunne starte et spill.
       </div>
 
       <div v-else>
         <input
           type="text"
           v-model="questionSearchTerm"
-          placeholder="Search by title or category…"
+          placeholder="Søk etter tittel eller kategori…"
           class="search-input"
           style="margin-bottom:16px;"
         />
 
         <div v-if="!filteredQuestions.length" class="empty-state" style="padding:20px;">
-          No questions match "{{ questionSearchTerm }}".
+          Ingen spørsmål samsvarer med "{{ questionSearchTerm }}".
         </div>
 
         <div v-else class="saved-quiz-list">
@@ -37,13 +37,13 @@
             <div class="saved-quiz-info">
               <div class="saved-quiz-title">{{ q.title }}</div>
               <div class="saved-quiz-meta">
-                {{ q.mainCategory || 'Uncategorized' }} · {{ q.safeCount }} safe · {{ q.tensionCount }} tension
-                <span v-if="q.canExpire" class="tag" style="color:var(--gold); border-color:var(--gold);">Can expire</span>
+                {{ q.mainCategory || 'Uten kategori' }} · {{ q.safeCount }} trygge · {{ q.tensionCount }} tension
+                <span v-if="q.canExpire" class="tag" style="color:var(--gold); border-color:var(--gold);">Kan utløpe</span>
               </div>
             </div>
             <div style="display:flex; gap:8px;">
-              <button class="btn btn-secondary btn-sm" @click="openEdit(q.id)">Edit</button>
-              <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Delete</button>
+              <button class="btn btn-secondary btn-sm" @click="openEdit(q.id)">Rediger</button>
+              <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Slett</button>
             </div>
           </div>
         </div>
@@ -54,113 +54,113 @@
 
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h1 style="margin:0;">{{ editingId ? 'Edit question' : 'Create question' }}</h1>
-        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Back to list</button>
+        <h1 style="margin:0;">{{ editingId ? 'Rediger spørsmål' : 'Lag spørsmål' }}</h1>
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til listen</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title / prompt<input type="text" v-model="form.title" placeholder="e.g. Name a country in Europe" /></label>
+        <label>Tittel / oppgave<input type="text" v-model="form.title" placeholder="f.eks. Nevn et land i Europa" /></label>
       </div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:200px;">
-          <label>Main category <span class="picker-hint">used to filter which questions a game draws from - type anything, or pick a suggestion</span><input type="text" v-model="form.mainCategory" placeholder="e.g. Geography" list="main-category-suggestions" /></label>
+          <label>Hovedkategori <span class="picker-hint">brukes til å filtrere hvilke spørsmål et spill trekker fra - skriv hva som helst, eller velg et forslag</span><input type="text" v-model="form.mainCategory" placeholder="f.eks. Geografi" list="main-category-suggestions" /></label>
           <datalist id="main-category-suggestions">
             <option v-for="c in mainCategorySuggestions" :key="c" :value="c" />
           </datalist>
         </div>
         <div style="flex:1; min-width:240px;">
-          <label>Answers source <span class="picker-hint">powers the answer-box autocomplete</span></label>
+          <label>Svarkilde <span class="picker-hint">driver autofullføringen i svarfeltet</span></label>
           <div style="display:flex; gap:16px; margin-bottom:8px;">
             <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400;">
               <input type="radio" :value="false" v-model="form.answersFromSubjects" style="width:auto;" />
-              Tension category
+              Tension-kategori
             </label>
             <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:400;">
               <input type="radio" :value="true" v-model="form.answersFromSubjects" style="width:auto;" />
-              Subjects
+              Emner
             </label>
           </div>
           <template v-if="!form.answersFromSubjects">
             <SearchableSelect
               v-model="form.answersCategory"
               :options="tensionCategories.map(c => c.name)"
-              placeholder="Search categories…"
+              placeholder="Søk etter kategorier…"
             />
             <p v-if="!tensionCategories.length" style="color:var(--coral); font-size:0.85rem; margin-top:6px;">
-              No categories exist yet - add one on the Tension categories page first.
+              Ingen kategorier finnes ennå - legg først til en på siden for Tension-kategorier.
             </p>
           </template>
           <template v-else>
             <select v-model="form.answersSport">
-              <option value="">Choose a category…</option>
+              <option value="">Velg en kategori…</option>
               <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
             </select>
             <p style="color:var(--text-dim); font-size:0.85rem; margin-top:6px;">
-              Answers are drawn from Subjects in this category, e.g. "Football" players by name.
+              Svarene hentes fra emner i denne kategorien, f.eks. "Football"-spillere etter navn.
             </p>
           </template>
         </div>
       </div>
 
       <div class="field">
-        <label>Additional information <span class="picker-hint">optional - shown to players under the question (e.g. where the data came from)</span><input type="text" v-model="form.source" placeholder="e.g. Lionpopulation.com" /></label>
+        <label>Tilleggsinformasjon <span class="picker-hint">valgfritt - vises for spillerne under spørsmålet (f.eks. hvor dataene kommer fra)</span><input type="text" v-model="form.source" placeholder="f.eks. Lionpopulation.com" /></label>
       </div>
 
       <div class="field">
-        <label>Tiebreaker <span class="picker-hint">optional - shown to players, describes how to resolve a tie</span><input type="text" v-model="form.tiebreaker" placeholder="e.g. If tied, the country founded first wins" /></label>
+        <label>Avgjørende spørsmål <span class="picker-hint">valgfritt - vises for spillerne, beskriver hvordan likt avgjøres</span><input type="text" v-model="form.tiebreaker" placeholder="f.eks. Ved likt vinner landet som ble grunnlagt først" /></label>
       </div>
 
       <div class="field option-card">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
-          Can expire
+          Kan utløpe
           <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
-            e.g. "current all-time top scorer" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+            f.eks. "nåværende all-time toppscorer" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.
           </div>
         </label>
       </div>
 
       <div class="field">
-        <label>Safe answers <span class="picker-hint">ranked 1-10 - higher rank scores more points</span></label>
+        <label>Trygge svar <span class="picker-hint">rangert 1-10 - høyere plassering gir flere poeng</span></label>
         <p v-if="!(form.answersFromSubjects ? form.answersSport : form.answersCategory).trim()" style="color:var(--text-dim); font-size:0.85rem; margin-top:-4px;">
-          Set an answers source above to choose from its option list.
+          Velg en svarkilde over for å velge fra alternativlisten.
         </p>
         <p v-else-if="!categoryOptions.length" style="color:var(--coral); font-size:0.85rem; margin-top:-4px;">
-          <template v-if="form.answersFromSubjects">No subjects found in "{{ form.answersSport }}" - add some on the Subjects page first.</template>
-          <template v-else>No options found for "{{ form.answersCategory }}" - add some on the Tension categories page first.</template>
+          <template v-if="form.answersFromSubjects">Ingen emner funnet i "{{ form.answersSport }}" - legg først til noen på siden Emner.</template>
+          <template v-else>Ingen alternativer funnet for "{{ form.answersCategory }}" - legg først til noen på siden Tension-kategorier.</template>
         </p>
         <div v-for="(a, idx) in form.safeAnswers" :key="idx" class="candidate-row">
-          <input type="number" min="1" max="10" v-model.number="a.rank" style="width:70px;" placeholder="Rank" />
+          <input type="number" min="1" max="10" v-model.number="a.rank" style="width:70px;" placeholder="Plassering" />
           <div style="flex:1;">
-            <SearchableSelect v-model="a.text" :options="categoryOptions" placeholder="Search answers…" />
+            <SearchableSelect v-model="a.text" :options="categoryOptions" placeholder="Søk etter svar…" />
           </div>
           <button class="btn btn-danger btn-sm" @click="form.safeAnswers.splice(idx, 1)">✕</button>
         </div>
-        <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addSafeAnswer">+ Add safe answer</button>
+        <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addSafeAnswer">+ Legg til trygt svar</button>
       </div>
 
       <div class="field">
-        <label>Tension answers <span class="picker-hint">ranked separately - any of these costs -5 if guessed</span></label>
+        <label>Tension-svar <span class="picker-hint">rangert separat - hvert av disse koster -5 hvis det gjettes</span></label>
         <div v-for="(a, idx) in form.tensionAnswers" :key="idx" class="candidate-row">
-          <input type="number" min="1" v-model.number="a.rank" style="width:70px;" placeholder="Rank" />
+          <input type="number" min="1" v-model.number="a.rank" style="width:70px;" placeholder="Plassering" />
           <div style="flex:1;">
-            <SearchableSelect v-model="a.text" :options="categoryOptions" placeholder="Search answers…" />
+            <SearchableSelect v-model="a.text" :options="categoryOptions" placeholder="Søk etter svar…" />
           </div>
           <button class="btn btn-danger btn-sm" @click="form.tensionAnswers.splice(idx, 1)">✕</button>
         </div>
-        <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addTensionAnswer">+ Add tension answer</button>
+        <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addTensionAnswer">+ Legg til Tension-svar</button>
       </div>
 
-      <button class="btn btn-primary" :disabled="saving" @click="save">{{ saving ? 'Saving…' : 'Save question' }}</button>
+      <button class="btn btn-primary" :disabled="saving" @click="save">{{ saving ? 'Lagrer…' : 'Lagre spørsmål' }}</button>
     </template>
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this question?"
-      :message="`'${pendingDelete.title}' will be permanently removed.`"
+      title="Slette dette spørsmålet?"
+      :message="`«${pendingDelete.title}» fjernes for godt.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -277,7 +277,7 @@ async function loadQuestions() {
   try {
     questions.value = await api.adminListTensionQuestions()
   } catch (e) {
-    error.value = 'Could not load tension questions.'
+    error.value = 'Kunne ikke laste Tension-spørsmål.'
   } finally {
     loading.value = false
   }
@@ -331,22 +331,22 @@ async function openEdit(id) {
     editingId.value = id
     view.value = 'builder'
   } catch (e) {
-    error.value = 'Could not load that question.'
+    error.value = 'Kunne ikke laste spørsmålet.'
   }
 }
 
 async function save() {
   error.value = ''
   if (!form.title.trim()) {
-    error.value = 'A title is required.'
+    error.value = 'En tittel må fylles ut.'
     return
   }
   if (!form.safeAnswers.length || form.safeAnswers.some(a => !a.text.trim())) {
-    error.value = 'Add at least one safe answer, and make sure none are blank.'
+    error.value = 'Legg til minst ett trygt svar, og sørg for at ingen er tomme.'
     return
   }
   if (form.tensionAnswers.some(a => !a.text.trim())) {
-    error.value = 'Tension answers can\'t be blank - remove any empty rows.'
+    error.value = 'Tension-svar kan ikke være tomme - fjern eventuelle tomme rader.'
     return
   }
 
@@ -357,11 +357,11 @@ async function save() {
     } else {
       await api.adminCreateTensionQuestion(form)
     }
-    toast.show('Question saved.')
+    toast.show('Spørsmålet er lagret.')
     view.value = 'list'
     loadQuestions()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not save the question.'
+    error.value = e.response?.data?.message || 'Kunne ikke lagre spørsmålet.'
   } finally {
     saving.value = false
   }
@@ -377,10 +377,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteTensionQuestion(q.id)
-    toast.show('Question deleted.')
+    toast.show('Spørsmålet er slettet.')
     loadQuestions()
   } catch (e) {
-    error.value = 'Could not delete that question.'
+    error.value = 'Kunne ikke slette spørsmålet.'
   }
 }
 </script>

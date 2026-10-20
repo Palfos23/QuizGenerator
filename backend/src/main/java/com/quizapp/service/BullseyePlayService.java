@@ -134,7 +134,7 @@ public class BullseyePlayService {
     @Transactional(readOnly = true)
     public BullseyeRoundStateDto getMultiplayerStartState(Long questionId) {
         BullseyeQuestion question = bullseyeQuestionRepository.findById(questionId)
-                .orElseThrow(() -> new ResourceNotFoundException("No question found with id " + questionId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke spørsmål med id " + questionId));
 
         List<BullseyeEntryViewDto> entries = question.getEntries().stream()
                 .sorted(entrySortOrder())

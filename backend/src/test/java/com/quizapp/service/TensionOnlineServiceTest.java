@@ -80,7 +80,7 @@ class TensionOnlineServiceTest {
 
         assertThatThrownBy(() -> tensionOnlineService.rerollQuestion(room, GUEST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Only the host");
+                .hasMessageContaining("Bare verten");
     }
 
     @Test
@@ -90,6 +90,6 @@ class TensionOnlineServiceTest {
 
         assertThatThrownBy(() -> tensionOnlineService.rerollQuestion(room, HOST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("too late");
+                .hasMessageContaining("for sent");
     }
 }

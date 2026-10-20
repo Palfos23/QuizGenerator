@@ -4,9 +4,9 @@
       <router-link to="/" class="nav-brand">Quizzes</router-link>
 
       <template v-if="auth.isAuthenticated.value">
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Create a quiz</router-link>
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">My quizzes</router-link>
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">Daily Quiz</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">Lag en quiz</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">Mine quizzer</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">Dagens quiz</router-link>
         <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
           <div v-for="menu in PLAYER_MENUS" :key="menu.key" class="top-nav-dropdown">
             <button
@@ -57,9 +57,9 @@
         </template>
 
         <div class="top-nav-spacer"></div>
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/account" class="nav-link" @click="onNavClick('/account', 'account')">Account</router-link>
-        <span class="top-nav-user">{{ auth.state.displayName }}<template v-if="auth.isGuest.value"> (guest)</template></span>
-        <button class="btn btn-secondary btn-sm" @click="logout">{{ auth.isGuest.value ? 'Leave' : 'Log out' }}</button>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/account" class="nav-link" @click="onNavClick('/account', 'account')">Konto</router-link>
+        <span class="top-nav-user">{{ auth.state.displayName }}<template v-if="auth.isGuest.value"> (gjest)</template></span>
+        <button class="btn btn-secondary btn-sm" @click="logout">{{ auth.isGuest.value ? 'Forlat' : 'Logg ut' }}</button>
       </template>
       <template v-else>
         <div class="top-nav-spacer"></div>
@@ -71,14 +71,14 @@
     </main>
 
     <footer class="app-footer">
-      <router-link to="/privacy">Privacy Policy</router-link>
-      <router-link to="/cookies">Cookie Policy</router-link>
-      <button type="button" class="app-footer-link-btn" @click="cookieConsent.reset()">Cookie settings</button>
+      <router-link to="/privacy">Personvernerklæring</router-link>
+      <router-link to="/cookies">Retningslinjer for informasjonskapsler</router-link>
+      <button type="button" class="app-footer-link-btn" @click="cookieConsent.reset()">Cookie-innstillinger</button>
     </footer>
 
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
-      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz">Daily Quiz</router-link>
+      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz">Dagens quiz</router-link>
       <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
         <div v-for="menu in [QUIZZES_MENU, ...PLAYER_MENUS, ACCOUNT_MENU]" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
           <button
@@ -120,28 +120,28 @@
           </div>
         </div>
       </template>
-      <button v-if="auth.isAdmin.value || auth.isGuest.value" @click="logout">{{ auth.isGuest.value ? 'Leave' : 'Log out' }}</button>
+      <button v-if="auth.isAdmin.value || auth.isGuest.value" @click="logout">{{ auth.isGuest.value ? 'Forlat' : 'Logg ut' }}</button>
     </nav>
 
     <ToastHost />
     <CookieConsentBanner />
 
     <div v-if="showInactivityWarning" class="modal-backdrop">
-      <div class="modal" role="alertdialog" aria-modal="true" aria-label="Still there?" style="max-width:420px; text-align:center;">
-        <h2 style="margin-top:0;">Still there?</h2>
-        <p class="page-subtitle">You've been inactive for a while - you'll be logged out in {{ inactivityWarningSecondsLeft }}s.</p>
+      <div class="modal" role="alertdialog" aria-modal="true" aria-label="Fortsatt der?" style="max-width:420px; text-align:center;">
+        <h2 style="margin-top:0;">Fortsatt der?</h2>
+        <p class="page-subtitle">Du har vært inaktiv en stund - du blir logget ut om {{ inactivityWarningSecondsLeft }}s.</p>
         <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
-          <button class="btn btn-secondary" @click="logoutNow">Log out now</button>
-          <button class="btn btn-primary" @click="staySignedIn">Stay logged in</button>
+          <button class="btn btn-secondary" @click="logoutNow">Logg ut nå</button>
+          <button class="btn btn-primary" @click="staySignedIn">Forbli innlogget</button>
         </div>
       </div>
     </div>
 
     <div v-else-if="showExpiryWarning" class="modal-backdrop">
-      <div class="modal" role="alertdialog" aria-modal="true" aria-label="Your session will expire soon" style="max-width:420px; text-align:center;">
-        <h2 style="margin-top:0;">Your session will expire soon</h2>
-        <p class="page-subtitle">You'll be logged out shortly and will need to sign in again - staying active won't postpone this one. Might be a good time to wrap up.</p>
-        <button class="btn btn-primary" style="margin-top:8px;" @click="dismissExpiryWarning">Got it</button>
+      <div class="modal" role="alertdialog" aria-modal="true" aria-label="Økten din utløper snart" style="max-width:420px; text-align:center;">
+        <h2 style="margin-top:0;">Økten din utløper snart</h2>
+        <p class="page-subtitle">Du blir snart logget ut og må logge inn på nytt - å være aktiv utsetter ikke dette. Det kan være lurt å runde av nå.</p>
+        <button class="btn btn-primary" style="margin-top:8px;" @click="dismissExpiryWarning">Greit</button>
       </div>
     </div>
   </div>
@@ -164,7 +164,7 @@ const router = useRouter()
 // desktop top nav and the mobile bottom-nav popup. Daily Quiz is deliberately not
 // in either - it has its own standalone nav button, next to Create a quiz/My quizzes.
 //
-// "Weekly" holds only the two weekly boards (Grid, Starting XI); "Games" holds every
+// "Ukentlig" holds only the two weekly boards (Grid, Starting XI); "Spill" holds every
 // party game and its online Battle variants. `key` on an item is only set for the
 // ones that use onNavClick's "re-click while already there" retrigger (see
 // closePlayerMenuItem); Grid/Starting XI never needed that, so theirs stay null.
@@ -175,7 +175,7 @@ const router = useRouter()
 const PLAYER_MENUS = [
   {
     key: 'weekly',
-    label: 'Weekly',
+    label: 'Ukentlig',
     items: [
       { to: '/weekly-grid', label: 'Grid', key: null },
       { to: '/starting-xi', label: 'Starting XI', key: null }
@@ -183,7 +183,7 @@ const PLAYER_MENUS = [
   },
   {
     key: 'games',
-    label: 'Games',
+    label: 'Spill',
     items: [
       { to: '/tension', label: 'Tension', key: 'tension' },
       { to: '/501', label: '501', key: 'fiveOhOne' },
@@ -195,28 +195,28 @@ const PLAYER_MENUS = [
     ]
   }
 ]
-// Mobile bottom bar only: "Create a quiz" and "My quizzes" share one dropdown there (six tabs side by
+// Mobile bottom bar only: "Lag en quiz" and "Mine quizzer" share one dropdown there (six tabs side by
 // side were cramped), with Create first and highlighted since it's the main action. On desktop the top
 // nav has room, so they stay as two separate links. Opened/closed through the same openPlayerMenu as the
 // others ('quizzes' is one more key).
 const QUIZZES_MENU = {
   key: 'quizzes',
-  label: 'Quizzes',
+  label: 'Quizzer',
   items: [
-    { to: '/generate', label: 'Create a quiz', key: 'generate', primary: true },
-    { to: '/my-quizzes', label: 'My quizzes', key: 'myQuizzes' }
+    { to: '/generate', label: 'Lag en quiz', key: 'generate', primary: true },
+    { to: '/my-quizzes', label: 'Mine quizzer', key: 'myQuizzes' }
   ]
 }
 
 // Mobile bottom bar only: the account page (where the display name is changed) had no way in from a phone -
-// the top bar's "Account" link doesn't exist there - so the last tab is now an Account menu holding it
+// the top bar's "Konto" link doesn't exist there - so the last tab is now an Account menu holding it
 // together with Log out.
 const ACCOUNT_MENU = {
   key: 'account',
-  label: 'Account',
+  label: 'Konto',
   items: [
-    { to: '/account', label: 'My account & name', key: 'account' },
-    { action: 'logout', label: 'Log out' }
+    { to: '/account', label: 'Min konto og navn', key: 'account' },
+    { action: 'logout', label: 'Logg ut' }
   ]
 }
 
@@ -248,45 +248,45 @@ function closePlayerMenuItem(path, key) {
 // single `openAdminMenu` (one menu open at a time), mirroring the Games popup.
 const ADMIN_MENUS = [
   {
-    label: 'Questions',
+    label: 'Spørsmål',
     items: [
-      { to: '/admin/questions', label: 'Question bank' },
-      { to: '/admin/question-labels', label: 'Labels' },
-      { to: '/admin/question-submissions', label: 'User submissions' },
-      { to: '/admin/quiz-templates', label: 'Quiz templates' }
+      { to: '/admin/questions', label: 'Spørsmålsbank' },
+      { to: '/admin/question-labels', label: 'Etiketter' },
+      { to: '/admin/question-submissions', label: 'Innsendte spørsmål' },
+      { to: '/admin/quiz-templates', label: 'Quizmaler' }
     ]
   },
   {
-    label: 'Content',
+    label: 'Innhold',
     items: [
-      { to: '/admin/athletes', label: 'Subjects' },
-      { to: '/admin/athlete-pools', label: 'Pools' },
-      { to: '/admin/grid-categories', label: 'Categories' },
-      { to: '/admin/clubs', label: 'Clubs' },
-      { to: '/admin/tension-categories', label: 'Tension categories' }
+      { to: '/admin/athletes', label: 'Emner' },
+      { to: '/admin/athlete-pools', label: 'Emneutvalg' },
+      { to: '/admin/grid-categories', label: 'Kategorier' },
+      { to: '/admin/clubs', label: 'Klubber' },
+      { to: '/admin/tension-categories', label: 'Tension-kategorier' }
     ]
   },
   {
-    label: 'Games',
+    label: 'Spill',
     items: [
-      { to: '/admin/daily-quiz-review', label: 'Daily quiz review' },
-      { to: '/admin/grids', label: 'Weekly grids' },
+      { to: '/admin/daily-quiz-review', label: 'Gjennomgang av dagens quiz' },
+      { to: '/admin/grids', label: 'Ukentlige grids' },
       { to: '/admin/lineups', label: 'Starting XI' },
       { to: '/admin/tension-questions', label: 'Tension' },
       { to: '/admin/501', label: '501' },
       { to: '/admin/imposter', label: 'Imposter' },
       { to: '/admin/bullseye', label: 'Bullseye' },
-      { to: '/admin/penalty-shootouts', label: 'Penalty Shootout' },
+      { to: '/admin/penalty-shootouts', label: 'Straffekonkurranse' },
       { to: '/admin/flashback', label: 'Flashback' }
     ]
   },
   {
-    label: 'Insights',
+    label: 'Innsikt',
     items: [
-      { to: '/admin/statistics', label: 'Statistics' },
-      { to: '/admin/reports', label: 'Reports' },
-      { to: '/admin/expiring-content', label: 'Can expire' },
-      { to: '/admin/duplicate-subjects', label: 'Duplicate subjects' }
+      { to: '/admin/statistics', label: 'Statistikk' },
+      { to: '/admin/reports', label: 'Rapporter' },
+      { to: '/admin/expiring-content', label: 'Kan utløpe' },
+      { to: '/admin/duplicate-subjects', label: 'Dupliserte emner' }
     ]
   }
 ]

@@ -137,6 +137,6 @@ class RoomKickAndHostTransferTest {
 
         assertThatThrownBy(() -> roomService.claimHost(finalRoom, GUEST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("still connected");
+                .hasMessageContaining("fortsatt tilkoblet");
     }
 }

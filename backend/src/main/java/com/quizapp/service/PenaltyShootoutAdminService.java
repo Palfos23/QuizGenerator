@@ -71,7 +71,7 @@ public class PenaltyShootoutAdminService {
     @Transactional
     public void delete(Long id) {
         if (!penaltyShootoutRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No penalty shootout found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke straffekonkurranse med id " + id);
         }
         penaltyShootoutRepository.deleteById(id);
     }
@@ -83,14 +83,14 @@ public class PenaltyShootoutAdminService {
         Set<Integer> orders = new TreeSet<>();
         for (PenaltyKickInputDto k : request.getKicks()) {
             if (!orders.add(k.getKickOrder())) {
-                throw new IllegalArgumentException("Two kicks can't share order " + k.getKickOrder() + ".");
+                throw new IllegalArgumentException("To spark kan ikke dele rekkefølge " + k.getKickOrder() + ".");
             }
         }
         int n = request.getKicks().size();
         for (int expected = 1; expected <= n; expected++) {
             if (!orders.contains(expected)) {
                 throw new IllegalArgumentException(
-                        "Kick order must run 1.." + n + " with no gaps - missing kick " + expected + ".");
+                        "Sparkrekkefølgen må gå fra 1.." + n + " uten hull - mangler spark " + expected + ".");
             }
         }
 
@@ -119,7 +119,7 @@ public class PenaltyShootoutAdminService {
             List<Long> missing = athleteIds.stream()
                     .filter(aid -> !athleteById.containsKey(aid))
                     .collect(Collectors.toList());
-            throw new IllegalArgumentException("No athlete found with id(s) " + missing);
+            throw new IllegalArgumentException("Fant ikke emne med id(er) " + missing);
         }
 
         // Reuse existing kick rows for the same kick order rather than deleting
@@ -175,6 +175,6 @@ public class PenaltyShootoutAdminService {
 
     private PenaltyShootout findShootout(Long id) {
         return penaltyShootoutRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No penalty shootout found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke straffekonkurranse med id " + id));
     }
 }

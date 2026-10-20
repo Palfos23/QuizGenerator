@@ -1,18 +1,18 @@
 <template>
   <div>
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
     <div v-else-if="state" class="grid-page">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;" class="no-print">
         <div style="display:flex; gap:8px;">
-          <router-link to="/starting-xi" class="btn btn-secondary btn-sm">← All boards</router-link>
+          <router-link to="/starting-xi" class="btn btn-secondary btn-sm">← Alle brett</router-link>
           <button class="dq-chip-btn" @click="openScoreboard">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
-            Leaderboard
+            Toppliste
           </button>
         </div>
-        <div class="grid-progress">{{ guessedCount }} / {{ state.slots.length }} found</div>
+        <div class="grid-progress">{{ guessedCount }} / {{ state.slots.length }} funnet</div>
       </div>
       <h1 style="margin:0 0 6px; text-align:center;">{{ state.title }}</h1>
       <p class="page-subtitle" style="text-align:center;">{{ state.competition }}</p>
@@ -26,7 +26,7 @@
         <div v-if="state.scoreFor != null && state.scoreAgainst != null" class="pitch-scoreline-score">
           <span>{{ state.scoreFor }}</span><span class="dash">-</span><span>{{ state.scoreAgainst }}</span>
         </div>
-        <div v-else class="pitch-scoreline-vs">vs</div>
+        <div v-else class="pitch-scoreline-vs">mot</div>
         <div class="pitch-scoreline-team away">
           <GameImage v-if="state.opponentCrestUrl" :src="state.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
           <span>{{ state.opponentName }}</span>
@@ -36,9 +36,9 @@
       <DailyQuizScoreboardModal
         v-if="showScoreboard"
         class="no-print"
-        title="Leaderboard"
-        subtitle="How everyone did on this board."
-        empty-text="Nobody has completed this board yet."
+        title="Toppliste"
+        subtitle="Hvordan det gikk med alle på dette brettet."
+        empty-text="Ingen har fullført dette brettet ennå."
         compact
         :data="boardForModal"
         :loading="scoreboardLoading"
@@ -52,14 +52,14 @@
       </div>
 
       <div v-if="allSolved" class="banner success">
-        <strong>Perfect - you found the whole XI!</strong>
+        <strong>Perfekt - du fant hele laget!</strong>
       </div>
       <div v-else-if="state.revealed" class="banner error">
-        <strong>Board over.</strong> You found {{ guessedCount }} / {{ state.slots.length }} before revealing the rest.
+        <strong>Brettet er over.</strong> Du fant {{ guessedCount }} / {{ state.slots.length }} før du viste resten.
       </div>
       <div v-else-if="gameOver" class="banner error">
-        <strong>Out of lives.</strong> You found {{ guessedCount }} / {{ state.slots.length }}.
-        <button class="btn btn-secondary btn-sm" style="margin-left:8px;" @click="giveUp">Reveal the rest</button>
+        <strong>Tom for liv.</strong> Du fant {{ guessedCount }} / {{ state.slots.length }}.
+        <button class="btn btn-secondary btn-sm" style="margin-left:8px;" @click="giveUp">Vis resten</button>
       </div>
 
       <div v-if="canStillGuess" class="guess-box-wrap no-print">
@@ -67,8 +67,8 @@
           <input
             type="text"
             v-model="searchTerm"
-            placeholder="Search for a player…"
-            aria-label="Search for a player"
+            placeholder="Søk etter en spiller…"
+            aria-label="Søk etter en spiller"
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"
@@ -81,7 +81,7 @@
             </button>
           </div>
         </div>
-        <button class="btn btn-secondary btn-sm" style="margin-top:10px;" @click="giveUp">Give up &amp; reveal remaining answers</button>
+        <button class="btn btn-secondary btn-sm" style="margin-top:10px;" @click="giveUp">Gi opp og vis gjenstående svar</button>
       </div>
 
       <div class="pitch" style="margin-top:16px;">
@@ -172,7 +172,7 @@ async function load() {
     ])
     state.value = fresh
   } catch (e) {
-    error.value = 'Could not load this board.'
+    error.value = 'Kunne ikke laste dette brettet.'
   } finally {
     loading.value = false
   }
@@ -200,7 +200,7 @@ async function submitGuess(athlete) {
       state.value.completed = true
     }
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not submit that guess.'
+    error.value = e.response?.data?.message || 'Kunne ikke sende inn gjetningen.'
   } finally {
     guessing.value = false
   }
@@ -212,7 +212,7 @@ async function giveUp() {
     await preloadImages(fresh.slots.map(s => s.athletePhotoUrl))
     state.value = fresh
   } catch (e) {
-    error.value = 'Could not reveal the remaining answers.'
+    error.value = 'Kunne ikke vise de gjenstående svarene.'
   }
 }
 
@@ -258,7 +258,7 @@ async function updateLeaderboardPreference(include) {
     await api.setLineupLeaderboardPreference(lineupId.value, include)
     scoreboardData.value = await api.getLineupScoreboard(lineupId.value)
   } catch (e) {
-    toast.show('Could not update your leaderboard preference.')
+    toast.show('Kunne ikke oppdatere innstillingen for topplisten.')
     leaderboardOptIn.value = previous
   }
 }

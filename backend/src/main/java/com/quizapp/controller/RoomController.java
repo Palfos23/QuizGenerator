@@ -185,10 +185,10 @@ public class RoomController {
         String email = authentication.getName();
         GameRoom room = roomService.findByCode(code);
         if (!room.getHostEmail().equals(email)) {
-            throw new IllegalStateException("Only the host can restart the game.");
+            throw new IllegalStateException("Bare verten kan starte spillet på nytt.");
         }
         if (room.getStatus() != RoomStatus.FINISHED) {
-            throw new IllegalStateException("This room hasn't finished yet.");
+            throw new IllegalStateException("Dette rommet er ikke ferdig ennå.");
         }
         if (room.getGameType() == RoomGameType.GRID_BATTLE) {
             gridBattleOnlineService.restartForReplay(room);
@@ -222,15 +222,15 @@ public class RoomController {
         String email = authentication.getName();
         GameRoom room = roomService.findByCode(code);
         if (!room.getHostEmail().equals(email)) {
-            throw new IllegalStateException("Only the host can remove a player.");
+            throw new IllegalStateException("Bare verten kan fjerne en spiller.");
         }
         String targetEmail = room.getParticipants().stream()
                 .filter(p -> p.getId().equals(participantId))
                 .findFirst()
                 .map(GameRoomParticipant::getUserEmail)
-                .orElseThrow(() -> new IllegalStateException("That player isn't in this room."));
+                .orElseThrow(() -> new IllegalStateException("Den spilleren er ikke i dette rommet."));
         if (room.getHostEmail().equals(targetEmail)) {
-            throw new IllegalStateException("The host can't remove themselves - leave the room instead.");
+            throw new IllegalStateException("Verten kan ikke fjerne seg selv - forlat rommet i stedet.");
         }
 
         if (room.getGameType() == RoomGameType.GRID_BATTLE) {
@@ -278,7 +278,7 @@ public class RoomController {
     /** Only a real (Google or email/password) account can host - guests may only join. */
     private void requireNotGuest(Authentication authentication) {
         if (isGuest(authentication)) {
-            throw new IllegalStateException("Guests can't host a game - sign in to create a room, or ask the host for a room code to join.");
+            throw new IllegalStateException("Gjester kan ikke være vert for et spill - logg inn for å opprette et rom, eller be verten om en romkode for å bli med.");
         }
     }
 

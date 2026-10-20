@@ -63,7 +63,7 @@ public class LineupBattleOnlineService {
         state.setRoom(room);
         if (lineupIds != null && !lineupIds.isEmpty()) {
             if (lineupIds.size() < 2 || lineupIds.size() > 4) {
-                throw new IllegalArgumentException("Choose 2-4 Starting XI boards to play.");
+                throw new IllegalArgumentException("Velg 2-4 Starting XI-brett å spille.");
             }
             state.setLineupIds(lineupIds);
         } else {
@@ -106,13 +106,13 @@ public class LineupBattleOnlineService {
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can start the game.");
+            throw new IllegalStateException("Bare verten kan starte spillet.");
         }
         if (room.getParticipants().size() < 2) {
-            throw new IllegalStateException("Need at least 2 players to start.");
+            throw new IllegalStateException("Det trengs minst 2 spillere for å starte.");
         }
         LineupBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new IllegalStateException("This room isn't set up yet."));
+                .orElseThrow(() -> new IllegalStateException("Dette rommet er ikke satt opp ennå."));
 
         for (GameRoomParticipant p : room.getParticipants()) {
             LineupBattleParticipantState ps = new LineupBattleParticipantState();
@@ -139,7 +139,7 @@ public class LineupBattleOnlineService {
         }
 
         LineupBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         List<LineupBattleParticipantState> participantStates = participantStateRepository.findByRoomState_Id(state.getId());
 
         dto.setTotalLineups(state.getRandomTotalCount() != null ? state.getRandomTotalCount() : state.getLineupIds().size());
@@ -166,7 +166,7 @@ public class LineupBattleOnlineService {
 
         Long currentLineupId = state.getLineupIds().get(state.getCurrentLineupIndex());
         Lineup lineup = lineupRepository.findById(currentLineupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Starting XI board no longer exists"));
+                .orElseThrow(() -> new ResourceNotFoundException("Starting XI-brettet finnes ikke lenger"));
         dto.setCurrentLineupId(currentLineupId);
         dto.setLineupTitle(lineup.getTitle());
         dto.setLineupCompetition(lineup.getCompetition());
@@ -233,17 +233,17 @@ public class LineupBattleOnlineService {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         LineupBattleStateDto currentView = getState(room, requestingEmail);
 
-        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
-        if (currentView.isLineupComplete()) throw new IllegalStateException("This board is already finished.");
+        if (currentView.isFinished()) throw new IllegalStateException("Dette spillet er allerede ferdig.");
+        if (currentView.isLineupComplete()) throw new IllegalStateException("Dette brettet er allerede ferdig.");
         if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
-            throw new IllegalStateException("It's not your turn.");
+            throw new IllegalStateException("Det er ikke din tur.");
         }
 
         LineupBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         Long currentLineupId = state.getLineupIds().get(state.getCurrentLineupIndex());
         Lineup lineup = lineupRepository.findById(currentLineupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Starting XI board no longer exists"));
+                .orElseThrow(() -> new ResourceNotFoundException("Starting XI-brettet finnes ikke lenger"));
 
         Set<Long> solvedEntryIds = solvedEntryRepository.findByRoomState_Id(state.getId()).stream()
                 .map(LineupBattleSolvedEntry::getLineupEntryId).collect(Collectors.toSet());
@@ -254,7 +254,7 @@ public class LineupBattleOnlineService {
 
         LineupBattleParticipantState myState = participantStateRepository
                 .findByRoomState_IdAndParticipant_Id(state.getId(), me.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No progress state for you in this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen fremgang for deg i dette rommet"));
 
         if (matched != null) {
             LineupBattleSolvedEntry se = new LineupBattleSolvedEntry();
@@ -281,18 +281,18 @@ public class LineupBattleOnlineService {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         LineupBattleStateDto currentView = getState(room, requestingEmail);
 
-        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
-        if (currentView.isLineupComplete()) throw new IllegalStateException("This board is already finished.");
+        if (currentView.isFinished()) throw new IllegalStateException("Dette spillet er allerede ferdig.");
+        if (currentView.isLineupComplete()) throw new IllegalStateException("Dette brettet er allerede ferdig.");
         if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
-            throw new IllegalStateException("It's not your turn.");
+            throw new IllegalStateException("Det er ikke din tur.");
         }
 
         LineupBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         LineupBattleParticipantState myState = participantStateRepository
                 .findByRoomState_IdAndParticipant_Id(state.getId(), me.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No progress state for you in this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen fremgang for deg i dette rommet"));
 
         // Same cost as a wrong guess - passing isn't a free way to stall.
         myState.setLivesUsedThisLineup(myState.getLivesUsedThisLineup() + 1);
@@ -309,15 +309,15 @@ public class LineupBattleOnlineService {
     @Transactional
     public LineupBattleStateDto advanceToNextLineup(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can move on to the next board.");
+            throw new IllegalStateException("Bare verten kan gå videre til neste brett.");
         }
         LineupBattleStateDto current = getState(room, requestingEmail);
         if (!current.isLineupComplete()) {
-            throw new IllegalStateException("This board isn't finished yet.");
+            throw new IllegalStateException("Dette brettet er ikke ferdig ennå.");
         }
 
         LineupBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         solvedEntryRepository.deleteByRoomState_Id(state.getId());
         for (LineupBattleParticipantState ps : participantStateRepository.findByRoomState_Id(state.getId())) {
@@ -350,21 +350,21 @@ public class LineupBattleOnlineService {
     public LineupBattleStateDto chooseLineup(GameRoom room, String requestingEmail, Long lineupId) {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         LineupBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         if (state.getRandomTotalCount() == null) {
-            throw new IllegalStateException("This room isn't using random board selection.");
+            throw new IllegalStateException("Dette rommet bruker ikke tilfeldig brettvalg.");
         }
         if (state.getLineupIds().size() > state.getCurrentLineupIndex()) {
-            throw new IllegalStateException("A board has already been chosen for this round.");
+            throw new IllegalStateException("Et brett er allerede valgt for denne runden.");
         }
         List<GameRoomParticipant> ordered = room.getParticipants();
         GameRoomParticipant picker = ordered.get(state.getCurrentLineupIndex() % ordered.size());
         if (!me.getId().equals(picker.getId())) {
-            throw new IllegalStateException("It's not your turn to choose.");
+            throw new IllegalStateException("Det er ikke din tur til å velge.");
         }
         if (!state.getPendingChoiceIds().contains(lineupId)) {
-            throw new IllegalArgumentException("That wasn't one of the offered choices.");
+            throw new IllegalArgumentException("Det var ikke ett av de tilbudte valgene.");
         }
 
         state.getLineupIds().add(lineupId);
@@ -384,25 +384,25 @@ public class LineupBattleOnlineService {
     public LineupBattleStateDto rerollChoices(GameRoom room, String requestingEmail) {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         LineupBattleRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         if (state.getRandomTotalCount() == null) {
-            throw new IllegalStateException("This room isn't using random board selection.");
+            throw new IllegalStateException("Dette rommet bruker ikke tilfeldig brettvalg.");
         }
         if (state.getLineupIds().size() > state.getCurrentLineupIndex()) {
-            throw new IllegalStateException("A board has already been chosen for this round.");
+            throw new IllegalStateException("Et brett er allerede valgt for denne runden.");
         }
         List<GameRoomParticipant> ordered = room.getParticipants();
         GameRoomParticipant picker = ordered.get(state.getCurrentLineupIndex() % ordered.size());
         if (!me.getId().equals(picker.getId())) {
-            throw new IllegalStateException("It's not your turn to choose.");
+            throw new IllegalStateException("Det er ikke din tur til å velge.");
         }
 
         List<Long> exclude = new ArrayList<>(state.getLineupIds());
         exclude.addAll(state.getPendingChoiceIds());
         List<LineupSummaryDto> fresh = lineupPlayService.getBattleRoundChoices(3, exclude);
         if (fresh.isEmpty()) {
-            throw new IllegalStateException("No other boards left to show.");
+            throw new IllegalStateException("Ingen andre brett igjen å vise.");
         }
         state.setPendingChoiceIds(fresh.stream().map(LineupSummaryDto::getId).collect(Collectors.toSet()));
         roomStateRepository.save(state);

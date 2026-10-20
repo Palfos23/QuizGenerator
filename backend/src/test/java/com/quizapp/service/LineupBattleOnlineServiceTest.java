@@ -111,14 +111,14 @@ class LineupBattleOnlineServiceTest {
 
         assertThatThrownBy(() -> lineupBattleOnlineService.chooseLineup(room, GUEST, offeredId))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("not your turn");
+                .hasMessageContaining("ikke din tur");
 
         Lineup notOffered = lineupRepository.findAll().stream()
                 .filter(l -> state.getLineupChoices().stream().noneMatch(c -> c.getId().equals(l.getId())))
                 .findFirst().orElseThrow();
         assertThatThrownBy(() -> lineupBattleOnlineService.chooseLineup(room, HOST, notOffered.getId()))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("offered");
+                .hasMessageContaining("tilbudte");
     }
 
     @Test
@@ -231,7 +231,7 @@ class LineupBattleOnlineServiceTest {
 
         assertThatThrownBy(() -> lineupBattleOnlineService.rerollChoices(room, GUEST))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("not your turn");
+                .hasMessageContaining("ikke din tur");
 
         LineupBattleStateDto rerolled = lineupBattleOnlineService.rerollChoices(room, HOST);
 

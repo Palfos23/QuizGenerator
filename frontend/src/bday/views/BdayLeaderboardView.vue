@@ -1,10 +1,10 @@
 <template>
   <BdayPinGate>
     <div style="max-width:640px; margin:40px auto; padding:0 20px; text-align:center;">
-      <h1 style="font-size:2.4rem; margin-bottom:4px;">🎉 Leaderboard 🎉</h1>
-      <p class="page-subtitle">Updates automatically as guests finish.</p>
+      <h1 style="font-size:2.4rem; margin-bottom:4px;">🎉 Toppliste 🎉</h1>
+      <p class="page-subtitle">Oppdateres automatisk når gjestene blir ferdige.</p>
 
-      <div v-if="!entries.length" class="empty-state" style="margin-top:24px;">Nobody's finished yet…</div>
+      <div v-if="!entries.length" class="empty-state" style="margin-top:24px;">Ingen er ferdige ennå…</div>
       <div v-else style="display:flex; flex-direction:column; gap:10px; margin-top:24px;">
         <div
           v-for="(e, i) in entries"

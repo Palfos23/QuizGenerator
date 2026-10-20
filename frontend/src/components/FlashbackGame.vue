@@ -1,18 +1,18 @@
 <template>
   <div>
-    <LoadingState v-if="loading" message="Loading the round…" full />
+    <LoadingState v-if="loading" message="Laster runden…" full />
 
     <div v-else-if="!roundState" class="empty-state">
-      <p>Couldn't load this round.</p>
-      <button class="btn btn-primary" @click="startRound">Try again</button>
+      <p>Kunne ikke laste denne runden.</p>
+      <button class="btn btn-primary" @click="startRound">Prøv igjen</button>
     </div>
 
     <template v-else>
       <div class="grid-status-bar">
-        <div class="grid-progress" style="text-align:center; width:100%;">Round {{ roundIndex + 1 }} / {{ totalRounds }}</div>
+        <div class="grid-progress" style="text-align:center; width:100%;">Runde {{ roundIndex + 1 }} / {{ totalRounds }}</div>
       </div>
 
-      <h1 style="text-align:center; margin:6px 0 20px;">Round {{ roundIndex + 1 }}</h1>
+      <h1 style="text-align:center; margin:6px 0 20px;">Runde {{ roundIndex + 1 }}</h1>
 
       <div class="mp-player-row">
         <div
@@ -23,27 +23,27 @@
           :style="{ borderColor: p.color }"
         >
           <strong>{{ p.name }}</strong>
-          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Score: {{ scores[p.name] || 0 }}</div>
+          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Poeng: {{ scores[p.name] || 0 }}</div>
         </div>
       </div>
 
       <div v-if="!revealed" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <div class="guess-box-header">
-            <p style="margin:0; color:var(--gold); font-weight:600;">{{ currentTurnPlayerName }}'s turn</p>
+            <p style="margin:0; color:var(--gold); font-weight:600;">{{ currentTurnPlayerName }}sin tur</p>
           </div>
           <form @submit.prevent="submitCurrentGuess">
             <input
               type="number"
               v-model.number="guessValue"
-              placeholder="Guess a year…"
+              placeholder="Gjett et år…"
               style="background-image:none; padding-left:20px; text-align:center;"
               autocomplete="off"
               @input="duplicateGuessError = false"
             />
           </form>
           <p v-if="duplicateGuessError" style="color:var(--coral); font-size:0.85rem; margin:8px 0 0; text-align:center;">
-            That year's already been guessed this round.
+            Det året er allerede gjettet denne runden.
           </p>
           <button
             type="button"
@@ -51,12 +51,12 @@
             style="margin-top:10px; width:100%;"
             :disabled="guessValue === null || guessValue === ''"
             @click="submitCurrentGuess"
-          >Guess</button>
+          >Gjett</button>
         </div>
         <!-- Only before anyone's guessed - once a guess is in, swapping would throw it away -->
         <div v-if="hintIndex === 0 && !roundGuesses.length" style="text-align:center; margin-top:10px;">
           <button type="button" class="btn btn-secondary btn-sm" :disabled="swapping" @click="swapRound">
-            {{ swapping ? 'Finding another…' : '↻ Already had this one? Pick a different year' }}
+            {{ swapping ? 'Finner et nytt…' : '↻ Hatt denne før? Velg et annet år' }}
           </button>
         </div>
       </div>
@@ -70,7 +70,7 @@
             <div class="tension-reveal-answer" style="font-weight:400; font-style:italic;">{{ hint }}</div>
           </div>
           <div class="tension-reveal-guessers">
-            <span v-if="!guessesForHint(hIdx).length" class="tension-reveal-nobody">Nobody guessed</span>
+            <span v-if="!guessesForHint(hIdx).length" class="tension-reveal-nobody">Ingen gjettet</span>
             <span
               v-for="g in guessesForHint(hIdx)"
               :key="g.player"
@@ -84,7 +84,7 @@
 
       <div v-if="revealed" class="modal-backdrop">
         <div class="completion-popup">
-          <h2 style="margin-top:0;">Round complete!</h2>
+          <h2 style="margin-top:0;">Runden er ferdig!</h2>
 
           <div class="score-square-grid">
             <div v-for="(p, i) in leaderboardForRound" :key="p.name" class="score-square" :class="{ leader: i === 0 }">
@@ -100,7 +100,7 @@
           </div>
 
           <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="nextRound">
-            {{ roundIndex + 1 < totalRounds ? 'Next round' : 'Finish game' }}
+            {{ roundIndex + 1 < totalRounds ? 'Neste runde' : 'Fullfør spillet' }}
           </button>
         </div>
       </div>
@@ -160,13 +160,13 @@ function colorOf(name) {
 }
 
 const resultLabel = computed(() => {
-  const names = roundWinners.value.join(' and ')
+  const names = roundWinners.value.join('og')
   if (wasExactMatch.value) {
-    return roundWinners.value.length > 1 ? `🎯 ${names} both nailed it!` : `🎯 ${names} nailed it!`
+    return roundWinners.value.length > 1 ? `🎯 ${names} traff begge!` : `🎯 ${names} traff!`
   }
-  if (roundWinners.value.length > 1) return `Nobody got it exactly - ${names} tied closest`
-  if (roundWinners.value.length === 1) return `Nobody got it exactly - ${names} was closest`
-  return 'The year was'
+  if (roundWinners.value.length > 1) return `Ingen traff helt riktig - ${names} var like nær`
+  if (roundWinners.value.length === 1) return `Ingen traff helt riktig - ${names} var nærmest`
+  return 'Året var'
 })
 
 const leaderboardForRound = computed(() =>
@@ -256,7 +256,7 @@ async function startRound() {
   try {
     const picks = await api.fetchFlashbackRoundChoices(1, [...chosenQuestions.value.map(q => q.id), ...skippedQuestionIds.value])
     if (!picks.length) {
-      toast.show('No more years left to play - ask an admin to add more.', 'error')
+      toast.show('Ikke flere år igjen å spille - be en administrator legge til flere.', 'error')
       return
     }
     const q = picks[0]
@@ -272,7 +272,7 @@ async function startRound() {
     guessValue.value = null
     duplicateGuessError.value = false
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Kunne ikke laste neste runde - prøv igjen.', 'error')
   } finally {
     loading.value = false
   }
@@ -290,7 +290,7 @@ async function swapRound() {
     const exclude = [...chosenQuestions.value.map(q => q.id), ...skippedQuestionIds.value]
     const picks = await api.fetchFlashbackRoundChoices(1, exclude)
     if (!picks.length) {
-      toast.show('No other years left to swap to.', 'error')
+      toast.show('Ingen andre år igjen å bytte til.', 'error')
       return
     }
     skippedQuestionIds.value = [...skippedQuestionIds.value, roundState.value.id]
@@ -299,7 +299,7 @@ async function swapRound() {
     guessValue.value = null
     duplicateGuessError.value = false
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Could not load another year - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Kunne ikke laste et annet år - prøv igjen.', 'error')
   } finally {
     swapping.value = false
   }

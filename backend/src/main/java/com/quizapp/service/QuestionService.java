@@ -36,7 +36,7 @@ public class QuestionService {
     @Transactional(readOnly = true)
     public QuestionDto findById(Long id) {
         Question question = questionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No question found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke spørsmål med id " + id));
         return QuestionMapper.toDto(question);
     }
 
@@ -142,7 +142,7 @@ public class QuestionService {
     @Transactional
     public QuestionDto update(Long id, QuestionDto dto) {
         Question existing = questionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No question found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke spørsmål med id " + id));
 
         existing.setQuestionText(dto.getQuestionText());
         existing.setCategory(dto.getCategory());
@@ -160,7 +160,7 @@ public class QuestionService {
     @Transactional
     public void delete(Long id) {
         if (!questionRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No question found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke spørsmål med id " + id);
         }
         questionRepository.deleteById(id);
     }
@@ -186,7 +186,7 @@ public class QuestionService {
         if (found.size() != Set.copyOf(labelIds).size()) {
             List<Long> foundIds = found.stream().map(QuestionLabel::getId).collect(Collectors.toList());
             List<Long> missing = labelIds.stream().filter(id -> !foundIds.contains(id)).collect(Collectors.toList());
-            throw new IllegalArgumentException("No label found with id(s) " + missing);
+            throw new IllegalArgumentException("Fant ikke etikett med id(er) " + missing);
         }
         return Set.copyOf(found);
     }

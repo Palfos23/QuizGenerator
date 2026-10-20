@@ -22,25 +22,25 @@
     />
 
     <div class="answer-box" v-if="showAnswer">
-      <span class="answer-label">Answer</span>
+      <span class="answer-label">Svar</span>
       {{ question.answer }}
     </div>
 
     <button class="btn btn-secondary btn-sm no-print reveal-btn" @click="showAnswer = !showAnswer">
-      {{ showAnswer ? 'Hide answer' : 'Show answer' }}
+      {{ showAnswer ? 'Skjul svaret' : 'Vis svaret' }}
     </button>
 
     <div class="question-card-actions no-print" v-if="editable">
       <div class="reorder-buttons">
-        <button class="btn btn-secondary btn-sm icon-btn" :disabled="isFirst" @click="$emit('move-up')" aria-label="Move up">↑</button>
-        <button class="btn btn-secondary btn-sm icon-btn" :disabled="isLast" @click="$emit('move-down')" aria-label="Move down">↓</button>
+        <button class="btn btn-secondary btn-sm icon-btn" :disabled="isFirst" @click="$emit('move-up')" aria-label="Flytt opp">↑</button>
+        <button class="btn btn-secondary btn-sm icon-btn" :disabled="isLast" @click="$emit('move-down')" aria-label="Flytt ned">↓</button>
       </div>
       <div style="flex:1;"></div>
       <button class="btn btn-secondary btn-sm" :disabled="busy" @click="$emit('discard')">
-        Discard &amp; replace
+        Forkast og bytt ut
       </button>
       <button class="btn btn-danger btn-sm" :disabled="busy" @click="$emit('remove')">
-        Remove
+        Fjern
       </button>
     </div>
   </div>

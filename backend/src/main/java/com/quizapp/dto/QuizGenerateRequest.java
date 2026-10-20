@@ -24,7 +24,7 @@ public class QuizGenerateRequest {
     private Integer maxDifficulty;
 
     // e.g. [{category: "Sport", numberOfQuestions: 3}, {category: "Film", numberOfQuestions: 4}]
-    @NotEmpty(message = "Pick at least one category and how many questions you want from it")
+    @NotEmpty(message = "Velg minst én kategori og hvor mange spørsmål du vil ha fra den")
     @Valid
     private List<CategorySelectionDto> categorySelections;
 

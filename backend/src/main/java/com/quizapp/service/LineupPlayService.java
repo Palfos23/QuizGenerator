@@ -148,7 +148,7 @@ public class LineupPlayService {
     @Transactional
     public void setLeaderboardPreference(Long lineupId, String userEmail, boolean includeOnLeaderboard) {
         LineupAttempt attempt = lineupAttemptRepository.findByLineup_IdAndUser_Email(lineupId, userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("No attempt found for this board."));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke forsøk for dette brettet."));
         attempt.setIncludeOnLeaderboard(includeOnLeaderboard);
         lineupAttemptRepository.save(attempt);
     }
@@ -299,7 +299,7 @@ public class LineupPlayService {
         LineupAttempt attempt = findOrCreateAttempt(lineup, userEmail);
 
         if (attempt.isCompleted()) {
-            throw new IllegalArgumentException("This board is already finished.");
+            throw new IllegalArgumentException("Dette brettet er allerede ferdig.");
         }
 
         LineupGuessResultDto result = new LineupGuessResultDto();
@@ -349,7 +349,7 @@ public class LineupPlayService {
         return lineupAttemptRepository.findByLineup_IdAndUser_Email(lineup.getId(), userEmail)
                 .orElseGet(() -> {
                     AppUser owner = appUserRepository.findByEmail(userEmail)
-                            .orElseThrow(() -> new ResourceNotFoundException("No account found for " + userEmail));
+                            .orElseThrow(() -> new ResourceNotFoundException("Fant ikke konto for " + userEmail));
                     LineupAttempt fresh = new LineupAttempt();
                     fresh.setLineup(lineup);
                     fresh.setUser(owner);
@@ -400,7 +400,7 @@ public class LineupPlayService {
 
     private Lineup findLineup(Long id) {
         return lineupRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No Starting XI board found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke Starting XI-brett med id " + id));
     }
 
     private Comparator<LineupEntry> slotOrder() {

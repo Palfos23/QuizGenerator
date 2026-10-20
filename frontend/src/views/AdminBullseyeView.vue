@@ -6,19 +6,18 @@
         <div>
           <h1>Bullseye <span v-if="!loading && questions.length" class="header-count">{{ questions.length }}</span></h1>
           <p class="page-subtitle">
-            Create and manage Bullseye questions - a target number, and every
-            athlete's real stat value for it.
+            Lag og administrer Bullseye-spørsmål - et måltall, og hver utøvers faktiske statistikkverdi for det.
           </p>
         </div>
-        <button class="btn btn-primary" @click="openCreate">+ Create question</button>
+        <button class="btn btn-primary" @click="openCreate">+ Lag spørsmål</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
       <div v-else-if="!questions.length" class="empty-state friendly">
-        No Bullseye questions yet. Create your first one here.
+        Ingen Bullseye-spørsmål ennå. Lag ditt første her.
       </div>
 
       <template v-else>
@@ -29,28 +28,28 @@
         :sorts="questionSorts"
         :total-count="questions.length"
         :filtered-count="filteredQuestions.length"
-        placeholder="Search questions by title, category or stat…"
+        placeholder="Søk etter spørsmål på tittel, kategori eller statistikk…"
       />
 
-      <div v-if="!filteredQuestions.length" class="empty-state">No questions match your search.</div>
+      <div v-if="!filteredQuestions.length" class="empty-state">Ingen spørsmål samsvarer med søket ditt.</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="q in pagedQuestions" :key="q.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ q.title }}
-              <span v-if="q.excludedFromBullseye" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">Not in Bullseye</span>
-              <span v-if="q.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
-              <span v-if="q.canExpire" class="tag" style="background:rgba(216, 67, 43, 0.15); color:var(--gold); margin-left:6px;">Can expire</span>
+              <span v-if="q.excludedFromBullseye" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">Ikke i Bullseye</span>
+              <span v-if="q.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Automatisk utvalg</span>
+              <span v-if="q.canExpire" class="tag" style="background:rgba(216, 67, 43, 0.15); color:var(--gold); margin-left:6px;">Kan utløpe</span>
             </div>
             <div class="saved-quiz-meta">
-              {{ sportLabel(q.sport) }} · {{ q.entryCount }} answers · "{{ q.groupDigits === false ? q.targetValue : formatNumber(q.targetValue) }} {{ q.statLabel }}"
+              {{ sportLabel(q.sport) }} · {{ q.entryCount }} svar · "{{ q.groupDigits === false ? q.targetValue : formatNumber(q.targetValue) }} {{ q.statLabel }}"
             </div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(q.id)">Edit</button>
-            <button class="btn btn-secondary btn-sm" @click="duplicateQuestion(q.id)">⧉ Duplicate</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Delete</button>
+            <button class="btn btn-secondary btn-sm" @click="openEdit(q.id)">Rediger</button>
+            <button class="btn btn-secondary btn-sm" @click="duplicateQuestion(q.id)">⧉ Dupliser</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(q)">Slett</button>
           </div>
         </div>
       </div>
@@ -62,18 +61,18 @@
     <!-- Builder view -->
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-        <h1 style="margin:0;">{{ editingQuestionId ? 'Edit question' : 'Create question' }}</h1>
-        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Back to list</button>
+        <h1 style="margin:0;">{{ editingQuestionId ? 'Rediger spørsmål' : 'Lag spørsmål' }}</h1>
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til listen</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title <span class="picker-hint">admin-only label, not shown to players</span><input type="text" v-model="form.title" placeholder="e.g. Premier League 2024/25 goalscorers" /></label>
+        <label>Tittel <span class="picker-hint">intern merkelapp, vises ikke for spillere</span><input type="text" v-model="form.title" placeholder="f.eks. Målscorere i Premier League 2024/25" /></label>
       </div>
 
       <div class="field">
-        <label>Category <span class="picker-hint">choose one</span></label>
+        <label>Kategori <span class="picker-hint">velg en</span></label>
         <div class="language-row">
           <button
             v-for="s in gridCategories.categories.value"
@@ -89,65 +88,61 @@
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:140px;">
-          <label>Target number<input type="number" v-model.number="form.targetValue" placeholder="13" /></label>
+          <label>Måltall<input type="number" v-model.number="form.targetValue" placeholder="13" /></label>
         </div>
         <div style="flex:2; min-width:220px;">
-          <label>Rest of the prompt<input type="text" v-model="form.statLabel" placeholder="goals in the Premier League 2024/25" /></label>
+          <label>Resten av oppgaven<input type="text" v-model="form.statLabel" placeholder="mål i Premier League 2024/25" /></label>
         </div>
       </div>
       <p class="page-subtitle" style="margin-top:-8px;">
-        Players will see: <strong>"{{ form.targetValue !== null ? (form.groupDigits ? formatNumber(form.targetValue) : form.targetValue) : '…' }} {{ form.statLabel || '…' }}"</strong>
+        Spillere ser: <strong>"{{ form.targetValue !== null ? (form.groupDigits ? formatNumber(form.targetValue) : form.targetValue) : '…' }} {{ form.statLabel || '…' }}"</strong>
       </p>
 
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.groupDigits" style="width:auto;" />
-          Group digits (1 450 000)
+          Grupper sifre (1 450 000)
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
-          Turn this off for a number that isn't a count - a year, for example, where
-          grouping ("1 798") would misread as a value in the thousands.
+          Slå dette av for et tall som ikke er en telling - for eksempel et årstall, der gruppering ("1 798") ville blitt misforstått som en verdi i tusener.
         </p>
       </div>
 
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.entireCategoryPool" style="width:auto;" />
-          Use every subject in "{{ form.sport || '…' }}" as the pool
+          Bruk alle emner i "{{ form.sport || '…' }}" som utvalg
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
-          Every subject in this category becomes guessable automatically, including ones added to it
-          later - nothing to re-import. Anyone not listed below as an answer just resolves to 0 if
-          picked. You still add the ones with a real stat value below.
+          Alle emner i denne kategorien kan gjettes automatisk, inkludert de som legges til senere - ingenting å importere på nytt. Alle som ikke er oppført under som svar, gir 0 hvis de velges. Du legger fortsatt til de med en faktisk statistikkverdi under.
         </p>
       </div>
 
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.excludedFromBullseye" style="width:auto;" />
-          Exclude from Bullseye
+          Utelat fra Bullseye
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
-          Use this once a question's stat values are outdated - it stops being
-          offered to Bullseye's random or manual pick without deleting it.
+          Bruk dette når et spørsmåls statistikkverdier er utdaterte - det slutter å tilbys i Bullseyes tilfeldige eller manuelle valg uten å bli slettet.
         </p>
       </div>
 
       <div class="field option-card">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
-          Can expire
+          Kan utløpe
           <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
-            e.g. "current all-time top goalscorer" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+            f.eks. "nåværende all-time toppscorer" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.
           </div>
         </label>
       </div>
 
       <div class="field">
         <label>
-          {{ form.entireCategoryPool ? 'Answers with a known value' : 'Answers' }}
+          {{ form.entireCategoryPool ? 'Svar med en kjent verdi' : 'Svar' }}
           <span class="picker-hint">
-            {{ form.entireCategoryPool ? 'everyone else in the category is guessable too, resolving to 0' : 'every athlete a player could name, with their real stat value' }}
+            {{ form.entireCategoryPool ? 'alle andre i kategorien kan også gjettes, og gir 0' : 'hver utøver en spiller kan nevne, med faktisk statistikkverdi' }}
           </span>
         </label>
 
@@ -155,45 +150,42 @@
           <input
             type="text"
             v-model="athleteSearchTerm"
-            placeholder="Search subjects by name…"
+            placeholder="Søk etter emner på navn…"
             style="flex:1; min-width:180px;"
           />
         </div>
 
         <div style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <button class="btn btn-secondary btn-sm" :disabled="!form.sport || importingAllInCategory" @click="importAllInCategory">
-            {{ importingAllInCategory ? 'Importing…' : `+ Import every subject in "${form.sport || '…'}"` }}
+            {{ importingAllInCategory ? 'Importerer…' : `+ Importer alle emner i "${form.sport || '…'}"` }}
           </button>
           <button class="btn btn-secondary btn-sm" :disabled="!form.sport || importingCsv" @click="triggerCsvUpload">
-            {{ importingCsv ? 'Importing…' : '+ Import from CSV' }}
+            {{ importingCsv ? 'Importerer…' : '+ Importer fra CSV' }}
           </button>
           <button class="btn btn-secondary btn-sm" :disabled="!form.sport || loadingFiveOhOneCategories" @click="toggleFiveOhOnePicker">
-            {{ loadingFiveOhOneCategories ? 'Loading…' : '+ Import from 501 quiz' }}
+            {{ loadingFiveOhOneCategories ? 'Laster…' : '+ Importer fra 501-quiz' }}
           </button>
           <button class="btn btn-secondary btn-sm" :disabled="!entries.length" @click="downloadEntriesCsv">
-            ⇩ Download CSV
+            ⇩ Last ned CSV
           </button>
           <input ref="csvInput" type="file" accept=".csv,text/csv" style="display:none;" @change="handleCsvFile" />
         </div>
         <p class="page-subtitle" style="margin-top:-4px;">
-          CSV format: one row per answer, <code>name,value</code> - e.g. <code>Erling Haaland,27</code>. A
-          501 quiz's subjects and values import the same way. Names are matched against existing subjects
-          in "{{ form.sport || '…' }}"; anything unmatched is skipped so you can add that subject first and
-          re-import. Every row here still needs a value filled in before saving.
+          CSV-format: én rad per svar, <code>name,value</code> - e.g. <code>Erling Haaland,27</code>. Emner og verdier fra en 501-quiz importeres på samme måte. Navn matches mot eksisterende emner i "{{ form.sport || '…' }}"; alt som ikke matches hoppes over, slik at du kan legge til emnet først og importere på nytt. Hver rad her må fortsatt ha en verdi fylt inn før lagring.
         </p>
 
         <div
           v-if="showFiveOhOnePicker"
           style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:12px 14px; border:1px solid var(--border); border-radius: 2px; background:rgba(27, 26, 23, 0.06);"
         >
-          <span v-if="loadingFiveOhOneCategories" style="color:var(--text-dim);">Loading 501 quizzes…</span>
-          <span v-else-if="!fiveOhOneCategories.length" style="color:var(--text-dim);">No 501 quizzes exist yet.</span>
+          <span v-if="loadingFiveOhOneCategories" style="color:var(--text-dim);">Laster 501-quizer…</span>
+          <span v-else-if="!fiveOhOneCategories.length" style="color:var(--text-dim);">Ingen 501-quizer finnes ennå.</span>
           <template v-else>
             <div class="field" style="margin-bottom:0; flex:1; min-width:200px;">
               <select v-model.number="selectedFiveOhOneCategoryId">
-                <option :value="null" disabled>Choose a 501 quiz…</option>
+                <option :value="null" disabled>Velg en 501-quiz…</option>
                 <option v-for="c in fiveOhOneCategories" :key="c.id" :value="c.id">
-                  {{ c.title }} ({{ c.entryCount }} subject{{ c.entryCount === 1 ? '' : 's' }})
+                  {{ c.title }} ({{ c.entryCount }} emne{{ c.entryCount === 1 ? '' : 'r' }})
                 </option>
               </select>
             </div>
@@ -202,24 +194,24 @@
               :disabled="!selectedFiveOhOneCategoryId || importingFiveOhOne"
               @click="importFromFiveOhOne"
             >
-              {{ importingFiveOhOne ? 'Importing…' : 'Import' }}
+              {{ importingFiveOhOne ? 'Importerer…' : 'Importer' }}
             </button>
           </template>
-          <button class="btn btn-secondary btn-sm" @click="showFiveOhOnePicker = false">Cancel</button>
+          <button class="btn btn-secondary btn-sm" @click="showFiveOhOnePicker = false">Avbryt</button>
         </div>
 
         <div v-if="csvUnmatchedNames.length" style="background:rgba(216, 67, 43, 0.1); border:1px solid rgba(216, 67, 43, 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:10px;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
             <strong style="color:var(--gold);">
-              {{ csvUnmatchedNames.length }} name{{ csvUnmatchedNames.length > 1 ? 's' : '' }} weren't found in "{{ form.sport }}"
+              {{ csvUnmatchedNames.length }} navn ble ikke funnet i "{{ form.sport }}"
             </strong>
             <div style="display:flex; gap:8px;">
-              <button class="btn btn-primary btn-sm" @click="showAddSubjectsModal = true">+ Add as subjects</button>
-              <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">Dismiss</button>
+              <button class="btn btn-primary btn-sm" @click="showAddSubjectsModal = true">+ Legg til som emner</button>
+              <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">Lukk</button>
             </div>
           </div>
           <p class="page-subtitle" style="margin:6px 0 10px;">
-            Add these as subjects now, or fix a typo in the source and re-import.
+            Legg disse til som emner nå, eller rett en skrivefeil i kilden og importer på nytt.
           </p>
           <ul style="margin:0; padding-left:20px; max-height:200px; overflow-y:auto; line-height:1.8;">
             <li v-for="row in csvUnmatchedNames" :key="row.name">{{ row.name }}</li>
@@ -255,20 +247,20 @@
         </div>
 
         <div v-if="!entries.length" class="empty-state" style="padding:20px;">
-          No answers added yet - search above to add subjects with a real stat value.
+          Ingen svar lagt til ennå - søk over for å legge til emner med en faktisk statistikkverdi.
         </div>
 
         <div v-else class="candidate-list">
           <input
             type="text"
             v-model="entryFilterTerm"
-            placeholder="Find someone already in this list…"
+            placeholder="Finn noen som allerede er i denne listen…"
             class="search-input"
             style="margin-bottom:12px;"
           />
 
           <div v-if="!filteredEntries.length" class="empty-state" style="padding:20px;">
-            Nobody in this list matches "{{ entryFilterTerm }}".
+            Ingen i denne listen samsvarer med "{{ entryFilterTerm }}".
           </div>
 
           <template v-else>
@@ -277,7 +269,7 @@
               {{ e.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ e.team }}</span>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
-              <input type="number" v-model.number="e.statValue" placeholder="Stat value" style="width:110px;" />
+              <input type="number" v-model.number="e.statValue" placeholder="Statistikkverdi" style="width:110px;" />
             </div>
             <button class="btn btn-danger btn-sm" @click="removeEntry(e)">✕</button>
           </div>
@@ -289,18 +281,18 @@
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button v-if="editingQuestionId" class="btn btn-secondary" @click="duplicateAsNewVersion">
-          ⧉ Duplicate as new version
+          ⧉ Dupliser som ny versjon
         </button>
         <button class="btn btn-primary" :disabled="saving" @click="saveQuestion">
-          {{ saving ? 'Saving…' : 'Save question' }}
+          {{ saving ? 'Lagrer…' : 'Lagre spørsmål' }}
         </button>
       </div>
     </template>
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this question?"
-      :message="`'${pendingDelete.title}' will be permanently removed.`"
+      title="Slette dette spørsmålet?"
+      :message="`«${pendingDelete.title}» fjernes for godt.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -333,10 +325,10 @@ const {
   pageSize: 10,
   searchFields: [q => q.title, q => q.sport, q => q.statLabel],
   sorts: [
-    { key: 'title', label: 'Title', accessor: q => q.title },
-    { key: 'category', label: 'Category', accessor: q => q.sport },
-    { key: 'answers', label: 'Answers', accessor: q => q.entryCount, dir: 'desc' },
-    { key: 'target', label: 'Target value', accessor: q => q.targetValue, dir: 'desc' }
+    { key: 'title', label: 'Tittel', accessor: q => q.title },
+    { key: 'category', label: 'Kategori', accessor: q => q.sport },
+    { key: 'answers', label: 'Svar', accessor: q => q.entryCount, dir: 'desc' },
+    { key: 'target', label: 'Måltall', accessor: q => q.targetValue, dir: 'desc' }
   ]
 })
 const error = ref('')
@@ -391,7 +383,7 @@ async function loadQuestions() {
   try {
     questions.value = await api.adminListBullseyeQuestions()
   } catch (e) {
-    error.value = 'Could not load Bullseye questions.'
+    error.value = 'Kunne ikke laste Bullseye-spørsmål.'
   } finally {
     loading.value = false
   }
@@ -458,9 +450,9 @@ async function importAllInCategory() {
   try {
     const all = await api.adminSearchAthletes({ sport: form.sport })
     const added = addEntriesBulk(all)
-    toast.show(`Imported ${added} subject(s) from "${form.sport}" (${all.length - added} were already in this list). Fill in each one's stat value, or remove the ones you don't need.`)
+    toast.show(`Importerte ${added} emne(r) fra "${form.sport}" (${all.length - added} var allerede i denne listen). Fyll inn statistikkverdien for hver, eller fjern de du ikke trenger.`)
   } catch (e) {
-    error.value = 'Could not import subjects for that category.'
+    error.value = 'Kunne ikke importere emner for den kategorien.'
   } finally {
     importingAllInCategory.value = false
   }
@@ -541,9 +533,9 @@ function applyImportSelection(selectedRows) {
   entryFilterTerm.value = ''
   csvUnmatchedNames.value = unmatched
 
-  let message = `${pendingImportLabel.value}: ${added} answer(s) added, ${updated} updated.`
+  let message = `${pendingImportLabel.value}: ${added} svar lagt til, ${updated} oppdatert.`
   if (unmatched.length) {
-    message += ` ${unmatched.length} name(s) weren't found - see the list below.`
+    message += `${unmatched.length} navn ble ikke funnet - se listen under.`
   }
   toast.show(message, unmatched.length ? 'error' : 'success')
 }
@@ -559,12 +551,12 @@ async function handleCsvFile(event) {
   try {
     const rows = parseNameValueCsv(await file.text())
     if (!rows.length) {
-      toast.show('That CSV had no valid "name,value" rows to import.', 'error')
+      toast.show('Den CSV-filen hadde ingen gyldige "name,value"-rader å importere.', 'error')
       return
     }
     await importRows(rows, 'CSV import')
   } catch (e) {
-    error.value = 'Could not read that CSV file.'
+    error.value = 'Kunne ikke lese CSV-filen.'
   } finally {
     importingCsv.value = false
   }
@@ -587,7 +579,7 @@ async function toggleFiveOhOnePicker() {
     try {
       fiveOhOneCategories.value = await api.adminListFiveOhOneCategories()
     } catch (e) {
-      error.value = 'Could not load 501 quizzes.'
+      error.value = 'Kunne ikke laste 501-quizer.'
     } finally {
       loadingFiveOhOneCategories.value = false
     }
@@ -603,13 +595,13 @@ async function importFromFiveOhOne() {
     const category = await api.adminGetFiveOhOneCategory(selectedFiveOhOneCategoryId.value)
     const rows = category.entries.map(e => ({ name: e.name, value: e.value }))
     if (!rows.length) {
-      toast.show(`"${category.title}" has no subjects to import.`, 'error')
+      toast.show(`"${category.title}" har ingen emner å importere.`, 'error')
       return
     }
-    await importRows(rows, `Imported from "${category.title}"`)
+    await importRows(rows, `Importert fra "${category.title}"`)
     showFiveOhOnePicker.value = false
   } catch (e) {
-    error.value = 'Could not import from that 501 quiz.'
+    error.value = 'Kunne ikke importere fra den 501-quizen.'
   } finally {
     importingFiveOhOne.value = false
   }
@@ -673,7 +665,7 @@ async function openEdit(id) {
     editingQuestionId.value = id
     view.value = 'builder'
   } catch (e) {
-    error.value = 'Could not load that question.'
+    error.value = 'Kunne ikke laste spørsmålet.'
   }
 }
 
@@ -692,24 +684,24 @@ async function duplicateQuestion(id) {
 // completely untouched until this copy is saved.
 function duplicateAsNewVersion() {
   editingQuestionId.value = null
-  form.title = form.title + ' (updated)'
+  form.title = form.title + ' (oppdatert)'
   form.excludedFromBullseye = false
-  toast.show('Now editing a new duplicate - the original question is untouched. Remember to save this copy.')
+  toast.show('Du redigerer nå en ny duplikat - det opprinnelige spørsmålet er urørt. Husk å lagre denne kopien.')
 }
 
 async function saveQuestion() {
   error.value = ''
   if (!form.title.trim() || !form.sport || form.targetValue === null || !form.statLabel.trim()) {
-    error.value = 'Title, category, target number, and prompt are all required.'
+    error.value = 'Tittel, kategori, måltall og oppgave må fylles ut.'
     return
   }
   if (entries.value.length < 2) {
-    error.value = 'Add at least 2 athletes with a stat value.'
+    error.value = 'Legg til minst 2 utøvere med en statistikkverdi.'
     return
   }
   const missingValue = entries.value.find(e => e.statValue === null || e.statValue === '')
   if (missingValue) {
-    error.value = `'${missingValue.name}' is missing a stat value - fill one in or remove that row.`
+    error.value = `«${missingValue.name}» mangler en statistikkverdi - fyll inn en eller fjern den raden.`
     return
   }
 
@@ -732,11 +724,11 @@ async function saveQuestion() {
     } else {
       await api.adminCreateBullseyeQuestion(payload)
     }
-    toast.show('Question saved.')
+    toast.show('Spørsmålet er lagret.')
     view.value = 'list'
     loadQuestions()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not save the question.'
+    error.value = e.response?.data?.message || 'Kunne ikke lagre spørsmålet.'
   } finally {
     saving.value = false
   }
@@ -752,10 +744,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteBullseyeQuestion(q.id)
-    toast.show('Question deleted.')
+    toast.show('Spørsmålet er slettet.')
     loadQuestions()
   } catch (e) {
-    error.value = 'Could not delete that question.'
+    error.value = 'Kunne ikke slette spørsmålet.'
   }
 }
 </script>

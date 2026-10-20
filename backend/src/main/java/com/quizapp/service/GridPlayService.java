@@ -58,7 +58,7 @@ public class GridPlayService {
     @Transactional(readOnly = true)
     public List<GridEntryViewDto> revealAllEntries(Long gridId) {
         Grid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + gridId));
         return grid.getEntries().stream()
                 .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), true, false, false,
@@ -69,7 +69,7 @@ public class GridPlayService {
     @Transactional
     public void setLeaderboardPreference(Long gridId, String userEmail, boolean includeOnLeaderboard) {
         GridAttempt attempt = gridAttemptRepository.findByGrid_IdAndUser_Email(gridId, userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("No attempt found for this grid."));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke forsøk for dette gridet."));
         attempt.setIncludeOnLeaderboard(includeOnLeaderboard);
         gridAttemptRepository.save(attempt);
     }
@@ -77,7 +77,7 @@ public class GridPlayService {
     @Transactional(readOnly = true)
     public com.quizapp.dto.GridScoreboardDto getScoreboard(Long gridId, String requestingUserEmail) {
         Grid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + gridId));
         int entryCount = grid.getEntries().size();
 
         List<GridAttempt> completedAttempts = gridAttemptRepository.findByGrid_Id(gridId).stream()
@@ -225,7 +225,7 @@ public class GridPlayService {
     @Transactional
     public GridPlayStateDto getPlayState(Long gridId, String userEmail) {
         Grid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + gridId));
         GridAttempt attempt = findOrCreateAttempt(grid, userEmail);
         return toPlayStateDto(grid, attempt);
     }
@@ -241,7 +241,7 @@ public class GridPlayService {
     @Transactional(readOnly = true)
     public List<AthleteDto> searchCandidates(Long gridId, String nameContains) {
         Grid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + gridId));
         String term = nameContains == null ? "" : nameContains.trim().toLowerCase();
         List<Athlete> pool = grid.isEntireCategoryPool()
                 ? (term.isEmpty()
@@ -278,7 +278,7 @@ public class GridPlayService {
     @Transactional(readOnly = true)
     public GridPlayStateDto getMultiplayerStartState(Long gridId) {
         Grid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + gridId));
 
         GridPlayStateDto dto = new GridPlayStateDto();
         dto.setId(grid.getId());
@@ -304,7 +304,7 @@ public class GridPlayService {
     @Transactional(readOnly = true)
     public java.util.Map<Long, String> getMultiplayerReveal(Long gridId) {
         Grid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + gridId));
         return grid.getEntries().stream()
                 .collect(Collectors.toMap(GridEntry::getId, e -> e.getAthlete().getName()));
     }
@@ -317,7 +317,7 @@ public class GridPlayService {
     @Transactional(readOnly = true)
     public GuessResultDto multiplayerGuess(Long gridId, MultiplayerGuessRequest request) {
         Grid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + gridId));
 
         Set<Long> revealed = request.getRevealedEntryIds() == null
                 ? Collections.emptySet() : Set.copyOf(request.getRevealedEntryIds());
@@ -345,11 +345,11 @@ public class GridPlayService {
     @Transactional
     public GuessResultDto guess(Long gridId, String userEmail, Long athleteId) {
         Grid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + gridId));
         GridAttempt attempt = findOrCreateAttempt(grid, userEmail);
 
         if (attempt.isCompleted() && !attempt.isOvertime()) {
-            throw new IllegalArgumentException("This grid is already finished. Start overtime to keep guessing.");
+            throw new IllegalArgumentException("Dette gridet er allerede ferdig. Start overtid for å fortsette å gjette.");
         }
 
         GuessResultDto result = new GuessResultDto();
@@ -395,10 +395,10 @@ public class GridPlayService {
     @Transactional
     public GridPlayStateDto enterOvertime(Long gridId, String userEmail) {
         Grid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + gridId));
         GridAttempt attempt = findOrCreateAttempt(grid, userEmail);
         if (!attempt.isCompleted()) {
-            throw new IllegalArgumentException("Overtime is only available once the grid is finished.");
+            throw new IllegalArgumentException("Overtid er bare tilgjengelig når gridet er ferdig.");
         }
         attempt.setOvertime(true);
         gridAttemptRepository.save(attempt);
@@ -408,7 +408,7 @@ public class GridPlayService {
     @Transactional
     public GridPlayStateDto reveal(Long gridId, String userEmail) {
         Grid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke grid med id " + gridId));
         GridAttempt attempt = findOrCreateAttempt(grid, userEmail);
         attempt.setCompleted(true);
         attempt.setRevealed(true);
@@ -420,7 +420,7 @@ public class GridPlayService {
         return gridAttemptRepository.findByGrid_IdAndUser_Email(grid.getId(), userEmail)
                 .orElseGet(() -> {
                     AppUser owner = appUserRepository.findByEmail(userEmail)
-                            .orElseThrow(() -> new ResourceNotFoundException("No account found for " + userEmail));
+                            .orElseThrow(() -> new ResourceNotFoundException("Fant ikke konto for " + userEmail));
                     GridAttempt fresh = new GridAttempt();
                     fresh.setGrid(grid);
                     fresh.setUser(owner);

@@ -60,7 +60,7 @@ public class AuthService {
     public AuthResponse loginWithGoogle(String idToken) {
         GoogleTokenVerifier.VerifiedGoogleUser verified = googleTokenVerifier.verify(idToken);
         if (verified == null) {
-            throw new IllegalArgumentException("Google sign-in could not be verified. Please try again.");
+            throw new IllegalArgumentException("Google-innloggingen kunne ikke bekreftes. Prøv igjen.");
         }
 
         AppUser user = appUserRepository.findByEmail(verified.email())
@@ -84,7 +84,7 @@ public class AuthService {
 
         if (admin == null || !passwordEncoder.matches(rawPassword, admin.getPasswordHash())) {
             loginRateLimiter.recordFailure(clientKey);
-            throw new IllegalArgumentException("Invalid admin credentials.");
+            throw new IllegalArgumentException("Ugyldig administratorlogin.");
         }
 
         loginRateLimiter.recordSuccess(clientKey);
@@ -111,9 +111,9 @@ public class AuthService {
         if (existing != null) {
             if (existing.getPasswordHash() == null) {
                 throw new IllegalArgumentException(
-                        "That email already has an account signed in with Google - use \"Continue with Google\" instead.");
+                        "Den e-postadressen har allerede en konto som er logget inn med Google - bruk \"Fortsett med Google\" i stedet.");
             }
-            throw new IllegalArgumentException("An account with that email already exists - try signing in instead.");
+            throw new IllegalArgumentException("Det finnes allerede en konto med den e-postadressen - prøv å logge inn i stedet.");
         }
 
         AppUser user = new AppUser();
@@ -140,16 +140,16 @@ public class AuthService {
             // Same generic message whether the account doesn't exist or is Google-only -
             // a distinct message for "this is a Google account" would let this endpoint be
             // used to probe which emails have accounts at all.
-            throw new IllegalArgumentException("Invalid email or password.");
+            throw new IllegalArgumentException("Ugyldig e-postadresse eller passord.");
         }
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
             loginRateLimiter.recordFailure(key);
-            throw new IllegalArgumentException("Invalid email or password.");
+            throw new IllegalArgumentException("Ugyldig e-postadresse eller passord.");
         }
         if (!user.isEmailVerified()) {
             loginRateLimiter.recordFailure(key);
             throw new IllegalArgumentException(
-                    "Please verify your email first - check your inbox for the link, or request a new one.");
+                    "Bekreft e-postadressen din først - sjekk innboksen din for lenken, eller be om en ny.");
         }
 
         loginRateLimiter.recordSuccess(key);
@@ -216,7 +216,7 @@ public class AuthService {
         AppUser user = appUserRepository.findByVerificationTokenHash(sha256Hex(rawToken)).orElse(null);
         if (user == null || user.getVerificationTokenExpiresAt() == null
                 || Instant.now().isAfter(user.getVerificationTokenExpiresAt())) {
-            throw new IllegalArgumentException("This verification link is invalid or has expired - request a new one.");
+            throw new IllegalArgumentException("Denne bekreftelseslenken er ugyldig eller har utløpt - be om en ny.");
         }
 
         user.setEmailVerified(true);
@@ -233,7 +233,7 @@ public class AuthService {
         AppUser user = appUserRepository.findByResetTokenHash(sha256Hex(rawToken)).orElse(null);
         if (user == null || user.getResetTokenExpiresAt() == null
                 || Instant.now().isAfter(user.getResetTokenExpiresAt())) {
-            throw new IllegalArgumentException("This reset link is invalid or has expired - request a new one.");
+            throw new IllegalArgumentException("Denne nullstillingslenken er ugyldig eller har utløpt - be om en ny.");
         }
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));

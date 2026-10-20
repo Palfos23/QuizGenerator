@@ -46,7 +46,7 @@ public class TensionQuestionService {
     @Transactional(readOnly = true)
     public TensionQuestionDto getOne(Long id) {
         TensionQuestion q = questionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No tension question found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke Tension-spørsmål med id " + id));
         return toDto(q);
     }
 
@@ -158,7 +158,7 @@ public class TensionQuestionService {
     @Transactional
     public TensionQuestionDto update(Long id, TensionQuestionDto dto) {
         TensionQuestion q = questionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No tension question found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke Tension-spørsmål med id " + id));
         applyDto(q, dto);
         return toDto(questionRepository.save(q));
     }
@@ -166,7 +166,7 @@ public class TensionQuestionService {
     @Transactional
     public void delete(Long id) {
         if (!questionRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No tension question found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke Tension-spørsmål med id " + id);
         }
         questionRepository.deleteById(id);
     }

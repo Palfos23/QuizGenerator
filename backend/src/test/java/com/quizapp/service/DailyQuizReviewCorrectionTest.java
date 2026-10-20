@@ -197,7 +197,7 @@ class DailyQuizReviewCorrectionTest {
             Long id = answers.get(i).getAnswerId();
             assertThatThrownBy(() -> reviewService.resolve(id, false))
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("graded automatically");
+                    .hasMessageContaining("rettes automatisk");
         }
         // the one real judgement call can still be made
         reviewService.resolve(answers.get(3).getAnswerId(), true);

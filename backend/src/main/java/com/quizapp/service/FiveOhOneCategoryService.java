@@ -50,7 +50,7 @@ public class FiveOhOneCategoryService {
     @Transactional(readOnly = true)
     public FiveOhOneCategoryDto getOne(Long id) {
         return toDto(categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No 501 category found with id " + id)));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke 501-kategori med id " + id)));
     }
 
     // Used by players (pass-and-play and online alike, both of which fetch a
@@ -60,7 +60,7 @@ public class FiveOhOneCategoryService {
     @Transactional(readOnly = true)
     public FiveOhOneCategoryDto getOneForPlay(Long id) {
         FiveOhOneCategory category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No 501 category found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke 501-kategori med id " + id));
         FiveOhOneCategoryDto dto = toDto(category);
         dto.setEntries(getEffectiveEntries(category));
         return dto;
@@ -118,7 +118,7 @@ public class FiveOhOneCategoryService {
     @Transactional
     public FiveOhOneCategoryDto update(Long id, FiveOhOneCategoryRequest request) {
         FiveOhOneCategory category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No 501 category found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke 501-kategori med id " + id));
         applyRequest(category, request);
         return toDto(categoryRepository.save(category));
     }
@@ -126,7 +126,7 @@ public class FiveOhOneCategoryService {
     @Transactional
     public void delete(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No 501 category found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke 501-kategori med id " + id);
         }
         // Direct bulk delete first - see FiveOhOneEntryRepository#deleteByCategory_Id
         // for why (avoids Hibernate cascading the removal one entry at a time).

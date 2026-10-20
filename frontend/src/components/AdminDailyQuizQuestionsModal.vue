@@ -2,10 +2,10 @@
   <div class="modal-backdrop" @click.self="emit('close')">
     <div class="modal dq-modal dq-modal--wide" role="dialog" aria-modal="true" :aria-label="title">
       <h2 class="dq-modal-title">{{ title }}</h2>
-      <p class="dq-modal-sub">Fix a wrong question or answer right here - it's the same question as in the question bank.</p>
+      <p class="dq-modal-sub">Rett opp et feil spørsmål eller svar her - det er samme spørsmål som i spørsmålsbanken.</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
       <div v-else class="dq-qlist">
         <article v-for="(q, i) in questions" :key="q.id" class="dq-qrow">
@@ -13,15 +13,15 @@
           <div class="dq-qrow-body">
             <div class="dq-qrow-text">{{ q.questionText }}</div>
             <img v-if="q.photoUrl" :src="q.photoUrl" alt="" class="dq-photo dq-photo--small" @error="e => e.target.style.display = 'none'" />
-            <div class="dq-qrow-answer"><span>Answer</span><b>{{ q.answer }}</b></div>
+            <div class="dq-qrow-answer"><span>Svar</span><b>{{ q.answer }}</b></div>
             <DailyQuizEasyMeter v-if="statFor(q.id)" :percent="statFor(q.id).percentCorrect" :players="statFor(q.id).players" />
           </div>
-          <button class="dq-chip-btn" @click="editing = q">Edit</button>
+          <button class="dq-chip-btn" @click="editing = q">Rediger</button>
         </article>
       </div>
 
       <div class="dq-modal-actions">
-        <button class="btn btn-secondary" @click="emit('close')">Close</button>
+        <button class="btn btn-secondary" @click="emit('close')">Lukk</button>
       </div>
     </div>
 
@@ -41,7 +41,7 @@ import { useEscapeKey } from '../composables/useEscapeKey'
 // bank), for fixing a mistake spotted while reviewing - without searching the bank for it.
 const props = defineProps({
   setId: { type: [Number, String], required: true },
-  title: { type: String, default: 'Quiz questions' }
+  title: { type: String, default: 'Quizspørsmål' }
 })
 const emit = defineEmits(['close'])
 
@@ -64,7 +64,7 @@ onMounted(async () => {
     questions.value = list
     statsByQuestion.value = Object.fromEntries(stats.map(st => [st.questionId, st]))
   } catch (e) {
-    error.value = 'Could not load this quiz\'s questions.'
+    error.value = 'Kunne ikke laste spørsmålene til denne quizen.'
   } finally {
     loading.value = false
   }
@@ -74,6 +74,6 @@ function onSaved(saved) {
   const i = questions.value.findIndex(q => q.id === saved.id)
   if (i !== -1) questions.value[i] = saved
   editing.value = null
-  toast.show('Question updated.')
+  toast.show('Spørsmålet er oppdatert.')
 }
 </script>

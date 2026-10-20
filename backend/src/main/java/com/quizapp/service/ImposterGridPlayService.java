@@ -64,7 +64,7 @@ public class ImposterGridPlayService {
     @Transactional(readOnly = true)
     public ImposterPlayStateDto getPlayState(Long gridId) {
         ImposterGrid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No imposter grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke imposter-brett med id " + gridId));
 
         ImposterPlayStateDto dto = new ImposterPlayStateDto();
         dto.setId(grid.getId());
@@ -91,9 +91,9 @@ public class ImposterGridPlayService {
     @Transactional(readOnly = true)
     public ImposterFlipResultDto flip(Long gridId, Long tileId) {
         ImposterTile tile = tileRepository.findById(tileId)
-                .orElseThrow(() -> new ResourceNotFoundException("No tile found with id " + tileId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke rute med id " + tileId));
         if (!tile.getImposterGrid().getId().equals(gridId)) {
-            throw new IllegalArgumentException("That tile doesn't belong to this grid.");
+            throw new IllegalArgumentException("Den ruten hører ikke til dette brettet.");
         }
         return new ImposterFlipResultDto(tile.getId(), tile.isImposter(), revealPhotoUrl(tile));
     }
@@ -117,7 +117,7 @@ public class ImposterGridPlayService {
     @Transactional(readOnly = true)
     public List<ImposterRevealDto> reveal(Long gridId) {
         ImposterGrid grid = gridRepository.findById(gridId)
-                .orElseThrow(() -> new ResourceNotFoundException("No imposter grid found with id " + gridId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke imposter-brett med id " + gridId));
         return grid.getTiles().stream()
                 .filter(ImposterTile::isImposter)
                 .sorted((a, b) -> Integer.compare(a.getOrderIndex(), b.getOrderIndex()))

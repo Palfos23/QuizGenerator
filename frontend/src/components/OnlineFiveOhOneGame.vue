@@ -5,10 +5,10 @@
       <h2>{{ state?.categoryTitle }}</h2>
       <p v-if="state?.categoryDescription" class="fiveoo-description">{{ state.categoryDescription }}</p>
       <p v-if="lastUpdatedLabel" class="fiveoo-description" style="font-size:0.75rem;">{{ lastUpdatedLabel }}</p>
-      <p class="fiveoo-rules-reminder">First to checkout between 0 and -10 wins</p>
+      <p class="fiveoo-rules-reminder">Første som kommer ut mellom 0 og -10 vinner</p>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
@@ -20,11 +20,11 @@
           :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId, 'you-row': p.participantId === state.windowReacherParticipantId, disconnected: p.connected === false && p.participantId !== props.yourParticipantId }"
         >
           <strong>{{ p.name }}</strong>
-          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Offline</span>
+          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">Frakoblet</span>
           <div style="font-size:1.8rem; font-weight:700; margin-top:4px;" :style="{ color: p.total <= 0 && p.total >= -10 ? 'var(--teal)' : 'var(--text)' }">
             {{ p.total }}
           </div>
-          <div v-if="p.participantId === state.windowReacherParticipantId" style="font-size:0.78rem; color:var(--gold); margin-top:2px;">In the window!</div>
+          <div v-if="p.participantId === state.windowReacherParticipantId" style="font-size:0.78rem; color:var(--gold); margin-top:2px;">I vinduet!</div>
           <div v-if="recentThrowsFor(p.name).length" class="fiveoo-recent-throws">
             <span
               v-for="(t, i) in recentThrowsFor(p.name)"
@@ -38,17 +38,17 @@
 
       <div v-if="isYourTurn" class="guess-box-center">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
-          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">Your throw</p>
+          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">Din kasting</p>
           <p v-if="state.bestAvailableScore !== null && state.bestAvailableScore !== undefined" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
-            Best available score: <strong style="color:var(--text);">{{ state.bestAvailableScore }}</strong>
+            Beste tilgjengelige poengsum: <strong style="color:var(--text);">{{ state.bestAvailableScore }}</strong>
           </p>
           <p v-if="state.checkoutCount !== null && state.checkoutCount !== undefined" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
-            <strong style="color:var(--text);">{{ state.checkoutCount }}</strong> possible checkout<span v-if="state.checkoutCount !== 1">s</span> remaining
+            <strong style="color:var(--text);">{{ state.checkoutCount }}</strong> mulig utsjekk<span v-if="state.checkoutCount !== 1">s</span> igjen
           </p>
           <input
             type="text"
             v-model="searchTerm"
-            placeholder="Search a name…"
+            placeholder="Søk etter et navn…"
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"
@@ -57,14 +57,14 @@
           <!-- A throw has to be a picked entry, so unlike Tension there's no typing-it-anyway fallback -
                the player needs to see why the list isn't there and be able to retry it. -->
           <div v-if="entriesStatus === 'loading'" style="color:var(--text-dim); font-size:0.85rem; margin-top:8px; text-align:center;">
-            Loading the answer list…
+            Laster svarlisten…
           </div>
           <div v-else-if="entriesStatus === 'error'" style="color:var(--coral); font-size:0.85rem; margin-top:8px; text-align:center;">
-            Couldn't load the answer list.
-            <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryEntries">Try again</button>
+            Kunne ikke laste svarlisten.
+            <button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" @click="retryEntries">Prøv igjen</button>
           </div>
           <div v-else-if="entriesStatus === 'empty'" style="color:var(--coral); font-size:0.85rem; margin-top:8px; text-align:center;">
-            This category has no answers to pick from - ask the host to start a different one.
+            Denne kategorien har ingen svar å velge mellom - be verten starte en annen.
           </div>
           <div v-if="searchResults.length" class="guess-results">
             <button
@@ -78,21 +78,21 @@
         </div>
       </div>
       <div v-else class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
-        Waiting for {{ currentTurnName }}'s turn…
+        Venter på {{ currentTurnName }}sin tur…
       </div>
 
       <div v-if="lastThrow" style="text-align:center; margin-top:16px; color:var(--text-dim); font-size:0.9rem;">
         <span v-if="lastThrow.bust" style="color:var(--coral); font-weight:600;">BUST!</span>
         <template v-else>
-          {{ lastThrow.playerName }} threw {{ lastThrow.entryName }} ({{ lastThrow.rawValue }})
-          <span v-if="lastThrow.score === 0" style="color:var(--coral);"> - scores 0</span>
-          <span v-else> - scores {{ lastThrow.score }}</span>
+          {{ lastThrow.playerName }} kastet {{ lastThrow.entryName }} ({{ lastThrow.rawValue }})
+          <span v-if="lastThrow.score === 0" style="color:var(--coral);"> - får 0</span>
+          <span v-else> - får {{ lastThrow.score }}</span>
         </template>
       </div>
     </template>
 
     <div v-else-if="state && state.finished" class="fiveoo-gameover">
-      <div class="darts-win-label">Winner</div>
+      <div class="darts-win-label">Vinner</div>
       <div class="darts-win-name">{{ winnerName }}</div>
 
       <div class="score-square-grid">
@@ -103,23 +103,23 @@
       </div>
 
       <button v-if="isHost" class="btn btn-primary" style="margin-top:8px; min-width:220px;" @click="finish">
-        Play again
+        Spill igjen
       </button>
-      <p v-else class="page-subtitle" style="margin-top:8px;">Waiting for the host to start a new round, or leave below.</p>
+      <p v-else class="page-subtitle" style="margin-top:8px;">Venter på at verten skal starte en ny runde, eller forlat spillet under.</p>
     </div>
 
     <details v-if="state" class="advanced-disclosure" style="margin-top:20px;">
-      <summary>Throw history</summary>
+      <summary>Kastehistorikk</summary>
       <div style="margin-top:10px; max-height:220px; overflow-y:auto;">
         <div v-for="(t, i) in [...state.throwHistory].reverse()" :key="i" style="font-size:0.85rem; color:var(--text-dim); padding:3px 0;">
           <strong style="color:var(--text);">{{ t.playerName }}</strong>
-          {{ t.bust ? 'busted on' : 'threw' }} {{ t.entryName }} ({{ t.rawValue }})
-          <span v-if="!t.bust">→ scored {{ t.score }}, now on {{ t.resultingTotal }}</span>
+          {{ t.bust ? 'bustet på' : 'kastet' }} {{ t.entryName }} ({{ t.rawValue }})
+          <span v-if="!t.bust">→ fikk {{ t.score }}, nå på {{ t.resultingTotal }}</span>
         </div>
       </div>
     </details>
 
-    <button class="btn btn-secondary btn-sm no-print" style="margin-top:20px;" @click="leave">← Leave game</button>
+    <button class="btn btn-secondary btn-sm no-print" style="margin-top:20px;" @click="leave">← Forlat spillet</button>
 
     <div v-if="throwOverlay" class="fiveoo-throw-overlay" :class="throwOverlay.kind">
       <div class="fiveoo-overlay-text">{{ throwOverlay.text }}</div>
@@ -156,7 +156,7 @@ const lastUpdatedLabel = computed(() => formatLastUpdated(state.value?.categoryU
 // a single failed or discarded fetch left the answer list empty for the entire game.
 const { items: categoryEntries, status: entriesStatus, load: loadEntries, retry: retryEntries } = useReferenceList({
   area: '501-answers',
-  failureToast: "Couldn't load the answer list - retrying."
+  failureToast: "Kunne ikke laste svarlisten - prøver igjen."
 })
 const loading = ref(true)
 const error = ref('')
@@ -207,7 +207,7 @@ async function poll() {
     const fresh = await api.getFiveOhOneOnlineState(props.roomCode)
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = 'Lost connection to the room - retrying…'
+    error.value = 'Mistet forbindelsen til rommet - prøver igjen…'
   } finally {
     loading.value = false
   }
@@ -257,7 +257,7 @@ async function submitThrow(entry) {
     }
     if (stillFresh()) await applyState(fresh)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not submit that throw.'
+    error.value = e.response?.data?.message || 'Kunne ikke sende inn kastet.'
   } finally {
     throwing.value = false
   }

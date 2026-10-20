@@ -64,7 +64,7 @@ public class QuizTemplateService {
     @Transactional
     public void delete(Long id) {
         if (!quizTemplateRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No quiz template found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke quizmal med id " + id);
         }
         quizTemplateRepository.deleteById(id);
     }
@@ -78,7 +78,7 @@ public class QuizTemplateService {
     public QuizDto copyToMyQuizzes(Long templateId, String userEmail) {
         QuizTemplate template = findTemplate(templateId);
         AppUser owner = appUserRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("No account found for " + userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke konto for " + userEmail));
 
         SavedQuiz saved = new SavedQuiz();
         saved.setOwner(owner);
@@ -105,11 +105,11 @@ public class QuizTemplateService {
 
     private QuizTemplate findTemplate(Long id) {
         return quizTemplateRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No quiz template found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke quizmal med id " + id));
     }
 
     private void applyDto(QuizTemplate template, QuizDto quiz) {
-        template.setTitle(quiz.getTitle() == null || quiz.getTitle().isBlank() ? "Untitled quiz" : quiz.getTitle());
+        template.setTitle(quiz.getTitle() == null || quiz.getTitle().isBlank() ? "Quiz uten tittel" : quiz.getTitle());
         template.setLanguage(quiz.getLanguage());
 
         List<QuizTemplateQuestion> questions = IntStream.range(0, quiz.getQuestions().size())

@@ -33,7 +33,7 @@ public class TensionCategoryService {
     @Transactional(readOnly = true)
     public TensionCategoryDto getOne(Long id) {
         TensionAnswerCategory c = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No tension category found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke Tension-kategori med id " + id));
         return toDto(c);
     }
 
@@ -71,7 +71,7 @@ public class TensionCategoryService {
     @Transactional
     public TensionCategoryDto update(Long id, TensionCategoryDto dto) {
         TensionAnswerCategory c = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No tension category found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke Tension-kategori med id " + id));
         c.setName(dto.getName());
         c.setOptions(dto.getOptions());
         return toDto(categoryRepository.save(c));
@@ -80,7 +80,7 @@ public class TensionCategoryService {
     @Transactional
     public void delete(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No tension category found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke Tension-kategori med id " + id);
         }
         categoryRepository.deleteById(id);
     }

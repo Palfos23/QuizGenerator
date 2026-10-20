@@ -2,43 +2,43 @@
   <BdayPinGate>
     <div style="max-width:560px; margin:0 auto; padding:20px 20px 60px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <h1 style="margin:0;">Manage players</h1>
+        <h1 style="margin:0;">Administrer spillere</h1>
         <div style="display:flex; gap:8px;">
-          <router-link to="/bday" class="btn btn-secondary btn-sm">Back to quiz</router-link>
-          <router-link to="/bday/leaderboard" class="btn btn-secondary btn-sm">Leaderboard</router-link>
+          <router-link to="/bday" class="btn btn-secondary btn-sm">Tilbake til quizen</router-link>
+          <router-link to="/bday/leaderboard" class="btn btn-secondary btn-sm">Toppliste</router-link>
         </div>
       </div>
-      <p class="page-subtitle">Register everyone here before they start picking their name to play.</p>
+      <p class="page-subtitle">Registrer alle her før de begynner å velge navnet sitt for å spille.</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field" style="margin-top:20px;">
-        <label>Add a guest</label>
+        <label>Legg til en gjest</label>
         <div style="display:flex; gap:10px;">
-          <input type="text" v-model="newGuestName" placeholder="Name" @keydown.enter="addGuest" />
-          <button class="btn btn-secondary" :disabled="addingGuest" @click="addGuest">Add</button>
+          <input type="text" v-model="newGuestName" placeholder="Navn" @keydown.enter="addGuest" />
+          <button class="btn btn-secondary" :disabled="addingGuest" @click="addGuest">Legg til</button>
         </div>
       </div>
 
-      <div v-if="loading" style="color:var(--text-dim); margin-top:20px;">Loading…</div>
+      <div v-if="loading" style="color:var(--text-dim); margin-top:20px;">Laster…</div>
       <template v-else>
         <div v-if="pending.length" class="field" style="margin-top:24px;">
-          <label>Waiting to play</label>
+          <label>Venter på å spille</label>
           <div class="candidate-list">
             <div v-for="g in pending" :key="g.id" class="candidate-row">
               <span style="flex:1;">{{ g.name }}</span>
-              <button class="btn btn-danger btn-sm" @click="removeGuest(g)">Remove</button>
+              <button class="btn btn-danger btn-sm" @click="removeGuest(g)">Fjern</button>
             </div>
           </div>
         </div>
 
         <div v-if="done.length" class="field" style="margin-top:24px;">
-          <label>Already finished</label>
+          <label>Allerede ferdig</label>
           <div class="candidate-list">
             <div v-for="g in done" :key="g.id" class="candidate-row" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               <span style="flex:1; min-width:120px;">{{ g.name }}</span>
               <label style="display:flex; align-items:center; gap:6px; margin:0; text-transform:none; font-weight:400; color:var(--text-dim); font-size:0.9rem;">
-                Score
+                Poeng
                 <input
                   type="number"
                   min="0"
@@ -53,20 +53,20 @@
                 class="btn btn-secondary btn-sm"
                 :disabled="savingId === g.id || !scoreChanged(g)"
                 @click="saveScore(g)"
-              >{{ savingId === g.id ? 'Saving…' : 'Save' }}</button>
-              <button class="btn btn-danger btn-sm" @click="pendingReset = g">Reset</button>
+              >{{ savingId === g.id ? 'Lagrer…' : 'Lagre' }}</button>
+              <button class="btn btn-danger btn-sm" @click="pendingReset = g">Nullstill</button>
             </div>
           </div>
         </div>
 
-        <div v-if="!pending.length && !done.length" class="empty-state" style="margin-top:24px;">No players registered yet.</div>
+        <div v-if="!pending.length && !done.length" class="empty-state" style="margin-top:24px;">Ingen spillere registrert ennå.</div>
       </template>
     </div>
     <ConfirmModal
       v-if="pendingReset"
-      title="Reset this player?"
-      :message="`${pendingReset.name}'s score and answers are deleted and they go back on the waiting list, so they can play again.`"
-      confirm-text="Reset player"
+      title="Nullstille denne spilleren?"
+      :message="`Poengsummen og svarene til ${pendingReset.name} slettes, og vedkommende havner tilbake på ventelisten, slik at de kan spille igjen.`"
+      confirm-text="Nullstill spilleren"
       @confirm="doReset"
       @cancel="pendingReset = null"
     />
@@ -104,7 +104,7 @@ async function loadGuests() {
     ])
     guests.value = [...pendingGuests, ...finishedGuests]
   } catch (e) {
-    error.value = 'Could not load the guest list.'
+    error.value = 'Kunne ikke laste gjesteoversikten.'
   } finally {
     loading.value = false
   }
@@ -120,7 +120,7 @@ async function addGuest() {
     guests.value.push(guest)
     newGuestName.value = ''
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not add that guest.'
+    error.value = e.response?.data?.message || 'Kunne ikke legge til gjesten.'
   } finally {
     addingGuest.value = false
   }
@@ -145,7 +145,7 @@ async function saveScore(g) {
     guests.value = guests.value.map(x => (x.id === g.id ? { ...x, score: updated.score } : x))
     delete scoreDrafts[g.id]
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not change that score.'
+    error.value = e.response?.data?.message || 'Kunne ikke endre poengsummen.'
   } finally {
     savingId.value = null
   }
@@ -161,7 +161,7 @@ async function doReset() {
     guests.value = guests.value.map(x => (x.id === g.id ? { ...x, status: updated.status, score: updated.score, completedAt: null } : x))
     delete scoreDrafts[g.id]
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not reset that player.'
+    error.value = e.response?.data?.message || 'Kunne ikke nullstille spilleren.'
   }
 }
 
@@ -171,7 +171,7 @@ async function removeGuest(guest) {
     await bdayApi.deleteGuest(guest.id)
     guests.value = guests.value.filter(g => g.id !== guest.id)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not remove that guest.'
+    error.value = e.response?.data?.message || 'Kunne ikke fjerne gjesten.'
   }
 }
 </script>

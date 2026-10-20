@@ -1,27 +1,27 @@
 <template>
   <div>
-    <LoadingState v-if="loadingChoices" message="Loading board choices…" full />
+    <LoadingState v-if="loadingChoices" message="Laster brettvalg…" full />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
-        Board {{ currentLineupIndex + 1 }} / {{ totalLineups }}
+        Brett {{ currentLineupIndex + 1 }} / {{ totalLineups }}
       </div>
-      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ pickerName }}</strong>, choose a board</h2>
+      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ pickerName }}</strong>, velg et brett</h2>
       <div class="tension-choice-grid">
         <button v-for="l in roundChoices" :key="l.id" class="tension-choice-card" @click="chooseLineup(l)">
           <strong>{{ l.title }}</strong>
-          <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ l.teamName }} vs {{ l.opponentName }} · {{ l.formation }}</div>
+          <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">{{ l.teamName }} mot {{ l.opponentName }} · {{ l.formation }}</div>
         </button>
       </div>
       <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="rerolling" @click="rerollChoices">
-        {{ rerolling ? 'Finding more…' : '↻ Show 3 different boards' }}
+        {{ rerolling ? 'Finner flere…' : '↻ Vis 3 andre brett' }}
       </button>
     </div>
 
     <template v-else>
     <div class="grid-status-bar">
       <div class="grid-progress" style="text-align:center; width:100%;">
-        Board {{ currentLineupIndex + 1 }} / {{ totalLineups }}: {{ lineupState?.title }}
+        Brett {{ currentLineupIndex + 1 }} / {{ totalLineups }}: {{ lineupState?.title }}
       </div>
       <div v-if="lastUpdatedLabel" style="color:var(--text-dim); font-size:0.75rem; text-align:center; width:100%;">{{ lastUpdatedLabel }}</div>
     </div>
@@ -34,14 +34,14 @@
       <div v-if="lineupState.scoreFor != null && lineupState.scoreAgainst != null" class="pitch-scoreline-score">
         <span>{{ lineupState.scoreFor }}</span><span class="dash">-</span><span>{{ lineupState.scoreAgainst }}</span>
       </div>
-      <div v-else class="pitch-scoreline-vs">vs</div>
+      <div v-else class="pitch-scoreline-vs">mot</div>
       <div class="pitch-scoreline-team away">
         <GameImage v-if="lineupState.opponentCrestUrl" :src="lineupState.opponentCrestUrl" alt="" class="pitch-scoreline-crest" />
         <span>{{ lineupState.opponentName }}</span>
       </div>
     </div>
 
-    <LoadingState v-if="loading" message="Loading board…" full />
+    <LoadingState v-if="loading" message="Laster brett…" full />
 
     <template v-else-if="lineupState">
       <div class="mp-player-row">
@@ -54,19 +54,19 @@
         >
           <strong>{{ p.name }}</strong>
           <LivesHearts :max="lineupState.maxStrikes" :used="livesUsed[p.name] || 0" style="margin-top:4px;" />
-          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Total: {{ scores[p.name] || 0 }}</div>
+          <div style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">Totalt: {{ scores[p.name] || 0 }}</div>
         </div>
       </div>
 
       <div v-if="!lineupComplete" class="guess-box-wrap no-print">
-        <p class="guess-box-turn-label">{{ currentPlayerName }}'s turn</p>
+        <p class="guess-box-turn-label">{{ currentPlayerName }}sin tur</p>
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <div class="guess-box-row">
             <input
               type="text"
               v-model="searchTerm"
-              placeholder="Search for a player…"
-              aria-label="Search for a player"
+              placeholder="Søk etter en spiller…"
+              aria-label="Søk etter en spiller"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -78,7 +78,7 @@
               class="btn btn-danger-solid btn-sm no-print guess-box-skip-btn"
               :disabled="guessing"
               @click="showSkipConfirm = true"
-            >Pass turn</button>
+            >Gi videre</button>
           </div>
           <div v-if="searchResults.length" class="guess-results">
             <button v-for="a in searchResults" :key="a.id" class="guess-result-row" :disabled="guessing" @click="submitGuess(a)">
@@ -90,17 +90,17 @@
 
       <ConfirmModal
         v-if="showSkipConfirm"
-        title="Pass your turn?"
-        message="You'll lose a life, same as a wrong guess."
-        confirm-text="Pass turn"
-        cancel-text="Keep guessing"
+        title="Gi turen videre?"
+        message="Du mister et liv, akkurat som ved en feil gjetning."
+        confirm-text="Gi videre"
+        cancel-text="Fortsett å gjette"
         @confirm="confirmSkipTurn"
         @cancel="showSkipConfirm = false"
       />
 
       <div v-if="lineupComplete" class="modal-backdrop">
         <div class="completion-popup">
-          <h2 style="margin-top:0;">Board complete!</h2>
+          <h2 style="margin-top:0;">Brettet er ferdig!</h2>
           <div class="score-square-grid">
             <div v-for="(p, i) in leaderboardForLineup" :key="p.name" class="score-square" :class="{ leader: i === 0 }">
               <div class="score-square-name">{{ p.name }}</div>
@@ -111,7 +111,7 @@
 
           <template v-if="recapSlots.length && recapFoundCount < recapSlots.length">
             <div class="grid-recap-label">
-              {{ recapFoundCount }} / {{ recapSlots.length }} found — <span style="color:var(--coral);">red</span> shirts went unguessed
+              {{ recapFoundCount }} / {{ recapSlots.length }} funnet — <span style="color:var(--coral);">røde</span> drakter ble ikke gjettet
             </div>
             <PitchRecap
               :rows="recapRows"
@@ -121,7 +121,7 @@
           </template>
 
           <button class="btn btn-primary" style="margin-top:12px; width:100%;" @click="nextLineup">
-            {{ currentLineupIndex + 1 < totalLineups ? 'Next board' : 'Finish game' }}
+            {{ currentLineupIndex + 1 < totalLineups ? 'Neste brett' : 'Fullfør spillet' }}
           </button>
         </div>
       </div>
@@ -151,13 +151,13 @@
     </template>
 
     <div v-else class="empty-state">
-      <p>Couldn't load this board.</p>
-      <button class="btn btn-primary" @click="proceedToCurrentRound">Try again</button>
+      <p>Kunne ikke laste dette brettet.</p>
+      <button class="btn btn-primary" @click="proceedToCurrentRound">Prøv igjen</button>
     </div>
     </template>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">
-      <div class="grid-result-text">{{ resultOverlay.correct ? 'Correct' : 'Wrong' }}</div>
+      <div class="grid-result-text">{{ resultOverlay.correct ? 'Riktig' : 'Feil' }}</div>
     </div>
   </div>
 </template>
@@ -294,7 +294,7 @@ async function loadLineup(lineupId) {
     lineupState.value = fresh
     livesUsed.value = Object.fromEntries(props.players.map(p => [p.name, 0]))
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Could not load this board - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Kunne ikke laste dette brettet - prøv igjen.', 'error')
   } finally {
     loading.value = false
   }
@@ -305,7 +305,7 @@ async function loadRoundChoices() {
   try {
     roundChoices.value = await api.fetchLineupBattleRoundChoices(3, chosenLineups.value.map(l => l.id))
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Could not load the next round - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Kunne ikke laste neste runde - prøv igjen.', 'error')
   } finally {
     loadingChoices.value = false
   }
@@ -322,10 +322,10 @@ async function rerollChoices() {
     if (fresh.length) {
       roundChoices.value = fresh
     } else {
-      toast.show('No other boards left to show.', 'error')
+      toast.show('Ingen andre brett igjen å vise.', 'error')
     }
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Could not load other boards - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Kunne ikke laste andre brett - prøv igjen.', 'error')
   } finally {
     rerolling.value = false
   }

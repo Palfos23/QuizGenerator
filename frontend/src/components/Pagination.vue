@@ -1,8 +1,8 @@
 <template>
   <div v-if="totalPages > 1" class="pagination-bar no-print">
-    <button class="btn btn-secondary btn-sm" :disabled="page <= 1" @click="$emit('update:page', page - 1)">← Prev</button>
-    <span class="pagination-info">Page {{ page }} of {{ totalPages }} · {{ totalItems }} total</span>
-    <button class="btn btn-secondary btn-sm" :disabled="page >= totalPages" @click="$emit('update:page', page + 1)">Next →</button>
+    <button class="btn btn-secondary btn-sm" :disabled="page <= 1" @click="$emit('update:page', page - 1)">← Forrige</button>
+    <span class="pagination-info">Side {{ page }} av {{ totalPages }} · {{ totalItems }} totalt</span>
+    <button class="btn btn-secondary btn-sm" :disabled="page >= totalPages" @click="$emit('update:page', page + 1)">Neste →</button>
   </div>
 </template>
 

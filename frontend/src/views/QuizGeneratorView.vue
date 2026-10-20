@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div class="step-indicator">{{ quiz ? 'Step 2 of 2 - Review & finalize' : 'Step 1 of 2 - Configure' }}</div>
+    <div class="step-indicator">{{ quiz ? 'Steg 2 av 2 - Gå gjennom og fullfør' : 'Steg 1 av 2 - Sett opp' }}</div>
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
-      <h1 style="margin:0;">Create a quiz</h1>
-      <router-link v-if="!quiz" to="/suggest-question" class="btn btn-secondary btn-sm">+ Suggest a question</router-link>
+      <h1 style="margin:0;">Lag en quiz</h1>
+      <router-link v-if="!quiz" to="/suggest-question" class="btn btn-secondary btn-sm">+ Foreslå et spørsmål</router-link>
     </div>
     <p class="page-subtitle">
-      Pick a language, a difficulty range, and how many questions you want from each category.
+      Velg språk, vanskelighetsgrad og hvor mange spørsmål du vil ha fra hver kategori.
     </p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
@@ -17,11 +17,11 @@
     <!-- Step 1: settings form -->
     <section v-if="!quiz">
       <div class="field">
-        <label>Quiz title<input type="text" v-model="form.title" placeholder="e.g. Sarah's 30th Birthday Quiz" /></label>
+        <label>Quiztittel<input type="text" v-model="form.title" placeholder="f.eks. Saras 30-årsquiz" /></label>
       </div>
 
       <div class="field">
-        <label>Language <span class="picker-hint">choose one</span></label>
+        <label>Språk <span class="picker-hint">velg en</span></label>
         <div class="language-row">
           <button
             v-for="lang in LANGUAGES"
@@ -36,11 +36,11 @@
       </div>
 
       <div class="field">
-        <label>Categories &amp; how many questions from each</label>
+        <label>Kategorier og hvor mange spørsmål fra hver</label>
 
-        <div v-if="categoriesLoading" style="color:var(--text-dim); padding:20px;">Loading categories…</div>
+        <div v-if="categoriesLoading" style="color:var(--text-dim); padding:20px;">Laster kategorier…</div>
         <div v-else-if="!availableCategories.length" class="empty-state friendly" style="padding:20px;">
-          No {{ languageLabel(form.language) }} categories yet - add some questions in that language in the admin page first.
+          Ingen {{ languageLabel(form.language) }} kategorier ennå - legg først til noen spørsmål på det språket på administrasjonssiden.
         </div>
 
         <div v-else class="category-chip-grid">
@@ -56,35 +56,35 @@
             <template v-else>
               <span class="category-chip-name">{{ cat }}</span>
               <div class="stepper">
-                <button aria-label="Decrease question count" @click="stepCount(cat, -1)">−</button>
+                <button aria-label="Færre spørsmål" @click="stepCount(cat, -1)">−</button>
                 <span>{{ countFor(cat) }}</span>
-                <button aria-label="Increase question count" @click="stepCount(cat, 1)">+</button>
+                <button aria-label="Flere spørsmål" @click="stepCount(cat, 1)">+</button>
               </div>
-              <button class="chip-remove-btn" aria-label="Remove category" @click="toggleCategory(cat)">✕</button>
+              <button class="chip-remove-btn" aria-label="Fjern kategori" @click="toggleCategory(cat)">✕</button>
             </template>
           </div>
         </div>
       </div>
 
       <details class="advanced-disclosure">
-        <summary>Advanced options</summary>
+        <summary>Avanserte valg</summary>
 
         <div class="field" style="margin-top:16px;">
-          <label>Difficulty range <span style="text-transform:none;font-weight:400;">(1 = easiest, 10 = hardest)</span></label>
+          <label>Vanskelighetsgrad <span style="text-transform:none;font-weight:400;">(1 = lettest, 10 = vanskeligst)</span></label>
           <div class="difficulty-slider-group">
             <div class="difficulty-slider-row">
               <span class="slider-label">Min</span>
               <input
                 type="range" min="1" max="10" v-model.number="form.minDifficulty"
-                @input="clampRange('min')" aria-label="Minimum difficulty"
+                @input="clampRange('min')" aria-label="Laveste vanskelighetsgrad"
               />
               <output>{{ form.minDifficulty }} <span class="difficulty-word">{{ difficultyWord(form.minDifficulty) }}</span></output>
             </div>
             <div class="difficulty-slider-row">
-              <span class="slider-label">Max</span>
+              <span class="slider-label">Maks</span>
               <input
                 type="range" min="1" max="10" v-model.number="form.maxDifficulty"
-                @input="clampRange('max')" aria-label="Maximum difficulty"
+                @input="clampRange('max')" aria-label="Høyeste vanskelighetsgrad"
               />
               <output>{{ form.maxDifficulty }} <span class="difficulty-word">{{ difficultyWord(form.maxDifficulty) }}</span></output>
             </div>
@@ -93,16 +93,16 @@
 
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:400;">
           <input type="checkbox" v-model="form.includeMySubmissions" style="width:auto;" />
-          Include my own submitted questions <span class="picker-hint">even ones still pending or rejected - only you can draw from these</span>
+          Ta med mine egne innsendte spørsmål <span class="picker-hint">også de som fortsatt venter eller er avvist - bare du kan bruke disse</span>
         </label>
       </details>
 
       <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:20px;">
         <button class="btn btn-primary" :disabled="generating || !form.categorySelections.length" @click="generateQuiz">
-          {{ generating ? 'Generating…' : 'Generate quiz' }}
+          {{ generating ? 'Lager…' : 'Lag quiz' }}
         </button>
         <button class="btn btn-secondary" @click="startBlank">
-          Or start blank &amp; search for specific questions →
+          Eller start tom og søk etter bestemte spørsmål →
         </button>
       </div>
     </section>
@@ -111,12 +111,12 @@
     <section v-else>
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
         <div style="flex:1; min-width:220px;">
-          <input type="text" v-model="quiz.title" @input="reviewDirty = true" class="title-edit-input" aria-label="Quiz title" />
-          <span style="color:var(--text-dim); font-size:0.9rem;">{{ quiz.questions.length }} questions</span>
+          <input type="text" v-model="quiz.title" @input="reviewDirty = true" class="title-edit-input" aria-label="Quiztittel" />
+          <span style="color:var(--text-dim); font-size:0.9rem;">{{ quiz.questions.length }} spørsmål</span>
         </div>
-        <button class="btn btn-secondary btn-sm no-print" @click="requestStartOver">← Back to settings</button>
+        <button class="btn btn-secondary btn-sm no-print" @click="requestStartOver">← Tilbake til innstillinger</button>
       </div>
-      <p class="page-subtitle" style="margin-top:-10px;">Use the ↑ / ↓ buttons to reorder questions.</p>
+      <p class="page-subtitle" style="margin-top:-10px;">Bruk knappene ↑ / ↓ for å endre rekkefølgen på spørsmålene.</p>
 
       <QuizReviewEditor
         :quiz="quiz"
@@ -126,17 +126,17 @@
         @changed="reviewDirty = true"
       >
         <template #empty>
-          No questions here yet - add a random batch, or search for specific ones, below.
+          Ingen spørsmål her ennå - legg til en tilfeldig gruppe, eller søk etter bestemte, under.
         </template>
         <template #actions>
           <div class="review-actions">
             <label class="review-actions-toggle">
               <input type="checkbox" v-model="includeAnswersInPdf" />
-              Include answers in PDF
+              Ta med svar i PDF
             </label>
             <div class="review-actions-buttons">
               <button class="btn btn-primary" :disabled="exportingPdf" @click="downloadPdf">
-                {{ exportingPdf ? 'Preparing PDF…' : 'Download as PDF' }}
+                {{ exportingPdf ? 'Forbereder PDF…' : 'Last ned som PDF' }}
               </button>
               <button
                 class="btn"
@@ -144,7 +144,7 @@
                 :disabled="saving"
                 @click="saveQuiz"
               >
-                {{ saving ? 'Saving…' : justSaved ? 'Saved to My Quizzes ✓' : 'Save to My Quizzes' }}
+                {{ saving ? 'Lagrer…' : justSaved ? 'Lagret i Mine quizer ✓' : 'Lagre i Mine quizer' }}
               </button>
             </div>
           </div>
@@ -154,18 +154,18 @@
 
     <ConfirmModal
       v-if="showStartOverConfirm"
-      title="Discard changes?"
-      message="You've discarded, replaced or reordered questions in this quiz. Going back to settings will lose those changes unless you've already saved this quiz."
-      confirm-text="Back to settings"
+      title="Forkaste endringene?"
+      message="Du har forkastet, byttet ut eller endret rekkefølgen på spørsmål i denne quizen. Hvis du går tilbake til innstillingene, mister du disse endringene med mindre du allerede har lagret quizen."
+      confirm-text="Tilbake til innstillinger"
       @confirm="confirmStartOver"
       @cancel="showStartOverConfirm = false"
     />
 
     <ConfirmModal
       v-if="showLeaveConfirm"
-      title="Leave this quiz?"
-      message="You've discarded, replaced or reordered questions in this quiz. Navigating away will lose those changes unless you've already saved this quiz."
-      confirm-text="Leave anyway"
+      title="Forlate denne quizen?"
+      message="Du har forkastet, byttet ut eller endret rekkefølgen på spørsmål i denne quizen. Hvis du forlater siden, mister du disse endringene med mindre du allerede har lagret quizen."
+      confirm-text="Forlat likevel"
       @confirm="confirmLeave"
       @cancel="cancelLeave"
     />
@@ -266,7 +266,7 @@ async function loadCategories() {
   try {
     availableCategories.value = await api.getCategories(form.language)
   } catch (e) {
-    error.value = 'Could not load categories from the server.'
+    error.value = 'Kunne ikke laste kategorier fra serveren.'
   } finally {
     categoriesLoading.value = false
   }
@@ -287,9 +287,9 @@ function clampRange(which) {
 }
 
 function difficultyWord(value) {
-  if (value <= 3) return 'Easy'
-  if (value <= 7) return 'Medium'
-  return 'Hard'
+  if (value <= 3) return 'Lett'
+  if (value <= 7) return 'Middels'
+  return 'Vanskelig'
 }
 
 function isSelected(cat) {
@@ -321,7 +321,7 @@ function stepCount(cat, delta) {
 
 function startBlank() {
   quiz.value = {
-    title: form.title || 'My Quiz',
+    title: form.title || 'Min quiz',
     language: form.language,
     questions: [],
     warnings: []
@@ -333,7 +333,7 @@ async function generateQuiz() {
   generating.value = true
   try {
     const result = await api.generateQuiz({
-      title: form.title || 'My Quiz',
+      title: form.title || 'Min quiz',
       language: form.language,
       minDifficulty: form.minDifficulty,
       maxDifficulty: form.maxDifficulty,
@@ -343,7 +343,7 @@ async function generateQuiz() {
     quiz.value = result
     reviewDirty.value = false
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not generate a quiz. Try different filters.'
+    error.value = e.response?.data?.message || 'Kunne ikke lage en quiz. Prøv andre filtre.'
   } finally {
     generating.value = false
   }
@@ -380,7 +380,7 @@ async function downloadPdf() {
     a.click()
     window.URL.revokeObjectURL(url)
   } catch (e) {
-    error.value = 'Could not generate the PDF.'
+    error.value = 'Kunne ikke lage PDF-en.'
   } finally {
     exportingPdf.value = false
   }
@@ -395,7 +395,7 @@ async function saveQuiz() {
     justSaved.value = true
     setTimeout(() => { justSaved.value = false }, 3000)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not save the quiz.'
+    error.value = e.response?.data?.message || 'Kunne ikke lagre quizen.'
   } finally {
     saving.value = false
   }

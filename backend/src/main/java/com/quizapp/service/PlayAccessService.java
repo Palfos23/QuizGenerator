@@ -48,7 +48,7 @@ public class PlayAccessService {
     }
 
     public void requirePenaltyShootoutAccess(Authentication authentication) {
-        require(authentication, "Penalty Shootout", AppUser::isCanPlayPenaltyShootout);
+        require(authentication, "Straffekonkurranse", AppUser::isCanPlayPenaltyShootout);
     }
 
     public void requireFlashbackAccess(Authentication authentication) {

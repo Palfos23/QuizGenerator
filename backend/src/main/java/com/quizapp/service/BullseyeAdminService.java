@@ -48,7 +48,7 @@ public class BullseyeAdminService {
     @Transactional(readOnly = true)
     public BullseyeQuestionAdminDetailDto getOne(Long id) {
         BullseyeQuestion question = bullseyeQuestionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No question found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke spørsmål med id " + id));
         return toDetailDto(question);
     }
 
@@ -62,7 +62,7 @@ public class BullseyeAdminService {
     @Transactional
     public BullseyeQuestionAdminDetailDto update(Long id, BullseyeQuestionRequest request) {
         BullseyeQuestion question = bullseyeQuestionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No question found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke spørsmål med id " + id));
         applyRequest(question, request);
         return toDetailDto(bullseyeQuestionRepository.save(question));
     }
@@ -70,7 +70,7 @@ public class BullseyeAdminService {
     @Transactional
     public void delete(Long id) {
         if (!bullseyeQuestionRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No question found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke spørsmål med id " + id);
         }
         bullseyeQuestionRepository.deleteById(id);
     }
@@ -87,7 +87,7 @@ public class BullseyeAdminService {
         question.setGroupDigits(request.isGroupDigits());
 
         if (request.getEntries().size() < 2) {
-            throw new IllegalArgumentException("Add at least 2 athletes with stat values.");
+            throw new IllegalArgumentException("Legg til minst 2 utøvere med statistikkverdier.");
         }
 
         // Match against existing entries by athlete so a routine stat-value edit
@@ -106,7 +106,7 @@ public class BullseyeAdminService {
                 .collect(Collectors.toMap(Athlete::getId, a -> a));
         if (athleteById.size() != athleteIds.size()) {
             List<Long> missing = athleteIds.stream().filter(id -> !athleteById.containsKey(id)).collect(Collectors.toList());
-            throw new IllegalArgumentException("No athlete found with id(s) " + missing);
+            throw new IllegalArgumentException("Fant ikke emne med id(er) " + missing);
         }
 
         int index = 0;
@@ -114,7 +114,7 @@ public class BullseyeAdminService {
         for (BullseyeEntryInputDto input : request.getEntries()) {
             Athlete athlete = athleteById.get(input.getAthleteId());
             if (input.getStatValue() == null) {
-                throw new IllegalArgumentException("'" + athlete.getName() + "' is missing a stat value.");
+                throw new IllegalArgumentException("'" + athlete.getName() + "' mangler en statistikkverdi.");
             }
             BullseyeEntry entry = existingByAthleteId.getOrDefault(input.getAthleteId(), new BullseyeEntry());
             entry.setAthlete(athlete);

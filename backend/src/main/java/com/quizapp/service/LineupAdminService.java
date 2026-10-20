@@ -63,7 +63,7 @@ public class LineupAdminService {
     @Transactional(readOnly = true)
     public LineupAdminDetailDto getOne(Long id) {
         Lineup lineup = lineupRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No Starting XI board found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke Starting XI-brett med id " + id));
         return toDetailDto(lineup);
     }
 
@@ -79,7 +79,7 @@ public class LineupAdminService {
     public LineupAdminDetailDto update(Long id, LineupRequest request) {
         validateDateNotTaken(request.getWeekStartDate(), id);
         Lineup lineup = lineupRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No Starting XI board found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke Starting XI-brett med id " + id));
         applyRequest(lineup, request);
         return toDetailDto(lineupRepository.save(lineup));
     }
@@ -92,35 +92,35 @@ public class LineupAdminService {
         boolean taken = lineupRepository.findByWeekStartDate(weekStartDate).stream()
                 .anyMatch(l -> !l.getId().equals(excludeLineupId));
         if (taken) {
-            throw new IllegalStateException("Another Starting XI board already uses the week of " + weekStartDate + ".");
+            throw new IllegalStateException("Et annet Starting XI-brett bruker allerede uken som starter " + weekStartDate + ".");
         }
     }
 
     @Transactional
     public void delete(Long id) {
         if (!lineupRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No Starting XI board found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke Starting XI-brett med id " + id);
         }
         lineupRepository.deleteById(id);
     }
 
     private void applyRequest(Lineup lineup, LineupRequest request) {
         if (!Formations.isKnown(request.getFormation())) {
-            throw new IllegalArgumentException("Unknown formation '" + request.getFormation() + "'.");
+            throw new IllegalArgumentException("Ukjent formasjon '" + request.getFormation() + "'.");
         }
         int slotCount = Formations.slotCount(request.getFormation());
         if (request.getEntries().size() != slotCount) {
             throw new IllegalArgumentException(
-                    "Formation " + request.getFormation() + " needs exactly " + slotCount + " starters - got "
+                    "Formasjon " + request.getFormation() + " trenger nøyaktig " + slotCount + " startspillere - fikk "
                             + request.getEntries().size() + ".");
         }
         Set<Integer> seenSlots = new HashSet<>();
         for (LineupEntryInputDto e : request.getEntries()) {
             if (e.getSlotIndex() < 0 || e.getSlotIndex() >= slotCount) {
-                throw new IllegalArgumentException("Slot index " + e.getSlotIndex() + " is out of range for " + request.getFormation() + ".");
+                throw new IllegalArgumentException("Plassindeks " + e.getSlotIndex() + " er utenfor gyldig område for " + request.getFormation() + ".");
             }
             if (!seenSlots.add(e.getSlotIndex())) {
-                throw new IllegalArgumentException("Two starters can't share formation slot " + e.getSlotIndex() + ".");
+                throw new IllegalArgumentException("To startspillere kan ikke dele formasjonsplass " + e.getSlotIndex() + ".");
             }
         }
 
@@ -159,7 +159,7 @@ public class LineupAdminService {
                 : request.getCandidateAthleteIds().stream().distinct().collect(Collectors.toList());
         if (!request.isEntireCategoryPool() && candidateAthleteIds.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Add at least one candidate, or switch on \"every subject in this category\".");
+                    "Legg til minst én kandidat, eller slå på \"alle emner i denne kategorien\".");
         }
         List<Athlete> foundAthletes = athleteRepository.findAllById(candidateAthleteIds);
         Map<Long, Athlete> athleteById = foundAthletes.stream()
@@ -168,7 +168,7 @@ public class LineupAdminService {
             List<Long> missing = candidateAthleteIds.stream()
                     .filter(aid -> !athleteById.containsKey(aid))
                     .collect(Collectors.toList());
-            throw new IllegalArgumentException("No athlete found with id(s) " + missing);
+            throw new IllegalArgumentException("Fant ikke emne med id(er) " + missing);
         }
 
         if (request.isEntireCategoryPool()) {
@@ -202,7 +202,7 @@ public class LineupAdminService {
             Athlete athlete = athleteById.get(input.getAthleteId());
             if (athlete == null) {
                 athlete = athleteRepository.findById(input.getAthleteId())
-                        .orElseThrow(() -> new IllegalArgumentException("No athlete found with id " + input.getAthleteId()));
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke emne med id " + input.getAthleteId()));
             }
             LineupEntry entry = existingByAthleteId.getOrDefault(input.getAthleteId(), new LineupEntry());
             entry.setAthlete(athlete);

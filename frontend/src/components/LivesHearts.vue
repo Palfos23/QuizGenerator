@@ -2,7 +2,7 @@
   <div
     class="lives-hearts"
     role="img"
-    :aria-label="`${remaining} of ${max} lives remaining`"
+    :aria-label="`${remaining} av ${max} liv igjen`"
   >
     <span
       v-for="i in max"

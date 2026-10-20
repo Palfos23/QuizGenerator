@@ -42,7 +42,7 @@ public class TensionOnlineService {
         int count = (numQuestions != null && numQuestions >= 2 && numQuestions <= 10) ? numQuestions : 5;
         List<TensionQuestionDto> questions = tensionQuestionService.getRandom(count, category, excludeCategories);
         if (questions.size() < 2) {
-            throw new IllegalArgumentException("Not enough tension questions available for that category yet.");
+            throw new IllegalArgumentException("Ikke nok Tension-spørsmål tilgjengelige for den kategorien ennå.");
         }
         TensionRoomState state = new TensionRoomState();
         state.setRoom(room);
@@ -62,21 +62,21 @@ public class TensionOnlineService {
     @Transactional
     public TensionOnlineStateDto rerollQuestion(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can swap the question.");
+            throw new IllegalStateException("Bare verten kan bytte spørsmålet.");
         }
         TensionRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         if (room.getStatus() != RoomStatus.IN_PROGRESS || state.isFinished()) {
-            throw new IllegalStateException("There's no round in progress to swap.");
+            throw new IllegalStateException("Det er ingen runde i gang å bytte.");
         }
         if (state.isRoundScored() || !roundAnswerRepository.findByRoomState_IdOrderByIdAsc(state.getId()).isEmpty()) {
-            throw new IllegalStateException("It's too late to swap - someone has already answered this round.");
+            throw new IllegalStateException("Det er for sent å bytte - noen har allerede svart denne runden.");
         }
 
         List<TensionQuestionDto> fresh = tensionQuestionService.getRoundChoices(
                 1, state.getCategoryFilter(), state.getExcludedCategories(), new ArrayList<>(state.getQuestionIds()));
         if (fresh.isEmpty()) {
-            throw new IllegalStateException("No other questions left to swap to.");
+            throw new IllegalStateException("Ingen andre spørsmål igjen å bytte til.");
         }
         state.getQuestionIds().set(state.getCurrentQuestionIndex(), fresh.get(0).getId());
         roomStateRepository.save(state);
@@ -135,13 +135,13 @@ public class TensionOnlineService {
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can start the game.");
+            throw new IllegalStateException("Bare verten kan starte spillet.");
         }
         if (room.getParticipants().size() < 2) {
-            throw new IllegalStateException("Need at least 2 players to start.");
+            throw new IllegalStateException("Det trengs minst 2 spillere for å starte.");
         }
         TensionRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new IllegalStateException("This room isn't set up yet."));
+                .orElseThrow(() -> new IllegalStateException("Dette rommet er ikke satt opp ennå."));
 
         for (GameRoomParticipant p : room.getParticipants()) {
             TensionParticipantState ps = new TensionParticipantState();
@@ -168,7 +168,7 @@ public class TensionOnlineService {
         }
 
         TensionRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         List<TensionParticipantState> participantStates = participantStateRepository.findByRoomState_Id(state.getId());
 
         dto.setTotalQuestions(state.getQuestionIds().size());
@@ -266,21 +266,21 @@ public class TensionOnlineService {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         TensionOnlineStateDto currentView = getState(room, requestingEmail);
 
-        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
-        if (currentView.isRoundRevealed()) throw new IllegalStateException("This round is already finished.");
+        if (currentView.isFinished()) throw new IllegalStateException("Dette spillet er allerede ferdig.");
+        if (currentView.isRoundRevealed()) throw new IllegalStateException("Denne runden er allerede ferdig.");
         if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
-            throw new IllegalStateException("It's not your turn.");
+            throw new IllegalStateException("Det er ikke din tur.");
         }
 
         String trimmed = answerText.trim();
         boolean duplicate = currentView.getAnswersSoFar().stream()
                 .anyMatch(a -> a.getAnswerText().equalsIgnoreCase(trimmed));
         if (duplicate) {
-            throw new IllegalStateException("That answer's already been used by another player this round.");
+            throw new IllegalStateException("Det svaret er allerede brukt av en annen spiller denne runden.");
         }
 
         TensionRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         TensionRoundAnswer answer = new TensionRoundAnswer();
         answer.setRoomState(state);
@@ -299,15 +299,15 @@ public class TensionOnlineService {
     @Transactional
     public TensionOnlineStateDto nextQuestion(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can move on to the next question.");
+            throw new IllegalStateException("Bare verten kan gå videre til neste spørsmål.");
         }
         TensionOnlineStateDto current = getState(room, requestingEmail);
         if (!current.isRoundRevealed()) {
-            throw new IllegalStateException("Not everyone has answered yet.");
+            throw new IllegalStateException("Ikke alle har svart ennå.");
         }
 
         TensionRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         roundAnswerRepository.deleteByRoomState_Id(state.getId());
         state.setRoundScored(false);

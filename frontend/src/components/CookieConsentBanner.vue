@@ -1,14 +1,12 @@
 <template>
-  <div v-if="cookieConsent.isUnknown.value" class="cookie-banner" role="dialog" aria-label="Cookie preferences">
+  <div v-if="cookieConsent.isUnknown.value" class="cookie-banner" role="dialog" aria-label="Cookie-innstillinger">
     <p class="cookie-banner-text">
-      This site doesn't set cookies of its own. Signing in with Google loads Google's own sign-in
-      script, which can set cookies on Google's domain - it only loads after you accept below.
-      Declining just means using "Continue with email" instead. See our
-      <router-link to="/cookies">Cookie Policy</router-link>.
+      Dette nettstedet setter ingen egne informasjonskapsler. Innlogging med Google laster Googles eget innloggingsskript, som kan sette informasjonskapsler på Googles domene - det lastes først etter at du godtar nedenfor. Hvis du avslår, bruker du i stedet «Fortsett med e-post». Se våre
+      <router-link to="/cookies">retningslinjer for informasjonskapsler</router-link>.
     </p>
     <div class="cookie-banner-actions">
-      <button type="button" class="btn btn-secondary btn-sm" @click="cookieConsent.decline()">Decline</button>
-      <button type="button" class="btn btn-primary btn-sm" @click="cookieConsent.accept()">Accept</button>
+      <button type="button" class="btn btn-secondary btn-sm" @click="cookieConsent.decline()">Avslå</button>
+      <button type="button" class="btn btn-primary btn-sm" @click="cookieConsent.accept()">Godta</button>
     </div>
   </div>
 </template>

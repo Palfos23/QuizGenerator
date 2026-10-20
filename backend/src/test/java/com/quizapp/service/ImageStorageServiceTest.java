@@ -95,11 +95,11 @@ class ImageStorageServiceTest {
     @Test
     void rejectsFilesThatAreNotPicturesOrAreEmptyOrTooBig() {
         assertThatThrownBy(() -> ImageStorageService.prepare("<html>not an image</html>".getBytes()))
-                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("picture");
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("bilde");
         assertThatThrownBy(() -> ImageStorageService.prepare(new byte[0]))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ImageStorageService.prepare(new byte[(int) ImageStorageService.MAX_UPLOAD_BYTES + 1]))
-                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("too large");
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("for stort");
     }
 
     @Test
@@ -107,7 +107,7 @@ class ImageStorageServiceTest {
         ImageStorageService unconfigured = new ImageStorageService("", "", "photos");
         assertThat(unconfigured.isConfigured()).isFalse();
         assertThatThrownBy(() -> unconfigured.upload(image(10, 10, BufferedImage.TYPE_INT_RGB, "png")))
-                .isInstanceOf(IllegalStateException.class).hasMessageContaining("aren't set up");
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("ikke satt opp");
 
         status = 403;
         ImageStorageService rejected = new ImageStorageService(baseUrl, "wrong-key", "photos");

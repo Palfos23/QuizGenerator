@@ -1,7 +1,7 @@
 <template>
   <div class="board-toolbar">
     <div class="field board-toolbar-search">
-      <label>Search
+      <label>Søk
         <input
           type="text"
           :value="search"
@@ -13,7 +13,7 @@
 
     <div class="field board-toolbar-sort">
       <div class="board-toolbar-sort-row">
-        <label>Sort by
+        <label>Sorter etter
           <select :value="sortKey" @change="$emit('update:sortKey', $event.target.value)">
             <option v-for="s in sorts" :key="s.key" :value="s.key">{{ s.label }}</option>
           </select>
@@ -21,8 +21,8 @@
         <button
           type="button"
           class="board-toolbar-dir"
-          :aria-label="sortDir === 'asc' ? 'Sorted ascending, click for descending' : 'Sorted descending, click for ascending'"
-          :title="sortDir === 'asc' ? 'Ascending' : 'Descending'"
+          :aria-label="sortDir === 'asc' ? 'Sortert stigende, klikk for synkende' : 'Sortert synkende, klikk for stigende'"
+          :title="sortDir === 'asc' ? 'Stigende' : 'Synkende'"
           @click="$emit('update:sortDir', sortDir === 'asc' ? 'desc' : 'asc')"
         >
           <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
@@ -42,7 +42,7 @@
     </div>
 
     <div v-if="search.trim()" class="board-toolbar-count">
-      {{ filteredCount }} of {{ totalCount }}
+      {{ filteredCount }} av {{ totalCount }}
     </div>
   </div>
 </template>
@@ -55,7 +55,7 @@ defineProps({
   sorts: { type: Array, default: () => [] },
   totalCount: { type: Number, default: 0 },
   filteredCount: { type: Number, default: 0 },
-  placeholder: { type: String, default: 'Search…' }
+  placeholder: { type: String, default: 'Søk…' }
 })
 defineEmits(['update:search', 'update:sortKey', 'update:sortDir'])
 </script>

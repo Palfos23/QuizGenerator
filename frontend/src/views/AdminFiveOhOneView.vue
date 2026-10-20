@@ -2,14 +2,14 @@
   <div>
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-        <h1 style="margin:0;">501 categories <span v-if="!loading && categories.length" class="header-count">{{ categories.length }}</span></h1>
-        <button class="btn btn-primary" @click="openCreate">+ New category</button>
+        <h1 style="margin:0;">501-kategorier <span v-if="!loading && categories.length" class="header-count">{{ categories.length }}</span></h1>
+        <button class="btn btn-primary" @click="openCreate">+ Ny kategori</button>
       </div>
-      <p class="page-subtitle">Each category is a ranked set of names and numbers - e.g. "Premier League appearances".</p>
+      <p class="page-subtitle">Hver kategori er et rangert sett med navn og tall - f.eks. "Premier League-kamper".</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
-      <div v-else-if="!categories.length" class="empty-state friendly">No categories yet - create the first one.</div>
+      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
+      <div v-else-if="!categories.length" class="empty-state friendly">Ingen kategorier ennå - lag den første.</div>
 
       <template v-else>
       <BoardListToolbar
@@ -19,26 +19,26 @@
         :sorts="categorySorts"
         :total-count="categories.length"
         :filtered-count="filteredCategories.length"
-        placeholder="Search categories by title or description…"
+        placeholder="Søk etter kategorier på tittel eller beskrivelse…"
       />
 
-      <div v-if="!filteredCategories.length" class="empty-state">No categories match your search.</div>
+      <div v-if="!filteredCategories.length" class="empty-state">Ingen kategorier samsvarer med søket ditt.</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="c in pagedCategories" :key="c.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ c.title }}
-              <span v-if="c.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
-              <span v-if="c.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Can expire</span>
+              <span v-if="c.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Automatisk utvalg</span>
+              <span v-if="c.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Kan utløpe</span>
             </div>
-            <div class="saved-quiz-meta">{{ c.entryCount }} entries<span v-if="c.description"> · {{ c.description }}</span></div>
+            <div class="saved-quiz-meta">{{ c.entryCount }} oppføringer<span v-if="c.description"> · {{ c.description }}</span></div>
           </div>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-secondary btn-sm" :disabled="openingId === c.id" @click="openEdit(c.id)">
-              {{ openingId === c.id ? 'Loading…' : 'Edit' }}
+              {{ openingId === c.id ? 'Laster…' : 'Rediger' }}
             </button>
-            <button class="btn btn-danger btn-sm" :disabled="openingId === c.id" @click="requestDelete(c)">Delete</button>
+            <button class="btn btn-danger btn-sm" :disabled="openingId === c.id" @click="requestDelete(c)">Slett</button>
           </div>
         </div>
       </div>
@@ -49,22 +49,22 @@
 
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1 style="margin:0;">{{ editingId ? 'Edit category' : 'New category' }}</h1>
-        <button class="btn btn-secondary" @click="view = 'list'">← Back to list</button>
+        <h1 style="margin:0;">{{ editingId ? 'Rediger kategori' : 'Ny kategori' }}</h1>
+        <button class="btn btn-secondary" @click="view = 'list'">← Tilbake til listen</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title<input type="text" v-model="form.title" placeholder="e.g. Premier League appearances" /></label>
+        <label>Tittel<input type="text" v-model="form.title" placeholder="f.eks. Premier League-kamper" /></label>
       </div>
 
       <div class="field">
-        <label>Description <span class="picker-hint">optional flavor text</span><input type="text" v-model="form.description" placeholder="Shown to players before they pick this category" /></label>
+        <label>Beskrivelse <span class="picker-hint">valgfri smakstekst</span><input type="text" v-model="form.description" placeholder="Vises for spillerne før de velger denne kategorien" /></label>
       </div>
 
       <div class="field">
-        <label>Subjects category <span class="picker-hint">optional - lets CSV-imported names be checked against this category's subjects</span></label>
+        <label>Emnekategori <span class="picker-hint">valgfritt - lar CSV-importerte navn sjekkes mot emnene i denne kategorien</span></label>
         <div class="language-row">
           <button
             v-for="s in gridCategories.categories.value"
@@ -82,9 +82,9 @@
       <div class="field option-card">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
-          Can expire
+          Kan utløpe
           <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
-            e.g. "countries by current population" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+            f.eks. "land etter nåværende folketall" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.
           </div>
         </label>
       </div>
@@ -92,12 +92,10 @@
       <div v-if="form.sport" class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.entireCategoryPool" style="width:auto;" />
-          Use every subject in "{{ form.sport }}" as the pool
+          Bruk alle emner i "{{ form.sport }}" som utvalg
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
-          Every subject in "{{ form.sport }}" becomes throwable too, including ones added to it later -
-          nothing to re-import. Anyone not listed below with a real checkout value just throws for 0.
-          You still add the ones worth a real value below.
+          Alle emner i "{{ form.sport }}" kan også kastes, inkludert de som legges til senere - ingenting å importere på nytt. Alle som ikke er oppført under med en faktisk utsjekkverdi, gir 0 når de kastes. Du legger fortsatt til de som er verdt en faktisk verdi under.
         </p>
       </div>
 
@@ -105,7 +103,7 @@
         <input
           type="text"
           v-model="athleteSearchTerm"
-          placeholder="Search subjects by name…"
+          placeholder="Søk etter emner på navn…"
           style="flex:1; min-width:180px;"
         />
       </div>
@@ -122,31 +120,29 @@
 
       <div style="margin-bottom:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" :disabled="importingCsv" @click="triggerCsvUpload">
-          {{ importingCsv ? 'Importing…' : '+ Import from CSV' }}
+          {{ importingCsv ? 'Importerer…' : '+ Importer fra CSV' }}
         </button>
         <input ref="csvInput" type="file" accept=".csv,text/csv" style="display:none;" @change="handleCsvFile" />
         <button v-if="form.sport" class="btn btn-secondary btn-sm" :disabled="!entries.length" @click="checkEntriesAgainstSubjects">
-          Check names against subjects
+          Sjekk navn mot emner
         </button>
       </div>
       <p class="page-subtitle" style="margin-top:-4px;">
-        CSV format: one row per entry, <code>name,value</code> - e.g. <code>Mohamed Salah,233</code>.
-        Adds to (or updates) what's below, doesn't replace it.
+        CSV-format: én rad per oppføring, <code>name,value</code> - e.g. <code>Mohamed Salah,233</code>. Legger til (eller oppdaterer) det som står under, erstatter det ikke.
       </p>
 
       <div v-if="csvUnmatchedNames.length" style="background:rgba(216, 67, 43, 0.1); border:1px solid rgba(216, 67, 43, 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:14px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
           <strong style="color:var(--gold);">
-            {{ csvUnmatchedNames.length }} name{{ csvUnmatchedNames.length > 1 ? 's' : '' }} weren't found in "{{ form.sport }}"
+            {{ csvUnmatchedNames.length }} navn ble ikke funnet i "{{ form.sport }}"
           </strong>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-primary btn-sm" @click="showAddSubjectsModal = true">+ Add as subjects</button>
-            <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">Dismiss</button>
+            <button class="btn btn-primary btn-sm" @click="showAddSubjectsModal = true">+ Legg til som emner</button>
+            <button class="btn btn-secondary btn-sm" @click="csvUnmatchedNames = []">Lukk</button>
           </div>
         </div>
         <p class="page-subtitle" style="margin:6px 0 10px;">
-          These entries are already in the list below either way - this just offers to add them to
-          "{{ form.sport }}" too, so other games can find them as subjects.
+          Disse oppføringene er uansett allerede i listen under - dette tilbyr bare å legge dem til i "{{ form.sport }}" også, slik at andre spill kan finne dem som emner.
         </p>
         <ul style="margin:0; padding-left:20px; max-height:200px; overflow-y:auto; line-height:1.8;">
           <li v-for="row in csvUnmatchedNames" :key="row.name">{{ row.name }}</li>
@@ -171,19 +167,19 @@
       />
 
       <div class="field" style="margin-top:20px;">
-        <label>Entries <span class="picker-hint">{{ entries.length }} total</span></label>
-        <div v-if="!entries.length" class="empty-state" style="padding:20px;">No entries yet - import a CSV above, or add one at a time below.</div>
+        <label>Oppføringer <span class="picker-hint">{{ entries.length }} totalt</span></label>
+        <div v-if="!entries.length" class="empty-state" style="padding:20px;">Ingen oppføringer ennå - importer en CSV over, eller legg til én om gangen under.</div>
         <div v-else class="candidate-list">
           <input
             type="text"
             v-model="entryFilterTerm"
-            placeholder="Find someone already in this list…"
+            placeholder="Finn noen som allerede er i denne listen…"
             class="search-input"
             style="margin-bottom:12px;"
           />
 
           <div v-if="!filteredEntries.length" class="empty-state" style="padding:20px;">
-            Nobody in this list matches "{{ entryFilterTerm }}".
+            Ingen i denne listen samsvarer med "{{ entryFilterTerm }}".
           </div>
 
           <template v-else>
@@ -192,36 +188,36 @@
               v-if="e.athleteId"
               class="tag"
               style="background:rgba(31, 122, 80, 0.15); color:var(--teal); flex-shrink:0;"
-              title="Linked to a subject"
-            >✓ Subject</span>
+              title="Koblet til et emne"
+            >✓ Emne</span>
             <input
               type="text"
               v-model="e.name"
-              placeholder="Name"
+              placeholder="Navn"
               style="flex:1;"
               @input="e.athleteId = null"
             />
-            <input type="number" v-model.number="e.value" placeholder="Value" style="width:100px;" />
+            <input type="number" v-model.number="e.value" placeholder="Verdi" style="width:100px;" />
             <button class="btn btn-danger btn-sm" @click="removeEntry(e)">✕</button>
           </div>
           <Pagination v-model:page="entryPage" :page-size="ENTRY_PAGE_SIZE" :total-items="filteredEntries.length" />
           </template>
         </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
-          <button class="btn btn-secondary btn-sm" @click="addBlankEntry">+ Add one manually</button>
-          <button class="btn btn-secondary btn-sm" :disabled="!entries.length" @click="downloadEntriesCsv">⇩ Download CSV</button>
+          <button class="btn btn-secondary btn-sm" @click="addBlankEntry">+ Legg til en manuelt</button>
+          <button class="btn btn-secondary btn-sm" :disabled="!entries.length" @click="downloadEntriesCsv">⇩ Last ned CSV</button>
         </div>
       </div>
 
       <button class="btn btn-primary" :disabled="saving" @click="saveCategory" style="margin-top:20px;">
-        {{ saving ? 'Saving…' : 'Save category' }}
+        {{ saving ? 'Lagrer…' : 'Lagre kategori' }}
       </button>
     </template>
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this category?"
-      :message="`'${pendingDelete.title}' and all ${pendingDelete.entryCount} entries will be removed.`"
+      title="Slette denne kategorien?"
+      :message="`«${pendingDelete.title}» og alle ${pendingDelete.entryCount} oppføringene fjernes.`"
       :busy="deleting"
       busy-text="Deleting…"
       @confirm="doDelete"
@@ -255,8 +251,8 @@ const {
   pageSize: 10,
   searchFields: [c => c.title, c => c.description],
   sorts: [
-    { key: 'title', label: 'Title', accessor: c => c.title },
-    { key: 'entries', label: 'Entries', accessor: c => c.entryCount, dir: 'desc' }
+    { key: 'title', label: 'Tittel', accessor: c => c.title },
+    { key: 'entries', label: 'Oppføringer', accessor: c => c.entryCount, dir: 'desc' }
   ]
 })
 const error = ref('')
@@ -301,7 +297,7 @@ async function loadCategories() {
   try {
     categories.value = await api.adminListFiveOhOneCategories()
   } catch (e) {
-    error.value = 'Could not load categories.'
+    error.value = 'Kunne ikke laste kategorier.'
   } finally {
     loading.value = false
   }
@@ -351,7 +347,7 @@ async function openEdit(id) {
     entryPage.value = 1
     view.value = 'form'
   } catch (e) {
-    error.value = 'Could not load that category.'
+    error.value = 'Kunne ikke laste kategorien.'
   } finally {
     openingId.value = null
   }
@@ -383,7 +379,7 @@ async function handleCsvFile(event) {
   try {
     const rows = parseNameValueCsv(await file.text())
     if (!rows.length) {
-      toast.show('That CSV had no valid "name,value" rows to import.', 'error')
+      toast.show('Den CSV-filen hadde ingen gyldige "name,value"-rader å importere.', 'error')
       return
     }
 
@@ -403,7 +399,7 @@ async function handleCsvFile(event) {
     pendingImportPool.value = pool
     showImportReviewModal.value = true
   } catch (e) {
-    error.value = 'Could not read that CSV file.'
+    error.value = 'Kunne ikke lese CSV-filen.'
   } finally {
     importingCsv.value = false
   }
@@ -434,7 +430,7 @@ function applyImportSelection(selectedRows) {
   }
   entryPage.value = 1
   entryFilterTerm.value = ''
-  toast.show(`${pendingImportLabel.value}: ${added} entry(ies) added, ${updated} updated.`)
+  toast.show(`${pendingImportLabel.value}: ${added} oppføring(er) lagt til, ${updated} oppdatert.`)
   csvUnmatchedNames.value = unmatched
 }
 
@@ -459,11 +455,11 @@ async function checkEntriesAgainstSubjects() {
     }
     csvUnmatchedNames.value = unmatched
     toast.show(
-      unmatched.length ? `${unmatched.length} name(s) aren't subjects in "${form.sport}" yet.` : 'Every entry is already a subject.',
+      unmatched.length ? `${unmatched.length} navn er ikke emner i "${form.sport}" ennå.` : 'Alle oppføringer er allerede emner.',
       unmatched.length ? 'error' : 'success'
     )
   } catch (e) {
-    error.value = 'Could not check entries against subjects.'
+    error.value = 'Kunne ikke sjekke oppføringer mot emner.'
   }
 }
 
@@ -529,11 +525,11 @@ async function saveCategory() {
     .filter(e => e.name && Number.isFinite(e.value))
 
   if (!form.title.trim()) {
-    error.value = 'Give this category a title.'
+    error.value = 'Gi denne kategorien en tittel.'
     return
   }
   if (!cleanEntries.length) {
-    error.value = 'Add at least one entry.'
+    error.value = 'Legg til minst én oppføring.'
     return
   }
 
@@ -549,15 +545,15 @@ async function saveCategory() {
     }
     if (editingId.value) {
       await api.adminUpdateFiveOhOneCategory(editingId.value, payload)
-      toast.show('Category updated.')
+      toast.show('Kategorien er oppdatert.')
     } else {
       await api.adminCreateFiveOhOneCategory(payload)
-      toast.show('Category created.')
+      toast.show('Kategorien er opprettet.')
     }
     view.value = 'list'
     loadCategories()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not save that category.'
+    error.value = e.response?.data?.message || 'Kunne ikke lagre kategorien.'
   } finally {
     saving.value = false
   }
@@ -573,11 +569,11 @@ async function doDelete() {
   try {
     await api.adminDeleteFiveOhOneCategory(c.id)
     pendingDelete.value = null
-    toast.show('Category deleted.')
+    toast.show('Kategorien er slettet.')
     loadCategories()
   } catch (e) {
     pendingDelete.value = null
-    error.value = 'Could not delete that category.'
+    error.value = 'Kunne ikke slette kategorien.'
   } finally {
     deleting.value = false
   }

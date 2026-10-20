@@ -1,44 +1,40 @@
 <template>
   <div style="max-width:640px; margin:0 auto;">
-    <h1 style="margin:0 0 4px;">Account</h1>
-    <p class="page-subtitle">Manage your data, or download or delete your account.</p>
+    <h1 style="margin:0 0 4px;">Konto</h1>
+    <p class="page-subtitle">Administrer dataene dine, eller last ned eller slett kontoen din.</p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <form class="field" @submit.prevent="saveName">
-      <label for="display-name">Display name</label>
+      <label for="display-name">Visningsnavn</label>
       <p class="page-subtitle" style="margin-top:-6px;">
-        The name shown for you on leaderboards, the weekly standings and in game rooms. Use your first and last
-        name if you like - when two players share a first name, the first letter of the last name is added
-        (so "Erik H." and "Erik S." can be told apart).
+        Navnet som vises for deg på topplistene, ukens stilling og i spillrom. Bruk gjerne for- og etternavn - når to spillere har samme fornavn, legges første bokstav i etternavnet til (slik at «Erik H.» og «Erik S.» kan skilles).
       </p>
       <div class="display-name-row">
-        <input id="display-name" type="text" v-model="displayName" maxlength="40" autocomplete="name" placeholder="Your name" />
+        <input id="display-name" type="text" v-model="displayName" maxlength="40" autocomplete="name" placeholder="Navnet ditt" />
         <button type="submit" class="btn btn-primary" :disabled="savingName || !nameChanged">
-          {{ savingName ? 'Saving…' : 'Save name' }}
+          {{ savingName ? 'Lagrer…' : 'Lagre navn' }}
         </button>
       </div>
     </form>
 
     <div class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
-      <label>Download my data</label>
+      <label>Last ned dataene mine</label>
       <p class="page-subtitle" style="margin-top:-6px;">
-        A copy of everything tied to your account - profile, saved quizzes, submitted questions, reports, and game
-        history - as a JSON file.
+        En kopi av alt som er knyttet til kontoen din - profil, lagrede quizer, innsendte spørsmål, rapporter og spillhistorikk - som en JSON-fil.
       </p>
       <button class="btn btn-secondary" :disabled="exporting" @click="exportData">
-        {{ exporting ? 'Preparing…' : '⇩ Download my data' }}
+        {{ exporting ? 'Forbereder…' : '⇩ Last ned dataene mine' }}
       </button>
     </div>
 
     <div class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
-      <label style="color:var(--coral);">Delete my account</label>
+      <label style="color:var(--coral);">Slett kontoen min</label>
       <p class="page-subtitle" style="margin-top:-6px;">
-        Permanently deletes your account, saved quizzes, and game history. This can't be undone. See our
-        <router-link to="/privacy">Privacy Policy</router-link> for what happens to content you've contributed
-        elsewhere.
+        Sletter kontoen din, lagrede quizer og spillhistorikk for godt. Dette kan ikke angres. Se vår
+        <router-link to="/privacy">personvernerklæring</router-link> for hva som skjer med innhold du har bidratt med andre steder.
       </p>
-      <button class="btn btn-danger" @click="showDeleteModal = true">Delete my account…</button>
+      <button class="btn btn-danger" @click="showDeleteModal = true">Slett kontoen min…</button>
     </div>
 
     <DeleteAccountModal
@@ -74,9 +70,9 @@ async function saveName() {
     const result = await api.updateMyDisplayName(displayName.value)
     auth.updateToken(result) // a fresh token carrying the new name, so the whole app switches over now
     displayName.value = result.displayName
-    toast.show('Name updated.')
+    toast.show('Navnet er oppdatert.')
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not update your name.'
+    error.value = e.response?.data?.message || 'Kunne ikke oppdatere navnet ditt.'
   } finally {
     savingName.value = false
   }
@@ -97,7 +93,7 @@ async function exportData() {
     link.click()
     URL.revokeObjectURL(url)
   } catch (e) {
-    error.value = 'Could not download your data - please try again.'
+    error.value = 'Kunne ikke laste ned dataene dine - prøv igjen.'
   } finally {
     exporting.value = false
   }
@@ -108,10 +104,10 @@ async function deleteAccount(password) {
     await api.deleteMyAccount(password)
     showDeleteModal.value = false
     auth.logout()
-    toast.show('Your account has been deleted.')
+    toast.show('Kontoen din er slettet.')
     router.push('/')
   } catch (e) {
-    deleteModal.value?.setError(e.response?.data?.message || 'Could not delete your account.')
+    deleteModal.value?.setError(e.response?.data?.message || 'Kunne ikke slette kontoen din.')
   }
 }
 </script>

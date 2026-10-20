@@ -60,15 +60,15 @@ public class QuestionImportService {
                         toSave.add(parseRow(record));
                     } catch (RowValidationException e) {
                         result.setSkipped(result.getSkipped() + 1);
-                        result.getErrors().add("Row " + record.getRecordNumber() + ": " + e.getMessage());
+                        result.getErrors().add("Rad " + record.getRecordNumber() + ": " + e.getMessage());
                     }
                 }
             }
         } catch (IOException e) {
-            throw new IllegalArgumentException("Could not read the uploaded file: " + e.getMessage());
+            throw new IllegalArgumentException("Kunne ikke lese den opplastede filen: " + e.getMessage());
         } catch (IllegalArgumentException e) {
             // malformed CSV structure itself (e.g. no header row) - not a per-row problem
-            throw new IllegalArgumentException("Could not parse the CSV: " + e.getMessage());
+            throw new IllegalArgumentException("Kunne ikke tolke CSV-filen: " + e.getMessage());
         }
 
         questionRepository.saveAll(toSave);
@@ -107,27 +107,27 @@ public class QuestionImportService {
         String answer = safeGet(record, "answer");
         String couldChangeRaw = safeGet(record, "couldChange");
 
-        if (isBlank(questionText)) throw new RowValidationException("\"question\" is required");
-        if (isBlank(category)) throw new RowValidationException("\"category\" is required");
-        if (isBlank(answer)) throw new RowValidationException("\"answer\" is required");
-        if (isBlank(languageRaw)) throw new RowValidationException("\"language\" is required");
-        if (isBlank(difficultyRaw)) throw new RowValidationException("\"difficulty\" is required");
+        if (isBlank(questionText)) throw new RowValidationException("\"question\" må fylles ut");
+        if (isBlank(category)) throw new RowValidationException("\"category\" må fylles ut");
+        if (isBlank(answer)) throw new RowValidationException("\"answer\" må fylles ut");
+        if (isBlank(languageRaw)) throw new RowValidationException("\"language\" må fylles ut");
+        if (isBlank(difficultyRaw)) throw new RowValidationException("\"difficulty\" må fylles ut");
 
         int difficulty;
         try {
             difficulty = Integer.parseInt(difficultyRaw.trim());
         } catch (NumberFormatException e) {
-            throw new RowValidationException("\"difficulty\" must be a whole number, got \"" + difficultyRaw + "\"");
+            throw new RowValidationException("\"difficulty\" må være et heltall, fikk \"" + difficultyRaw + "\"");
         }
         if (difficulty < 1 || difficulty > 10) {
-            throw new RowValidationException("\"difficulty\" must be between 1 and 10, got " + difficulty);
+            throw new RowValidationException("\"difficulty\" må være mellom 1 og 10, fikk " + difficulty);
         }
 
         Language language;
         try {
             language = Language.valueOf(languageRaw.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RowValidationException("\"language\" must be one of EN, DE, FR, ES, NO - got \"" + languageRaw + "\"");
+            throw new RowValidationException("\"language\" må være en av EN, DE, FR, ES, NO - fikk \"" + languageRaw + "\"");
         }
 
         boolean couldChange = couldChangeRaw != null && TRUE_VALUES.contains(couldChangeRaw.trim().toLowerCase());

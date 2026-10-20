@@ -3,28 +3,28 @@
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
         <div>
-          <h1>Quiz templates</h1>
-          <p class="page-subtitle">Published templates users can copy into their own My Quizzes.</p>
+          <h1>Quizmaler</h1>
+          <p class="page-subtitle">Publiserte maler brukere kan kopiere inn i sine egne Mine quizer.</p>
         </div>
-        <button class="btn btn-primary" @click="openCreate">+ Create template</button>
+        <button class="btn btn-primary" @click="openCreate">+ Lag mal</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
       <div v-else-if="!templates.length" class="empty-state friendly">
-        No templates yet. Create one below - it'll be available for any user to copy into their own quizzes.
+        Ingen maler ennå. Lag en under - den blir tilgjengelig for alle brukere å kopiere inn i sine egne quizer.
       </div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="t in templates" :key="t.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ t.title }}</div>
-            <div class="saved-quiz-meta">{{ languageLabel(t.language) }} · {{ t.questionCount }} questions</div>
+            <div class="saved-quiz-meta">{{ languageLabel(t.language) }} · {{ t.questionCount }} spørsmål</div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(t.id)">Edit</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(t)">Delete</button>
+            <button class="btn btn-secondary btn-sm" @click="openEdit(t.id)">Rediger</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(t)">Slett</button>
           </div>
         </div>
       </div>
@@ -34,18 +34,18 @@
          which already has both a random-batch adder and a search-and-add box built in. -->
     <template v-else-if="view === 'settings'">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h1 style="margin:0;">Create template</h1>
-        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Back to list</button>
+        <h1 style="margin:0;">Lag mal</h1>
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til listen</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title<input type="text" v-model="newTitle" placeholder="e.g. Office Christmas Party Quiz" /></label>
+        <label>Tittel<input type="text" v-model="newTitle" placeholder="f.eks. Quiz til julebordet på kontoret" /></label>
       </div>
 
       <div class="field">
-        <label>Language <span class="picker-hint">choose one</span></label>
+        <label>Språk <span class="picker-hint">velg en</span></label>
         <div class="language-row">
           <button
             v-for="lang in LANGUAGES"
@@ -59,22 +59,22 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" @click="startBuilding">Start building →</button>
+      <button class="btn btn-primary" @click="startBuilding">Begynn å bygge →</button>
     </template>
 
     <template v-else-if="view === 'review'">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <input type="text" v-model="quiz.title" class="title-edit-input" aria-label="Quiz title" />
-        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Back to list</button>
+        <input type="text" v-model="quiz.title" class="title-edit-input" aria-label="Quiztittel" />
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til listen</button>
       </div>
       <p class="page-subtitle" style="margin-top:-14px;">
-        {{ languageLabel(quiz.language) }} · use the panels below to add a random batch, or search for specific questions.
+        {{ languageLabel(quiz.language) }} · bruk panelene under for å legge til en tilfeldig gruppe, eller søk etter bestemte spørsmål.
       </p>
 
       <QuizReviewEditor :quiz="quiz" @error="error = $event">
         <template #actions>
           <button class="btn btn-primary" :disabled="saving" @click="saveTemplate">
-            {{ saving ? 'Saving…' : 'Save template' }}
+            {{ saving ? 'Lagrer…' : 'Lagre mal' }}
           </button>
         </template>
       </QuizReviewEditor>
@@ -82,8 +82,8 @@
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this template?"
-      :message="`'${pendingDelete.title}' will no longer be available to copy. Copies users already made are unaffected.`"
+      title="Slette denne malen?"
+      :message="`«${pendingDelete.title}» blir ikke lenger tilgjengelig for kopiering. Kopier brukere allerede har laget påvirkes ikke.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -118,7 +118,7 @@ async function loadTemplates() {
   try {
     templates.value = await api.adminListQuizTemplates()
   } catch (e) {
-    error.value = 'Could not load templates.'
+    error.value = 'Kunne ikke laste maler.'
   } finally {
     loading.value = false
   }
@@ -132,7 +132,7 @@ function openCreate() {
 }
 
 function startBuilding() {
-  quiz.value = { title: newTitle.value || 'Untitled quiz', language: newLanguage.value, questions: [], warnings: [] }
+  quiz.value = { title: newTitle.value || 'Quiz uten tittel', language: newLanguage.value, questions: [], warnings: [] }
   view.value = 'review'
 }
 
@@ -143,14 +143,14 @@ async function openEdit(id) {
     editingId.value = id
     view.value = 'review'
   } catch (e) {
-    error.value = 'Could not load that template.'
+    error.value = 'Kunne ikke laste malen.'
   }
 }
 
 async function saveTemplate() {
   error.value = ''
   if (!quiz.value.questions.length) {
-    error.value = 'Add at least one question first.'
+    error.value = 'Legg først til minst ett spørsmål.'
     return
   }
   saving.value = true
@@ -160,11 +160,11 @@ async function saveTemplate() {
     } else {
       await api.adminCreateQuizTemplate(quiz.value)
     }
-    toast.show('Template saved.')
+    toast.show('Malen er lagret.')
     view.value = 'list'
     loadTemplates()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not save the template.'
+    error.value = e.response?.data?.message || 'Kunne ikke lagre malen.'
   } finally {
     saving.value = false
   }
@@ -180,10 +180,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteQuizTemplate(t.id)
-    toast.show('Template deleted.')
+    toast.show('Malen er slettet.')
     loadTemplates()
   } catch (e) {
-    error.value = 'Could not delete that template.'
+    error.value = 'Kunne ikke slette malen.'
   }
 }
 </script>

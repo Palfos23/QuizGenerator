@@ -1,20 +1,20 @@
 <template>
   <div class="modal-backdrop" @click.self="$emit('close')">
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Choose entries to import">
-      <h2 style="margin-top:0;">Import {{ includedCount }} of {{ items.length }} {{ items.length === 1 ? 'entry' : 'entries' }}?</h2>
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Velg oppføringer å importere">
+      <h2 style="margin-top:0;">Importer {{ includedCount }} av {{ items.length }} {{ items.length === 1 ? 'oppføring' : 'oppføringer' }}?</h2>
       <p class="page-subtitle">
-        {{ sourceLabel }} - uncheck any you don't want added to the list below.
-        <template v-if="hasSubjectMatches">A <strong style="color:var(--teal);">✓</strong> tag means that name already matches a subject.</template>
-        <template v-if="pool.length"> If a name looks unmatched only because of spelling or special characters (e.g. "ø"/"ö"), search for the real subject and link it.</template>
+        {{ sourceLabel }} - fjern avhukingen for de du ikke vil legge til i listen under.
+        <template v-if="hasSubjectMatches">Et <strong style="color:var(--teal);">✓</strong>-merke betyr at navnet allerede samsvarer med et emne.</template>
+        <template v-if="pool.length"> Hvis et navn ser ut til å mangle treff bare på grunn av stavemåte eller spesialtegn (f.eks. «ø»/«ö»), søk etter det riktige emnet og koble det.</template>
       </p>
 
       <label v-if="pool.length" style="display:flex; align-items:center; gap:8px; margin-bottom:10px; cursor:pointer; text-transform:none; font-weight:400;">
         <input type="checkbox" v-model="showOnlyUnmatched" style="width:auto;" />
-        Only show names not found in the subjects list ({{ unmatchedCount }})
+        Vis bare navn som ikke finnes i emnelisten ({{ unmatchedCount }})
       </label>
 
       <div class="candidate-list" style="max-height:380px; overflow-y:auto;">
-        <p v-if="!visibleItems.length" class="page-subtitle" style="margin:0;">Every name here already matches a subject.</p>
+        <p v-if="!visibleItems.length" class="page-subtitle" style="margin:0;">Alle navnene her samsvarer allerede med et emne.</p>
         <div v-for="item in visibleItems" :key="item.key" style="display:flex; flex-direction:column; gap:6px; border:1px solid var(--border); border-radius: 2px; padding:10px 12px;">
           <label class="candidate-row" style="cursor:pointer; border:none; padding:0;">
             <input type="checkbox" v-model="item.include" style="width:auto;" />
@@ -26,13 +26,13 @@
               class="btn btn-secondary btn-sm"
               style="padding:2px 10px;"
               @click.stop.prevent="toggleSearch(item)"
-            >{{ item.athlete ? 'Change' : 'Link subject' }}</button>
+            >{{ item.athlete ? 'Endre' : 'Koble til emne' }}</button>
             <button
               v-if="item.athlete"
               type="button"
               class="btn btn-secondary btn-sm"
               style="padding:2px 8px;"
-              title="Unlink subject"
+              title="Fjern kobling til emne"
               @click.stop.prevent="clearAthlete(item)"
             >✕</button>
             <span style="color:var(--text-dim); font-size:0.85rem; min-width:50px; text-align:right;">{{ item.value }}</span>
@@ -42,7 +42,7 @@
             <input
               type="text"
               v-model="item.searchTerm"
-              placeholder="Search subjects…"
+              placeholder="Søk etter emner…"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -57,15 +57,15 @@
                 @click="pickAthlete(item, a)"
               >{{ a.name }}</button>
             </div>
-            <p v-else-if="item.searchTerm.trim()" class="page-subtitle" style="margin:6px 0 0;">No subjects match "{{ item.searchTerm.trim() }}".</p>
+            <p v-else-if="item.searchTerm.trim()" class="page-subtitle" style="margin:6px 0 0;">Ingen emner samsvarer med "{{ item.searchTerm.trim() }}".</p>
           </div>
         </div>
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-secondary" @click="$emit('close')">Cancel</button>
+        <button class="btn btn-secondary" @click="$emit('close')">Avbryt</button>
         <button class="btn btn-primary" :disabled="!includedCount" @click="confirm">
-          Import {{ includedCount }} {{ includedCount === 1 ? 'entry' : 'entries' }}
+          Importer {{ includedCount }} {{ includedCount === 1 ? 'oppføring' : 'oppføringer' }}
         </button>
       </div>
     </div>
@@ -82,7 +82,7 @@ const props = defineProps({
   // caller before opening this modal, since matching needs an API call this
   // modal has no business making itself.
   rows: { type: Array, required: true },
-  sourceLabel: { type: String, default: 'Import' },
+  sourceLabel: { type: String, default: 'Importer' },
   // The full subject pool for this sport - lets the admin search out and
   // link the real subject when auto-match missed it (e.g. the imported name
   // dropped a special character like "ø"/"ö"). Empty when the caller has no

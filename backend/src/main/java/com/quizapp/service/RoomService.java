@@ -79,7 +79,7 @@ public class RoomService {
             }
 
             if (room.getStatus() != RoomStatus.WAITING) {
-                throw new IllegalStateException("This game has already started - you can't join mid-game.");
+                throw new IllegalStateException("Dette spillet har allerede startet - du kan ikke bli med midt i spillet.");
             }
             int maxPlayers = switch (room.getGameType()) {
                 case FIVE_O_ONE -> 2;
@@ -88,13 +88,13 @@ public class RoomService {
                 default -> 10; // TENSION
             };
             if (room.getParticipants().size() >= maxPlayers) {
-                throw new IllegalStateException("This room already has the maximum of " + maxPlayers + " players.");
+                throw new IllegalStateException("Dette rommet har allerede maksimalt " + maxPlayers + " spillere.");
             }
             boolean nameTaken = room.getParticipants().stream()
                     .anyMatch(p -> p.getDisplayName().equalsIgnoreCase(chosenName));
             if (nameTaken) {
                 throw new IllegalStateException(
-                        "The name \"" + chosenName + "\" is already taken in this room - please use a different name.");
+                        "Navnet \"" + chosenName + "\" er allerede tatt i dette rommet - bruk et annet navn.");
             }
             addParticipant(room, userEmail, chosenName, color);
         }
@@ -129,7 +129,7 @@ public class RoomService {
     @Transactional(readOnly = true)
     public GameRoom findByCode(String roomCode) {
         return gameRoomRepository.findByRoomCode(roomCode.toUpperCase())
-                .orElseThrow(() -> new ResourceNotFoundException("No room found with code " + roomCode));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke rom med kode " + roomCode));
     }
 
     /**
@@ -197,7 +197,7 @@ public class RoomService {
         return room.getParticipants().stream()
                 .filter(p -> p.getUserEmail().equals(userEmail))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("You're not a participant in this room."));
+                .orElseThrow(() -> new IllegalStateException("Du er ikke deltaker i dette rommet."));
     }
 
     // Manual host takeover (see RoomController#claimHost) - only when the
@@ -209,14 +209,14 @@ public class RoomService {
     public GameRoom claimHost(GameRoom room, String requestingEmail) {
         GameRoomParticipant me = requireParticipant(room, requestingEmail);
         if (room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("You're already the host.");
+            throw new IllegalStateException("Du er allerede vert.");
         }
         GameRoomParticipant currentHost = room.getParticipants().stream()
                 .filter(p -> p.getUserEmail().equals(room.getHostEmail()))
                 .findFirst()
                 .orElse(null);
         if (currentHost != null && isConnected(currentHost)) {
-            throw new IllegalStateException("The host is still connected.");
+            throw new IllegalStateException("Verten er fortsatt tilkoblet.");
         }
         room.setHostEmail(me.getUserEmail());
         return gameRoomRepository.save(room);
@@ -234,7 +234,7 @@ public class RoomService {
     public GameRoom removeParticipant(GameRoom room, Long participantId) {
         boolean removed = room.getParticipants().removeIf(p -> p.getId().equals(participantId));
         if (!removed) {
-            throw new ResourceNotFoundException("No participant found with id " + participantId);
+            throw new ResourceNotFoundException("Fant ikke deltaker med id " + participantId);
         }
         return gameRoomRepository.save(room);
     }

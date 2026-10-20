@@ -1,25 +1,24 @@
 <template>
-  <div class="game-preview" role="img" aria-label="Preview of Bullseye: a target number, with each player's guess ranked by how far off it is.">
-    <span class="game-preview-tag">Preview</span>
+  <div class="game-preview" role="img" aria-label="Forhåndsvisning av Bullseye: et måltall, der hver spillers gjetning rangeres etter hvor langt unna den er.">
+    <span class="game-preview-tag">Forhåndsvisning</span>
 
     <div class="bp-target">
       <span class="bp-rings"></span>
       <span class="bp-val">13</span>
-      <span class="bp-cap">goals · Premier League 2024/25</span>
+      <span class="bp-cap">mål · Premier League 2024/25</span>
     </div>
 
     <div class="bp-guesses">
       <div v-for="g in guesses" :key="g.name" class="bp-guess" :class="g.state">
         <span class="bp-who">{{ g.name }}</span>
         <span class="bp-pick">{{ g.pick }} <i>· {{ g.stat }}</i></span>
-        <span class="bp-off">off by {{ g.off }}</span>
-        <span class="bp-flag">{{ g.state === 'out' ? 'eliminated' : g.state === 'best' ? 'closest' : 'safe' }}</span>
+        <span class="bp-off">bom med {{ g.off }}</span>
+        <span class="bp-flag">{{ g.state === 'out' ? 'ute' : g.state === 'best' ? 'nærmest' : 'trygg' }}</span>
       </div>
     </div>
 
     <p class="game-preview-caption">
-      Take turns naming someone close to the target. Each round the <span class="bad">farthest off</span> is
-      knocked out — <strong>last player standing wins.</strong>
+      Bytt på å nevne noen nær målet. Hver runde blir den <span class="bad">lengst unna</span> slått ut — <strong>siste spiller igjen vinner.</strong>
     </p>
   </div>
 </template>

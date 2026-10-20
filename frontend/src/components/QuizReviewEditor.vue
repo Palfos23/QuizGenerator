@@ -18,37 +18,37 @@
     </div>
 
     <div v-if="!quiz.questions.length" class="empty-state">
-      <slot name="empty">No questions here yet - use the panels below to add some.</slot>
+      <slot name="empty">Ingen spørsmål her ennå - bruk panelene under for å legge til noen.</slot>
     </div>
 
     <div class="add-questions-row">
       <div class="add-panel no-print">
         <div class="add-panel-header">
-          <span class="add-panel-title">Add a random batch</span>
-          <span class="add-panel-hint">pulls unused questions from one category</span>
+          <span class="add-panel-title">Legg til en tilfeldig gruppe</span>
+          <span class="add-panel-hint">henter ubrukte spørsmål fra én kategori</span>
         </div>
         <div class="add-panel-row">
           <select v-model="addCategory" style="flex:1; min-width:140px;">
-            <option value="" disabled>Choose a category…</option>
+            <option value="" disabled>Velg en kategori…</option>
             <option v-for="cat in availableCategories" :key="cat" :value="cat">{{ cat }}</option>
           </select>
           <input type="number" min="1" max="20" v-model.number="addCount" style="width:70px;" />
           <button class="btn btn-secondary btn-sm" :disabled="!addCategory || adding" @click="addMore">
-            {{ adding ? 'Adding…' : '+ Add' }}
+            {{ adding ? 'Legger til…' : '+ Legg til' }}
           </button>
         </div>
       </div>
 
       <div class="add-panel no-print">
         <div class="add-panel-header">
-          <span class="add-panel-title">Search and add specific questions</span>
-          <span class="add-panel-hint">find one question at a time, by text or label</span>
+          <span class="add-panel-title">Søk og legg til bestemte spørsmål</span>
+          <span class="add-panel-hint">finn ett spørsmål om gangen, etter tekst eller etikett</span>
         </div>
         <div class="add-panel-row">
           <input
             type="text"
             v-model="searchTerm"
-            placeholder="Search question, category or answer…"
+            placeholder="Søk etter spørsmål, kategori eller svar…"
             style="flex:1; min-width:180px;"
           />
           <div v-if="searchResults.length" class="guess-results" style="position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:5; max-height:260px; overflow-y:auto;">
@@ -171,16 +171,16 @@ async function addMore() {
       excludeIds: props.quiz.questions.map(q => q.id)
     })
     if (!added.length) {
-      emit('error', `No more unused "${addCategory.value}" questions are available in that language/difficulty range.`)
+      emit('error', `Ingen flere ubrukte «${addCategory.value}»-spørsmål er tilgjengelige for det språket og den vanskelighetsgraden.`)
       return
     }
     props.quiz.questions.push(...added)
     if (added.length < addCount.value) {
-      emit('error', `Only found ${added.length} more "${addCategory.value}" question(s) - added what was available.`)
+      emit('error', `Fant bare ${added.length} flere «${addCategory.value}»-spørsmål - la til det som var tilgjengelig.`)
     }
     emit('changed')
   } catch (e) {
-    emit('error', e.response?.data?.message || 'Could not add more questions.')
+    emit('error', e.response?.data?.message || 'Kunne ikke legge til flere spørsmål.')
   } finally {
     adding.value = false
   }
@@ -201,7 +201,7 @@ async function discardAndReplace(idx) {
     props.quiz.questions.splice(idx, 1, replacement)
     emit('changed')
   } catch (e) {
-    emit('error', e.response?.data?.message || 'No replacement question was available.')
+    emit('error', e.response?.data?.message || 'Ingen erstatningsspørsmål var tilgjengelig.')
   } finally {
     busyIndex.value = -1
   }

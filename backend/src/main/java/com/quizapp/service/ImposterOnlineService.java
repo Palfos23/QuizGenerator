@@ -60,7 +60,7 @@ public class ImposterOnlineService {
         state.setRoom(room);
         if (gridIds != null && !gridIds.isEmpty()) {
             if (gridIds.size() < 2 || gridIds.size() > 4) {
-                throw new IllegalArgumentException("Choose 2-4 boards to play.");
+                throw new IllegalArgumentException("Velg 2-4 brett å spille.");
             }
             state.setGridIds(gridIds);
         } else {
@@ -103,13 +103,13 @@ public class ImposterOnlineService {
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can start the game.");
+            throw new IllegalStateException("Bare verten kan starte spillet.");
         }
         if (room.getParticipants().size() < 2) {
-            throw new IllegalStateException("Need at least 2 players to start.");
+            throw new IllegalStateException("Det trengs minst 2 spillere for å starte.");
         }
         ImposterRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new IllegalStateException("This room isn't set up yet."));
+                .orElseThrow(() -> new IllegalStateException("Dette rommet er ikke satt opp ennå."));
 
         for (GameRoomParticipant p : room.getParticipants()) {
             ImposterParticipantState ps = new ImposterParticipantState();
@@ -136,7 +136,7 @@ public class ImposterOnlineService {
         }
 
         ImposterRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         List<ImposterParticipantState> participantStates = participantStateRepository.findByRoomState_Id(state.getId());
 
         dto.setTotalGrids(state.getRandomTotalCount() != null ? state.getRandomTotalCount() : state.getGridIds().size());
@@ -171,7 +171,7 @@ public class ImposterOnlineService {
 
         Long currentGridId = state.getGridIds().get(state.getCurrentGridIndex());
         ImposterGrid grid = imposterGridRepository.findById(currentGridId)
-                .orElseThrow(() -> new ResourceNotFoundException("Imposter grid no longer exists"));
+                .orElseThrow(() -> new ResourceNotFoundException("Imposter-brettet finnes ikke lenger"));
         dto.setCurrentGridId(currentGridId);
         dto.setGridTitle(grid.getTitle());
         dto.setGridDescription(grid.getDescription());
@@ -256,23 +256,23 @@ public class ImposterOnlineService {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         ImposterOnlineStateDto currentView = getState(room, requestingEmail);
 
-        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
-        if (currentView.isBoardComplete()) throw new IllegalStateException("This board is already finished.");
+        if (currentView.isFinished()) throw new IllegalStateException("Dette spillet er allerede ferdig.");
+        if (currentView.isBoardComplete()) throw new IllegalStateException("Dette brettet er allerede ferdig.");
         if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
-            throw new IllegalStateException("It's not your turn.");
+            throw new IllegalStateException("Det er ikke din tur.");
         }
 
         ImposterRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         boolean alreadyFlipped = flippedTileRepository.findByRoomState_Id(state.getId()).stream()
                 .anyMatch(f -> f.getTileId().equals(tileId));
         if (alreadyFlipped) {
-            throw new IllegalStateException("That tile has already been flipped.");
+            throw new IllegalStateException("Den ruten er allerede snudd.");
         }
 
         ImposterTile tile = imposterTileRepository.findById(tileId)
-                .orElseThrow(() -> new ResourceNotFoundException("No tile found with id " + tileId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke rute med id " + tileId));
 
         ImposterFlippedTile flip = new ImposterFlippedTile();
         flip.setRoomState(state);
@@ -283,7 +283,7 @@ public class ImposterOnlineService {
         if (tile.isImposter()) {
             ImposterParticipantState myState = participantStateRepository
                     .findByRoomState_IdAndParticipant_Id(state.getId(), me.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("No progress state for you in this room"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Fant ingen fremgang for deg i dette rommet"));
             myState.setTotalScore(myState.getTotalScore() + 1);
             participantStateRepository.save(myState);
         }
@@ -301,14 +301,14 @@ public class ImposterOnlineService {
         roomService.requireParticipant(room, requestingEmail);
         ImposterOnlineStateDto currentView = getState(room, requestingEmail);
         if (!currentView.isBoardComplete()) {
-            throw new IllegalStateException("This board isn't finished yet.");
+            throw new IllegalStateException("Dette brettet er ikke ferdig ennå.");
         }
 
         ImposterRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         Long currentGridId = state.getGridIds().get(state.getCurrentGridIndex());
         ImposterGrid grid = imposterGridRepository.findById(currentGridId)
-                .orElseThrow(() -> new ResourceNotFoundException("Imposter grid no longer exists"));
+                .orElseThrow(() -> new ResourceNotFoundException("Imposter-brettet finnes ikke lenger"));
 
         Map<Long, ImposterFlippedTile> flipByTileId = flippedTileRepository.findByRoomState_Id(state.getId()).stream()
                 .collect(Collectors.toMap(ImposterFlippedTile::getTileId, f -> f));
@@ -330,15 +330,15 @@ public class ImposterOnlineService {
     @Transactional
     public ImposterOnlineStateDto advanceToNextBoard(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can move on to the next board.");
+            throw new IllegalStateException("Bare verten kan gå videre til neste brett.");
         }
         ImposterOnlineStateDto current = getState(room, requestingEmail);
         if (!current.isBoardComplete()) {
-            throw new IllegalStateException("This board isn't finished yet.");
+            throw new IllegalStateException("Dette brettet er ikke ferdig ennå.");
         }
 
         ImposterRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         flippedTileRepository.deleteByRoomState_Id(state.getId());
 
@@ -369,21 +369,21 @@ public class ImposterOnlineService {
     public ImposterOnlineStateDto chooseGrid(GameRoom room, String requestingEmail, Long gridId) {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         ImposterRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         if (state.getRandomTotalCount() == null) {
-            throw new IllegalStateException("This room isn't using random board selection.");
+            throw new IllegalStateException("Dette rommet bruker ikke tilfeldig brettvalg.");
         }
         if (state.getGridIds().size() > state.getCurrentGridIndex()) {
-            throw new IllegalStateException("A board has already been chosen for this round.");
+            throw new IllegalStateException("Et brett er allerede valgt for denne runden.");
         }
         List<GameRoomParticipant> ordered = room.getParticipants();
         GameRoomParticipant picker = ordered.get(state.getCurrentGridIndex() % ordered.size());
         if (!me.getId().equals(picker.getId())) {
-            throw new IllegalStateException("It's not your turn to choose.");
+            throw new IllegalStateException("Det er ikke din tur til å velge.");
         }
         if (!state.getPendingChoiceIds().contains(gridId)) {
-            throw new IllegalArgumentException("That wasn't one of the offered choices.");
+            throw new IllegalArgumentException("Det var ikke ett av de tilbudte valgene.");
         }
 
         state.getGridIds().add(gridId);
@@ -403,25 +403,25 @@ public class ImposterOnlineService {
     public ImposterOnlineStateDto rerollChoices(GameRoom room, String requestingEmail) {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         ImposterRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         if (state.getRandomTotalCount() == null) {
-            throw new IllegalStateException("This room isn't using random board selection.");
+            throw new IllegalStateException("Dette rommet bruker ikke tilfeldig brettvalg.");
         }
         if (state.getGridIds().size() > state.getCurrentGridIndex()) {
-            throw new IllegalStateException("A board has already been chosen for this round.");
+            throw new IllegalStateException("Et brett er allerede valgt for denne runden.");
         }
         List<GameRoomParticipant> ordered = room.getParticipants();
         GameRoomParticipant picker = ordered.get(state.getCurrentGridIndex() % ordered.size());
         if (!me.getId().equals(picker.getId())) {
-            throw new IllegalStateException("It's not your turn to choose.");
+            throw new IllegalStateException("Det er ikke din tur til å velge.");
         }
 
         List<Long> exclude = new ArrayList<>(state.getGridIds());
         exclude.addAll(state.getPendingChoiceIds());
         List<ImposterGridSummaryDto> fresh = imposterGridPlayService.getBattleRoundChoices(3, exclude);
         if (fresh.isEmpty()) {
-            throw new IllegalStateException("No other boards left to show.");
+            throw new IllegalStateException("Ingen andre brett igjen å vise.");
         }
         state.setPendingChoiceIds(fresh.stream().map(ImposterGridSummaryDto::getId).collect(Collectors.toSet()));
         roomStateRepository.save(state);

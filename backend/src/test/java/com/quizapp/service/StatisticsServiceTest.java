@@ -51,7 +51,7 @@ class StatisticsServiceTest {
         assertThat(stats.getTotalUsers()).isEqualTo(usersBefore + 1);
         assertThat(stats.getBoardsByGameMode())
                 .extracting(AdminStatisticsDto.CountEntry::getLabel)
-                .contains("Weekly grids", "Starting XI", "Tension", "501", "Imposter", "Bullseye");
+                .contains("Ukentlige grids", "Starting XI", "Tension", "501", "Imposter", "Bullseye");
         assertThat(stats.getUsersByMonth()).hasSize(12);
         assertThat(stats.getUsersByMonth().get(11).getCount()).isGreaterThanOrEqualTo(1);
     }

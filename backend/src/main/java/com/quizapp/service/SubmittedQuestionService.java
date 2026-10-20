@@ -34,7 +34,7 @@ public class SubmittedQuestionService {
     @Transactional
     public SubmittedQuestionDto submit(String userEmail, SubmittedQuestionDto dto) {
         AppUser user = appUserRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("No account found for " + userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke konto for " + userEmail));
 
         SubmittedQuestion entity = new SubmittedQuestion();
         entity.setQuestionText(dto.getQuestionText());
@@ -65,7 +65,7 @@ public class SubmittedQuestionService {
     @Transactional
     public SubmittedQuestionDto approve(Long id) {
         SubmittedQuestion submission = submittedQuestionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No submission found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke innsending med id " + id));
 
         Question question = new Question();
         question.setQuestionText(submission.getQuestionText());
@@ -89,7 +89,7 @@ public class SubmittedQuestionService {
     @Transactional
     public SubmittedQuestionDto reject(Long id, RejectSubmissionRequest request) {
         SubmittedQuestion submission = submittedQuestionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No submission found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke innsending med id " + id));
         submission.setStatus(SubmissionStatus.REJECTED);
         submission.setRejectionReason(request.getReason());
         return toDto(submittedQuestionRepository.save(submission));
@@ -106,7 +106,7 @@ public class SubmittedQuestionService {
         dto.setCouldChange(s.isCouldChange());
         dto.setStatus(s.getStatus());
         dto.setRejectionReason(s.getRejectionReason());
-        dto.setSubmitterName(s.getSubmittedBy() != null ? s.getSubmittedBy().getName() : "(deleted user)");
+        dto.setSubmitterName(s.getSubmittedBy() != null ? s.getSubmittedBy().getName() : "(slettet bruker)");
         dto.setCreatedAt(s.getCreatedAt());
         return dto;
     }

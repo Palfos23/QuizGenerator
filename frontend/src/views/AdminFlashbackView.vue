@@ -6,18 +6,18 @@
         <div>
           <h1>Flashback <span v-if="!loading && years.length" class="header-count">{{ years.length }}</span></h1>
           <p class="page-subtitle">
-            Create and manage Flashback years - a secret year, plus up to 5 clues about it, ordered hardest to easiest.
+            Lag og administrer Flashback-år - et hemmelig år, pluss opptil 5 hint om det, ordnet fra vanskeligst til lettest.
           </p>
         </div>
-        <button class="btn btn-primary" @click="openCreate">+ Create year</button>
+        <button class="btn btn-primary" @click="openCreate">+ Lag år</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
       <div v-else-if="!years.length" class="empty-state friendly">
-        No Flashback years yet. Create your first one here.
+        Ingen Flashback-år ennå. Lag ditt første her.
       </div>
 
       <template v-else>
@@ -28,27 +28,27 @@
         :sorts="yearSorts"
         :total-count="years.length"
         :filtered-count="filteredYears.length"
-        placeholder="Search years by title or year…"
+        placeholder="Søk etter år på tittel eller årstall…"
       />
 
-      <div v-if="!filteredYears.length" class="empty-state">No years match your search.</div>
+      <div v-if="!filteredYears.length" class="empty-state">Ingen år samsvarer med søket ditt.</div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="y in pagedYears" :key="y.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ y.title }}
-              <span v-if="y.excludedFromFlashback" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">Not in Flashback</span>
-              <span v-if="y.canExpire" class="tag" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim); margin-left:6px;">Can expire</span>
+              <span v-if="y.excludedFromFlashback" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">Ikke i Flashback</span>
+              <span v-if="y.canExpire" class="tag" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim); margin-left:6px;">Kan utløpe</span>
             </div>
             <div class="saved-quiz-meta">
-              {{ y.year }} · {{ y.hintCount }} hint{{ y.hintCount === 1 ? '' : 's' }}
+              {{ y.year }} · {{ y.hintCount }} hint
             </div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(y.id)">Edit</button>
-            <button class="btn btn-secondary btn-sm" @click="duplicateYear(y.id)">⧉ Duplicate</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(y)">Delete</button>
+            <button class="btn btn-secondary btn-sm" @click="openEdit(y.id)">Rediger</button>
+            <button class="btn btn-secondary btn-sm" @click="duplicateYear(y.id)">⧉ Dupliser</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(y)">Slett</button>
           </div>
         </div>
       </div>
@@ -60,48 +60,47 @@
     <!-- Builder view -->
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-        <h1 style="margin:0;">{{ editingYearId ? 'Edit year' : 'Create year' }}</h1>
-        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Back to list</button>
+        <h1 style="margin:0;">{{ editingYearId ? 'Rediger år' : 'Lag år' }}</h1>
+        <button class="btn btn-secondary btn-sm" @click="view = 'list'">← Tilbake til listen</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>Title <span class="picker-hint">admin-only label, not shown to players</span><input type="text" v-model="form.title" placeholder="e.g. Moon landing" /></label>
+        <label>Tittel <span class="picker-hint">intern merkelapp, vises ikke for spillere</span><input type="text" v-model="form.title" placeholder="f.eks. Månelandingen" /></label>
       </div>
 
       <div class="field" style="max-width:200px;">
-        <label>Year <span class="picker-hint">what players are guessing</span><input type="number" v-model.number="form.year" placeholder="1969" /></label>
+        <label>År <span class="picker-hint">det spillerne gjetter</span><input type="number" v-model.number="form.year" placeholder="1969" /></label>
       </div>
 
       <div class="field">
         <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600;">
           <input type="checkbox" v-model="form.excludedFromFlashback" style="width:auto;" />
-          Exclude from Flashback
+          Utelat fra Flashback
         </label>
         <p class="page-subtitle" style="margin-top:4px;">
-          Use this once a year's clues are outdated or wrong - it stops being offered to
-          Flashback's random pick without deleting it.
+          Bruk dette når et års hint er utdaterte eller feil - det slutter å tilbys i Flashbacks tilfeldige valg uten å bli slettet.
         </p>
       </div>
 
       <div class="field option-card">
         <input type="checkbox" id="canExpire" v-model="form.canExpire" style="width:auto; margin-top:3px;" />
         <label for="canExpire" style="margin:0; text-transform:none; font-weight:400;">
-          Can expire
+          Kan utløpe
           <div style="color:var(--text-dim); font-size:0.8rem; font-weight:400; margin-top:2px;">
-            e.g. "current record holder" - flag this so it shows up on the "Can expire" Insights page for periodic review. Leave unchecked for stable facts.
+            f.eks. "nåværende rekordholder" - merk dette slik at det vises på Innsikt-siden «Kan utløpe» for jevnlig gjennomgang. La stå uten hake for faste fakta.
           </div>
         </label>
       </div>
 
       <div class="field">
         <label>
-          Hints <span class="picker-hint">up to 5, ordered hardest to easiest - reorder with the arrows</span>
+          Hint <span class="picker-hint">opptil 5, ordnet fra vanskeligst til lettest - endre rekkefølge med pilene</span>
         </label>
 
         <div v-if="!form.hints.length" class="empty-state" style="padding:20px;">
-          No hints added yet - add the first (hardest) one below.
+          Ingen hint lagt til ennå - legg til det første (vanskeligste) under.
         </div>
 
         <div v-else style="display:flex; flex-direction:column; gap:8px;">
@@ -111,8 +110,8 @@
               <input type="text" v-model="form.hints[i]" :placeholder="`Hint ${i + 1}`" style="flex:1;" />
             </div>
             <div style="display:flex; gap:4px;">
-              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === 0" @click="moveHint(i, -1)" aria-label="Move up">↑</button>
-              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === form.hints.length - 1" @click="moveHint(i, 1)" aria-label="Move down">↓</button>
+              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === 0" @click="moveHint(i, -1)" aria-label="Flytt opp">↑</button>
+              <button class="btn btn-secondary btn-sm icon-btn" :disabled="i === form.hints.length - 1" @click="moveHint(i, 1)" aria-label="Flytt ned">↓</button>
               <button class="btn btn-danger btn-sm" @click="form.hints.splice(i, 1)">✕</button>
             </div>
           </div>
@@ -123,23 +122,23 @@
           style="margin-top:10px;"
           :disabled="form.hints.length >= 5"
           @click="form.hints.push('')"
-        >+ Add hint</button>
+        >+ Legg til hint</button>
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button v-if="editingYearId" class="btn btn-secondary" @click="duplicateAsNewVersion">
-          ⧉ Duplicate as new version
+          ⧉ Dupliser som ny versjon
         </button>
         <button class="btn btn-primary" :disabled="saving" @click="saveYear">
-          {{ saving ? 'Saving…' : 'Save year' }}
+          {{ saving ? 'Lagrer…' : 'Lagre år' }}
         </button>
       </div>
     </template>
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this year?"
-      :message="`'${pendingDelete.title}' will be permanently removed.`"
+      title="Slette dette året?"
+      :message="`«${pendingDelete.title}» fjernes for godt.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -166,9 +165,9 @@ const {
   pageSize: 10,
   searchFields: [y => y.title, y => String(y.year)],
   sorts: [
-    { key: 'title', label: 'Title', accessor: y => y.title },
-    { key: 'year', label: 'Year', accessor: y => y.year, dir: 'desc' },
-    { key: 'hints', label: 'Hints', accessor: y => y.hintCount, dir: 'desc' }
+    { key: 'title', label: 'Tittel', accessor: y => y.title },
+    { key: 'year', label: 'År', accessor: y => y.year, dir: 'desc' },
+    { key: 'hints', label: 'Hint', accessor: y => y.hintCount, dir: 'desc' }
   ]
 })
 const error = ref('')
@@ -192,7 +191,7 @@ async function loadYears() {
   try {
     years.value = await api.adminListFlashbackYears()
   } catch (e) {
-    error.value = 'Could not load Flashback years.'
+    error.value = 'Kunne ikke laste Flashback-år.'
   } finally {
     loading.value = false
   }
@@ -233,7 +232,7 @@ async function openEdit(id) {
     editingYearId.value = id
     view.value = 'builder'
   } catch (e) {
-    error.value = 'Could not load that year.'
+    error.value = 'Kunne ikke laste året.'
   }
 }
 
@@ -250,24 +249,24 @@ async function duplicateYear(id) {
 // overwriting the original via PUT.
 function duplicateAsNewVersion() {
   editingYearId.value = null
-  form.title = form.title + ' (updated)'
+  form.title = form.title + ' (oppdatert)'
   form.excludedFromFlashback = false
-  toast.show('Now editing a new duplicate - the original year is untouched. Remember to save this copy.')
+  toast.show('Du redigerer nå en ny duplikat - det opprinnelige året er urørt. Husk å lagre denne kopien.')
 }
 
 async function saveYear() {
   error.value = ''
   if (!form.title.trim() || form.year === null) {
-    error.value = 'Title and year are both required.'
+    error.value = 'Tittel og år må fylles ut.'
     return
   }
   const hints = form.hints.map(h => h.trim()).filter(Boolean)
   if (!hints.length) {
-    error.value = 'Add at least 1 hint.'
+    error.value = 'Legg til minst 1 hint.'
     return
   }
   if (hints.length > 5) {
-    error.value = 'A year can have at most 5 hints.'
+    error.value = 'Et år kan ha høyst 5 hint.'
     return
   }
 
@@ -286,11 +285,11 @@ async function saveYear() {
     } else {
       await api.adminCreateFlashbackYear(payload)
     }
-    toast.show('Year saved.')
+    toast.show('Året er lagret.')
     view.value = 'list'
     loadYears()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not save this year.'
+    error.value = e.response?.data?.message || 'Kunne ikke lagre dette året.'
   } finally {
     saving.value = false
   }
@@ -306,10 +305,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteFlashbackYear(y.id)
-    toast.show('Year deleted.')
+    toast.show('Året er slettet.')
     loadYears()
   } catch (e) {
-    error.value = 'Could not delete that year.'
+    error.value = 'Kunne ikke slette året.'
   }
 }
 </script>

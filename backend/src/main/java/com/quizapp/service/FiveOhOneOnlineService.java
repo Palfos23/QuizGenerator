@@ -48,7 +48,7 @@ public class FiveOhOneOnlineService {
     @Transactional
     public void initializeCategory(GameRoom room, Long categoryId) {
         if (categoryId == null || !categoryRepository.existsById(categoryId)) {
-            throw new IllegalArgumentException("Choose a category to play.");
+            throw new IllegalArgumentException("Velg en kategori å spille.");
         }
         FiveOhOneRoomState state = new FiveOhOneRoomState();
         state.setRoom(room);
@@ -72,19 +72,19 @@ public class FiveOhOneOnlineService {
     @Transactional
     public FiveOhOneRoomCategoryDto rerollCategory(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can change the category.");
+            throw new IllegalStateException("Bare verten kan endre kategorien.");
         }
         if (room.getStatus() != RoomStatus.WAITING) {
-            throw new IllegalStateException("The game has already started - the category can't change now.");
+            throw new IllegalStateException("Spillet har allerede startet - kategorien kan ikke endres nå.");
         }
         FiveOhOneRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         List<Long> candidates = categoryRepository.findAllIds().stream()
                 .filter(id -> !id.equals(state.getCategoryId()))
                 .collect(Collectors.toList());
         if (candidates.isEmpty()) {
-            throw new IllegalStateException("There's no other category to switch to.");
+            throw new IllegalStateException("Det finnes ingen annen kategori å bytte til.");
         }
         state.setCategoryId(candidates.get(new Random().nextInt(candidates.size())));
         roomStateRepository.save(state);
@@ -93,9 +93,9 @@ public class FiveOhOneOnlineService {
 
     private FiveOhOneRoomCategoryDto currentCategoryDto(GameRoom room) {
         FiveOhOneRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         String title = categoryRepository.findTitleById(state.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("That category no longer exists."));
+                .orElseThrow(() -> new ResourceNotFoundException("Den kategorien finnes ikke lenger."));
         return new FiveOhOneRoomCategoryDto(state.getCategoryId(), title);
     }
 
@@ -148,13 +148,13 @@ public class FiveOhOneOnlineService {
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can start the game.");
+            throw new IllegalStateException("Bare verten kan starte spillet.");
         }
         if (room.getParticipants().size() != 2) {
-            throw new IllegalStateException("501 needs exactly 2 players to start.");
+            throw new IllegalStateException("501 trenger nøyaktig 2 spillere for å starte.");
         }
         FiveOhOneRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new IllegalStateException("This room isn't set up yet."));
+                .orElseThrow(() -> new IllegalStateException("Dette rommet er ikke satt opp ennå."));
 
         for (GameRoomParticipant p : room.getParticipants()) {
             FiveOhOneParticipantState ps = new FiveOhOneParticipantState();
@@ -194,7 +194,7 @@ public class FiveOhOneOnlineService {
         }
 
         FiveOhOneRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         List<FiveOhOneParticipantState> participantStates = participantStateRepository.findByRoomState_Id(state.getId());
 
         List<GameRoomParticipant> connected = room.getParticipants();
@@ -212,7 +212,7 @@ public class FiveOhOneOnlineService {
         dto.setWinnerParticipantId(state.getWinnerParticipantId());
 
         FiveOhOneCategory category = categoryRepository.findById(state.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category no longer exists"));
+                .orElseThrow(() -> new ResourceNotFoundException("Kategorien finnes ikke lenger"));
         dto.setCategoryId(category.getId());
         dto.setCategoryTitle(category.getTitle());
         dto.setCategoryDescription(category.getDescription());
@@ -277,18 +277,18 @@ public class FiveOhOneOnlineService {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         FiveOhOneOnlineStateDto currentView = getState(room, requestingEmail);
 
-        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
+        if (currentView.isFinished()) throw new IllegalStateException("Dette spillet er allerede ferdig.");
         if (!me.getId().equals(currentView.getCurrentTurnParticipantId())) {
-            throw new IllegalStateException("It's not your turn.");
+            throw new IllegalStateException("Det er ikke din tur.");
         }
         if (currentView.getUsedEntryIds().contains(entryId)) {
-            throw new IllegalStateException("That name has already been thrown.");
+            throw new IllegalStateException("Det navnet er allerede kastet.");
         }
 
         FiveOhOneRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         FiveOhOneCategory category = categoryRepository.findById(state.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category no longer exists"));
+                .orElseThrow(() -> new ResourceNotFoundException("Kategorien finnes ikke lenger"));
         // Resolves against the same pool-expanded list the player searched
         // against (see FiveOhOneCategoryService#getEffectiveEntries) - a bare
         // subject pick (negative id, no explicit entry) is just as valid a
@@ -296,11 +296,11 @@ public class FiveOhOneOnlineService {
         FiveOhOneEntryDto entry = categoryService.getEffectiveEntries(category).stream()
                 .filter(e -> e.getId().equals(entryId))
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("No entry found with id " + entryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke oppføring med id " + entryId));
 
         FiveOhOneParticipantState myState = participantStateRepository
                 .findByRoomState_IdAndParticipant_Id(state.getId(), me.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No progress state for you in this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen fremgang for deg i dette rommet"));
 
         int score = effectiveScore(rawValueOf(entry));
         int previousTotal = myState.getTotal();
@@ -332,7 +332,7 @@ public class FiveOhOneOnlineService {
             if (landedInWindow) {
                 FiveOhOneParticipantState otherState = participantStateRepository
                         .findByRoomState_IdAndParticipant_Id(state.getId(), windowReacherId)
-                        .orElseThrow(() -> new ResourceNotFoundException("No progress state for the other player"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Fant ingen fremgang for den andre spilleren"));
                 // closer to zero wins; a genuine tie favors whoever reached the window first
                 state.setWinnerParticipantId(Math.abs(candidateTotal) <= Math.abs(otherState.getTotal())
                         ? me.getId() : windowReacherId);

@@ -1,32 +1,32 @@
 <template>
   <div style="max-width:420px; margin:40px auto;">
     <template v-if="!token">
-      <h1>Reset your password</h1>
-      <p class="page-subtitle">This link is missing its reset token - open the link from your email again, or request a new one from the sign-in page.</p>
-      <router-link to="/" class="btn btn-secondary">Back to sign in</router-link>
+      <h1>Nullstill passordet ditt</h1>
+      <p class="page-subtitle">Denne lenken mangler nullstillingskode - åpne lenken fra e-posten din på nytt, eller be om en ny fra innloggingssiden.</p>
+      <router-link to="/" class="btn btn-secondary">Tilbake til innlogging</router-link>
     </template>
 
     <template v-else-if="done">
-      <h1>Password updated</h1>
-      <p class="page-subtitle">Your password's been changed - sign in with it below.</p>
-      <router-link to="/" class="btn btn-primary">Back to sign in</router-link>
+      <h1>Passordet er oppdatert</h1>
+      <p class="page-subtitle">Passordet ditt er endret - logg inn med det under.</p>
+      <router-link to="/" class="btn btn-primary">Tilbake til innlogging</router-link>
     </template>
 
     <template v-else>
-      <h1>Reset your password</h1>
-      <p class="page-subtitle">Choose a new password for your account.</p>
+      <h1>Nullstill passordet ditt</h1>
+      <p class="page-subtitle">Velg et nytt passord for kontoen din.</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field">
-        <label>New password<input type="password" v-model="newPassword" placeholder="At least 8 characters" autocomplete="new-password" @keyup.enter="submit" /></label>
+        <label>Nytt passord<input type="password" v-model="newPassword" placeholder="Minst 8 tegn" autocomplete="new-password" @keyup.enter="submit" /></label>
       </div>
       <div class="field">
-        <label>Confirm password<input type="password" v-model="confirmPassword" placeholder="Type it again" autocomplete="new-password" @keyup.enter="submit" /></label>
+        <label>Bekreft passord<input type="password" v-model="confirmPassword" placeholder="Skriv det inn igjen" autocomplete="new-password" @keyup.enter="submit" /></label>
       </div>
 
       <button class="btn btn-primary" style="width:100%;" :disabled="!canSubmit || submitting" @click="submit">
-        {{ submitting ? 'Saving…' : 'Save new password' }}
+        {{ submitting ? 'Lagrer…' : 'Lagre nytt passord' }}
       </button>
     </template>
   </div>
@@ -53,11 +53,11 @@ const canSubmit = computed(() =>
 async function submit() {
   error.value = ''
   if (newPassword.value.length < 8) {
-    error.value = 'Password must be at least 8 characters.'
+    error.value = 'Passordet må være minst 8 tegn.'
     return
   }
   if (newPassword.value !== confirmPassword.value) {
-    error.value = "Passwords don't match."
+    error.value = "Passordene er ikke like."
     return
   }
   submitting.value = true
@@ -65,7 +65,7 @@ async function submit() {
     await api.resetPassword(token, newPassword.value)
     done.value = true
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not reset your password - the link may have expired.'
+    error.value = e.response?.data?.message || 'Kunne ikke nullstille passordet - lenken kan ha utløpt.'
   } finally {
     submitting.value = false
   }

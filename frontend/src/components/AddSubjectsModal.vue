@@ -1,11 +1,9 @@
 <template>
   <div class="modal-backdrop" @click.self="$emit('close')">
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Add new subjects">
-      <h2 style="margin-top:0;">Add {{ includedCount }} new subject{{ includedCount === 1 ? '' : 's' }}?</h2>
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Legg til nye emner">
+      <h2 style="margin-top:0;">Legg til {{ includedCount }} {{ includedCount === 1 ? 'nytt emne' : 'nye emner' }}?</h2>
       <p class="page-subtitle">
-        These names weren't found in <strong>"{{ sport }}"</strong>. Fix any typos below, uncheck any
-        you don't want to add, then add the rest as new subjects right away - no need to leave this
-        page and re-import.
+        Disse navnene ble ikke funnet i <strong>"{{ sport }}"</strong>. Rett eventuelle skrivefeil under, fjern avhukingen for de du ikke vil legge til, og legg til resten som nye emner med en gang - du slipper å forlate siden og importere på nytt.
       </p>
 
       <div class="candidate-list" style="max-height:340px; overflow-y:auto;">
@@ -18,14 +16,14 @@
             style="flex:1; min-width:140px;"
             @click.stop
           />
-          <span style="color:var(--text-dim); font-size:0.85rem; white-space:nowrap;">value: {{ item.value }}</span>
+          <span style="color:var(--text-dim); font-size:0.85rem; white-space:nowrap;">verdi: {{ item.value }}</span>
         </label>
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-secondary" @click="$emit('close')">Cancel</button>
+        <button class="btn btn-secondary" @click="$emit('close')">Avbryt</button>
         <button class="btn btn-primary" :disabled="!includedCount || submitting" @click="submit">
-          {{ submitting ? 'Adding…' : `Add ${includedCount} subject${includedCount === 1 ? '' : 's'}` }}
+          {{ submitting ? 'Legger til…' : `Legg til ${includedCount} ${includedCount === 1 ? 'emne' : 'emner'}` }}
         </button>
       </div>
     </div>
@@ -62,10 +60,10 @@ async function submit() {
     const created = await api.adminCreateAthletesBulk(
       toCreate.map(i => ({ name: i.name.trim(), sport: props.sport }))
     )
-    toast.show(`Added ${created.length} subject${created.length === 1 ? '' : 's'} to "${props.sport}".`)
+    toast.show(`La til ${created.length} ${created.length === 1 ? 'emne' : 'emner'} i "${props.sport}".`)
     emit('added', created.map((athlete, idx) => ({ athlete, value: toCreate[idx].value })))
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Could not add those subjects.', 'error')
+    toast.show(e.response?.data?.message || 'Kunne ikke legge til emnene.', 'error')
   } finally {
     submitting.value = false
   }

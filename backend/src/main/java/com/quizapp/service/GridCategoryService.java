@@ -61,7 +61,7 @@ public class GridCategoryService {
     public GridCategoryDto create(GridCategoryRequest request) {
         String name = request.getName().trim();
         if (categoryRepository.existsByNameIgnoreCase(name)) {
-            throw new IllegalArgumentException("A category named '" + name + "' already exists.");
+            throw new IllegalArgumentException("En kategori med navnet '" + name + "' finnes allerede.");
         }
         GridCategory category = new GridCategory();
         category.setName(name);
@@ -80,12 +80,12 @@ public class GridCategoryService {
     @Transactional
     public GridCategoryDto update(Long id, GridCategoryRequest request) {
         GridCategory category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No category found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke kategori med id " + id));
         String newName = request.getName().trim();
         String oldName = category.getName();
 
         if (!oldName.equalsIgnoreCase(newName) && categoryRepository.existsByNameIgnoreCase(newName)) {
-            throw new IllegalArgumentException("A category named '" + newName + "' already exists.");
+            throw new IllegalArgumentException("En kategori med navnet '" + newName + "' finnes allerede.");
         }
 
         category.setName(newName);
@@ -115,7 +115,7 @@ public class GridCategoryService {
     @Transactional
     public void delete(Long id) {
         GridCategory category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No category found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke kategori med id " + id));
         String name = category.getName();
         boolean inUse = athleteRepository.existsBySport(name)
                 || clubRepository.existsBySport(name)
@@ -127,7 +127,7 @@ public class GridCategoryService {
                 || imposterGridRepository.existsBySport(name);
         if (inUse) {
             throw new IllegalArgumentException(
-                    "This category is still used by at least one athlete, club, grid, pool, bullseye, tension, 501 or imposter item - reassign those first.");
+                    "Denne kategorien brukes fortsatt av minst ett emne, én klubb, ett grid, ett utvalg, et bullseye-, tension-, 501- eller imposter-element - flytt dem først.");
         }
         categoryRepository.deleteById(id);
     }

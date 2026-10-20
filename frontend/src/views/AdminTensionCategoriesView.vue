@@ -2,45 +2,44 @@
   <div>
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
       <div>
-        <h1>Tension answer categories</h1>
+        <h1>Tension-svarkategorier</h1>
         <p class="page-subtitle">
-          Word lists that power the answer-box autocomplete while playing - not necessarily
-          all correct answers, just plausible same-category words to type from.
-          <router-link to="/admin/tension-questions">← Back to questions</router-link>
+          Ordlister som driver autofullføringen i svarfeltet under spilling - ikke nødvendigvis alle riktige svar, bare sannsynlige ord i samme kategori å skrive fra.
+          <router-link to="/admin/tension-questions">← Tilbake til spørsmål</router-link>
         </p>
       </div>
-      <button class="btn btn-primary" @click="openCreate">+ Add category</button>
+      <button class="btn btn-primary" @click="openCreate">+ Legg til kategori</button>
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+    <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
 
     <div v-else-if="!categories.length" class="empty-state friendly">
-      No answer categories yet. Add one (e.g. "countries") with a list of suggestion words.
+      Ingen svarkategorier ennå. Legg til en (f.eks. "land") med en liste over forslagsord.
     </div>
 
     <div v-else>
       <input
         type="text"
         v-model="categorySearchTerm"
-        placeholder="Search category names…"
+        placeholder="Søk etter kategorinavn…"
         class="search-input"
         style="margin-bottom:16px;"
       />
 
       <div v-if="!filteredCategories.length" class="empty-state" style="padding:20px;">
-        No categories match "{{ categorySearchTerm }}".
+        Ingen kategorier samsvarer med "{{ categorySearchTerm }}".
       </div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="c in pagedCategories" :key="c.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ c.name }}</div>
-            <div class="saved-quiz-meta">{{ c.optionCount }} suggestion word(s)</div>
+            <div class="saved-quiz-meta">{{ c.optionCount }} forslagsord</div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(c)">Edit</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(c)">Delete</button>
+            <button class="btn btn-secondary btn-sm" @click="openEdit(c)">Rediger</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(c)">Slett</button>
           </div>
         </div>
       </div>
@@ -50,28 +49,28 @@
 
     <div v-if="showModal" class="modal-backdrop" @click.self="showModal = false">
       <div class="modal">
-        <h2>{{ editingId ? 'Edit category' : 'Add category' }}</h2>
+        <h2>{{ editingId ? 'Rediger kategori' : 'Legg til kategori' }}</h2>
         <div v-if="modalError" class="banner error">{{ modalError }}</div>
 
         <div class="field">
-          <label>Name<input type="text" v-model="form.name" placeholder="e.g. countries" /></label>
+          <label>Navn<input type="text" v-model="form.name" placeholder="f.eks. land" /></label>
         </div>
 
         <div class="field">
-          <label>Suggestion words <span class="picker-hint">one per line</span><textarea v-model="optionsText" rows="10" placeholder="Norway&#10;Sweden&#10;Denmark&#10;…"></textarea></label>
+          <label>Forslagsord <span class="picker-hint">ett per linje</span><textarea v-model="optionsText" rows="10" placeholder="Norge&#10;Sverige&#10;Danmark&#10;…"></textarea></label>
         </div>
 
         <div style="display:flex; gap:10px; justify-content:flex-end;">
-          <button class="btn btn-secondary" @click="showModal = false">Cancel</button>
-          <button class="btn btn-primary" :disabled="saving" @click="save">{{ saving ? 'Saving…' : 'Save' }}</button>
+          <button class="btn btn-secondary" @click="showModal = false">Avbryt</button>
+          <button class="btn btn-primary" :disabled="saving" @click="save">{{ saving ? 'Lagrer…' : 'Lagre' }}</button>
         </div>
       </div>
     </div>
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this category?"
-      :message="`'${pendingDelete.name}' will be removed. Questions using it will lose their answer-box suggestions.`"
+      title="Slette denne kategorien?"
+      :message="`«${pendingDelete.name}» fjernes. Spørsmål som bruker den mister forslagene i svarfeltet.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -119,7 +118,7 @@ async function loadCategories() {
   try {
     categories.value = await api.adminListTensionCategories()
   } catch (e) {
-    error.value = 'Could not load categories.'
+    error.value = 'Kunne ikke laste kategorier.'
   } finally {
     loading.value = false
   }
@@ -142,14 +141,14 @@ async function openEdit(c) {
     editingId.value = detail.id
     showModal.value = true
   } catch (e) {
-    error.value = 'Could not load that category.'
+    error.value = 'Kunne ikke laste kategorien.'
   }
 }
 
 async function save() {
   modalError.value = ''
   if (!form.name.trim()) {
-    modalError.value = 'Name is required.'
+    modalError.value = 'Navn må fylles ut.'
     return
   }
   const options = optionsText.value.split('\n').map(s => s.trim()).filter(Boolean)
@@ -161,11 +160,11 @@ async function save() {
     } else {
       await api.adminCreateTensionCategory(payload)
     }
-    toast.show('Category saved.')
+    toast.show('Kategorien er lagret.')
     showModal.value = false
     loadCategories()
   } catch (e) {
-    modalError.value = e.response?.data?.message || 'Could not save the category.'
+    modalError.value = e.response?.data?.message || 'Kunne ikke lagre kategorien.'
   } finally {
     saving.value = false
   }
@@ -181,10 +180,10 @@ async function doDelete() {
   error.value = ''
   try {
     await api.adminDeleteTensionCategory(c.id)
-    toast.show('Category deleted.')
+    toast.show('Kategorien er slettet.')
     loadCategories()
   } catch (e) {
-    error.value = 'Could not delete that category.'
+    error.value = 'Kunne ikke slette kategorien.'
   }
 }
 </script>

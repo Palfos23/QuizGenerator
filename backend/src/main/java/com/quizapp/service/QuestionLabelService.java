@@ -31,7 +31,7 @@ public class QuestionLabelService {
     public QuestionLabelDto create(QuestionLabelRequest request) {
         String name = request.getName().trim();
         if (labelRepository.existsByNameIgnoreCase(name)) {
-            throw new IllegalArgumentException("A label named '" + name + "' already exists.");
+            throw new IllegalArgumentException("En etikett med navnet '" + name + "' finnes allerede.");
         }
         QuestionLabel label = new QuestionLabel();
         label.setName(name);
@@ -46,10 +46,10 @@ public class QuestionLabelService {
     @Transactional
     public QuestionLabelDto update(Long id, QuestionLabelRequest request) {
         QuestionLabel label = labelRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No label found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke etikett med id " + id));
         String newName = request.getName().trim();
         if (!label.getName().equalsIgnoreCase(newName) && labelRepository.existsByNameIgnoreCase(newName)) {
-            throw new IllegalArgumentException("A label named '" + newName + "' already exists.");
+            throw new IllegalArgumentException("En etikett med navnet '" + newName + "' finnes allerede.");
         }
         label.setName(newName);
         labelRepository.save(label);
@@ -59,7 +59,7 @@ public class QuestionLabelService {
     @Transactional
     public void delete(Long id) {
         if (!labelRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No label found with id " + id);
+            throw new ResourceNotFoundException("Fant ikke etikett med id " + id);
         }
         // No delete-blocking needed - removing a label from a question it was
         // attached to is a harmless, minor change (unlike deleting an

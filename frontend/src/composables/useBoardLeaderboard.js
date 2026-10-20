@@ -10,7 +10,7 @@ import toast from '../services/toast'
 export function useBoardLeaderboard(fetchBoard, savePreference) {
   const show = ref(false)
   const loading = ref(false)
-  const title = ref('Leaderboard')
+  const title = ref('Toppliste')
   const raw = ref(null)
   const optIn = ref(true)
   let boardId = null
@@ -29,7 +29,7 @@ export function useBoardLeaderboard(fetchBoard, savePreference) {
 
   async function open(id, boardTitle) {
     boardId = id
-    title.value = boardTitle ? `Leaderboard - ${boardTitle}` : 'Leaderboard'
+    title.value = boardTitle ? `Toppliste - ${boardTitle}` : 'Toppliste'
     raw.value = null
     show.value = true
     loading.value = true
@@ -50,7 +50,7 @@ export function useBoardLeaderboard(fetchBoard, savePreference) {
       await savePreference(boardId, include)
       raw.value = await fetchBoard(boardId)
     } catch (e) {
-      toast.show('Could not update your leaderboard preference.')
+      toast.show('Kunne ikke oppdatere innstillingen for topplisten.')
       optIn.value = previous
     }
   }

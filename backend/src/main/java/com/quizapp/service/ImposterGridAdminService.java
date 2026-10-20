@@ -48,7 +48,7 @@ public class ImposterGridAdminService {
     @Transactional(readOnly = true)
     public ImposterGridAdminDetailDto getOne(Long id) {
         return toDetailDto(gridRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No imposter grid found with id " + id)));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke imposter-brett med id " + id)));
     }
 
     @Transactional
@@ -61,7 +61,7 @@ public class ImposterGridAdminService {
     @Transactional
     public ImposterGridAdminDetailDto update(Long id, ImposterGridRequest request) {
         ImposterGrid grid = gridRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No imposter grid found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke imposter-brett med id " + id));
         applyRequest(grid, request);
         return toDetailDto(gridRepository.save(grid));
     }
@@ -84,7 +84,7 @@ public class ImposterGridAdminService {
         int index = 0;
         for (ImposterGridRequest.TileInput input : request.getTiles()) {
             Athlete athlete = athleteRepository.findById(input.getAthleteId())
-                    .orElseThrow(() -> new IllegalArgumentException("No subject found with id " + input.getAthleteId()));
+                    .orElseThrow(() -> new IllegalArgumentException("Fant ikke emne med id " + input.getAthleteId()));
 
             ImposterTile tile = new ImposterTile();
             tile.setAthlete(athlete);
@@ -94,7 +94,7 @@ public class ImposterGridAdminService {
             if (input.isImposter() && input.getReplacedAthleteId() != null) {
                 Athlete replaced = athleteRepository.findById(input.getReplacedAthleteId())
                         .orElseThrow(() -> new IllegalArgumentException(
-                                "No subject found with id " + input.getReplacedAthleteId()));
+                                "Fant ikke emne med id " + input.getReplacedAthleteId()));
                 tile.setReplacedAthlete(replaced);
             } else {
                 tile.setReplacedAthlete(null);
@@ -102,7 +102,7 @@ public class ImposterGridAdminService {
 
             if (input.getClubId() != null) {
                 Club club = clubRepository.findById(input.getClubId())
-                        .orElseThrow(() -> new IllegalArgumentException("No club found with id " + input.getClubId()));
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke klubb med id " + input.getClubId()));
                 tile.setClub(club);
             } else {
                 tile.setClub(null);

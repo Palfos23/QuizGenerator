@@ -2,35 +2,35 @@
   <div>
     <div v-if="error" class="banner error">{{ error }}</div>
 
-    <LoadingState v-if="loadingChoices" message="Loading board choices…" full />
+    <LoadingState v-if="loadingChoices" message="Laster brettvalg…" full />
 
     <div v-else-if="roundChoices.length" class="tension-choice-overlay">
       <div style="color:var(--gold); text-transform:uppercase; letter-spacing:0.5px; font-size:1rem; margin-bottom:6px;">
-        Board {{ currentGridIndex + 1 }} / {{ totalBoards }}
+        Brett {{ currentGridIndex + 1 }} / {{ totalBoards }}
       </div>
-      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ pickerName }}</strong>, choose a board</h2>
+      <h2 style="margin:0 0 24px;"><strong style="color:var(--gold);">{{ pickerName }}</strong>, velg et brett</h2>
       <div class="tension-choice-grid">
         <button v-for="g in roundChoices" :key="g.id" class="tension-choice-card" @click="chooseBoard(g)">
           <strong>{{ g.title }}</strong>
           <div style="color:var(--text-dim); font-size:0.85rem; margin-top:4px; font-weight:400;">
-            {{ g.tileCount }} tiles, {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span><span v-if="g.description"> · {{ g.description }}</span>
+            {{ g.tileCount }} ruter, {{ g.imposterCount }} imposter<span v-if="g.imposterCount !== 1">s</span><span v-if="g.description"> · {{ g.description }}</span>
           </div>
         </button>
       </div>
       <button class="btn btn-secondary btn-sm" style="margin-top:20px;" :disabled="rerolling" @click="rerollChoices">
-        {{ rerolling ? 'Finding more…' : '↻ Show 3 different boards' }}
+        {{ rerolling ? 'Finner flere…' : '↻ Vis 3 andre brett' }}
       </button>
     </div>
 
-    <LoadingState v-else-if="loading" full message="Loading the board…" />
+    <LoadingState v-else-if="loading" full message="Laster brettet…" />
 
     <template v-else-if="playState">
       <div class="fiveoo-header">
-        <div class="grid-progress" style="text-align:center;">Board {{ currentGridIndex + 1 }} / {{ totalBoards }}</div>
+        <div class="grid-progress" style="text-align:center;">Brett {{ currentGridIndex + 1 }} / {{ totalBoards }}</div>
         <h2>{{ playState.title }}</h2>
         <p v-if="playState.description" class="fiveoo-description">{{ playState.description }}</p>
         <p v-if="lastUpdatedLabel" class="fiveoo-description" style="font-size:0.75rem;">{{ lastUpdatedLabel }}</p>
-        <p class="fiveoo-rules-reminder">Fewest imposter hits wins - flip a tile on your turn</p>
+        <p class="fiveoo-rules-reminder">Færrest imposter-treff vinner - snu en rute når det er din tur</p>
       </div>
 
       <div class="mp-player-row">
@@ -47,7 +47,7 @@
         </div>
       </div>
 
-      <p style="text-align:center; margin:0 0 12px; color:var(--gold); font-weight:600;">{{ currentPlayer }}'s turn - pick a tile</p>
+      <p style="text-align:center; margin:0 0 12px; color:var(--gold); font-weight:600;">{{ currentPlayer }}sin tur - velg en rute</p>
 
       <div class="grid-tiles">
         <div
@@ -80,17 +80,17 @@
     </template>
 
     <div v-else class="empty-state">
-      <p>Couldn't load this board.</p>
-      <button class="btn btn-primary" @click="proceedToCurrentRound">Try again</button>
+      <p>Kunne ikke laste dette brettet.</p>
+      <button class="btn btn-primary" @click="proceedToCurrentRound">Prøv igjen</button>
     </div>
 
     <div v-if="flipOverlay" class="imposter-flip-overlay" :class="flipOverlay.imposter ? 'imposter-hit' : 'imposter-fit'">
-      <div class="imposter-overlay-text">{{ flipOverlay.imposter ? 'IMPOSTER!' : 'Correct' }}</div>
+      <div class="imposter-overlay-text">{{ flipOverlay.imposter ? 'IMPOSTER!' : 'Riktig' }}</div>
     </div>
 
     <div v-if="boardRevealModal" class="modal-backdrop">
       <div class="modal">
-        <h2 style="margin-top:0;">Board complete!</h2>
+        <h2 style="margin-top:0;">Brettet er ferdig!</h2>
 
         <div class="score-square-grid">
           <div v-for="([name, points], i) in sortedScoresForModal" :key="name" class="score-square" :class="{ leader: i === 0 }">
@@ -99,16 +99,16 @@
           </div>
         </div>
 
-        <div v-if="!boardRevealModal.reveal.length" style="color:var(--text-dim);">No imposters on this board.</div>
+        <div v-if="!boardRevealModal.reveal.length" style="color:var(--text-dim);">Ingen imposters på dette brettet.</div>
         <div v-for="(r, i) in boardRevealModal.reveal" :key="i" class="imposter-reveal-entry">
           <div>
             <span class="imposter-reveal-entry-name">{{ r.imposterName }}</span>
-            <span v-if="r.replacedName" class="imposter-reveal-entry-replaced">replaced {{ r.replacedName }}</span>
+            <span v-if="r.replacedName" class="imposter-reveal-entry-replaced">erstattet {{ r.replacedName }}</span>
           </div>
-          <span v-if="r.flippedByPlayer" class="imposter-reveal-entry-foundby">Found by {{ r.flippedByPlayer }}</span>
+          <span v-if="r.flippedByPlayer" class="imposter-reveal-entry-foundby">Funnet av {{ r.flippedByPlayer }}</span>
         </div>
         <button class="btn btn-primary" style="margin-top:16px; width:100%;" @click="continueAfterReveal">
-          {{ boardRevealModal.isLastBoard ? 'See final results' : 'Next board →' }}
+          {{ boardRevealModal.isLastBoard ? 'Se sluttresultatet' : 'Neste brett →' }}
         </button>
       </div>
     </div>
@@ -214,7 +214,7 @@ async function loadRoundChoices() {
   try {
     roundChoices.value = await api.fetchImposterBattleRoundChoices(3, chosenGridIds.value)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not load the next round.'
+    error.value = e.response?.data?.message || 'Kunne ikke laste neste runde.'
     loading.value = false // loadPlayState never ran to clear this - avoid a stuck spinner
   } finally {
     loadingChoices.value = false
@@ -232,10 +232,10 @@ async function rerollChoices() {
     if (fresh.length) {
       roundChoices.value = fresh
     } else {
-      toast.show('No other boards left to show.', 'error')
+      toast.show('Ingen andre brett igjen å vise.', 'error')
     }
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Could not load other boards - please try again.', 'error')
+    toast.show(e.response?.data?.message || 'Kunne ikke laste andre brett - prøv igjen.', 'error')
   } finally {
     rerolling.value = false
   }
@@ -289,7 +289,7 @@ async function loadPlayState(gridId) {
 
     playState.value = state
   } catch (e) {
-    error.value = 'Could not load this board.'
+    error.value = 'Kunne ikke laste dette brettet.'
   } finally {
     loading.value = false
   }
@@ -357,7 +357,7 @@ async function flipTile(t) {
 
     currentPlayerIdx.value = (currentPlayerIdx.value + 1) % props.players.length
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not flip that tile.'
+    error.value = e.response?.data?.message || 'Kunne ikke snu ruten.'
   } finally {
     flipping.value = false
   }

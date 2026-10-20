@@ -66,7 +66,7 @@ public class FlashbackOnlineService {
         int count = (numRounds != null && numRounds >= MIN_ROUNDS && numRounds <= MAX_ROUNDS) ? numRounds : DEFAULT_ROUNDS;
         List<Long> eligible = new ArrayList<>(flashbackYearRepository.findEligibleIds());
         if (eligible.size() < count) {
-            throw new IllegalArgumentException("Not enough Flashback years available yet - ask an admin to add more.");
+            throw new IllegalArgumentException("Ikke nok Flashback-år tilgjengelige ennå - be en administrator legge til flere.");
         }
         Collections.shuffle(eligible);
         FlashbackRoomState state = new FlashbackRoomState();
@@ -107,13 +107,13 @@ public class FlashbackOnlineService {
     @Transactional
     public void startGame(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can start the game.");
+            throw new IllegalStateException("Bare verten kan starte spillet.");
         }
         if (room.getParticipants().size() < 2) {
-            throw new IllegalStateException("Need at least 2 players to start.");
+            throw new IllegalStateException("Det trengs minst 2 spillere for å starte.");
         }
         FlashbackRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new IllegalStateException("This room isn't set up yet."));
+                .orElseThrow(() -> new IllegalStateException("Dette rommet er ikke satt opp ennå."));
 
         for (GameRoomParticipant p : room.getParticipants()) {
             FlashbackParticipantState ps = new FlashbackParticipantState();
@@ -140,7 +140,7 @@ public class FlashbackOnlineService {
         }
 
         FlashbackRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         List<FlashbackParticipantState> participantStates = participantStateRepository.findByRoomState_Id(state.getId());
 
         dto.setTotalRounds(state.getYearIds().size());
@@ -153,7 +153,7 @@ public class FlashbackOnlineService {
         }
 
         FlashbackYear year = flashbackYearRepository.findById(state.getYearIds().get(state.getCurrentRoundIndex()))
-                .orElseThrow(() -> new ResourceNotFoundException("No year found for this round"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke år for denne runden"));
         List<String> allHints = year.getHints();
 
         int participantCount = room.getParticipants().size();
@@ -250,18 +250,18 @@ public class FlashbackOnlineService {
         GameRoomParticipant me = roomService.requireParticipant(room, requestingEmail);
         FlashbackOnlineStateDto currentView = getState(room, requestingEmail);
 
-        if (currentView.isFinished()) throw new IllegalStateException("This game has already finished.");
-        if (currentView.isRoundRevealed()) throw new IllegalStateException("This round is already finished.");
+        if (currentView.isFinished()) throw new IllegalStateException("Dette spillet er allerede ferdig.");
+        if (currentView.isRoundRevealed()) throw new IllegalStateException("Denne runden er allerede ferdig.");
 
         FlashbackRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         // No turn order any more - anyone can guess whenever they like. The
         // one thing still worth guarding against is the same person
         // submitting twice for the current hint (turn order used to prevent
         // this as a side effect; now it needs its own explicit check).
         if (roundGuessRepository.existsByRoomState_IdAndHintIndexAndParticipant_Id(state.getId(), state.getCurrentHintIndex(), me.getId())) {
-            throw new IllegalStateException("You've already answered this clue - wait for everyone else.");
+            throw new IllegalStateException("Du har allerede svart på dette hintet - vent på de andre.");
         }
 
         // Only a year from an earlier, already-resolved hint is blocked as a
@@ -272,7 +272,7 @@ public class FlashbackOnlineService {
         boolean duplicate = currentView.getGuesses().stream()
                 .anyMatch(g -> g.getYear() == guessedYear && g.getHintIndex() < currentView.getHintIndex());
         if (duplicate) {
-            throw new IllegalStateException("That year's already been guessed on an earlier clue this round.");
+            throw new IllegalStateException("Det året er allerede gjettet på et tidligere hint denne runden.");
         }
 
         FlashbackRoundGuess guess = new FlashbackRoundGuess();
@@ -288,15 +288,15 @@ public class FlashbackOnlineService {
     @Transactional
     public FlashbackOnlineStateDto nextRound(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can move on to the next round.");
+            throw new IllegalStateException("Bare verten kan gå videre til neste runde.");
         }
         FlashbackOnlineStateDto current = getState(room, requestingEmail);
         if (!current.isRoundRevealed()) {
-            throw new IllegalStateException("This round isn't finished yet.");
+            throw new IllegalStateException("Denne runden er ikke ferdig ennå.");
         }
 
         FlashbackRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
 
         roundGuessRepository.deleteByRoomState_Id(state.getId());
         state.setRoundResolved(false);
@@ -323,22 +323,22 @@ public class FlashbackOnlineService {
     @Transactional
     public FlashbackOnlineStateDto rerollYear(GameRoom room, String requestingEmail) {
         if (!room.getHostEmail().equals(requestingEmail)) {
-            throw new IllegalStateException("Only the host can swap the year.");
+            throw new IllegalStateException("Bare verten kan bytte året.");
         }
         FlashbackRoomState state = roomStateRepository.findByRoom_Id(room.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No game state for this room"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ingen spilltilstand for dette rommet"));
         if (room.getStatus() != RoomStatus.IN_PROGRESS || state.isFinished()) {
-            throw new IllegalStateException("There's no round in progress to swap.");
+            throw new IllegalStateException("Det er ingen runde i gang å bytte.");
         }
         if (state.isRoundResolved() || state.getCurrentHintIndex() > 0
                 || !roundGuessRepository.findByRoomState_IdOrderByIdAsc(state.getId()).isEmpty()) {
-            throw new IllegalStateException("It's too late to swap - someone has already guessed this round.");
+            throw new IllegalStateException("Det er for sent å bytte - noen har allerede gjettet denne runden.");
         }
 
         List<Long> candidates = new ArrayList<>(flashbackYearRepository.findEligibleIds());
         candidates.removeAll(state.getYearIds());
         if (candidates.isEmpty()) {
-            throw new IllegalStateException("No other years left to swap to.");
+            throw new IllegalStateException("Ingen andre år igjen å bytte til.");
         }
         Collections.shuffle(candidates);
         state.getYearIds().set(state.getCurrentRoundIndex(), candidates.get(0));

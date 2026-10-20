@@ -34,19 +34,19 @@ const state = computed(() => {
 })
 
 const title = computed(() => {
-  if (state.value === 'ahead') return 'You beat the expert!'
-  if (state.value === 'level') return 'You matched the expert!'
-  return 'Can you score higher than the expert?'
+  if (state.value === 'ahead') return 'Du slo eksperten!'
+  if (state.value === 'level') return 'Du var like god som eksperten!'
+  return 'Kan du få høyere poengsum enn eksperten?'
 })
 
 function part(value, note) {
-  const base = props.max !== null ? `${value} / ${props.max}` : `${value} pts`
+  const base = props.max !== null ? `${value} / ${props.max}` : `${value} poeng`
   return note ? `${base} (${note})` : base
 }
 
 const detail = computed(() => {
-  const expert = `The Expert: ${part(props.expertValue, props.expertNote)}`
-  return hasYou.value ? `${expert}  ·  You: ${part(props.yourValue, props.yourNote)}` : expert
+  const expert = `Eksperten: ${part(props.expertValue, props.expertNote)}`
+  return hasYou.value ? `${expert} · Du: ${part(props.yourValue, props.yourNote)}` : expert
 })
 </script>
 

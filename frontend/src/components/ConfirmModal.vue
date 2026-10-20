@@ -17,15 +17,15 @@
 import { useEscapeKey } from '../composables/useEscapeKey'
 
 const props = defineProps({
-  title: { type: String, default: 'Are you sure?' },
+  title: { type: String, default: 'Er du sikker?' },
   message: { type: String, required: true },
-  confirmText: { type: String, default: 'Delete' },
-  cancelText: { type: String, default: 'Cancel' },
-  // Optional - a caller passes :busy="deleting" (plus a busyText if "Working…"
+  confirmText: { type: String, default: 'Slett' },
+  cancelText: { type: String, default: 'Avbryt' },
+  // Optional - a caller passes :busy="deleting" (plus a busyText if "Jobber…"
   // isn't the right verb) so the modal visibly reflects an in-flight request
   // instead of just sitting there or vanishing with no feedback while it waits.
   busy: { type: Boolean, default: false },
-  busyText: { type: String, default: 'Working…' }
+  busyText: { type: String, default: 'Jobber…' }
 })
 
 const emit = defineEmits(['confirm', 'cancel'])

@@ -2,12 +2,11 @@
   <div>
     <template v-if="view === 'list'">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-        <h1 style="margin:0;">Subject pools</h1>
-        <button class="btn btn-primary" @click="openCreate">+ New pool</button>
+        <h1 style="margin:0;">Emneutvalg</h1>
+        <button class="btn btn-primary" @click="openCreate">+ Nytt utvalg</button>
       </div>
       <p class="page-subtitle">
-        Reusable, curated lists of subjects - import one into any grid's candidate pool in one click,
-        instead of searching and adding the same ones over and over.
+        Gjenbrukbare, kuraterte lister med emner - importer ett inn i et hvilket som helst grids kandidatutvalg med ett klikk, i stedet for å søke og legge til de samme om og om igjen.
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
@@ -15,25 +14,25 @@
       <input
         type="text"
         v-model="poolSearchTerm"
-        placeholder="Search pool names…"
+        placeholder="Søk etter utvalgsnavn…"
         class="search-input"
         style="margin-bottom:16px;"
       />
 
-      <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
+      <div v-if="loading" style="color:var(--text-dim);">Laster…</div>
       <div v-else-if="!filteredPools.length" class="empty-state friendly">
-        {{ poolSearchTerm ? `No pools match "${poolSearchTerm}".` : 'No pools yet - create your first one.' }}
+        {{ poolSearchTerm ? `Ingen utvalg samsvarer med «${poolSearchTerm}».` : 'Ingen utvalg ennå - lag ditt første.' }}
       </div>
 
       <div v-else class="saved-quiz-list">
         <div v-for="p in pagedPools" :key="p.id" class="saved-quiz-row">
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">{{ p.name }}</div>
-            <div class="saved-quiz-meta">{{ sportLabel(p.sport) }} · {{ p.memberCount }} subject(s)</div>
+            <div class="saved-quiz-meta">{{ sportLabel(p.sport) }} · {{ p.memberCount }} emne(r)</div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" @click="openEdit(p.id)">Edit</button>
-            <button class="btn btn-danger btn-sm" @click="requestDelete(p)">Delete</button>
+            <button class="btn btn-secondary btn-sm" @click="openEdit(p.id)">Rediger</button>
+            <button class="btn btn-danger btn-sm" @click="requestDelete(p)">Slett</button>
           </div>
         </div>
       </div>
@@ -43,18 +42,18 @@
 
     <template v-else>
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1 style="margin:0;">{{ editingId ? 'Edit pool' : 'New pool' }}</h1>
-        <button class="btn btn-secondary" @click="view = 'list'">← Back to list</button>
+        <h1 style="margin:0;">{{ editingId ? 'Rediger utvalg' : 'Nytt utvalg' }}</h1>
+        <button class="btn btn-secondary" @click="view = 'list'">← Tilbake til listen</button>
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div class="field" style="display:flex; gap:16px; flex-wrap:wrap;">
         <div style="flex:1; min-width:200px;">
-          <label>Name<input type="text" v-model="form.name" placeholder="e.g. Tottenham PL squad, or Best Picture winners" /></label>
+          <label>Navn<input type="text" v-model="form.name" placeholder="f.eks. Tottenhams PL-tropp, eller vinnere av Beste film" /></label>
         </div>
         <div style="flex:1; min-width:200px;">
-          <label>Category
+          <label>Kategori
             <select v-model="form.sport" @change="onSportChange">
               <option v-for="s in gridCategories.categories.value" :key="s" :value="s">{{ s }}</option>
             </select>
@@ -63,13 +62,13 @@
       </div>
 
       <div class="field">
-        <label>Members <span class="picker-hint">{{ members.length }} subject(s)</span></label>
+        <label>Medlemmer <span class="picker-hint">{{ members.length }} emne(r)</span></label>
 
-        <input type="text" v-model="athleteSearchTerm" placeholder="Search subjects by name…" style="margin-bottom:10px;" />
+        <input type="text" v-model="athleteSearchTerm" placeholder="Søk etter emner på navn…" style="margin-bottom:10px;" />
 
         <div v-if="teamOptions.length" style="margin-bottom:10px;">
           <label style="font-size:0.85rem; color:var(--text-dim); text-transform:none; font-weight:400;">
-            ...or add whole {{ groupLabelPluralLower }} <span class="picker-hint" v-if="bulkTeams.length">{{ bulkTeams.length }} selected</span>
+            ...eller legg til hele {{ groupLabelPluralLower }} <span class="picker-hint" v-if="bulkTeams.length">{{ bulkTeams.length }} valgt</span>
           </label>
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
             <button
@@ -82,7 +81,7 @@
             >{{ t }}</button>
           </div>
           <button class="btn btn-secondary btn-sm" style="margin-top:10px;" :disabled="!bulkTeams.length" @click="addAllByTeam">
-            + Add {{ bulkTeams.length > 1 ? `${bulkTeams.length} ${groupLabelPluralLower}` : groupLabelSingularLower }}
+            + Legg til {{ bulkTeams.length > 1 ? `${bulkTeams.length} ${groupLabelPluralLower}` : groupLabelSingularLower }}
           </button>
         </div>
 
@@ -93,7 +92,7 @@
         </div>
 
         <div v-if="!members.length" class="empty-state" style="padding:20px;">
-          No members yet - search above or add a whole {{ groupLabelSingularLower }}.
+          Ingen medlemmer ennå - søk over eller legg til en hel {{ groupLabelSingularLower }}.
         </div>
         <div v-else class="candidate-list">
           <div v-for="m in pagedMembers" :key="m.athleteId" class="candidate-row">
@@ -105,14 +104,14 @@
       </div>
 
       <button class="btn btn-primary" :disabled="saving" @click="savePool">
-        {{ saving ? 'Saving…' : 'Save pool' }}
+        {{ saving ? 'Lagrer…' : 'Lagre utvalg' }}
       </button>
     </template>
 
     <ConfirmModal
       v-if="pendingDelete"
-      title="Delete this pool?"
-      :message="`'${pendingDelete.name}' will no longer be available to import into grids. Grids that already used it are unaffected.`"
+      title="Slette dette utvalget?"
+      :message="`«${pendingDelete.name}» blir ikke lenger tilgjengelig for import i grids. Grids som allerede brukte det påvirkes ikke.`"
       @confirm="doDelete"
       @cancel="pendingDelete = null"
     />
@@ -216,7 +215,7 @@ async function loadPools() {
   try {
     pools.value = await api.adminListAthletePools()
   } catch (e) {
-    error.value = 'Could not load pools.'
+    error.value = 'Kunne ikke laste utvalg.'
   } finally {
     loading.value = false
   }
@@ -251,7 +250,7 @@ async function openEdit(id) {
     loadTeamOptions()
     view.value = 'form'
   } catch (e) {
-    error.value = 'Could not load that pool.'
+    error.value = 'Kunne ikke laste utvalget.'
   }
 }
 
@@ -267,10 +266,10 @@ async function addAllByTeam() {
       bulkTeams.value.map(team => api.adminSearchAthletes({ sport: form.sport, team }))
     )
     resultsPerTeam.flat().forEach(addMember)
-    toast.show(`Added subjects from ${bulkTeams.value.length} group(s).`)
+    toast.show(`La til emner fra ${bulkTeams.value.length} gruppe(r).`)
     bulkTeams.value = []
   } catch (e) {
-    error.value = 'Could not search for those teams.'
+    error.value = 'Kunne ikke søke etter disse lagene.'
   }
 }
 
@@ -284,11 +283,11 @@ function removeMember(m) {
 async function savePool() {
   error.value = ''
   if (!form.name.trim()) {
-    error.value = 'Give this pool a name.'
+    error.value = 'Gi dette utvalget et navn.'
     return
   }
   if (!members.value.length) {
-    error.value = 'Add at least one subject.'
+    error.value = 'Legg til minst ett emne.'
     return
   }
   saving.value = true
@@ -296,15 +295,15 @@ async function savePool() {
     const payload = { name: form.name.trim(), sport: form.sport, athleteIds: members.value.map(m => m.athleteId) }
     if (editingId.value) {
       await api.adminUpdateAthletePool(editingId.value, payload)
-      toast.show('Pool updated.')
+      toast.show('Utvalget er oppdatert.')
     } else {
       await api.adminCreateAthletePool(payload)
-      toast.show('Pool created.')
+      toast.show('Utvalget er opprettet.')
     }
     view.value = 'list'
     loadPools()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Could not save that pool.'
+    error.value = e.response?.data?.message || 'Kunne ikke lagre utvalget.'
   } finally {
     saving.value = false
   }
@@ -319,10 +318,10 @@ async function doDelete() {
   pendingDelete.value = null
   try {
     await api.adminDeleteAthletePool(p.id)
-    toast.show('Pool deleted.')
+    toast.show('Utvalget er slettet.')
     loadPools()
   } catch (e) {
-    error.value = 'Could not delete that pool.'
+    error.value = 'Kunne ikke slette utvalget.'
   }
 }
 </script>

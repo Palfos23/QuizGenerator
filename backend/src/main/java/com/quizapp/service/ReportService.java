@@ -28,7 +28,7 @@ public class ReportService {
     @Transactional
     public ReportDto submit(String userEmail, ReportDto dto) {
         AppUser user = appUserRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("No account found for " + userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke konto for " + userEmail));
 
         Report report = new Report();
         report.setArea(dto.getArea());
@@ -54,7 +54,7 @@ public class ReportService {
     @Transactional
     public ReportDto resolve(Long id, ResolveReportRequest request) {
         Report report = reportRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No report found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke rapport med id " + id));
         report.setStatus(ReportStatus.RESOLVED);
         report.setAdminNote(request.getAdminNote());
         return toDto(reportRepository.save(report));
@@ -67,7 +67,7 @@ public class ReportService {
         dto.setMessage(r.getMessage());
         dto.setStatus(r.getStatus());
         dto.setAdminNote(r.getAdminNote());
-        dto.setReporterName(r.getReportedBy() != null ? r.getReportedBy().getName() : "(deleted user)");
+        dto.setReporterName(r.getReportedBy() != null ? r.getReportedBy().getName() : "(slettet bruker)");
         dto.setCreatedAt(r.getCreatedAt());
         return dto;
     }

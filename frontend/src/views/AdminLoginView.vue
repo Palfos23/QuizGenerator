@@ -1,24 +1,24 @@
 <template>
   <div style="max-width:380px; margin-top:60px;">
-    <h1>Admin sign-in</h1>
-    <p class="page-subtitle">Separate credentials from the regular Google login.</p>
+    <h1>Administratorinnlogging</h1>
+    <p class="page-subtitle">Egne innloggingsdata, atskilt fra vanlig Google-innlogging.</p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div class="field">
-      <label>Username<input type="text" v-model="username" @keyup.enter="submit" autocomplete="username" /></label>
+      <label>Brukernavn<input type="text" v-model="username" @keyup.enter="submit" autocomplete="username" /></label>
     </div>
     <div class="field">
-      <label>Password<input type="password" v-model="password" @keyup.enter="submit" autocomplete="current-password" /></label>
+      <label>Passord<input type="password" v-model="password" @keyup.enter="submit" autocomplete="current-password" /></label>
     </div>
 
     <button class="btn btn-primary" :disabled="loading" @click="submit">
-      {{ loading ? 'Signing in…' : 'Sign in' }}
+      {{ loading ? 'Logger inn…' : 'Logg inn' }}
     </button>
 
     <p style="margin-top:24px;">
       <router-link to="/" style="color:var(--text-dim); font-size:0.85rem;">
-        Not an admin? Go to regular sign-in
+        Ikke administrator? Gå til vanlig innlogging
       </router-link>
     </p>
   </div>
@@ -52,7 +52,7 @@ async function submit() {
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
     router.push(safeRedirectTarget(route, '/admin/questions'))
   } catch (e) {
-    error.value = e.response?.data?.message || 'Invalid admin credentials.'
+    error.value = e.response?.data?.message || 'Ugyldig administratorlogin.'
   } finally {
     loading.value = false
   }

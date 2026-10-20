@@ -224,6 +224,6 @@ class PdfServiceTest {
 
         PdfReader reader = new PdfReader(pdf);
         String text = new PdfTextExtractor(reader).getTextFromPage(1);
-        assertThat(text).contains("PHOTOQ1").contains("Picture could not be loaded");
+        assertThat(text).contains("PHOTOQ1").contains("Bildet kunne ikke lastes");
     }
 }

@@ -79,7 +79,7 @@ class RoomRejoinTest {
 
         assertThatThrownBy(() -> roomService.join(finalRoom.getRoomCode(), "impersonator@example.com", "Sam", null))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("already taken");
+                .hasMessageContaining("allerede tatt");
     }
 
     @Test
