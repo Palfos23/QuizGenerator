@@ -60,15 +60,6 @@
         </template>
       </div>
 
-      <ExpertCard
-        v-if="weekly.expert"
-        style="margin-top:14px;"
-        :expert-value="weekly.expert.total"
-        :expert-note="daysNote(weekly.expert.daysPlayed)"
-        :your-value="yourRank ? yourRank.entry.total : null"
-        :your-note="yourRank ? daysNote(yourRank.entry.daysPlayed) : ''"
-      />
-
       <template v-if="weekly.pastWeeks.length">
         <div class="dq-weekly-label">Previous winners</div>
         <div v-for="(w, i) in weekly.pastWeeks" :key="w.weekStart" class="dq-winner" :class="{ 'is-latest': i === 0 }">
@@ -89,7 +80,6 @@
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
 import { shortNames } from '../services/displayNames'
-import ExpertCard from './ExpertCard.vue'
 
 // Shared by the daily quiz (the default) and the two weekly games, which pass their own endpoint:
 // every endpoint returns the same { current, pastWeeks } shape.

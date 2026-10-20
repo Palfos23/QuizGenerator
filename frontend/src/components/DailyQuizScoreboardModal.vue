@@ -4,14 +4,6 @@
       <h2 class="dq-modal-title">{{ title }}</h2>
       <p class="dq-modal-sub">{{ subtitle }}</p>
 
-      <!-- The expert (the question author) isn't ranked below - they're the benchmark to beat. -->
-      <ExpertCard
-        v-if="!loading && data && data.expert"
-        :expert-value="data.expert.score"
-        :max="data.expert.maxScore"
-        :your-value="yourEntry ? yourEntry.score : null"
-      />
-
       <div v-if="loading" style="color:var(--text-dim);">Loading…</div>
 
       <div v-else-if="!entries.length" class="dq-empty" style="padding:22px 0;">
@@ -88,7 +80,6 @@
 import { computed } from 'vue'
 import { useEscapeKey } from '../composables/useEscapeKey'
 import { shortNames } from '../services/displayNames'
-import ExpertCard from './ExpertCard.vue'
 
 // One scoreboard for the player's "Leaderboard" button and both admin views. `compact` is the player
 // view (top five, plus your own row if you're further down, first names only); the admin view lists
@@ -135,7 +126,6 @@ const yourDelta = computed(() => {
   return Math.round((mine.score - props.data.averageScore) * 10) / 10
 })
 
-const yourEntry = computed(() => entries.value.find(s => s.isYou) || null)
 
 // Compact boards show first names, with a surname initial added where two people share one.
 const shortName = computed(() => shortNames(entries.value.map(e => e.userName)))
