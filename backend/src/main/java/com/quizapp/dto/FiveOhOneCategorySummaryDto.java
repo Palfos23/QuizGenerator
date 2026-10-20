@@ -7,6 +7,11 @@ import java.time.Instant;
 
 @Translated(type = ContentTranslation.TYPE_FIVEOHONE, fields = {"title", "description"})
 public class FiveOhOneCategorySummaryDto {
+    // True when an admin has written a version of this category in the requester\'s language (set by config/TranslationResponseAdvice).
+    private boolean inYourLanguage;
+    public boolean isInYourLanguage() { return inYourLanguage; }
+    public void setInYourLanguage(boolean inYourLanguage) { this.inYourLanguage = inYourLanguage; }
+
     private Long id;
     private String title;
     private String description;

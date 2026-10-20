@@ -33,6 +33,10 @@ import java.util.stream.Collectors;
 @Service
 public class FlashbackOnlineService {
 
+    // Random picks favour boards that have a version in the player\'s language (see config/LanguagePreference).
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.quizapp.config.LanguagePreference languagePreference;
+
     private static final int DEFAULT_ROUNDS = 5;
     private static final int MIN_ROUNDS = 1;
     private static final int MAX_ROUNDS = 10;
@@ -69,6 +73,7 @@ public class FlashbackOnlineService {
             throw new IllegalArgumentException("Ikke nok Flashback-år tilgjengelige ennå - be en administrator legge til flere.");
         }
         Collections.shuffle(eligible);
+        eligible = languagePreference.preferTranslated(com.quizapp.model.ContentTranslation.TYPE_FLASHBACK, eligible);
         FlashbackRoomState state = new FlashbackRoomState();
         state.setRoom(room);
         state.setYearIds(eligible.stream().limit(count).collect(Collectors.toList()));
@@ -342,6 +347,7 @@ public class FlashbackOnlineService {
             throw new IllegalStateException("Ingen andre år igjen å bytte til.");
         }
         Collections.shuffle(candidates);
+        candidates = languagePreference.preferTranslated(com.quizapp.model.ContentTranslation.TYPE_FLASHBACK, candidates);
         state.getYearIds().set(state.getCurrentRoundIndex(), candidates.get(0));
         roomStateRepository.save(state);
         return getState(room, requestingEmail);

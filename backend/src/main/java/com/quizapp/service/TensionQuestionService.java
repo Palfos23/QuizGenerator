@@ -23,6 +23,10 @@ import java.util.stream.Collectors;
 @Service
 public class TensionQuestionService {
 
+    // Random picks favour boards that have a version in the player\'s language (see config/LanguagePreference).
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.quizapp.config.LanguagePreference languagePreference;
+
     private static final Logger log = LoggerFactory.getLogger(TensionQuestionService.class);
 
     private final TensionQuestionRepository questionRepository;
@@ -88,6 +92,7 @@ public class TensionQuestionService {
     private List<TensionQuestionDto> loadRandomSubset(List<Long> ids, int count) {
         List<Long> shuffled = new ArrayList<>(ids);
         Collections.shuffle(shuffled);
+        shuffled = languagePreference.preferTranslated(com.quizapp.model.ContentTranslation.TYPE_TENSION, shuffled);
         List<Long> sampled = shuffled.stream().limit(count).collect(Collectors.toList());
         return questionRepository.findAllById(sampled).stream()
                 .map(TensionQuestionService::toDto)

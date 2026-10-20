@@ -13,6 +13,10 @@ import java.util.stream.Collectors;
 @Service
 public class FiveOhOneOnlineService {
 
+    // Random picks favour boards that have a version in the player\'s language (see config/LanguagePreference).
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.quizapp.config.LanguagePreference languagePreference;
+
     // Exact same set as FiveOhOneGame.vue's IMPOSSIBLE_CHECKOUTS - the nine
     // scores that can't be hit with three darts, so they score zero here too.
     private static final Set<Integer> IMPOSSIBLE_CHECKOUTS = Set.of(163, 166, 169, 172, 173, 175, 176, 178, 179);
@@ -86,7 +90,9 @@ public class FiveOhOneOnlineService {
         if (candidates.isEmpty()) {
             throw new IllegalStateException("Det finnes ingen annen kategori å bytte til.");
         }
-        state.setCategoryId(candidates.get(new Random().nextInt(candidates.size())));
+        Collections.shuffle(candidates);
+        candidates = languagePreference.preferTranslated(com.quizapp.model.ContentTranslation.TYPE_FIVEOHONE, candidates);
+        state.setCategoryId(candidates.get(0));
         roomStateRepository.save(state);
         return currentCategoryDto(room);
     }

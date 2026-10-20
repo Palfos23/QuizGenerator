@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 @Service
 public class BullseyePlayService {
 
+    // Random picks favour boards that have a version in the player\'s language (see config/LanguagePreference).
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.quizapp.config.LanguagePreference languagePreference;
+
     private final BullseyeQuestionRepository bullseyeQuestionRepository;
     private final AthleteRepository athleteRepository;
 
@@ -94,6 +98,15 @@ public class BullseyePlayService {
         Collections.shuffle(categories);
         byCategory.values().forEach(Collections::shuffle);
 
+        // Prefer questions with a version in the player's language: first within each category, then the
+        // categories that have one come first (both stable, so the shuffle above still decides among equals).
+        Set<Long> translated = languagePreference.translatedIds(com.quizapp.model.ContentTranslation.TYPE_BULLSEYE,
+                eligible.stream().map(BullseyeQuestionSummaryProjection::getId).collect(Collectors.toList()));
+        if (!translated.isEmpty()) {
+            byCategory.values().forEach(list -> list.sort(Comparator.comparing(row -> !translated.contains(row.getId()))));
+            categories.sort(Comparator.comparing(c -> !translated.contains(byCategory.get(c).get(0).getId())));
+        }
+
         List<BullseyeQuestionSummaryProjection> picked = new ArrayList<>();
         Set<Long> pickedIds = new HashSet<>();
         for (String category : categories) {
@@ -107,6 +120,7 @@ public class BullseyePlayService {
                     .filter(row -> !pickedIds.contains(row.getId()))
                     .collect(Collectors.toList());
             Collections.shuffle(rest);
+            if (!translated.isEmpty()) rest.sort(Comparator.comparing(row -> !translated.contains(row.getId())));
             for (BullseyeQuestionSummaryProjection row : rest) {
                 if (picked.size() >= count) break;
                 picked.add(row);

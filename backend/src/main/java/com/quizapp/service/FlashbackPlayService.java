@@ -20,6 +20,10 @@ import java.util.stream.Collectors;
 @Service
 public class FlashbackPlayService {
 
+    // Random picks favour boards that have a version in the player\'s language (see config/LanguagePreference).
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.quizapp.config.LanguagePreference languagePreference;
+
     private final FlashbackYearRepository flashbackYearRepository;
 
     public FlashbackPlayService(FlashbackYearRepository flashbackYearRepository) {
@@ -47,6 +51,7 @@ public class FlashbackPlayService {
     private List<FlashbackYearDto> loadRandomSubset(List<Long> ids, int count) {
         List<Long> shuffled = new ArrayList<>(ids);
         Collections.shuffle(shuffled);
+        shuffled = languagePreference.preferTranslated(com.quizapp.model.ContentTranslation.TYPE_FLASHBACK, shuffled);
         List<Long> sampled = shuffled.stream().limit(count).collect(Collectors.toList());
         return flashbackYearRepository.findAllById(sampled).stream()
                 .map(FlashbackAdminService::toDto)

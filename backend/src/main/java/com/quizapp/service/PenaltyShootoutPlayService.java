@@ -32,6 +32,10 @@ import java.util.stream.Collectors;
 @Service
 public class PenaltyShootoutPlayService {
 
+    // Random picks favour boards that have a version in the player\'s language (see config/LanguagePreference).
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.quizapp.config.LanguagePreference languagePreference;
+
     private final PenaltyShootoutRepository penaltyShootoutRepository;
     private final AthleteRepository athleteRepository;
 
@@ -57,6 +61,10 @@ public class PenaltyShootoutPlayService {
                 .filter(s -> excludeIds == null || !excludeIds.contains(s.getId()))
                 .collect(Collectors.toList());
         Collections.shuffle(pool);
+        java.util.Set<Long> translated = languagePreference.translatedIds(com.quizapp.model.ContentTranslation.TYPE_SHOOTOUT,
+                pool.stream().map(PenaltyShootout::getId).collect(Collectors.toList()));
+        // stable: boards with a version in the player's language first, the shuffle's order kept within each group
+        pool.sort(Comparator.comparing((PenaltyShootout s) -> !translated.contains(s.getId())));
         return pool.stream()
                 .limit(count)
                 .map(this::toSummaryDto)

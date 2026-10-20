@@ -320,7 +320,10 @@ async function randomCategory(excludeId = null) {
     error.value = _t('Det finnes ingen andre kategorier å bytte til.')
     return
   }
-  await chooseCategory(pool[Math.floor(Math.random() * pool.length)].id)
+  // favour categories an admin has written a version of in the chosen language (see TranslationResponseAdvice)
+  const preferred = pool.filter(c => c.inYourLanguage)
+  const from = preferred.length ? preferred : pool
+  await chooseCategory(from[Math.floor(Math.random() * from.length)].id)
 }
 
 function startGame() {

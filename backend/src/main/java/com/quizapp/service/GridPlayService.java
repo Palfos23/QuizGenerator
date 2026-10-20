@@ -31,6 +31,10 @@ import java.util.stream.Collectors;
 @Service
 public class GridPlayService {
 
+    // Random picks favour boards that have a version in the player\'s language (see config/LanguagePreference).
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.quizapp.config.LanguagePreference languagePreference;
+
     private final GridRepository gridRepository;
     private final GridAttemptRepository gridAttemptRepository;
     private final AppUserRepository appUserRepository;
@@ -181,6 +185,7 @@ public class GridPlayService {
                 .filter(id -> excludeIds == null || !excludeIds.contains(id))
                 .collect(Collectors.toList());
         Collections.shuffle(ids);
+        ids = languagePreference.preferTranslated(com.quizapp.model.ContentTranslation.TYPE_GRID, ids);
         List<Long> sampled = ids.stream().limit(count).collect(Collectors.toList());
         if (sampled.isEmpty()) {
             return Collections.emptyList();

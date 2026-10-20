@@ -31,6 +31,10 @@ import java.util.stream.Collectors;
 @Service
 public class BullseyeOnlineService {
 
+    // Random picks favour boards that have a version in the player\'s language (see config/LanguagePreference).
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.quizapp.config.LanguagePreference languagePreference;
+
     private final GameRoomRepository gameRoomRepository;
     private final BullseyeRoomStateRepository roomStateRepository;
     private final BullseyeParticipantStateRepository participantStateRepository;
@@ -104,6 +108,7 @@ public class BullseyeOnlineService {
                     "Ikke nok Bullseye-spørsmål tilgjengelige for " + playerCount + " spillere ennå - be en administrator legge til flere.");
         }
         Collections.shuffle(eligible);
+        eligible = languagePreference.preferTranslated(com.quizapp.model.ContentTranslation.TYPE_BULLSEYE, eligible);
         List<Long> questionIds = eligible.stream().limit(roundCount).collect(Collectors.toList());
 
         BullseyeRoomState state = new BullseyeRoomState();
@@ -360,6 +365,7 @@ public class BullseyeOnlineService {
             throw new IllegalStateException("Ingen andre spørsmål igjen å bytte til.");
         }
         Collections.shuffle(candidates);
+        candidates = languagePreference.preferTranslated(com.quizapp.model.ContentTranslation.TYPE_BULLSEYE, candidates);
         state.getQuestionIds().set(state.getCurrentQuestionIndex(), candidates.get(0));
         roomStateRepository.save(state);
         return getState(room, requestingEmail);

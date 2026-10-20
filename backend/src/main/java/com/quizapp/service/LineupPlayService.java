@@ -41,6 +41,10 @@ import java.util.stream.Collectors;
 @Service
 public class LineupPlayService {
 
+    // Random picks favour boards that have a version in the player\'s language (see config/LanguagePreference).
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.quizapp.config.LanguagePreference languagePreference;
+
     private static final String DEFAULT_KIT_COLOR = "#d92332";
     private static final String DEFAULT_GK_KIT_COLOR = "#f2c230";
 
@@ -105,6 +109,7 @@ public class LineupPlayService {
                 .filter(id -> excludeIds == null || !excludeIds.contains(id))
                 .collect(Collectors.toList());
         Collections.shuffle(ids);
+        ids = languagePreference.preferTranslated(com.quizapp.model.ContentTranslation.TYPE_LINEUP, ids);
         List<Long> sampled = ids.stream().limit(count).collect(Collectors.toList());
         if (sampled.isEmpty()) {
             return Collections.emptyList();

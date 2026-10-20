@@ -107,11 +107,17 @@ public class TranslationResponseAdvice implements ResponseBodyAdvice<Object> {
             }
         }
         if (found.isEmpty()) return;
+        Set<String> boardsWithAVersion = new HashSet<>();
+        for (String key : found.keySet()) boardsWithAVersion.add(key.substring(0, key.lastIndexOf('|')));
         for (Object t : targets) {
             Long id = idOf.get(t);
             if (id == null) continue;
             Translated meta = t.getClass().getAnnotation(Translated.class);
             BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(t);
+            // Lets a client that picks randomly itself (501's "different category") favour boards in the player's language.
+            if (bw.isWritableProperty("inYourLanguage")) {
+                bw.setPropertyValue("inYourLanguage", boardsWithAVersion.contains(meta.type() + "|" + id));
+            }
             for (String spec : meta.fields()) {
                 String property = spec.contains(":") ? spec.substring(0, spec.indexOf(':')) : spec;
                 String field = spec.contains(":") ? spec.substring(spec.indexOf(':') + 1) : spec;
