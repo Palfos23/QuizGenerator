@@ -24,18 +24,16 @@ public class DailyQuizScoreboardDto {
         this.expert = expert;
     }
 
+    // Deliberately nameless: players only ever see "The Expert", never who it is.
     public static class ExpertScore {
-        private final String name;
         private final int score;
         private final int maxScore;
 
-        public ExpertScore(String name, int score, int maxScore) {
-            this.name = name;
+        public ExpertScore(int score, int maxScore) {
             this.score = score;
             this.maxScore = maxScore;
         }
 
-        public String getName() { return name; }
         public int getScore() { return score; }
         public int getMaxScore() { return maxScore; }
     }

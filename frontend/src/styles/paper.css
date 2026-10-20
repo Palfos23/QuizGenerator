@@ -241,3 +241,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   border-radius: 2px;
 }
 .stepper { background: rgba(27, 26, 23, 0.06); border-radius: 2px; }
+
+/* The expert's row in a leaderboard: dashed and starred, so it reads as "the benchmark", not a player */
+.dq-board-row--expert { background: transparent; border: 1.5px dashed var(--rule); }
+.dq-rank--star { background: transparent; border: 2px solid var(--gold); color: var(--gold); display: grid; place-items: center; }
+.dq-rank--star svg { width: 15px; height: 15px; }
+.dq-board-row--expert .dq-board-bar i { background: var(--gold); }

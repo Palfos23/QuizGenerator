@@ -202,7 +202,6 @@ class DailyQuizWeeklyTest {
         assertThat(standingFor(dto, expert)).as("not ranked").isNull();
         assertThat(standingFor(dto, anna).getTotal()).isEqualTo(9);
         assertThat(dto.getExpert()).isNotNull();
-        assertThat(dto.getExpert().getName()).isEqualTo(expert.getName());
         assertThat(dto.getExpert().getTotal()).isEqualTo(29);
         assertThat(dto.getExpert().getDaysPlayed()).isEqualTo(2);
         // Last week's winner is the best player, not the expert who scored higher.

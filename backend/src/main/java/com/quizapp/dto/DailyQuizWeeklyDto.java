@@ -24,18 +24,16 @@ public class DailyQuizWeeklyDto {
     public ExpertWeek getExpert() { return expert; }
     public void setExpert(ExpertWeek expert) { this.expert = expert; }
 
+    // Nameless on purpose: players only ever see "The Expert".
     public static class ExpertWeek {
-        private final String name;
         private final int total;
         private final int daysPlayed;
 
-        public ExpertWeek(String name, int total, int daysPlayed) {
-            this.name = name;
+        public ExpertWeek(int total, int daysPlayed) {
             this.total = total;
             this.daysPlayed = daysPlayed;
         }
 
-        public String getName() { return name; }
         public int getTotal() { return total; }
         public int getDaysPlayed() { return daysPlayed; }
     }

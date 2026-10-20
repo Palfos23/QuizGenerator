@@ -433,7 +433,7 @@ public class DailyQuizService {
         return attemptRepository.findBySet_Id(setId).stream()
                 .filter(a -> a.getStatus() == DailyQuizAttemptStatus.GRADED && expertConfig.isExpert(a.getUser().getId()))
                 .findFirst()
-                .map(a -> new DailyQuizScoreboardDto.ExpertScore(a.getUser().getName(), a.getScore(),
+                .map(a -> new DailyQuizScoreboardDto.ExpertScore(a.getScore(),
                         answerRepository.findByAttempt_IdOrderByIdAsc(a.getId()).stream()
                                 .mapToInt(ans -> DailyQuizScoring.maxPoints(ans.getQuestion())).sum()))
                 .orElse(null);
@@ -601,7 +601,7 @@ public class DailyQuizService {
 
         DailyQuizScoreboardDto dto = new DailyQuizScoreboardDto(entries, averageScore, maxScore);
         if (expertAttempt != null) {
-            dto.setExpert(new DailyQuizScoreboardDto.ExpertScore(expertAttempt.getUser().getName(), expertAttempt.getScore(),
+            dto.setExpert(new DailyQuizScoreboardDto.ExpertScore(expertAttempt.getScore(),
                     maxByAttemptId.getOrDefault(expertAttempt.getId(), QUESTIONS_PER_DAY)));
         }
         gradedAttempts.stream()

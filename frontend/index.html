@@ -27,7 +27,11 @@
         }
       }(window.location))
     </script>
-</head>
+    <!-- The three font files the first screen needs, fetched up front so text doesn't jump when they arrive -->
+    <link rel="preload" href="/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/instrument-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/fraunces-italic-latin.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
 <body>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>

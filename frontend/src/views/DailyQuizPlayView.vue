@@ -125,7 +125,6 @@
 
         <ExpertCard
           v-if="state.result.expert && state.result.score !== null"
-          :name="state.result.expert.name.split(' ')[0]"
           :expert-value="state.result.expert.score"
           :max="state.result.expert.maxScore"
           :your-value="state.result.score"

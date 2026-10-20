@@ -243,8 +243,6 @@ a.dq-row:hover, .dq-row--link:hover {
   margin: 0 0 18px;
   padding: 12px 16px 13px;
   background: rgba(243, 237, 225, 0.96);
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 1px solid var(--dq-line);
   border-radius: 2px;
   box-shadow: none;

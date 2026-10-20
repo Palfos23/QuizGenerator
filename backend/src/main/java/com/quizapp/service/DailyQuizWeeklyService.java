@@ -96,8 +96,7 @@ public class DailyQuizWeeklyService {
         }
         DailyQuizWeeklyDto dto = new DailyQuizWeeklyDto(current, past);
         if (!expertThisWeek.isEmpty()) {
-            String name = expertThisWeek.stream().max(Comparator.comparing(DailyQuizResult::getQuizDate)).get().getPlayerName();
-            dto.setExpert(new DailyQuizWeeklyDto.ExpertWeek(name,
+            dto.setExpert(new DailyQuizWeeklyDto.ExpertWeek(
                     expertThisWeek.stream().mapToInt(DailyQuizResult::getScore).sum(), expertThisWeek.size()));
         }
         return dto;

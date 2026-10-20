@@ -4,7 +4,26 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="" />
+    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/dto/DailyQuizScoreboardDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/dto/DailyQuizScoreboardDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/dto/DailyQuizWeeklyDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/dto/DailyQuizWeeklyDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/service/DailyQuizService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/service/DailyQuizService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/service/DailyQuizWeeklyService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/quizapp/service/DailyQuizWeeklyService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/quizapp/service/DailyQuizServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/quizapp/service/DailyQuizServiceTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/quizapp/service/DailyQuizWeeklyTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/quizapp/service/DailyQuizWeeklyTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/quizapp/service/ScoreboardJsonTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/quizapp/service/ScoreboardJsonTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-BGI2wuZs.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-BwoBEr88.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/dist/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/DailyQuizScoreboardModal.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/DailyQuizScoreboardModal.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/DailyQuizWeeklyPanel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/DailyQuizWeeklyPanel.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ExpertCard.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ExpertCard.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/styles/daily-quiz.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/styles/daily-quiz.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/styles/paper.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/styles/paper.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/DailyQuizPlayView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/DailyQuizPlayView.vue" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

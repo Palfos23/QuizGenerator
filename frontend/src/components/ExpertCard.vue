@@ -16,7 +16,6 @@ import { computed } from 'vue'
 // `max` is the most points available for a single day (null for a week's running total, where the notes
 // say how many days each side has played).
 const props = defineProps({
-  name: { type: String, required: true },
   expertValue: { type: Number, required: true },
   max: { type: Number, default: null },
   yourValue: { type: Number, default: null },
@@ -46,7 +45,7 @@ function part(value, note) {
 }
 
 const detail = computed(() => {
-  const expert = `${props.name}: ${part(props.expertValue, props.expertNote)}`
+  const expert = `The Expert: ${part(props.expertValue, props.expertNote)}`
   return hasYou.value ? `${expert}  ·  You: ${part(props.yourValue, props.yourNote)}` : expert
 })
 </script>

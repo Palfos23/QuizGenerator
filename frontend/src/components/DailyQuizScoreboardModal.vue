@@ -7,7 +7,6 @@
       <!-- The expert (the question author) isn't ranked below - they're the benchmark to beat. -->
       <ExpertCard
         v-if="!loading && data && data.expert"
-        :name="displayName(data.expert.name)"
         :expert-value="data.expert.score"
         :max="data.expert.maxScore"
         :your-value="yourEntry ? yourEntry.score : null"
@@ -31,18 +30,32 @@
         </p>
 
         <div class="dq-board">
-          <div v-for="(s, i) in shown" :key="s.userName + i" class="dq-board-row" :class="{ 'is-you': s.isYou }">
-            <span class="dq-rank" :class="i < 3 ? `dq-rank--${i + 1}` : ''">{{ i + 1 }}</span>
-            <div style="min-width:0;">
-              <div class="dq-board-name">
-                {{ displayName(s.userName) }}<small v-if="s.isYou">That's you</small>
+          <template v-for="row in rows" :key="row.kind === 'expert' ? 'expert' : row.entry.userName + row.rank">
+            <!-- The expert sits in the list at their real score, but isn't ranked: a star instead of a number. -->
+            <div v-if="row.kind === 'expert'" class="dq-board-row dq-board-row--expert">
+              <span class="dq-rank dq-rank--star" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3z" /></svg>
+              </span>
+              <div style="min-width:0;">
+                <div class="dq-board-name">The Expert<small>Not ranked</small></div>
+                <div class="dq-board-bar"><i :style="{ width: barWidth(row) }"></i></div>
               </div>
-              <div class="dq-board-bar"><i :style="{ width: barWidth(s) }"></i></div>
+              <div class="dq-board-score">{{ row.score }}<small> / {{ row.maxScore }}</small></div>
             </div>
-            <div class="dq-board-score">{{ s.score }}<small> / {{ s.maxScore }}</small></div>
-          </div>
 
-          <template v-if="yourRank && yourRank.rank > shown.length">
+            <div v-else class="dq-board-row" :class="{ 'is-you': row.entry.isYou }">
+              <span class="dq-rank" :class="row.rank <= 3 ? `dq-rank--${row.rank}` : ''">{{ row.rank }}</span>
+              <div style="min-width:0;">
+                <div class="dq-board-name">
+                  {{ displayName(row.entry.userName) }}<small v-if="row.entry.isYou">That's you</small>
+                </div>
+                <div class="dq-board-bar"><i :style="{ width: barWidth(row.entry) }"></i></div>
+              </div>
+              <div class="dq-board-score">{{ row.entry.score }}<small> / {{ row.entry.maxScore }}</small></div>
+            </div>
+          </template>
+
+          <template v-if="yourRank && yourRank.rank > shownPlayers.length">
             <div class="dq-board-gap">···</div>
             <div class="dq-board-row is-you">
               <span class="dq-rank">{{ yourRank.rank }}</span>
@@ -94,7 +107,21 @@ const emit = defineEmits(['close', 'update:preference'])
 useEscapeKey(() => emit('close'))
 
 const entries = computed(() => props.data?.entries || [])
-const shown = computed(() => (props.compact ? entries.value.slice(0, 5) : entries.value))
+const shownPlayers = computed(() => (props.compact ? entries.value.slice(0, 5) : entries.value))
+
+// What the list shows: the players in rank order, with the expert slotted in at their real score (after
+// everyone who scored at least as much, before the first who scored less). Not numbered or counted - just
+// there, so you can see exactly who is above and below them.
+const rows = computed(() => {
+  const list = shownPlayers.value.map((entry, i) => ({ kind: 'player', entry, rank: i + 1 }))
+  const expert = props.data?.expert
+  if (!expert) return list
+  const expertRow = { kind: 'expert', score: expert.score, maxScore: expert.maxScore }
+  const at = list.findIndex(r => r.entry.score < expert.score)
+  if (at === -1) list.push(expertRow)
+  else list.splice(at, 0, expertRow)
+  return list
+})
 const yourRank = computed(() => {
   if (!props.compact) return null
   const idx = entries.value.findIndex(s => s.isYou)
@@ -111,10 +138,7 @@ const yourDelta = computed(() => {
 const yourEntry = computed(() => entries.value.find(s => s.isYou) || null)
 
 // Compact boards show first names, with a surname initial added where two people share one.
-const shortName = computed(() => shortNames([
-  ...entries.value.map(e => e.userName),
-  props.data?.expert?.name
-]))
+const shortName = computed(() => shortNames(entries.value.map(e => e.userName)))
 
 function displayName(name) {
   return props.compact ? shortName.value(name) : name

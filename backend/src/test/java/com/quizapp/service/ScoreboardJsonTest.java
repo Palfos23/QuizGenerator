@@ -33,4 +33,14 @@ class ScoreboardJsonTest {
             assertThat(entry.has("you")).as("must not also leak the default name").isFalse();
         }
     }
+
+    // Players only ever see "The Expert" - the real person behind it must never be in what's sent over the wire.
+    @Test
+    void theExpertIsSentWithoutAName() throws Exception {
+        JsonNode day = mapper.valueToTree(new com.quizapp.dto.DailyQuizScoreboardDto.ExpertScore(14, 16));
+        JsonNode week = mapper.valueToTree(new com.quizapp.dto.DailyQuizWeeklyDto.ExpertWeek(44, 3));
+
+        assertThat(day.fieldNames()).toIterable().containsExactlyInAnyOrder("score", "maxScore");
+        assertThat(week.fieldNames()).toIterable().containsExactlyInAnyOrder("total", "daysPlayed");
+    }
 }

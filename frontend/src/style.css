@@ -171,8 +171,6 @@ input[type="radio"] {
   gap: 4px;
   padding: 14px 32px;
   background: rgba(243, 237, 225, 0.96);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -1950,8 +1948,7 @@ mark {
   justify-content: center;
   text-align: center;
   padding: 0 24px;
-  background: rgba(27, 26, 23, 0.55);
-  backdrop-filter: blur(4px);
+  background: rgba(243, 237, 225, 0.94);
 }
 
 .tension-choice-overlay {
@@ -2327,7 +2324,6 @@ table.scoreboard-table {
   position: fixed;
   inset: 0;
   background: rgba(27, 26, 23, 0.55);
-  backdrop-filter: blur(6px);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -3110,8 +3106,7 @@ table.scoreboard-table {
   inset: 0;
   z-index: 200;
   padding: 0 24px;
-  background: rgba(27, 26, 23, 0.55);
-  backdrop-filter: blur(4px);
+  background: rgba(243, 237, 225, 0.94);
 }
 .loading-state-full .spinner {
   width: 32px;
@@ -3295,8 +3290,6 @@ table.scoreboard-table {
     left: 0;
     right: 0;
     background: rgba(243, 237, 225, 0.96);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
     border-top: 1px solid var(--border);
     padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
     z-index: 40;
@@ -4011,13 +4004,13 @@ table.scoreboard-table {
   background:
     repeating-linear-gradient(
       0deg,
-      rgba(27, 26, 23, 0.035) 0,
-      rgba(27, 26, 23, 0.035) 34px,
+      rgba(27, 26, 23, 0.045) 0,
+      rgba(27, 26, 23, 0.045) 34px,
       transparent 34px,
       transparent 68px
     ),
-    linear-gradient(180deg, #0f3d1f 0%, #164a28 50%, #0f3d1f 100%);
-  border: 1px solid rgba(27, 26, 23, 0.12);
+    linear-gradient(180deg, #86ad8c 0%, #7da585 50%, #86ad8c 100%);
+  border: 2px solid var(--rule);
 }
 /* Full-pitch markings (rendered by the PitchMarkings.vue component) - purely
    decorative, so none of it needs to line up with any particular row of a
@@ -4036,7 +4029,7 @@ table.scoreboard-table {
 .pitch-boundary {
   position: absolute;
   inset: 4%;
-  border: 2px solid rgba(27, 26, 23, 0.2);
+  border: 2px solid rgba(251, 247, 239, 0.8);
   border-radius: 3px;
 }
 .pitch-halfway-line {
@@ -4045,7 +4038,7 @@ table.scoreboard-table {
   right: 4%;
   top: 50%;
   height: 2px;
-  background: rgba(27, 26, 23, 0.2);
+  background: rgba(251, 247, 239, 0.8);
   transform: translateY(-1px);
 }
 .pitch-center-circle {
@@ -4054,7 +4047,7 @@ table.scoreboard-table {
   top: 50%;
   width: 22%;
   aspect-ratio: 1 / 1;
-  border: 2px solid rgba(27, 26, 23, 0.2);
+  border: 2px solid rgba(251, 247, 239, 0.8);
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
@@ -4065,7 +4058,7 @@ table.scoreboard-table {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(27, 26, 23, 0.35);
+  background: rgba(251, 247, 239, 0.9);
   transform: translate(-50%, -50%);
 }
 /* Penalty area + six-yard box + spot + arc, mirrored at both ends - one end
@@ -4076,7 +4069,7 @@ table.scoreboard-table {
   left: 50%;
   width: 64%;
   height: 15%;
-  border: 2px solid rgba(27, 26, 23, 0.2);
+  border: 2px solid rgba(251, 247, 239, 0.8);
   transform: translateX(-50%);
 }
 .pitch-penalty-box.bottom { bottom: 4%; border-bottom: none; }
@@ -4086,7 +4079,7 @@ table.scoreboard-table {
   left: 50%;
   width: 32%;
   height: 6%;
-  border: 2px solid rgba(27, 26, 23, 0.2);
+  border: 2px solid rgba(251, 247, 239, 0.8);
   transform: translateX(-50%);
 }
 .pitch-six-yard-box.bottom { bottom: 4%; border-bottom: none; }
@@ -4097,7 +4090,7 @@ table.scoreboard-table {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(27, 26, 23, 0.35);
+  background: rgba(251, 247, 239, 0.9);
   transform: translateX(-50%);
 }
 .pitch-penalty-spot.bottom { bottom: calc(4% + 11%); }
@@ -4110,7 +4103,7 @@ table.scoreboard-table {
   left: 50%;
   width: 26%;
   aspect-ratio: 2.2 / 1;
-  border: 2px solid rgba(27, 26, 23, 0.2);
+  border: 2px solid rgba(251, 247, 239, 0.8);
   transform: translateX(-50%);
 }
 .pitch-penalty-arc.bottom {
@@ -4139,7 +4132,7 @@ table.scoreboard-table {
   position: absolute;
   width: 32px;
   height: 32px;
-  border: 2px solid rgba(27, 26, 23, 0.2);
+  border: 2px solid rgba(251, 247, 239, 0.8);
   border-radius: 50%;
 }
 .pitch-corner-arc-circle.top-left { top: -16px; left: -16px; }

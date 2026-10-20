@@ -401,7 +401,6 @@ class DailyQuizServiceTest {
                     .contains(player.getName()).doesNotContain(expert.getName());
             assertThat(board.getAverageScore()).as("the expert doesn't skew the average").isLessThan(14);
             assertThat(board.getExpert()).isNotNull();
-            assertThat(board.getExpert().getName()).isEqualTo(expert.getName());
             assertThat(board.getExpert().getScore()).isEqualTo(14);
             assertThat(board.getExpert().getMaxScore()).isPositive();
 
