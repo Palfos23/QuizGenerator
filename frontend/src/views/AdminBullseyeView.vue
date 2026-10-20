@@ -39,9 +39,9 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ q.title }}
-              <span v-if="q.excludedFromBullseye" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Bullseye</span>
-              <span v-if="q.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
-              <span v-if="q.canExpire" class="tag" style="background:rgba(242,183,5,0.15); color:var(--gold); margin-left:6px;">Can expire</span>
+              <span v-if="q.excludedFromBullseye" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">Not in Bullseye</span>
+              <span v-if="q.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
+              <span v-if="q.canExpire" class="tag" style="background:rgba(216, 67, 43, 0.15); color:var(--gold); margin-left:6px;">Can expire</span>
             </div>
             <div class="saved-quiz-meta">
               {{ sportLabel(q.sport) }} · {{ q.entryCount }} answers · "{{ q.groupDigits === false ? q.targetValue : formatNumber(q.targetValue) }} {{ q.statLabel }}"
@@ -184,7 +184,7 @@
 
         <div
           v-if="showFiveOhOnePicker"
-          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:12px 14px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.06);"
+          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:12px 14px; border:1px solid var(--border); border-radius: 2px; background:rgba(27, 26, 23, 0.06);"
         >
           <span v-if="loadingFiveOhOneCategories" style="color:var(--text-dim);">Loading 501 quizzes…</span>
           <span v-else-if="!fiveOhOneCategories.length" style="color:var(--text-dim);">No 501 quizzes exist yet.</span>
@@ -208,7 +208,7 @@
           <button class="btn btn-secondary btn-sm" @click="showFiveOhOnePicker = false">Cancel</button>
         </div>
 
-        <div v-if="csvUnmatchedNames.length" style="background:rgba(242,183,5,0.1); border:1px solid rgba(242,183,5,0.3); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:10px;">
+        <div v-if="csvUnmatchedNames.length" style="background:rgba(216, 67, 43, 0.1); border:1px solid rgba(216, 67, 43, 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:10px;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
             <strong style="color:var(--gold);">
               {{ csvUnmatchedNames.length }} name{{ csvUnmatchedNames.length > 1 ? 's' : '' }} weren't found in "{{ form.sport }}"

@@ -52,7 +52,7 @@ const rows = [
 .xp-match { font-size: 0.8rem; color: var(--text-dim); }
 .xp-lives { display: inline-flex; gap: 3px; }
 .xp-heart { color: var(--coral); font-size: 0.8rem; }
-.xp-heart.lost { color: rgba(255, 77, 109, 0.3); }
+.xp-heart.lost { color: rgba(179, 38, 30, 0.3); }
 
 .xp-pitch {
   display: flex;
@@ -61,11 +61,11 @@ const rows = [
   max-width: 440px;
   margin: 0 auto;
   padding: 16px 12px;
-  border-radius: var(--radius-md);
+  border-radius: 2px;
   background:
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.07) 0 22px, transparent 22px 44px),
+    repeating-linear-gradient(0deg, rgba(27, 26, 23, 0.07) 0 22px, transparent 22px 44px),
     linear-gradient(180deg, #123f22, #0e3319);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(27, 26, 23, 0.08);
 }
 .xp-row {
   display: flex;
@@ -76,8 +76,8 @@ const rows = [
   width: 30px;
   height: 32px;
   border-radius: 7px 7px 5px 5px;
-  background: rgba(15, 23, 20, 0.5);
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(27, 26, 23, 0.5);
+  border: 2px solid rgba(27, 26, 23, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,7 +89,7 @@ const rows = [
 .xp-shirt.found {
   background: var(--teal);
   border-color: var(--teal);
-  color: #05261a;
+  color: #fbf7ef;
 }
 .xp-tick { font-size: 0.7rem; }
 .xp-pname {
@@ -99,7 +99,7 @@ const rows = [
   transform: translateX(-50%);
   font-size: 0.56rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(27, 26, 23, 0.9);
   white-space: nowrap;
 }
 .xp-row:first-child .xp-pname { bottom: auto; top: -13px; }

@@ -10,7 +10,7 @@
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
-      <div v-if="savedPassAndPlay" class="banner" style="background:rgba(242,183,5,0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div v-if="savedPassAndPlay" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <span>You have a shootout in progress.</span>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Resume</button>
@@ -42,7 +42,7 @@
 
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>Not sure how it works? See an example</summary>
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.06);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgba(27, 26, 23, 0.06);">
           <p style="margin-top:0;">
             A shootout board shows every kick in the real order it happened, split by side - a small badge already
             shows whether each one was <strong style="color:var(--teal);">scored</strong> or

@@ -172,11 +172,11 @@ function onPointerCancel(event) {
   overflow: hidden;
   max-width: 100%;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   cursor: crosshair;
   touch-action: none; /* the page must not scroll or zoom while the map is being pinched / dragged */
   user-select: none;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(27, 26, 23, 0.04);
 }
 .bday-map.is-dragging { cursor: grabbing; }
 
@@ -205,9 +205,9 @@ function onPointerCancel(event) {
 .bday-map-controls button {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(30, 37, 69, 0.85);
+  border-radius: 2px;
+  border: 1px solid rgba(27, 26, 23, 0.3);
+  background: rgba(243, 237, 225, 0.96);
   color: var(--text);
   font-size: 1.2rem;
   font-weight: 700;

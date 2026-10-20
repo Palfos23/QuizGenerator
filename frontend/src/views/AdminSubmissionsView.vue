@@ -102,8 +102,8 @@ async function confirmReject() {
 }
 
 function statusStyle(status) {
-  if (status === 'APPROVED') return { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }
-  if (status === 'REJECTED') return { background: 'rgba(255,77,109,0.15)', color: 'var(--coral)' }
-  return { background: 'rgba(242,183,5,0.15)', color: 'var(--gold)' }
+  if (status === 'APPROVED') return { background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }
+  if (status === 'REJECTED') return { background: 'rgba(179, 38, 30, 0.15)', color: 'var(--coral)' }
+  return { background: 'rgba(216, 67, 43, 0.15)', color: 'var(--gold)' }
 }
 </script>

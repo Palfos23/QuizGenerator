@@ -36,9 +36,9 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ l.title }}
-              <span v-if="l.excludedFromBattle" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in XI Battle</span>
-              <span v-if="l.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
-              <span v-if="l.canExpire" class="tag" style="background:rgba(255,193,7,0.15); color:#ffc107; margin-left:6px;">Can expire</span>
+              <span v-if="l.excludedFromBattle" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">Not in XI Battle</span>
+              <span v-if="l.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
+              <span v-if="l.canExpire" class="tag" style="background:rgba(154, 106, 0, 0.15); color:#8a5a00; margin-left:6px;">Can expire</span>
             </div>
             <div class="saved-quiz-meta">
               {{ l.teamName }} vs {{ l.opponentName }}

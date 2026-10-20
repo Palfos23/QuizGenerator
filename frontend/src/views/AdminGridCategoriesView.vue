@@ -32,14 +32,14 @@
               type="text"
               v-model="editingName"
               class="saved-quiz-title"
-              style="width:100%; background:transparent; border:1px solid var(--border); border-radius:6px; padding:4px 8px; margin-bottom:6px;"
+              style="width:100%; background:transparent; border:1px solid var(--border); border-radius: 2px; padding:4px 8px; margin-bottom:6px;"
               @keyup.esc="editingId = null"
             />
             <input
               type="text"
               v-model="editingGroupLabel"
               placeholder="Grouping word, e.g. Team"
-              style="width:100%; background:transparent; border:1px solid var(--border); border-radius:6px; padding:4px 8px; font-size:0.85rem;"
+              style="width:100%; background:transparent; border:1px solid var(--border); border-radius: 2px; padding:4px 8px; font-size:0.85rem;"
               @keyup.enter="confirmRename(c)"
               @keyup.esc="editingId = null"
             />

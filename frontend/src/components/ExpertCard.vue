@@ -58,18 +58,18 @@ const detail = computed(() => {
   gap: 10px;
   margin: 0 0 14px;
   padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(139, 124, 255, 0.14);
-  border: 1px solid rgba(181, 169, 255, 0.3);
+  border-radius: 2px;
+  background: var(--ink-raised);
+  border: 2px solid var(--rule);
   text-align: left;
 }
-.expert-card.is-ahead { background: rgba(85, 232, 172, 0.12); border-color: rgba(85, 232, 172, 0.4); }
+.expert-card.is-ahead { border-color: var(--teal); background: rgba(31, 122, 80, 0.08); }
 
-.expert-card-star { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: #b5a9ff; }
-.expert-card.is-ahead .expert-card-star { color: #55e8ac; }
+.expert-card-star { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: var(--gold); }
+.expert-card.is-ahead .expert-card-star { color: var(--teal); }
 
 .expert-card-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.expert-card-text strong { font-size: 0.95rem; line-height: 1.3; }
-.expert-card.is-ahead .expert-card-text strong { color: #55e8ac; }
+.expert-card-text strong { font-size: 0.95rem; line-height: 1.3; font-family: var(--font-display); font-weight: 600; }
+.expert-card.is-ahead .expert-card-text strong { color: var(--teal); }
 .expert-card-text span { color: var(--text-dim); font-size: 0.85rem; line-height: 1.4; white-space: pre-wrap; }
 </style>

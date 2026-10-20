@@ -6,19 +6,19 @@
 /* ---------- Dusk accents (the base palette itself lives in style.css) ---------- */
 
 :root {
-  --dq-card: rgba(255, 255, 255, 0.085);
-  --dq-card-hover: rgba(255, 255, 255, 0.125);
-  --dq-line: rgba(255, 255, 255, 0.17);
-  --dq-shadow: 0 10px 28px rgba(9, 13, 40, 0.30);
+  --dq-card: rgba(27, 26, 23, 0.085);
+  --dq-card-hover: rgba(27, 26, 23, 0.125);
+  --dq-line: rgba(27, 26, 23, 0.17);
+  --dq-shadow: none;
 
-  --dq-ok: #55e8ac;
-  --dq-ok-bg: rgba(85, 232, 172, 0.16);
-  --dq-bad: #ff7893;
-  --dq-bad-bg: rgba(255, 120, 147, 0.16);
-  --dq-wait: #ffd45c;
-  --dq-wait-bg: rgba(255, 212, 92, 0.17);
-  --dq-year: #b5a9ff;
-  --dq-year-bg: rgba(139, 124, 255, 0.24);
+  --dq-ok: #1f7a50;
+  --dq-ok-bg: rgba(31, 122, 80, 0.16);
+  --dq-bad: #a31f17;
+  --dq-bad-bg: rgba(179, 38, 30, 0.16);
+  --dq-wait: #8a5a00;
+  --dq-wait-bg: rgba(154, 106, 0, 0.17);
+  --dq-year: #3d4f9f;
+  --dq-year-bg: rgba(61, 79, 159, 0.24);
 }
 
 /* ---------- Page frame ---------- */
@@ -47,7 +47,7 @@
   font-size: 0.9rem;
   transition: background 0.15s ease, color 0.15s ease;
 }
-.dq-back:hover { color: var(--text); background: rgba(255, 255, 255, 0.1); }
+.dq-back:hover { color: var(--text); background: rgba(27, 26, 23, 0.1); }
 .dq-back svg { width: 18px; height: 18px; }
 
 .dq-chip-btn {
@@ -57,7 +57,7 @@
   padding: 8px 15px;
   border-radius: 999px;
   border: 1px solid var(--dq-line);
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(27, 26, 23, 0.09);
   color: var(--text);
   font-family: var(--font-body);
   font-weight: 600;
@@ -66,7 +66,7 @@
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
 }
-.dq-chip-btn:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.4); }
+.dq-chip-btn:hover { background: rgba(27, 26, 23, 0.16); border-color: rgba(27, 26, 23, 0.4); }
 .dq-chip-btn svg { width: 16px; height: 16px; }
 
 .dq-hero { margin-bottom: 24px; }
@@ -109,7 +109,7 @@
 .dq-card {
   background: var(--dq-card);
   border: 1px solid var(--dq-line);
-  border-radius: 20px;
+  border-radius: 2px;
   box-shadow: var(--dq-shadow);
   padding: 22px;
 }
@@ -124,7 +124,7 @@
   font-size: 0.78rem;
   font-weight: 650;
   letter-spacing: 0.01em;
-  background: rgba(255, 255, 255, 0.11);
+  background: rgba(27, 26, 23, 0.11);
   color: var(--text);
   white-space: nowrap;
 }
@@ -133,7 +133,7 @@
 .dq-pill--bad { background: var(--dq-bad-bg); color: var(--dq-bad); }
 .dq-pill--wait { background: var(--dq-wait-bg); color: var(--dq-wait); }
 .dq-pill--year { background: var(--dq-year-bg); color: var(--dq-year); }
-.dq-pill--gold { background: var(--gold-soft); color: #ffd45c; }
+.dq-pill--gold { background: var(--gold-soft); color: #8a5a00; }
 
 .dq-empty {
   text-align: center;
@@ -160,8 +160,8 @@
   overflow: hidden;
   padding: 26px;
   background:
-    radial-gradient(420px circle at 100% 0%, rgba(242, 183, 5, 0.22), transparent 60%),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.07));
+    radial-gradient(420px circle at 100% 0%, rgba(216, 67, 43, 0.22), transparent 60%),
+    linear-gradient(160deg, rgba(27, 26, 23, 0.13), rgba(27, 26, 23, 0.07));
 }
 .dq-today-date {
   font-family: var(--font-display);
@@ -186,14 +186,14 @@
   padding: 14px 16px;
   background: var(--dq-card);
   border: 1px solid var(--dq-line);
-  border-radius: 16px;
+  border-radius: 2px;
   color: inherit;
   text-decoration: none;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
 }
 a.dq-row:hover, .dq-row--link:hover {
   background: var(--dq-card-hover);
-  border-color: rgba(255, 255, 255, 0.34);
+  border-color: rgba(27, 26, 23, 0.34);
   transform: translateY(-1px);
 }
 .dq-row-main { flex: 1; min-width: 0; }
@@ -209,7 +209,7 @@ a.dq-row:hover, .dq-row--link:hover {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8b7cff, #5b8cff);
+  background: linear-gradient(135deg, #3d4f9f, #5b8cff);
   color: #fff;
   font-family: var(--font-display);
   font-weight: 700;
@@ -242,12 +242,12 @@ a.dq-row:hover, .dq-row--link:hover {
   z-index: 10;
   margin: 0 0 18px;
   padding: 12px 16px 13px;
-  background: rgba(40, 50, 90, 0.82);
+  background: rgba(243, 237, 225, 0.96);
   backdrop-filter: blur(14px) saturate(150%);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 1px solid var(--dq-line);
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(9, 13, 40, 0.28);
+  border-radius: 2px;
+  box-shadow: none;
 }
 .dq-progress-label {
   display: flex;
@@ -262,7 +262,7 @@ a.dq-row:hover, .dq-row--link:hover {
 .dq-progress-track {
   height: 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.13);
+  background: rgba(27, 26, 23, 0.13);
   overflow: hidden;
 }
 .dq-progress-fill {
@@ -278,12 +278,12 @@ a.dq-row:hover, .dq-row--link:hover {
   padding: 20px 20px 22px;
   background: var(--dq-card);
   border: 1px solid var(--dq-line);
-  border-radius: 20px;
+  border-radius: 2px;
   box-shadow: var(--dq-shadow);
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 .dq-q:focus-within { border-color: var(--gold); background: var(--dq-card-hover); }
-.dq-q.is-year { border-color: rgba(181, 169, 255, 0.55); }
+.dq-q.is-year { border-color: rgba(61, 79, 159, 0.55); }
 .dq-q.is-year:focus-within { border-color: var(--dq-year); }
 
 .dq-q-head { display: flex; gap: 14px; align-items: flex-start; }
@@ -294,7 +294,7 @@ a.dq-row:hover, .dq-row--link:hover {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.13);
+  background: rgba(27, 26, 23, 0.13);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.95rem;
@@ -312,11 +312,11 @@ a.dq-row:hover, .dq-row--link:hover {
   max-width: 100%;
   max-height: 280px;
   margin: 16px auto 4px;
-  border-radius: 14px;
+  border-radius: 2px;
   background: #fff;
   padding: 8px;
   object-fit: contain;
-  box-shadow: 0 6px 20px rgba(8, 12, 36, 0.3);
+  box-shadow: none;
 }
 .dq-photo--small { max-height: 130px; margin: 12px 0 4px; padding: 6px; }
 
@@ -325,9 +325,9 @@ a.dq-row:hover, .dq-row--link:hover {
   width: 100%;
   margin-top: 16px;
   padding: 14px 16px;
-  border-radius: 14px;
+  border-radius: 2px;
   border: 1.5px solid var(--dq-line);
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(27, 26, 23, 0.10);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 1.02rem;
@@ -337,13 +337,13 @@ a.dq-row:hover, .dq-row--link:hover {
 .dq-input:focus {
   outline: none;
   border-color: var(--gold);
-  background: rgba(255, 255, 255, 0.14);
-  box-shadow: 0 0 0 4px rgba(242, 183, 5, 0.18);
+  background: rgba(27, 26, 23, 0.14);
+  box-shadow: 0 0 0 4px rgba(216, 67, 43, 0.18);
 }
-.dq-q.is-year .dq-input:focus { border-color: var(--dq-year); box-shadow: 0 0 0 4px rgba(139, 124, 255, 0.25); }
+.dq-q.is-year .dq-input:focus { border-color: var(--dq-year); box-shadow: 0 0 0 4px rgba(61, 79, 159, 0.25); }
 
 .dq-submit { margin: 26px 0 8px; }
-.dq-submit .btn { width: 100%; min-height: 54px; font-size: 1rem; border-radius: 14px; }
+.dq-submit .btn { width: 100%; min-height: 54px; font-size: 1rem; border-radius: 2px; }
 .dq-save-btn { margin-top: 10px; }
 .dq-submit .btn.dq-save-btn { min-height: 48px; font-size: 0.95rem; }
 .dq-save-chip {
@@ -354,16 +354,16 @@ a.dq-row:hover, .dq-row--link:hover {
   padding: 5px 12px;
   border-radius: 999px;
   border: 1px solid var(--dq-line);
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(27, 26, 23, 0.10);
   color: var(--text);
   font-weight: 650;
   font-size: 0.8rem;
   cursor: pointer;
 }
 .dq-save-chip svg { width: 14px; height: 14px; }
-.dq-save-chip:hover:not(:disabled) { background: rgba(255, 255, 255, 0.18); }
+.dq-save-chip:hover:not(:disabled) { background: rgba(27, 26, 23, 0.18); }
 .dq-save-chip:disabled { cursor: default; opacity: 0.7; }
-.dq-save-chip.is-saved { color: var(--dq-ok); border-color: rgba(85, 232, 172, 0.45); background: var(--dq-ok-bg); opacity: 1; }
+.dq-save-chip.is-saved { color: var(--dq-ok); border-color: rgba(31, 122, 80, 0.45); background: var(--dq-ok-bg); opacity: 1; }
 .dq-submit-note { text-align: center; color: var(--text-dim); font-size: 0.85rem; margin-top: 10px; }
 
 /* ---------- Results ---------- */
@@ -375,17 +375,17 @@ a.dq-row:hover, .dq-row--link:hover {
   margin-bottom: 22px;
   padding: 26px;
   background:
-    radial-gradient(380px circle at 0% 0%, rgba(85, 232, 172, 0.20), transparent 60%),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.07));
+    radial-gradient(380px circle at 0% 0%, rgba(31, 122, 80, 0.20), transparent 60%),
+    linear-gradient(160deg, rgba(27, 26, 23, 0.13), rgba(27, 26, 23, 0.07));
 }
 .dq-score-hero--wait {
   background:
-    radial-gradient(380px circle at 0% 0%, rgba(255, 212, 92, 0.20), transparent 60%),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.07));
+    radial-gradient(380px circle at 0% 0%, rgba(154, 106, 0, 0.20), transparent 60%),
+    linear-gradient(160deg, rgba(27, 26, 23, 0.13), rgba(27, 26, 23, 0.07));
 }
 .dq-ring { position: relative; width: 132px; height: 132px; flex-shrink: 0; }
 .dq-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.dq-ring-track { fill: none; stroke: rgba(255, 255, 255, 0.16); stroke-width: 10; }
+.dq-ring-track { fill: none; stroke: rgba(27, 26, 23, 0.16); stroke-width: 10; }
 .dq-ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; }
 .dq-ring-label {
   position: absolute;
@@ -419,7 +419,7 @@ a.dq-row:hover, .dq-row--link:hover {
   padding: 16px 18px 16px 20px;
   background: var(--dq-card);
   border: 1px solid var(--dq-line);
-  border-radius: 18px;
+  border-radius: 2px;
   overflow: hidden;
 }
 .dq-answer::before {
@@ -460,12 +460,12 @@ a.dq-row:hover, .dq-row--link:hover {
   align-items: center;
   gap: 12px;
   padding: 11px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.07);
 }
 .dq-board-row.is-you {
-  background: rgba(242, 183, 5, 0.18);
-  box-shadow: inset 0 0 0 1.5px rgba(242, 183, 5, 0.65);
+  background: rgba(216, 67, 43, 0.18);
+  box-shadow: inset 0 0 0 1.5px rgba(216, 67, 43, 0.65);
 }
 .dq-rank {
   display: grid;
@@ -473,17 +473,17 @@ a.dq-row:hover, .dq-row--link:hover {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(27, 26, 23, 0.12);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.88rem;
 }
-.dq-rank--1 { background: linear-gradient(135deg, #ffe27a, #f2b705); color: #3a2c00; }
-.dq-rank--2 { background: linear-gradient(135deg, #f1f3fb, #b4bbd3); color: #2a3150; }
+.dq-rank--1 { background: linear-gradient(135deg, #d8432b, #d8432b); color: #fbf7ef; }
+.dq-rank--2 { background: linear-gradient(135deg, #1b1a17, #b4bbd3); color: #2a3150; }
 .dq-rank--3 { background: linear-gradient(135deg, #f0b98a, #c47d44); color: #3b1f08; }
 .dq-board-name { font-weight: 650; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dq-board-name small { display: block; font-weight: 500; color: var(--text-dim); font-size: 0.78rem; }
-.dq-board-bar { height: 5px; border-radius: 999px; background: rgba(255, 255, 255, 0.13); margin-top: 6px; overflow: hidden; }
+.dq-board-bar { height: 5px; border-radius: 999px; background: rgba(27, 26, 23, 0.13); margin-top: 6px; overflow: hidden; }
 .dq-board-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #ffce3d, var(--dq-ok)); }
 .dq-board-score { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; text-align: right; }
 .dq-board-score small { font-family: var(--font-body); font-weight: 500; font-size: 0.78rem; color: var(--text-dim); }
@@ -496,15 +496,15 @@ a.dq-row:hover, .dq-row--link:hover {
   gap: 8px;
   padding: 12px;
   margin-bottom: 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.08);
 }
 .dq-stat span { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--text-dim); }
 .dq-stat strong { font-family: var(--font-display); font-size: 1.35rem; }
 
 /* ---------- Modals ---------- */
 
-.dq-modal { max-width: 460px; padding: 26px; border-radius: 24px; }
+.dq-modal { max-width: 460px; padding: 26px; border-radius: 2px; }
 .dq-modal-title { margin: 0 0 4px; font-size: 1.35rem; letter-spacing: -0.015em; }
 .dq-modal-sub { margin: 0 0 18px; color: var(--text-dim); font-size: 0.92rem; }
 .dq-modal-icon {
@@ -526,10 +526,10 @@ a.dq-row:hover, .dq-row--link:hover {
   align-items: flex-start;
   margin-top: 14px;
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: 2px;
   font-size: 0.9rem;
   background: var(--dq-bad-bg);
-  color: #ffc0cd;
+  color: #a31f17;
 }
 
 /* iOS-style switch */
@@ -539,8 +539,8 @@ a.dq-row:hover, .dq-row--link:hover {
   gap: 12px;
   margin-top: 18px;
   padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.07);
   font-size: 0.92rem;
   color: var(--text-dim);
   cursor: pointer;
@@ -552,7 +552,7 @@ a.dq-row:hover, .dq-row--link:hover {
   width: 44px;
   height: 26px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(27, 26, 23, 0.22);
   transition: background 0.2s ease;
 }
 .dq-switch-track::after {
@@ -569,7 +569,7 @@ a.dq-row:hover, .dq-row--link:hover {
 }
 .dq-switch input:checked + .dq-switch-track { background: var(--dq-ok); }
 .dq-switch input:checked + .dq-switch-track::after { transform: translateX(18px); }
-.dq-switch input:focus-visible + .dq-switch-track { box-shadow: 0 0 0 3px rgba(242, 183, 5, 0.5); }
+.dq-switch input:focus-visible + .dq-switch-track { box-shadow: 0 0 0 3px rgba(216, 67, 43, 0.5); }
 
 /* ---------- Weekly winner panel ---------- */
 
@@ -580,9 +580,9 @@ a.dq-row:hover, .dq-row--link:hover {
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #ffe27a, #f2b705);
-  color: #3a2c00;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #d8432b, #d8432b);
+  color: #fbf7ef;
 }
 .dq-weekly-icon svg { width: 22px; height: 22px; }
 .dq-weekly-label {
@@ -599,14 +599,14 @@ a.dq-row:hover, .dq-row--link:hover {
   gap: 12px;
   padding: 12px 14px;
   margin-bottom: 8px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.07);
 }
 .dq-winner.is-latest {
-  background: linear-gradient(135deg, rgba(242, 183, 5, 0.22), rgba(242, 183, 5, 0.08));
-  box-shadow: inset 0 0 0 1.5px rgba(242, 183, 5, 0.5);
+  background: linear-gradient(135deg, rgba(216, 67, 43, 0.22), rgba(216, 67, 43, 0.08));
+  box-shadow: inset 0 0 0 1.5px rgba(216, 67, 43, 0.5);
 }
-.dq-winner-icon { width: 22px; height: 22px; color: #ffd45c; flex-shrink: 0; }
+.dq-winner-icon { width: 22px; height: 22px; color: #8a5a00; flex-shrink: 0; }
 .dq-winner-main { flex: 1; min-width: 0; }
 .dq-winner-name { font-weight: 700; }
 .dq-winner-meta { color: var(--text-dim); font-size: 0.84rem; margin-top: 1px; }
@@ -620,9 +620,9 @@ a.dq-row:hover, .dq-row--link:hover {
   padding: 18px 20px;
   background: var(--dq-card);
   border: 1px solid var(--dq-line);
-  border-radius: 18px;
+  border-radius: 2px;
 }
-.dq-review.is-wait { border-color: rgba(255, 212, 92, 0.6); box-shadow: 0 0 0 3px rgba(255, 212, 92, 0.10); }
+.dq-review.is-wait { border-color: rgba(154, 106, 0, 0.6); box-shadow: 0 0 0 3px rgba(154, 106, 0, 0.10); }
 .dq-review-top { display: flex; gap: 12px; align-items: flex-start; }
 .dq-review-top .dq-q-num { margin-top: 1px; }
 .dq-review-q { flex: 1; font-weight: 600; line-height: 1.4; }
@@ -634,14 +634,14 @@ a.dq-row:hover, .dq-row--link:hover {
 }
 .dq-compare-cell {
   padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.07);
   min-width: 0;
 }
 .dq-compare-cell span { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--text-dim); margin-bottom: 3px; }
 .dq-compare-cell b { font-weight: 650; overflow-wrap: anywhere; }
-.dq-compare-cell--theirs { box-shadow: inset 0 0 0 1.5px rgba(181, 169, 255, 0.5); }
-.dq-compare-cell--answer { box-shadow: inset 0 0 0 1.5px rgba(85, 232, 172, 0.45); }
+.dq-compare-cell--theirs { box-shadow: inset 0 0 0 1.5px rgba(61, 79, 159, 0.5); }
+.dq-compare-cell--answer { box-shadow: inset 0 0 0 1.5px rgba(31, 122, 80, 0.45); }
 
 .dq-review-foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
 .dq-review-foot .spacer { flex: 1; }
@@ -651,7 +651,7 @@ a.dq-row:hover, .dq-row--link:hover {
   display: inline-flex;
   padding: 3px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(27, 26, 23, 0.10);
   border: 1px solid var(--dq-line);
 }
 .dq-segment button {
@@ -669,7 +669,7 @@ a.dq-row:hover, .dq-row--link:hover {
   cursor: pointer;
 }
 .dq-segment button svg { width: 15px; height: 15px; }
-.dq-segment button:hover:not(.is-on):not(:disabled) { color: var(--text); background: rgba(255, 255, 255, 0.08); }
+.dq-segment button:hover:not(.is-on):not(:disabled) { color: var(--text); background: rgba(27, 26, 23, 0.08); }
 .dq-segment button:disabled { opacity: 0.55; cursor: not-allowed; }
 .dq-segment button.is-on.ok { background: var(--dq-ok); color: #06301f; }
 .dq-segment button.is-on.bad { background: var(--dq-bad); color: #3b0614; }
@@ -677,8 +677,8 @@ a.dq-row:hover, .dq-row--link:hover {
 /* How easy a question was: thin neutral bar + "78% got it right" - deliberately uncoloured, the verdict
    pill beside it already carries the colour */
 .dq-easy { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 0.82rem; color: var(--text-dim); }
-.dq-easy-track { flex: 0 0 76px; height: 5px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
-.dq-easy-track i { display: block; height: 100%; border-radius: 999px; background: rgba(255, 255, 255, 0.55); }
+.dq-easy-track { flex: 0 0 76px; height: 5px; border-radius: 999px; background: rgba(27, 26, 23, 0.12); overflow: hidden; }
+.dq-easy-track i { display: block; height: 100%; border-radius: 999px; background: rgba(27, 26, 23, 0.55); }
 .dq-easy-text b { color: var(--text); font-weight: 650; }
 
 /* Admin: a day's questions, editable in place */
@@ -689,8 +689,8 @@ a.dq-row:hover, .dq-row--link:hover {
   gap: 12px;
   align-items: flex-start;
   padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.07);
 }
 .dq-qrow .dq-q-num { margin-top: 1px; flex-shrink: 0; }
 .dq-qrow-body { flex: 1; min-width: 0; }
@@ -702,7 +702,7 @@ a.dq-row:hover, .dq-row--link:hover {
 /* ---------- Small screens ---------- */
 
 @media (max-width: 640px) {
-  .dq-card { padding: 18px; border-radius: 18px; }
+  .dq-card { padding: 18px; border-radius: 2px; }
   .dq-today { padding: 20px; }
   .dq-today-cta .btn { width: 100%; }
   .dq-q { padding: 16px 16px 18px; }

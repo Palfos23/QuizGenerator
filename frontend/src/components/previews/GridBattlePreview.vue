@@ -54,7 +54,7 @@ const tiles = [
 .gb-theme { font-size: 0.8rem; color: var(--text-dim); }
 .gb-lives { display: inline-flex; gap: 3px; }
 .gb-heart { color: var(--coral); font-size: 0.8rem; }
-.gb-heart.lost { color: rgba(255, 77, 109, 0.3); }
+.gb-heart.lost { color: rgba(179, 38, 30, 0.3); }
 
 .gb-grid {
   display: grid;
@@ -65,9 +65,9 @@ const tiles = [
 .gb-tile {
   position: relative;
   aspect-ratio: 1 / 1;
-  border-radius: 8px;
+  border-radius: 2px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -77,7 +77,7 @@ const tiles = [
 }
 .gb-tile.solved {
   border-color: var(--teal);
-  background: rgba(61, 220, 151, 0.1);
+  background: rgba(31, 122, 80, 0.1);
 }
 .gb-av {
   width: 30px;
@@ -104,7 +104,7 @@ const tiles = [
   font-family: var(--font-mono);
   font-size: 0.6rem;
   font-weight: 700;
-  color: #241c00;
+  color: #fbf7ef;
   background: var(--gold);
   padding: 1px 5px;
   border-radius: 4px;

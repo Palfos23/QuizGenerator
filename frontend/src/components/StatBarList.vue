@@ -44,18 +44,16 @@ const max = computed(() => Math.max(...props.items.map(i => i.count), 1))
   text-overflow: ellipsis;
 }
 .stat-barlist-track {
-  background: rgba(255,255,255,0.10);
-  border-radius: 999px;
+  background: rgba(27, 26, 23, 0.10);
+  border-radius: 0;
   height: 10px;
   overflow: hidden;
 }
 .stat-barlist-fill {
   height: 100%;
-  border-radius: 999px;
+  border-radius: 0;
   min-width: 2px;
   transition: width 0.4s ease;
-  /* the accent colour, brightened toward the right end */
-  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.22));
 }
 .stat-barlist-value {
   font-family: var(--font-mono);

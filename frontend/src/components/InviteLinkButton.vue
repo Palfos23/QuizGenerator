@@ -11,7 +11,7 @@
       <div class="modal" role="dialog" aria-modal="true" aria-label="QR code to join the room" style="text-align:center; max-width:280px;">
         <h2 style="margin-bottom:4px;">Scan to join</h2>
         <p class="page-subtitle" style="margin-bottom:16px;">Room code {{ roomCode }}</p>
-        <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR code to join the room" width="220" height="220" style="border-radius:8px; background:#fff; padding:8px;" />
+        <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR code to join the room" width="220" height="220" style="border-radius: 2px; background:#fff; padding:8px;" />
         <p v-else style="color:var(--text-dim); font-size:0.85rem;">Generating QR code…</p>
         <button type="button" class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="toggleQr">Close</button>
       </div>

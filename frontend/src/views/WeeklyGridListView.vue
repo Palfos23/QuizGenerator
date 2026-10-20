@@ -130,8 +130,8 @@ function statusLabel(g) {
 }
 
 function statusStyle(status) {
-  if (status === 'COMPLETED') return { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }
-  if (status === 'IN_PROGRESS') return { background: 'rgba(242,183,5,0.15)', color: 'var(--gold)' }
-  return { background: 'rgba(255,255,255,0.06)', color: 'var(--text-dim)' }
+  if (status === 'COMPLETED') return { background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }
+  if (status === 'IN_PROGRESS') return { background: 'rgba(216, 67, 43, 0.15)', color: 'var(--gold)' }
+  return { background: 'rgba(27, 26, 23, 0.06)', color: 'var(--text-dim)' }
 }
 </script>

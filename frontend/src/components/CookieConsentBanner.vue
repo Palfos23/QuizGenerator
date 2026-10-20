@@ -31,8 +31,8 @@ import cookieConsent from '../services/cookieConsent'
   flex-wrap: wrap;
   padding: 16px 24px;
   background: var(--ink-raised);
-  border-top: 1px solid var(--border);
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.35);
+  border-top: 2px solid var(--rule);
+  box-shadow: none;
 }
 .cookie-banner-text {
   margin: 0;

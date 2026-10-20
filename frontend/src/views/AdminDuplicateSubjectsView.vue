@@ -49,7 +49,7 @@
           <span class="tag" style="color:var(--coral); border-color:var(--coral);">{{ g.reason }}</span>
         </div>
         <div style="display:flex; gap:12px; flex-wrap:wrap; width:100%;">
-          <div v-for="a in g.athletes" :key="a.id" style="display:flex; align-items:center; gap:10px; border:1px solid var(--border); border-radius:8px; padding:8px 12px; flex:1; min-width:220px;">
+          <div v-for="a in g.athletes" :key="a.id" style="display:flex; align-items:center; gap:10px; border:1px solid var(--border); border-radius: 2px; padding:8px 12px; flex:1; min-width:220px;">
             <img v-if="a.photoUrl" :src="a.photoUrl" alt="" class="club-logo-thumb" />
             <div style="flex:1;">
               <div style="font-weight:600;">{{ a.name }}</div>

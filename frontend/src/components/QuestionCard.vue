@@ -7,7 +7,7 @@
         <span class="tag difficulty-tag" :style="{ background: difficultyColor(question.difficultyLevel), color: difficultyTextColor(question.difficultyLevel) }">
           {{ question.difficultyLevel }}/10
         </span>
-        <span v-for="name in (question.labelNames || [])" :key="name" class="tag" style="background:rgba(139,124,255,0.15); color:#8b7cff;">{{ name }}</span>
+        <span v-for="name in (question.labelNames || [])" :key="name" class="tag" style="background:rgba(61, 79, 159, 0.15); color:#3d4f9f;">{{ name }}</span>
       </div>
     </div>
 
@@ -17,7 +17,7 @@
       v-if="question.photoUrl"
       :src="question.photoUrl"
       alt=""
-      style="max-width:220px; max-height:220px; border-radius:8px; margin:8px 0; display:block;"
+      style="max-width:220px; max-height:220px; border-radius: 2px; margin:8px 0; display:block;"
       @error="$event.target.style.display = 'none'"
     />
 

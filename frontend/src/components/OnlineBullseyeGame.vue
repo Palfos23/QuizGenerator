@@ -32,7 +32,7 @@
             {{ swapping ? 'Finding another…' : '↻ Already had this one? Pick a different question' }}
           </button>
         </div>
-        <div v-if="state.answersSoFar && state.answersSoFar.length" style="max-width:420px; margin:16px auto 0; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 14px;">
+        <div v-if="state.answersSoFar && state.answersSoFar.length" style="max-width:420px; margin:16px auto 0; border:1px solid var(--border); border-radius: 2px; padding:10px 14px;">
           <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
             Answered so far this round
           </div>
@@ -123,7 +123,7 @@
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
       <button class="btn btn-secondary btn-sm no-print" @click="leave">← Leave game</button>
-      <span class="tag no-print" style="background:rgba(255,255,255,0.06); color:var(--text-dim);">Room: {{ roomCode }}</span>
+      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">Room: {{ roomCode }}</span>
     </div>
   </div>
 </template>

@@ -19,7 +19,7 @@
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
             <span v-if="p.connected === false && p.id !== yourParticipantId" class="tag offline">Disconnected</span>
-            <span v-else class="tag" :style="{ background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }">In room</span>
+            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">In room</span>
             <button
               v-if="isHost && !p.host && p.id !== yourParticipantId"
               class="btn btn-danger btn-sm"

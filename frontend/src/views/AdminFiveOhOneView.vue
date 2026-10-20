@@ -29,7 +29,7 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ c.title }}
-              <span v-if="c.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
+              <span v-if="c.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
               <span v-if="c.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Can expire</span>
             </div>
             <div class="saved-quiz-meta">{{ c.entryCount }} entries<span v-if="c.description"> · {{ c.description }}</span></div>
@@ -134,7 +134,7 @@
         Adds to (or updates) what's below, doesn't replace it.
       </p>
 
-      <div v-if="csvUnmatchedNames.length" style="background:rgba(242,183,5,0.1); border:1px solid rgba(242,183,5,0.3); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:14px;">
+      <div v-if="csvUnmatchedNames.length" style="background:rgba(216, 67, 43, 0.1); border:1px solid rgba(216, 67, 43, 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:14px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
           <strong style="color:var(--gold);">
             {{ csvUnmatchedNames.length }} name{{ csvUnmatchedNames.length > 1 ? 's' : '' }} weren't found in "{{ form.sport }}"
@@ -191,7 +191,7 @@
             <span
               v-if="e.athleteId"
               class="tag"
-              style="background:rgba(61,220,151,0.15); color:var(--teal); flex-shrink:0;"
+              style="background:rgba(31, 122, 80, 0.15); color:var(--teal); flex-shrink:0;"
               title="Linked to a subject"
             >✓ Subject</span>
             <input

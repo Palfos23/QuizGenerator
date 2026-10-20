@@ -1,0 +1,243 @@
+/* =====================================================================
+   "Paper and ink" - the site's look, loaded after everything else so it wins.
+   Cream page, black ink, one vermillion accent, hard 2px rules instead of glass and glow.
+   The colour tokens live in style.css :root; this file is the shapes: flat surfaces, square-ish
+   corners, serif headlines, ink buttons with a hard accent shadow.
+   ===================================================================== */
+
+:root {
+  --line: rgba(27, 26, 23, 0.55); /* hairline-but-visible rules between dense rows */
+}
+
+body { background: var(--ink); }
+
+/* ---------- Type ---------- */
+h1, h2, h3, .dq-title, .modal h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+h1 { font-size: 2.2rem; line-height: 1.1; }
+.dq-title { font-size: clamp(2rem, 5vw, 2.7rem); line-height: 1.05; }
+.dq-eyebrow { letter-spacing: 0.12em; font-weight: 600; color: var(--gold); }
+.page-subtitle, .dq-sub { color: var(--text-dim); }
+
+/* ---------- Top bar ---------- */
+.top-nav {
+  background: var(--ink);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 2px solid var(--rule);
+}
+.nav-brand {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.55rem;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.nav-brand::after { content: '.'; color: var(--gold); }
+.top-nav .nav-link { color: var(--text-dim); font-weight: 500; border-radius: 0; background: transparent; }
+.top-nav .nav-link:hover { color: var(--text); background: transparent; }
+.top-nav .nav-link.router-link-exact-active,
+.top-nav .top-nav-dropdown-toggle.router-link-exact-active {
+  color: var(--text);
+  background: transparent;
+  box-shadow: inset 0 -3px 0 var(--gold);
+}
+.top-nav-user { color: var(--text-dim); }
+.top-nav-dropdown-popup,
+.bottom-nav .games-popup {
+  background: var(--ink-raised);
+  border: 2px solid var(--rule);
+  border-radius: 2px;
+  box-shadow: 4px 4px 0 var(--rule);
+}
+.top-nav-dropdown-popup .nav-link:hover,
+.top-nav-dropdown-popup .nav-link.router-link-exact-active { background: rgba(27, 26, 23, 0.07); color: var(--text); box-shadow: none; }
+
+/* ---------- Bottom bar (phones) ---------- */
+.bottom-nav {
+  background: var(--ink);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-top: 2px solid var(--rule);
+}
+.bottom-nav a, .bottom-nav button { color: var(--text-dim); }
+.bottom-nav a.router-link-exact-active, .bottom-nav button.active { color: var(--gold); }
+.bottom-nav .games-popup a { color: var(--text); }
+.bottom-nav .games-popup a:hover, .bottom-nav .games-popup a.router-link-exact-active { background: rgba(27, 26, 23, 0.07); color: var(--text); }
+.bottom-nav .games-popup a.popup-primary,
+.bottom-nav .games-popup a.popup-primary:hover,
+.bottom-nav .games-popup a.popup-primary.router-link-exact-active {
+  background: var(--text);
+  color: var(--ink-raised);
+  box-shadow: 3px 3px 0 var(--gold);
+}
+
+/* ---------- Buttons ---------- */
+.btn { border-radius: 2px; font-weight: 600; letter-spacing: 0.01em; }
+.btn-primary {
+  background: var(--text);
+  color: var(--ink-raised);
+  box-shadow: 4px 4px 0 var(--gold);
+  border: none;
+}
+.btn-primary:hover { filter: none; transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--gold); }
+.btn-primary:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--gold); }
+.btn-primary:disabled { box-shadow: none; background: rgba(27, 26, 23, 0.35); }
+.btn-secondary { background: transparent; border: 2px solid var(--text); color: var(--text); }
+.btn-secondary:hover { background: rgba(27, 26, 23, 0.07); border-color: var(--text); }
+.btn-danger { background: transparent; border: 2px solid var(--coral); color: var(--coral); }
+.btn-danger:hover { background: rgba(179, 38, 30, 0.08); }
+.btn-danger-solid { background: var(--coral); color: var(--ink-raised); }
+.btn-sm { border-width: 1.5px; }
+
+/* ---------- Surfaces: flat paper with a heavy ink rule ---------- */
+.modal,
+.dq-card,
+.dq-today,
+.dq-score-hero,
+.dq-weekly .dq-card,
+.feature-card,
+.landing-login,
+.dashboard-hero,
+.dashboard-join-card,
+.dashboard-feature-card,
+.game-preview,
+.stats-panel,
+.filter-bar,
+.table-scroll,
+.empty-state,
+.expert-card {
+  background: var(--ink-raised);
+  border: 2px solid var(--rule);
+  border-radius: 2px;
+  box-shadow: none;
+}
+.empty-state { background: transparent; border-style: dashed; border-color: var(--line); }
+.empty-state.friendly { background: rgba(216, 67, 43, 0.06); border-style: solid; border-color: var(--gold); }
+.modal { box-shadow: 6px 6px 0 var(--rule); }
+.modal-backdrop { background: rgba(27, 26, 23, 0.55); backdrop-filter: none; }
+
+/* Dense rows and items: a plain ink hairline box */
+.dq-row,
+.dq-q,
+.dq-answer,
+.dq-review,
+.dq-qrow,
+.dq-board-row,
+.dq-winner,
+.saved-quiz-row,
+.candidate-row,
+.dq-compare-cell,
+.option-card {
+  background: var(--ink-raised);
+  border: 1.5px solid var(--line);
+  border-radius: 2px;
+  box-shadow: none;
+}
+.dq-row:hover { background: #fff; border-color: var(--rule); }
+.dq-q.is-answered { border-color: var(--rule); }
+.dq-board-row.is-you, .dq-winner.is-latest { background: rgba(216, 67, 43, 0.08); border-color: var(--gold); box-shadow: none; }
+
+/* ---------- Small things ---------- */
+.dq-pill, .tag, .dq-chip-btn, .stat-card .dq-pill {
+  border-radius: 2px;
+}
+.dq-chip-btn { background: transparent; border: 1.5px solid var(--text); color: var(--text); }
+.dq-chip-btn:hover { background: rgba(27, 26, 23, 0.07); border-color: var(--text); }
+.dq-pill { background: rgba(27, 26, 23, 0.08); color: var(--text); border: none; }
+.dq-pill--ok { background: rgba(31, 122, 80, 0.14); color: #17603e; }
+.dq-pill--bad { background: rgba(179, 38, 30, 0.12); color: #8a1c14; }
+.dq-pill--wait { background: rgba(154, 106, 0, 0.16); color: #6f4b00; }
+.dq-pill--year { background: rgba(61, 79, 159, 0.14); color: #2f3f86; }
+.dq-pill--gold { background: var(--gold-soft); color: #a8321e; }
+.dq-back { color: var(--text); }
+.dq-back:hover { background: rgba(27, 26, 23, 0.07); }
+
+/* Avatars, ranks and bars: solid ink and accent, no gradients */
+.dq-avatar { background: var(--text); color: var(--ink-raised); border-radius: 2px; }
+.dq-rank { background: transparent; border: 2px solid var(--text); color: var(--text); border-radius: 2px; }
+.dq-rank--1 { background: var(--gold); border-color: var(--gold); color: #fff; }
+.dq-rank--2 { background: var(--text); border-color: var(--text); color: var(--ink-raised); }
+.dq-rank--3 { background: transparent; border-color: var(--text); color: var(--text); }
+.dq-weekly-icon { background: var(--gold); color: #fff; border-radius: 2px; }
+.dq-board-bar, .dq-progress-track, .dq-easy-track { background: rgba(27, 26, 23, 0.12); border-radius: 0; }
+.dq-board-bar i, .dq-progress-fill { background: var(--text); border-radius: 0; }
+.dq-easy-track i { background: var(--text); }
+.dq-progress { background: var(--ink-raised); border: 2px solid var(--rule); border-radius: 2px; backdrop-filter: none; box-shadow: none; }
+
+/* ---------- Form controls ---------- */
+.field input[type="text"], .field input[type="number"], .field input[type="email"],
+.field input[type="password"], .field input[type="date"], .field input[type="url"],
+.field select, .field textarea, .dq-input, input.search-input {
+  background: #fff;
+  border: 1.5px solid var(--rule);
+  border-radius: 2px;
+  color: var(--text);
+}
+.field input:focus, .field select:focus, .field textarea:focus, .dq-input:focus {
+  outline: none;
+  border-color: var(--rule);
+  background: #fff;
+  box-shadow: 3px 3px 0 var(--gold);
+}
+.field input::placeholder, .field textarea::placeholder, .dq-input::placeholder { color: rgba(27, 26, 23, 0.4); }
+.field label { color: var(--text-dim); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ---------- Tables ---------- */
+.table th { background: rgba(27, 26, 23, 0.06); color: var(--text-dim); border-bottom: 2px solid var(--rule); }
+.table td { border-bottom: 1px solid rgba(27, 26, 23, 0.14); }
+.table tbody tr:hover td { background: rgba(216, 67, 43, 0.05); }
+
+/* ---------- Segmented controls ---------- */
+.language-btn, .view-tab, .team-chip {
+  background: transparent;
+  border: 1.5px solid var(--text);
+  border-radius: 2px;
+  color: var(--text);
+}
+.language-btn:hover:not(.active), .view-tab:hover:not(.active) { background: rgba(27, 26, 23, 0.07); color: var(--text); }
+.language-btn.active, .view-tab.active, .team-chip.active {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--ink-raised);
+  box-shadow: 3px 3px 0 var(--gold);
+}
+
+/* ---------- Banners and toasts ---------- */
+.banner { border-radius: 2px; border-width: 1.5px; }
+.banner.error { background: rgba(179, 38, 30, 0.08); color: #8a1c14; border-color: var(--coral); }
+.banner.success { background: rgba(31, 122, 80, 0.1); color: #17603e; border-color: var(--teal); }
+.toast { border-radius: 2px; box-shadow: 4px 4px 0 var(--rule); }
+
+/* ---------- Landing ---------- */
+.landing-hero::before { display: none; }
+.landing-hero h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.03em; line-height: 1.03; }
+.landing-hero-accent { background: none; -webkit-background-clip: initial; background-clip: initial; color: var(--gold); font-style: italic; }
+.landing-eyebrow { background: transparent; border: 1.5px solid var(--text); border-radius: 2px; color: var(--text); }
+.landing-eyebrow-dot { background: var(--gold); box-shadow: none; border-radius: 50%; }
+.feature-icon { border-radius: 2px; background: rgba(216, 67, 43, 0.1); color: var(--gold); }
+.feature-card:hover { transform: none; box-shadow: 4px 4px 0 var(--rule); border-color: var(--rule); }
+.feature-card--wide { background: var(--ink-raised); }
+.google-fake-btn { background: #fff; color: var(--text); border: 2px solid var(--rule); border-radius: 2px; box-shadow: none; }
+
+/* leaderboard window bits */
+.dq-stat, .dq-switch, .dq-note { background: transparent; border: 1.5px solid var(--line); border-radius: 2px; }
+.dq-switch-track { border-radius: 999px; }
+.dq-modal-icon, .dq-empty-icon { border-radius: 2px; }
+
+/* Pills and toggles that used to be rounded capsules */
+.language-btn:last-child { border-right: 1.5px solid var(--text); }
+.field:has(> label > input[type="checkbox"]), .option-card {
+  background: var(--ink-raised);
+  border: 1.5px solid var(--line);
+  border-radius: 2px;
+}
+.stepper { background: rgba(27, 26, 23, 0.06); border-radius: 2px; }

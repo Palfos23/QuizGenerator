@@ -27,7 +27,7 @@
             type="text"
             v-model="editingName"
             class="saved-quiz-title"
-            style="width:100%; background:transparent; border:1px solid var(--border); border-radius:6px; padding:4px 8px;"
+            style="width:100%; background:transparent; border:1px solid var(--border); border-radius: 2px; padding:4px 8px;"
             @keyup.enter="confirmRename(l)"
             @keyup.esc="editingId = null"
           />

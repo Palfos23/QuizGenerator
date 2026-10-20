@@ -8,22 +8,6 @@
    so all their declared weights point at the same two files - normal, not a
    mistake, same structure Google's own generated CSS uses. */
 @font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url('/fonts/inter-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url('/fonts/inter-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
   font-weight: 500;
@@ -39,55 +23,87 @@
   src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+
 @font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 500 700;
+  font-family: 'Fraunces';
+  font-style: italic;
+  font-weight: 600;
   font-display: swap;
-  src: url('/fonts/space-grotesk-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  src: url('/fonts/fraunces-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 500 700;
+  font-family: 'Fraunces';
+  font-style: italic;
+  font-weight: 600;
   font-display: swap;
-  src: url('/fonts/space-grotesk-latin.woff2') format('woff2');
+  src: url('/fonts/fraunces-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/instrument-sans-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/instrument-sans-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 :root {
   --nav-height: 64px; /* used by sticky elements positioned just below the top nav - keep in sync with .top-nav's actual rendered height per breakpoint. Redefined for the mobile nav's shorter height in the @media (max-width: 760px) block below. */
   --bottom-nav-height: 0px; /* the fixed mobile .bottom-nav is hidden above 760px, so anything sticky to the viewport bottom can sit flush at 0 by default - redefined below for the breakpoint where that bar actually covers the bottom of the screen. */
-  --ink: #1e2545;
-  --ink-raised: #29325c;
-  --gold: #f2b705;
-  --gold-soft: rgba(242, 183, 5, 0.14);
-  --coral: #ff4d6d;
-  --teal: #3ddc97;
-  --violet: #8b7cff;
-  --text: #f7f8ff;
-  --text-dim: #bcc3de;
-  --border: rgba(255, 255, 255, 0.17);
+  /* "Paper and ink": a warm cream page, black ink, one vermillion accent, hard edges. The variable names
+     are from the old dark theme (--ink was the dark page colour) - they now hold the paper palette. */
+  --ink: #f3ede1;            /* the page: paper */
+  --ink-raised: #fbf7ef;     /* cards, modals: lighter paper */
+  --gold: #d8432b;           /* the accent: vermillion (was gold) */
+  --gold-soft: rgba(216, 67, 43, 0.10);
+  --coral: #b3261e;          /* errors, destructive */
+  --teal: #1f7a50;           /* success */
+  --violet: #3d4f9f;         /* secondary accent: ink blue */
+  --text: #1b1a17;           /* ink */
+  --text-dim: #5e594e;
+  --border: rgba(27, 26, 23, 0.22);
+  --rule: #1b1a17;           /* the heavy rule: 2px ink borders on cards, nav and modals */
 
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Instrument Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
 }
 
 * { box-sizing: border-box; }
 
 html {
-  /* This app only ever renders a dark theme - without this, browsers assume
-     a light UI and render every native-chrome control (select's dropdown
-     popup, the date-picker calendar popup, default checkbox styling,
-     scrollbars) with light OS chrome, clashing hard against the dark page
-     around them. */
-  color-scheme: dark;
+  /* Light theme: native controls (select popups, date pickers, scrollbars) should match the paper page. */
+  color-scheme: light;
 }
 
 html, body {
@@ -99,12 +115,9 @@ html, body {
 }
 
 body {
-  /* soft glow blobs for depth - fixed so they don't scroll with content */
-  background-image:
-    radial-gradient(720px circle at 6% -10%, rgba(139, 124, 255, 0.30), transparent 62%),
-    radial-gradient(780px circle at 104% 10%, rgba(242, 183, 5, 0.17), transparent 58%),
-    radial-gradient(900px circle at 50% 118%, rgba(61, 220, 151, 0.12), transparent 60%);
-  background-attachment: fixed;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 #app {
@@ -157,7 +170,7 @@ input[type="radio"] {
   align-items: center;
   gap: 4px;
   padding: 14px 32px;
-  background: rgba(41, 50, 92, 0.80);
+  background: rgba(243, 237, 225, 0.96);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 1px solid var(--border);
@@ -213,7 +226,7 @@ input[type="radio"] {
   display: flex;
   align-items: center;
   padding: 8px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   text-decoration: none;
   color: var(--text-dim);
   font-weight: 500;
@@ -221,7 +234,7 @@ input[type="radio"] {
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.nav-link:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+.nav-link:hover { background: rgba(27, 26, 23, 0.05); color: var(--text); }
 .nav-link.router-link-exact-active {
   background: var(--gold-soft);
   color: var(--gold);
@@ -255,8 +268,8 @@ input[type="radio"] {
   margin-top: 6px;
   background: var(--ink-raised);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  border-radius: 2px;
+  box-shadow: none;
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -316,9 +329,9 @@ h2 { font-size: 1.35rem; }
 .field textarea {
   width: 100%;
   padding: 11px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
   color: var(--text);
   font-size: 0.95rem;
   font-family: var(--font-body);
@@ -332,7 +345,7 @@ h2 { font-size: 1.35rem; }
 
 .field input:focus, .field select:focus, .field textarea:focus {
   border-color: var(--gold);
-  background: rgba(255,255,255,0.05);
+  background: rgba(27, 26, 23, 0.05);
 }
 
 .field textarea { resize: vertical; min-height: 70px; }
@@ -342,7 +355,7 @@ h2 { font-size: 1.35rem; }
   padding: 12px 16px 12px 42px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background-color: rgba(255,255,255,0.07);
+  background-color: rgba(27, 26, 23, 0.07);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239a9dae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: 16px center;
@@ -357,8 +370,8 @@ h2 { font-size: 1.35rem; }
 .search-input:focus {
   outline: none;
   border-color: var(--gold);
-  background-color: rgba(255,255,255,0.05);
-  box-shadow: 0 0 0 3px rgba(242,183,5,0.15);
+  background-color: rgba(27, 26, 23, 0.05);
+  box-shadow: 0 0 0 3px rgba(216, 67, 43, 0.15);
 }
 
 .chip-group {
@@ -380,7 +393,7 @@ h2 { font-size: 1.35rem; }
 .chip.active {
   background: var(--gold);
   border-color: var(--gold);
-  color: #1b1500;
+  color: #fbf7ef;
 }
 
 /* ---------- Language selector ---------- */
@@ -389,7 +402,7 @@ h2 { font-size: 1.35rem; }
   display: inline-flex;
   flex-wrap: wrap;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   overflow: hidden;
 }
 
@@ -435,7 +448,7 @@ h2 { font-size: 1.35rem; }
   display: inline-flex;
   flex-wrap: wrap;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   overflow: hidden;
   margin-bottom: 24px;
 }
@@ -458,10 +471,10 @@ h2 { font-size: 1.35rem; }
   font-weight: 700;
   padding: 1px 7px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(27, 26, 23, 0.1);
   color: var(--text-dim);
 }
-.view-tab.active .view-tab-count { background: rgba(255,255,255,0.25); color: #fff; }
+.view-tab.active .view-tab-count { background: rgba(27, 26, 23, 0.25); color: #fff; }
 
 /* ---------- Difficulty range sliders ---------- */
 
@@ -505,12 +518,12 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #3ddc97, #f2b705, #ff4d6d);
+  background: linear-gradient(90deg, #1f7a50, #d8432b, #b3261e);
 }
 input[type="range"]::-moz-range-track {
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #3ddc97, #f2b705, #ff4d6d);
+  background: linear-gradient(90deg, #1f7a50, #d8432b, #b3261e);
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -547,7 +560,7 @@ input[type="range"]::-moz-range-progress {
   gap: 6px;
   min-height: 40px;
   padding: 11px 20px;
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   border: none;
   font-weight: 600;
   font-size: 0.9rem;
@@ -568,10 +581,10 @@ input[type="range"]::-moz-range-progress {
 
 .btn-primary {
   background: linear-gradient(135deg, #ffce3d, var(--gold));
-  color: #241c00;
-  box-shadow: 0 4px 20px rgba(242, 183, 5, 0.25);
+  color: #fbf7ef;
+  box-shadow: none;
 }
-.btn-primary:hover { filter: brightness(1.06); box-shadow: 0 4px 26px rgba(242, 183, 5, 0.4); }
+.btn-primary:hover { filter: brightness(1.06); box-shadow: none; }
 .btn-primary:disabled { box-shadow: none; }
 
 /* Shared by every "choose N boards" picker screen (Grid Battle, Starting XI
@@ -592,23 +605,23 @@ input[type="range"]::-moz-range-progress {
 
 .btn-ready-pulse { animation: btn-ready-pulse 1.4s ease-in-out infinite; }
 @keyframes btn-ready-pulse {
-  0%, 100% { box-shadow: 0 4px 20px rgba(242, 183, 5, 0.25); }
-  50% { box-shadow: 0 4px 28px rgba(242, 183, 5, 0.7); }
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: none; }
 }
 /* The only *infinite* looping animation in the app - exactly the kind
    prefers-reduced-motion exists for (a "ready to start" button can sit on
    screen through a whole lobby wait). Keeps the glow as a static cue instead
    of dropping the affordance entirely. */
 @media (prefers-reduced-motion: reduce) {
-  .btn-ready-pulse { animation: none; box-shadow: 0 4px 24px rgba(242, 183, 5, 0.45); }
+  .btn-ready-pulse { animation: none; box-shadow: none; }
 }
 
-.btn-secondary { background: rgba(255,255,255,0.07); border: 1px solid var(--border); color: var(--text); }
-.btn-secondary:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.14); }
+.btn-secondary { background: rgba(27, 26, 23, 0.07); border: 1px solid var(--border); color: var(--text); }
+.btn-secondary:hover { border-color: rgba(27, 26, 23, 0.4); background: rgba(27, 26, 23, 0.14); }
 
-.btn-danger { background: transparent; border: 1px solid rgba(255, 77, 109, 0.4); color: var(--coral); }
-.btn-danger:hover { background: rgba(255, 77, 109, 0.1); }
-.btn-danger-solid { background: var(--coral); border: none; color: #2b0009; }
+.btn-danger { background: transparent; border: 1px solid rgba(179, 38, 30, 0.4); color: var(--coral); }
+.btn-danger:hover { background: rgba(179, 38, 30, 0.1); }
+.btn-danger-solid { background: var(--coral); border: none; color: #fbf7ef; }
 .btn-danger-solid:hover { filter: brightness(1.08); }
 
 /* Still noticeably more compact than the default size (dense admin tables,
@@ -620,7 +633,7 @@ input[type="range"]::-moz-range-progress {
   padding: 6px 10px;
   line-height: 1;
   font-size: 0.95rem;
-  background: rgba(255,255,255,0.06);
+  background: rgba(27, 26, 23, 0.06);
 }
 .icon-btn:disabled { opacity: 0.35; }
 
@@ -636,17 +649,17 @@ input[type="range"]::-moz-range-progress {
   background: var(--ink-raised);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 2px;
   padding: 22px 26px;
   position: relative;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  box-shadow: none;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .question-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 32px rgba(0,0,0,0.4);
-  border-color: rgba(255,255,255,0.2);
+  box-shadow: none;
+  border-color: rgba(27, 26, 23, 0.2);
 }
 
 .question-card-header {
@@ -676,9 +689,9 @@ input[type="range"]::-moz-range-progress {
   border-radius: 4px;
   letter-spacing: 0.03em;
 }
-.tag.category { background: rgba(255,255,255,0.08); color: var(--text); }
+.tag.category { background: rgba(27, 26, 23, 0.08); color: var(--text); }
 .tag.difficulty-tag { color: #fff; }
-.tag.changeable { background: rgba(242, 183, 5, 0.18); color: #f2b705; }
+.tag.changeable { background: rgba(216, 67, 43, 0.18); color: #d8432b; }
 
 .question-text {
   font-weight: 600;
@@ -691,9 +704,9 @@ input[type="range"]::-moz-range-progress {
   align-items: baseline;
   gap: 10px;
   padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  background: rgba(61, 220, 151, 0.1);
-  border: 1px solid rgba(61, 220, 151, 0.3);
+  border-radius: 2px;
+  background: rgba(31, 122, 80, 0.1);
+  border: 1px solid rgba(31, 122, 80, 0.3);
   font-weight: 600;
   font-size: 0.95rem;
   margin-bottom: 14px;
@@ -739,7 +752,7 @@ input[type="range"]::-moz-range-progress {
 
 .empty-state {
   border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 2px;
   padding: 40px;
   text-align: center;
   color: var(--text-dim);
@@ -754,14 +767,14 @@ input[type="range"]::-moz-range-progress {
   color: var(--text);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   padding: 4px 8px;
   margin: 0 0 2px -8px;
 }
 .title-edit-input:hover,
 .title-edit-input:focus {
   border-color: var(--border);
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
 }
 
 .toast {
@@ -776,11 +789,11 @@ input[type="range"]::-moz-range-progress {
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 600;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  box-shadow: none;
   z-index: 100;
 }
-.toast.success { background: var(--teal); color: #05261a; }
-.toast.error { background: var(--coral); color: #2b0009; }
+.toast.success { background: var(--teal); color: #fbf7ef; }
+.toast.error { background: var(--coral); color: #fbf7ef; }
 
 .toast-fade-enter-active, .toast-fade-leave-active {
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -806,13 +819,13 @@ mark {
 
 .empty-state.friendly {
   border-style: solid;
-  border-color: rgba(242, 183, 5, 0.3);
+  border-color: rgba(216, 67, 43, 0.3);
   background: var(--gold-soft);
 }
 
 .advanced-disclosure {
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 2px;
   padding: 12px 16px;
   margin-bottom: 20px;
 }
@@ -857,8 +870,8 @@ mark {
   gap: 10px;
   padding: 16px 18px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.06);
 }
 .add-panel-header {
   display: flex;
@@ -885,9 +898,9 @@ mark {
 .add-panel input[type="text"],
 .add-panel input[type="number"] {
   padding: 10px 12px;
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
   color: var(--text);
   font-size: 0.9rem;
   font-family: var(--font-body);
@@ -896,7 +909,7 @@ mark {
 .add-panel select:focus,
 .add-panel input:focus {
   border-color: var(--gold);
-  background: rgba(255,255,255,0.05);
+  background: rgba(27, 26, 23, 0.05);
   outline: none;
 }
 .add-panel .label-filter {
@@ -921,7 +934,7 @@ mark {
   color: var(--text);
 }
 .add-panel .label-filter-chip.active {
-  background: rgba(139, 124, 255, 0.16);
+  background: rgba(61, 79, 159, 0.16);
   border-color: var(--violet);
   color: var(--violet);
 }
@@ -929,7 +942,7 @@ mark {
   font-size: 0.72rem;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(139, 124, 255, 0.16);
+  background: rgba(61, 79, 159, 0.16);
   color: var(--violet);
 }
 
@@ -971,7 +984,7 @@ mark {
   flex-wrap: wrap;
   padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
 }
 
 .club-logo-thumb {
@@ -986,8 +999,8 @@ mark {
 .photo-thumb-placeholder {
   width: 28px;
   height: 28px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -999,7 +1012,7 @@ mark {
   display: inline-block;
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: 2px;
   border: 1px solid var(--border);
 }
 
@@ -1008,9 +1021,9 @@ mark {
   height: 64px;
   object-fit: contain;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   padding: 6px;
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
 }
 
 .additional-photo-row {
@@ -1021,9 +1034,9 @@ mark {
 }
 .additional-photo-row input {
   padding: 10px 12px;
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
   color: var(--text);
   font-size: 0.9rem;
   font-family: var(--font-body);
@@ -1100,21 +1113,21 @@ mark {
   aspect-ratio: 1 / 1;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: rgba(41, 50, 92, 0.58);
+  background: rgba(243, 237, 225, 0.96);
   transition: border-color 0.25s ease, background 0.25s ease;
 }
 .grid-tile.correct {
-  background: rgba(61, 220, 151, 0.08);
+  background: rgba(31, 122, 80, 0.08);
   border-width: 3px;
   border-color: rgb(61, 220, 151);
 }
 .grid-tile.solved-overtime {
-  background: rgba(139, 124, 255, 0.1);
+  background: rgba(61, 79, 159, 0.1);
   border-width: 3px;
   border-color: rgb(139, 124, 255);
 }
 .grid-tile.revealed-only {
-  background: rgba(255, 77, 109, 0.06);
+  background: rgba(179, 38, 30, 0.06);
   border-width: 3px;
   border-color: rgb(255, 77, 109);
 }
@@ -1124,7 +1137,7 @@ mark {
 
 @keyframes tile-pop {
   0% { transform: scale(1); }
-  40% { transform: scale(1.06); box-shadow: 0 0 0 3px rgba(61, 220, 151, 0.5); }
+  40% { transform: scale(1.06); box-shadow: 0 0 0 3px rgba(31, 122, 80, 0.5); }
   100% { transform: scale(1); box-shadow: none; }
 }
 
@@ -1171,7 +1184,7 @@ mark {
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 0.78rem;
-  color: #241c00;
+  color: #fbf7ef;
   background: var(--gold);
   padding: 3px 8px;
   border-radius: 4px;
@@ -1192,16 +1205,16 @@ mark {
   font-weight: 700;
   z-index: 2;
 }
-.grid-tile-status.correct { background: var(--teal); color: #05261a; }
+.grid-tile-status.correct { background: var(--teal); color: #fbf7ef; }
 .grid-tile-status.overtime { background: var(--violet); color: #ffffff; font-size: 0.62rem; }
-.grid-tile-status.wrong { background: var(--coral); color: #2b0009; }
+.grid-tile-status.wrong { background: var(--coral); color: #fbf7ef; }
 
 .grid-tile-name {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(14, 18, 48, 0.9);
+  background: rgba(27, 26, 23, 0.55);
   padding: 10px 8px;
   text-align: center;
   font-weight: 600;
@@ -1223,7 +1236,7 @@ mark {
   gap: 0;
   margin: 6px 0 0;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   overflow: hidden;
 }
 .grid-tiles-recap .grid-tile { border-width: 1px; }
@@ -1279,8 +1292,8 @@ mark {
   z-index: 25;
   background: var(--ink);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  border-radius: 2px;
+  box-shadow: none;
   max-width: 560px;
   margin: 0 auto 20px;
   padding: 14px 16px;
@@ -1378,10 +1391,10 @@ mark {
    always beats the shared pill-radius default, regardless of where either
    rule ends up in the file. */
 .guess-box .guess-box-row input {
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
 }
 .guess-box:has(.guess-results) .guess-box-row input {
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border-radius: 2px var(--radius-sm) 0 0;
 }
 .guess-box-row .guess-box-skip-btn { flex-shrink: 0; box-sizing: border-box; }
 
@@ -1405,8 +1418,8 @@ mark {
 .guess-box input:focus {
   outline: none;
   border-color: var(--gold);
-  background-color: rgba(255,255,255,0.08);
-  box-shadow: 0 0 0 3px rgba(242,183,5,0.15);
+  background-color: rgba(27, 26, 23, 0.08);
+  box-shadow: 0 0 0 3px rgba(216, 67, 43, 0.15);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23f2b705' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
 }
 /* While results are showing, the input and its dropdown read as one
@@ -1439,7 +1452,7 @@ mark {
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   overflow: hidden;
   background: var(--ink-raised);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  box-shadow: none;
 }
 
 .guess-result-row {
@@ -1454,7 +1467,7 @@ mark {
   font-size: 0.9rem;
   transition: background 0.1s ease;
 }
-.guess-result-row:hover { background: rgba(242,183,5,0.08); }
+.guess-result-row:hover { background: rgba(216, 67, 43, 0.08); }
 
 .tension-standings-list {
   display: flex;
@@ -1471,12 +1484,12 @@ mark {
   gap: 10px;
   padding: 8px 4px;
   border-bottom: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   transition: background 0.3s ease;
 }
 .tension-standing-row:last-child { border-bottom: none; }
-.tension-standing-row.moved-up { background: rgba(61, 220, 151, 0.08); }
-.tension-standing-row.moved-down { background: rgba(255, 77, 109, 0.08); }
+.tension-standing-row.moved-up { background: rgba(31, 122, 80, 0.08); }
+.tension-standing-row.moved-down { background: rgba(179, 38, 30, 0.08); }
 
 .tension-standing-rank {
   font-family: var(--font-mono);
@@ -1520,8 +1533,8 @@ mark {
 
 .tension-player-card {
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.07);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.07);
   padding: 10px 14px;
   display: flex;
   justify-content: space-between;
@@ -1543,9 +1556,9 @@ mark {
 .tension-round-score.negative { color: var(--coral); }
 
 .tension-answers-panel {
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 2px;
   padding: 20px;
   flex: 1;
   min-width: 320px;
@@ -1569,7 +1582,7 @@ mark {
 /* Still used by AdminAthletesView's CSV-import preview table to flag invalid
    rows - the reveal table it originally styled is gone, replaced below by
    .tension-reveal-row. */
-.tension-row-trap td { background: rgba(255, 77, 109, 0.1); }
+.tension-row-trap td { background: rgba(179, 38, 30, 0.1); }
 
 /* Tension's own reveal "ladder" (used by both the pass-and-play and online
    room variants) - a sibling of Bullseye's .bullseye-reveal-row below, same
@@ -1588,9 +1601,9 @@ mark {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 2px;
   padding: 10px 14px;
   opacity: 0.5;
   transform: scale(0.98);
@@ -1599,12 +1612,12 @@ mark {
 .tension-reveal-row.is-revealed {
   opacity: 1;
   transform: scale(1);
-  background: rgba(61, 220, 151, 0.05);
-  border-color: rgba(61, 220, 151, 0.2);
+  background: rgba(31, 122, 80, 0.05);
+  border-color: rgba(31, 122, 80, 0.2);
 }
 .tension-reveal-row.is-trap {
-  background: rgba(255, 77, 109, 0.08);
-  border-color: rgba(255, 77, 109, 0.3);
+  background: rgba(179, 38, 30, 0.08);
+  border-color: rgba(179, 38, 30, 0.3);
 }
 .tension-reveal-rank {
   width: 30px;
@@ -1615,7 +1628,7 @@ mark {
   justify-content: center;
   font-weight: 800;
   font-size: 0.82rem;
-  background: rgba(255,255,255,0.06);
+  background: rgba(27, 26, 23, 0.06);
   border: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -1639,11 +1652,11 @@ mark {
 }
 .tension-reveal-tag.safe {
   color: var(--teal);
-  background: rgba(61, 220, 151, 0.12);
+  background: rgba(31, 122, 80, 0.12);
 }
 .tension-reveal-tag.trap {
   color: var(--coral);
-  background: rgba(255, 77, 109, 0.14);
+  background: rgba(179, 38, 30, 0.14);
 }
 .tension-reveal-guessers {
   display: flex;
@@ -1672,8 +1685,8 @@ mark {
    this just marks whichever guess(es) actually scored the round's point. */
 .flashback-chip-winner {
   color: var(--gold);
-  background: rgba(242, 183, 5, 0.12);
-  border-color: rgba(242, 183, 5, 0.4) !important;
+  background: rgba(216, 67, 43, 0.12);
+  border-color: rgba(216, 67, 43, 0.4) !important;
   font-weight: 700;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1694,9 +1707,9 @@ mark {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 2px;
   padding: 10px 14px;
   opacity: 0.5;
   transform: scale(0.98);
@@ -1705,16 +1718,16 @@ mark {
 .bullseye-reveal-row.is-revealed {
   opacity: 1;
   transform: scale(1);
-  background: rgba(61, 220, 151, 0.05);
-  border-color: rgba(61, 220, 151, 0.2);
+  background: rgba(31, 122, 80, 0.05);
+  border-color: rgba(31, 122, 80, 0.2);
 }
 .bullseye-reveal-row.is-safe {
-  background: rgba(242, 183, 5, 0.06);
-  border-color: rgba(242, 183, 5, 0.25);
+  background: rgba(216, 67, 43, 0.06);
+  border-color: rgba(216, 67, 43, 0.25);
 }
 .bullseye-reveal-row.is-eliminated {
-  background: rgba(255, 77, 109, 0.08);
-  border-color: rgba(255, 77, 109, 0.3);
+  background: rgba(179, 38, 30, 0.08);
+  border-color: rgba(179, 38, 30, 0.3);
 }
 .bullseye-reveal-rank {
   width: 30px;
@@ -1725,7 +1738,7 @@ mark {
   justify-content: center;
   font-weight: 800;
   font-size: 0.82rem;
-  background: rgba(255,255,255,0.06);
+  background: rgba(27, 26, 23, 0.06);
   border: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -1760,7 +1773,7 @@ mark {
   width: 64px;
   height: 6px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(27, 26, 23, 0.08);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -1806,10 +1819,10 @@ mark {
 
 .bullseye-truth-callout {
   text-align: center;
-  border: 1px solid rgba(242, 183, 5, 0.5);
-  background: linear-gradient(135deg, rgba(242, 183, 5, 0.22), rgba(242, 183, 5, 0.05));
-  box-shadow: 0 4px 24px rgba(242, 183, 5, 0.15);
-  border-radius: var(--radius-lg);
+  border: 1px solid rgba(216, 67, 43, 0.5);
+  background: linear-gradient(135deg, rgba(216, 67, 43, 0.22), rgba(216, 67, 43, 0.05));
+  box-shadow: none;
+  border-radius: 2px;
   padding: 14px 16px;
   margin-bottom: 16px;
 }
@@ -1835,13 +1848,13 @@ mark {
 }
 .bullseye-truth-name.found {
   color: var(--teal);
-  background: rgba(61, 220, 151, 0.12);
-  border-color: rgba(61, 220, 151, 0.35);
+  background: rgba(31, 122, 80, 0.12);
+  border-color: rgba(31, 122, 80, 0.35);
 }
 .bullseye-truth-name.not-found {
   color: var(--text-dim);
-  background: rgba(255, 77, 109, 0.08);
-  border-color: rgba(255, 77, 109, 0.25);
+  background: rgba(179, 38, 30, 0.08);
+  border-color: rgba(179, 38, 30, 0.25);
 }
 
 /* The "final two" suspense beat, then the elimination flourish, then a big
@@ -1869,10 +1882,10 @@ mark {
   font-weight: 800;
   font-size: 1.15rem;
   color: #fff;
-  background: linear-gradient(135deg, rgba(255, 77, 109, 0.45), rgba(255, 77, 109, 0.15));
-  border: 1px solid rgba(255, 77, 109, 0.6);
-  box-shadow: 0 4px 24px rgba(255, 77, 109, 0.28);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(179, 38, 30, 0.45), rgba(179, 38, 30, 0.15));
+  border: 1px solid rgba(179, 38, 30, 0.6);
+  box-shadow: none;
+  border-radius: 2px;
   padding: 12px 18px;
   margin-bottom: 16px;
   animation: bullseye-banner-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1885,18 +1898,18 @@ mark {
    like two different colors, not just "a slightly lighter panel". */
 .bullseye-spotlight {
   text-align: center;
-  border: 1px solid rgba(242, 183, 5, 0.4);
-  background: linear-gradient(135deg, rgba(242, 183, 5, 0.18), rgba(242, 183, 5, 0.04));
-  box-shadow: 0 4px 20px rgba(242, 183, 5, 0.14);
-  border-radius: var(--radius-lg);
+  border: 1px solid rgba(216, 67, 43, 0.4);
+  background: linear-gradient(135deg, rgba(216, 67, 43, 0.18), rgba(216, 67, 43, 0.04));
+  box-shadow: none;
+  border-radius: 2px;
   padding: 14px 16px;
   margin-bottom: 16px;
   animation: bullseye-banner-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .bullseye-spotlight-out {
-  border-color: rgba(255, 77, 109, 0.55);
-  background: linear-gradient(135deg, rgba(255, 77, 109, 0.22), rgba(255, 77, 109, 0.06));
-  box-shadow: 0 4px 20px rgba(255, 77, 109, 0.18);
+  border-color: rgba(179, 38, 30, 0.55);
+  background: linear-gradient(135deg, rgba(179, 38, 30, 0.22), rgba(179, 38, 30, 0.06));
+  box-shadow: none;
 }
 .bullseye-spotlight-label {
   text-transform: uppercase;
@@ -1937,7 +1950,7 @@ mark {
   justify-content: center;
   text-align: center;
   padding: 0 24px;
-  background: rgba(14, 18, 48, 0.94);
+  background: rgba(27, 26, 23, 0.55);
   backdrop-filter: blur(4px);
 }
 
@@ -1957,8 +1970,8 @@ mark {
 .tension-choice-card {
   padding: 16px 20px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.06);
   color: var(--text);
   font-size: 1rem;
   font-weight: 600;
@@ -1966,12 +1979,12 @@ mark {
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .tension-choice-card:hover {
-  background: rgba(242,183,5,0.1);
+  background: rgba(216, 67, 43, 0.1);
   border-color: var(--gold);
 }
 
 .tension-winner-row td {
-  background: rgba(242, 183, 5, 0.12);
+  background: rgba(216, 67, 43, 0.12);
   font-weight: 700;
 }
 
@@ -2033,7 +2046,7 @@ mark {
   padding: 6px 6px 6px 14px;
   border-radius: 999px;
   border: 1px solid var(--violet);
-  background: rgba(139, 124, 255, 0.12);
+  background: rgba(61, 79, 159, 0.12);
 }
 
 .category-chip.just-added {
@@ -2041,8 +2054,8 @@ mark {
 }
 
 @keyframes category-flash {
-  0% { background: rgba(61, 220, 151, 0.35); }
-  100% { background: rgba(139, 124, 255, 0.12); }
+  0% { background: rgba(31, 122, 80, 0.35); }
+  100% { background: rgba(61, 79, 159, 0.12); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2069,7 +2082,7 @@ mark {
   height: 30px;
   border-radius: 50%;
   border: none;
-  background: rgba(255,255,255,0.08);
+  background: rgba(27, 26, 23, 0.08);
   color: var(--text);
   font-size: 1rem;
   line-height: 1;
@@ -2077,7 +2090,7 @@ mark {
   align-items: center;
   justify-content: center;
 }
-.stepper button:hover { background: rgba(255,255,255,0.16); }
+.stepper button:hover { background: rgba(27, 26, 23, 0.16); }
 
 .stepper span {
   min-width: 22px;
@@ -2098,7 +2111,7 @@ mark {
   align-items: center;
   justify-content: center;
 }
-.chip-remove-btn:hover { background: rgba(255, 77, 109, 0.15); color: var(--coral); }
+.chip-remove-btn:hover { background: rgba(179, 38, 30, 0.15); color: var(--coral); }
 
 .difficulty-word {
   font-family: var(--font-body);
@@ -2112,8 +2125,8 @@ mark {
   margin-bottom: 24px;
   padding: 16px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.06);
 }
 
 .stat-low {
@@ -2128,8 +2141,8 @@ mark {
   margin-bottom: 24px;
   padding: 16px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.06);
 }
 
 .pagination-bar {
@@ -2149,7 +2162,7 @@ mark {
   padding: 1px 8px;
   margin-left: 8px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(27, 26, 23, 0.08);
   color: var(--text-dim);
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -2170,11 +2183,11 @@ mark {
 
 .mp-player-card {
   border: 2px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 2px;
   padding: 10px 16px;
   min-width: 140px;
   text-align: center;
-  background: rgba(255,255,255,0.06);
+  background: rgba(27, 26, 23, 0.06);
   transition: all 0.2s ease;
 }
 /* Shared by every turn-based multiplayer game (Grid/XI Battle, Bullseye,
@@ -2192,9 +2205,9 @@ mark {
    was silently never actually applying). */
 .mp-player-card.active-turn {
   position: relative;
-  background: rgba(242, 183, 5, 0.16);
+  background: rgba(216, 67, 43, 0.16);
   border-color: var(--gold) !important;
-  box-shadow: 0 0 0 2px rgba(242, 183, 5, 0.35);
+  box-shadow: 0 0 0 2px rgba(216, 67, 43, 0.35);
   animation: active-turn-pulse 1.6s ease-in-out infinite;
 }
 .mp-player-card.active-turn::before {
@@ -2204,7 +2217,7 @@ mark {
   left: 50%;
   transform: translateX(-50%);
   background: var(--gold);
-  color: #241c00;
+  color: #fbf7ef;
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -2213,8 +2226,8 @@ mark {
   white-space: nowrap;
 }
 @keyframes active-turn-pulse {
-  0%, 100% { box-shadow: 0 0 0 2px rgba(242, 183, 5, 0.35); }
-  50% { box-shadow: 0 0 0 4px rgba(242, 183, 5, 0.55), 0 0 18px rgba(242, 183, 5, 0.35); }
+  0%, 100% { box-shadow: 0 0 0 2px rgba(216, 67, 43, 0.35); }
+  50% { box-shadow: 0 0 0 4px rgba(216, 67, 43, 0.55), 0 0 18px rgba(216, 67, 43, 0.35); }
 }
 @media (prefers-reduced-motion: reduce) {
   .mp-player-card.active-turn { animation: none; }
@@ -2235,7 +2248,7 @@ mark {
   opacity: 0.55;
 }
 .tag.offline {
-  background: rgba(255,77,109,0.15);
+  background: rgba(179, 38, 30, 0.15);
   color: var(--coral);
 }
 
@@ -2246,7 +2259,7 @@ mark {
 }
 @keyframes bullseye-elimination-pop {
   0%   { transform: scale(1); }
-  15%  { transform: scale(1.12) rotate(-2deg); box-shadow: 0 0 0 4px rgba(255,77,109,0.6); }
+  15%  { transform: scale(1.12) rotate(-2deg); box-shadow: 0 0 0 4px rgba(179, 38, 30, 0.6); }
   35%  { transform: scale(0.96) rotate(2deg); }
   55%  { transform: scale(1.04); }
   100% { transform: scale(1); opacity: 0.4; box-shadow: none; }
@@ -2256,7 +2269,7 @@ mark {
 }
 
 .you-row td {
-  background: rgba(242, 183, 5, 0.1);
+  background: rgba(216, 67, 43, 0.1);
   font-weight: 700;
 }
 
@@ -2272,12 +2285,12 @@ table.scoreboard-table {
 
 .banner {
   padding: 12px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   font-size: 0.9rem;
   margin-bottom: 20px;
 }
-.banner.error { background: rgba(255,77,109,0.12); color: #ffb3c1; border: 1px solid rgba(255,77,109,0.3); }
-.banner.success { background: rgba(61,220,151,0.12); color: #9df0cb; border: 1px solid rgba(61,220,151,0.3); }
+.banner.error { background: rgba(179, 38, 30, 0.12); color: #a31f17; border: 1px solid rgba(179, 38, 30, 0.3); }
+.banner.success { background: rgba(31, 122, 80, 0.12); color: #1b6b46; border: 1px solid rgba(31, 122, 80, 0.3); }
 
 .table-scroll {
   overflow-x: auto;
@@ -2307,13 +2320,13 @@ table.scoreboard-table {
 /* Helps track a row across many columns while scanning - most of these
    tables are wide enough to need .table-scroll's horizontal scroll. */
 .table tbody tr:hover td {
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
 }
 
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(14, 18, 48, 0.72);
+  background: rgba(27, 26, 23, 0.55);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: flex-start;
@@ -2326,19 +2339,19 @@ table.scoreboard-table {
 .completion-popup {
   position: relative;
   background: var(--ink-raised);
-  border-radius: var(--radius-lg);
+  border-radius: 2px;
   padding: 40px 32px;
   max-width: 380px;
   width: 100%;
   max-height: calc(100vh - 80px);
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  box-shadow: none;
   overflow-y: auto;
   overflow-x: hidden;
   animation: completion-pop-in 0.35s ease;
 }
-.completion-popup.full { border: 1px solid rgba(242,183,5,0.4); }
-.completion-popup.overtime { border: 1px solid rgba(139,124,255,0.4); }
+.completion-popup.full { border: 1px solid rgba(216, 67, 43, 0.4); }
+.completion-popup.overtime { border: 1px solid rgba(61, 79, 159, 0.4); }
 .completion-popup.given-up { border: 1px solid var(--border); }
 .completion-popup.podium-host { max-width: 500px; } /* wide enough for 3 podium blocks side by side, unlike the default 380px */
 
@@ -2391,11 +2404,11 @@ table.scoreboard-table {
 .modal {
   background: var(--ink-raised);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 2px;
   padding: 28px;
   width: 100%;
   max-width: 560px;
-  box-shadow: 0 24px 70px rgba(6, 9, 30, 0.55);
+  box-shadow: none;
 }
 
 .saved-quiz-list {
@@ -2411,8 +2424,8 @@ table.scoreboard-table {
   gap: 12px;
   padding: 16px 18px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.06);
   flex-wrap: wrap;
 }
 
@@ -2491,8 +2504,8 @@ table.scoreboard-table {
   min-width: 0;
   padding: 40px 32px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(242,183,5,0.08), rgba(255,255,255,0.06));
+  border-radius: 2px;
+  background: linear-gradient(135deg, rgba(216, 67, 43, 0.08), rgba(27, 26, 23, 0.06));
 }
 .dashboard-hero h1 { margin: 0 0 10px; }
 .dashboard-hero .landing-lede { max-width: 640px; margin-bottom: 24px; }
@@ -2510,9 +2523,9 @@ table.scoreboard-table {
   flex-direction: column;
   justify-content: center;
   padding: 28px;
-  border: 1px solid rgba(139, 124, 255, 0.3);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(139,124,255,0.12), rgba(255,255,255,0.06));
+  border: 1px solid rgba(61, 79, 159, 0.3);
+  border-radius: 2px;
+  background: linear-gradient(135deg, rgba(61, 79, 159, 0.12), rgba(27, 26, 23, 0.06));
 }
 .dashboard-join-card h2 { margin: 0 0 8px; }
 .dashboard-join-card .page-subtitle { margin: 0 0 18px; }
@@ -2551,8 +2564,8 @@ table.scoreboard-table {
   padding: 20px 20px 52px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--card-accent, var(--border));
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.06);
   color: var(--text);
   text-decoration: none;
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
@@ -2560,7 +2573,7 @@ table.scoreboard-table {
 .dashboard-feature-card:hover {
   border-color: var(--card-accent, var(--gold));
   border-left-color: var(--card-accent, var(--gold));
-  background: rgba(255,255,255,0.08);
+  background: rgba(27, 26, 23, 0.08);
   transform: translateY(-2px);
 }
 .dashboard-feature-card h3 { font-size: 1rem; margin: 0 0 6px; }
@@ -2591,15 +2604,15 @@ table.scoreboard-table {
   padding: 20px 24px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--coral);
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.06);
   color: var(--text);
   text-decoration: none;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 .dashboard-report-callout:hover {
   border-color: var(--coral);
-  background: rgba(255,255,255,0.08);
+  background: rgba(27, 26, 23, 0.08);
 }
 .dashboard-report-callout h3 { margin: 0 0 4px; font-size: 1rem; }
 .dashboard-report-callout p { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
@@ -2612,17 +2625,17 @@ table.scoreboard-table {
 .game-preview {
   position: relative;
   margin: 22px 0 24px;
-  border: 1px solid rgba(242, 183, 5, 0.3);
-  border-radius: var(--radius-lg);
+  border: 1px solid rgba(216, 67, 43, 0.3);
+  border-radius: 2px;
   padding: 22px 22px 24px;
   overflow: hidden;
   pointer-events: none;
   user-select: none;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+  box-shadow: none;
   background:
-    radial-gradient(130% 130% at 0% 0%, rgba(242, 183, 5, 0.07), transparent 55%),
-    radial-gradient(130% 130% at 100% 100%, rgba(139, 124, 255, 0.08), transparent 55%),
-    rgba(255, 255, 255, 0.015);
+    radial-gradient(130% 130% at 0% 0%, rgba(216, 67, 43, 0.07), transparent 55%),
+    radial-gradient(130% 130% at 100% 100%, rgba(61, 79, 159, 0.08), transparent 55%),
+    rgba(27, 26, 23, 0.015);
 }
 .game-preview-tag {
   position: absolute;
@@ -2633,7 +2646,7 @@ table.scoreboard-table {
   text-transform: uppercase;
   font-weight: 700;
   color: var(--text-dim);
-  background: rgba(255,255,255,0.06);
+  background: rgba(27, 26, 23, 0.06);
   border: 1px solid var(--border);
   padding: 3px 9px;
   border-radius: 999px;
@@ -2671,8 +2684,8 @@ table.scoreboard-table {
   padding: 18px 20px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--card-accent, var(--border));
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.06);
   color: var(--text);
   text-decoration: none; /* also used as a <router-link> now (XI Battle's Penalty
                              Shootout card), not just a <button> */
@@ -2681,7 +2694,7 @@ table.scoreboard-table {
 .mode-choice-card:hover {
   border-color: var(--card-accent, var(--gold));
   border-left-color: var(--card-accent, var(--gold));
-  background: rgba(255, 255, 255, 0.045);
+  background: rgba(27, 26, 23, 0.045);
   transform: translateY(-2px);
 }
 .mode-choice-card h3 {
@@ -2748,7 +2761,7 @@ table.scoreboard-table {
   top: -70px;
   width: 460px;
   height: 340px;
-  background: radial-gradient(closest-side, rgba(139, 124, 255, 0.32), transparent);
+  background: radial-gradient(closest-side, rgba(61, 79, 159, 0.32), transparent);
   filter: blur(8px);
   pointer-events: none;
   z-index: -1;
@@ -2760,7 +2773,7 @@ table.scoreboard-table {
   gap: 8px;
   padding: 6px 14px 6px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(27, 26, 23, 0.09);
   border: 1px solid var(--border);
   color: var(--text);
   font-size: 0.82rem;
@@ -2772,7 +2785,7 @@ table.scoreboard-table {
   height: 8px;
   border-radius: 50%;
   background: var(--teal);
-  box-shadow: 0 0 0 4px rgba(61, 220, 151, 0.22);
+  box-shadow: 0 0 0 4px rgba(31, 122, 80, 0.22);
 }
 
 .landing-hero h1 {
@@ -2809,20 +2822,20 @@ table.scoreboard-table {
   position: relative;
   padding: 20px;
   border: 1px solid var(--border);
-  border-radius: 18px;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 16%, rgba(255, 255, 255, 0.07)), rgba(255, 255, 255, 0.05));
-  box-shadow: 0 10px 28px rgba(9, 13, 40, 0.22);
+  border-radius: 2px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 16%, rgba(27, 26, 23, 0.07)), rgba(27, 26, 23, 0.05));
+  box-shadow: none;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 .feature-card:hover {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--accent) 60%, transparent);
-  box-shadow: 0 16px 34px rgba(9, 13, 40, 0.34);
+  box-shadow: none;
 }
 .feature-card--gold { --accent: var(--gold); }
-.feature-card--violet { --accent: #a99cff; }
+.feature-card--violet { --accent: #3d4f9f; }
 .feature-card--teal { --accent: var(--teal); }
-.feature-card--coral { --accent: #ff7893; }
+.feature-card--coral { --accent: #a31f17; }
 
 .feature-card--wide {
   grid-column: span 2;
@@ -2830,9 +2843,9 @@ table.scoreboard-table {
   align-items: center;
   gap: 18px;
   background:
-    radial-gradient(420px circle at 0% 0%, rgba(242, 183, 5, 0.22), transparent 62%),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.06));
-  border-color: rgba(242, 183, 5, 0.38);
+    radial-gradient(420px circle at 0% 0%, rgba(216, 67, 43, 0.22), transparent 62%),
+    linear-gradient(160deg, rgba(27, 26, 23, 0.13), rgba(27, 26, 23, 0.06));
+  border-color: rgba(216, 67, 43, 0.38);
 }
 .feature-card--wide .feature-icon { margin-bottom: 0; flex-shrink: 0; }
 
@@ -2841,7 +2854,7 @@ table.scoreboard-table {
   place-items: center;
   width: 42px;
   height: 42px;
-  border-radius: 12px;
+  border-radius: 2px;
   margin-bottom: 14px;
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 18%, transparent);
@@ -2863,12 +2876,12 @@ table.scoreboard-table {
 .landing-login {
   grid-area: login;
   padding: 30px 28px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 24px;
+  border: 1px solid rgba(27, 26, 23, 0.22);
+  border-radius: 2px;
   background:
-    radial-gradient(360px circle at 100% 0%, rgba(242, 183, 5, 0.16), transparent 60%),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.06));
-  box-shadow: 0 24px 60px rgba(9, 13, 40, 0.38);
+    radial-gradient(360px circle at 100% 0%, rgba(216, 67, 43, 0.16), transparent 60%),
+    linear-gradient(160deg, rgba(27, 26, 23, 0.13), rgba(27, 26, 23, 0.06));
+  box-shadow: none;
   text-align: center;
 }
 
@@ -2978,7 +2991,7 @@ table.scoreboard-table {
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+  box-shadow: none;
   transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
@@ -2993,14 +3006,14 @@ table.scoreboard-table {
    matched, the visual result just never changed). Explicit colors sidestep that
    regardless of what the resting background is. */
 .google-btn-slot:hover .google-fake-btn {
-  background: #262a3a;
-  box-shadow: 0 6px 22px rgba(0,0,0,0.45);
+  background: #f0eadc;
+  box-shadow: none;
 }
 
 .google-btn-slot:active .google-fake-btn {
-  background: #14151f;
+  background: #e8e1d0;
   transform: scale(0.99);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+  box-shadow: none;
 }
 
 /* Same idea for the keyboard: focus lands on the real (invisible) button, not
@@ -3052,7 +3065,7 @@ table.scoreboard-table {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 3px solid rgba(255,255,255,0.15);
+  border: 3px solid rgba(27, 26, 23, 0.15);
   border-top-color: var(--gold);
   flex-shrink: 0;
   animation: spin 0.8s linear infinite;
@@ -3097,7 +3110,7 @@ table.scoreboard-table {
   inset: 0;
   z-index: 200;
   padding: 0 24px;
-  background: rgba(14, 18, 48, 0.94);
+  background: rgba(27, 26, 23, 0.55);
   backdrop-filter: blur(4px);
 }
 .loading-state-full .spinner {
@@ -3242,7 +3255,7 @@ table.scoreboard-table {
   }
 
   .modal {
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-radius: 2px var(--radius-lg) 0 0;
     max-width: 100%;
     max-height: 88vh;
     overflow-y: auto;
@@ -3281,7 +3294,7 @@ table.scoreboard-table {
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(41, 50, 92, 0.88);
+    background: rgba(243, 237, 225, 0.96);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     border-top: 1px solid var(--border);
@@ -3319,8 +3332,8 @@ table.scoreboard-table {
     margin-bottom: 8px;
     background: var(--ink-raised);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
+    border-radius: 2px;
+    box-shadow: none;
     padding: 6px;
     display: flex;
     flex-direction: column;
@@ -3335,28 +3348,28 @@ table.scoreboard-table {
     padding: 10px 14px;
     font-size: 0.85rem;
     font-weight: 600;
-    border-radius: var(--radius-sm);
+    border-radius: 2px;
     color: var(--text);
   }
   /* The main action in a popup (Create a quiz): a filled gold button on top, then the plain items. */
   .bottom-nav .games-popup a.popup-primary {
     background: linear-gradient(135deg, #f7c52a, var(--gold));
-    color: #231a00;
+    color: #fbf7ef;
     font-size: 0.95rem;
     font-weight: 700;
     padding: 13px 16px;
     margin-bottom: 4px;
     justify-content: center;
-    box-shadow: 0 4px 16px rgba(242, 183, 5, 0.3);
+    box-shadow: none;
   }
   .bottom-nav .games-popup a.popup-primary:hover,
   .bottom-nav .games-popup a.popup-primary.router-link-exact-active {
     background: linear-gradient(135deg, #fbd04a, #f5bd0c);
-    color: #231a00;
+    color: #fbf7ef;
   }
   .bottom-nav .games-popup a:hover,
   .bottom-nav .games-popup a.router-link-exact-active {
-    background: rgba(242,183,5,0.12);
+    background: rgba(216, 67, 43, 0.12);
     color: var(--gold);
   }
 
@@ -3391,11 +3404,11 @@ table.scoreboard-table {
     padding: 10px 14px;
     font-size: 0.85rem;
     font-weight: 600;
-    border-radius: var(--radius-sm);
+    border-radius: 2px;
     color: var(--coral);
     text-align: left;
   }
-  .bottom-nav .games-popup .popup-action:hover { background: rgba(255, 77, 109, 0.12); }
+  .bottom-nav .games-popup .popup-action:hover { background: rgba(179, 38, 30, 0.12); }
   .bottom-nav .games-popup.admin-menu-popup {
     position: fixed;
     left: 8px;
@@ -3615,10 +3628,10 @@ table.scoreboard-table {
 
 .score-square {
   border: 2px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 2px;
   padding: 14px 10px 12px;
   text-align: center;
-  background: rgba(255,255,255,0.06);
+  background: rgba(27, 26, 23, 0.06);
 }
 .score-square.leader {
   border-color: var(--gold);
@@ -3648,9 +3661,9 @@ table.scoreboard-table {
 
 /* ---------- Imposter reveal entries ---------- */
 .imposter-reveal-entry {
-  background: rgba(255, 77, 109, 0.06);
-  border: 1px solid rgba(255, 77, 109, 0.2);
-  border-radius: var(--radius-md);
+  background: rgba(179, 38, 30, 0.06);
+  border: 1px solid rgba(179, 38, 30, 0.2);
+  border-radius: 2px;
   padding: 10px 14px;
   margin-bottom: 8px;
   display: flex;
@@ -3671,7 +3684,7 @@ table.scoreboard-table {
   margin-top: 2px;
 }
 .imposter-reveal-entry-foundby {
-  background: rgba(255,255,255,0.06);
+  background: rgba(27, 26, 23, 0.06);
   color: var(--text-dim);
   font-size: 0.76rem;
   padding: 3px 10px;
@@ -3691,18 +3704,18 @@ table.scoreboard-table {
 
 .podium-block {
   width: 130px;
-  border-radius: var(--radius-lg) var(--radius-lg) 6px 6px;
+  border-radius: 2px var(--radius-lg) 6px 6px;
   text-align: center;
   padding: 16px 10px 14px;
   animation: podium-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 .podium-block.rank-1 {
   height: 190px;
-  background: linear-gradient(180deg, rgba(242,183,5,0.28), rgba(242,183,5,0.06));
+  background: linear-gradient(180deg, rgba(216, 67, 43, 0.28), rgba(216, 67, 43, 0.06));
   border: 2px solid var(--gold);
   order: 2;
   animation-delay: 0.15s;
-  box-shadow: 0 0 30px rgba(242,183,5,0.15);
+  box-shadow: 0 0 30px rgba(216, 67, 43, 0.15);
 }
 .podium-block.rank-2 {
   height: 150px;
@@ -3726,7 +3739,7 @@ table.scoreboard-table {
   line-height: 1;
 }
 .podium-block.rank-1 .podium-rank-number { color: var(--gold); }
-.podium-block.rank-2 .podium-rank-number { color: #e0e0eb; }
+.podium-block.rank-2 .podium-rank-number { color: #5e594e; }
 .podium-block.rank-3 .podium-rank-number { color: #cd7f32; }
 
 .podium-name {
@@ -3751,7 +3764,7 @@ table.scoreboard-table {
   margin: 0 auto 6px;
   padding: 8px 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 2px;
 }
 .podium-rest-row + .podium-rest-row { margin-top: 6px; }
 
@@ -3782,7 +3795,7 @@ table.scoreboard-table {
   font-weight: 800;
   color: var(--gold);
   margin: 4px 0 22px;
-  text-shadow: 0 0 26px rgba(242,183,5,0.35);
+  text-shadow: 0 0 26px rgba(216, 67, 43, 0.35);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3813,8 +3826,8 @@ table.scoreboard-table {
   border-radius: 50%;
   background: repeating-radial-gradient(
     circle,
-    rgba(242,183,5,0.05) 0px,
-    rgba(242,183,5,0.05) 10px,
+    rgba(216, 67, 43, 0.05) 0px,
+    rgba(216, 67, 43, 0.05) 10px,
     transparent 10px,
     transparent 24px
   );
@@ -3847,7 +3860,7 @@ table.scoreboard-table {
   padding: 14px 22px;
   background: var(--ink-raised);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 2px;
   flex-wrap: wrap;
 }
 .pitch-scoreline-team {
@@ -3878,8 +3891,8 @@ table.scoreboard-table {
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 1.15rem;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-sm);
+  background: rgba(27, 26, 23, 0.06);
+  border-radius: 2px;
   padding: 7px 16px;
   white-space: nowrap;
   flex-shrink: 0;
@@ -3923,20 +3936,20 @@ table.scoreboard-table {
   min-width: 190px;
   padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: rgba(41, 50, 92, 0.58);
+  border-radius: 2px;
+  background: rgba(243, 237, 225, 0.96);
   transition: border-color 0.25s ease, background 0.25s ease;
 }
 /* Same "correct/revealed-only" color language as .grid-tile - green for a
    kick this player actually guessed, coral for one just shown as a reveal
    (e.g. game over, or the results recap) without ever being guessed right. */
 .pen-kick-card.correct {
-  background: rgba(61, 220, 151, 0.08);
+  background: rgba(31, 122, 80, 0.08);
   border-width: 2px;
   border-color: rgb(61, 220, 151);
 }
 .pen-kick-card.revealed-only {
-  background: rgba(255, 77, 109, 0.06);
+  background: rgba(179, 38, 30, 0.06);
   border-width: 2px;
   border-color: rgb(255, 77, 109);
 }
@@ -3951,7 +3964,7 @@ table.scoreboard-table {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.06);
+  background: rgba(27, 26, 23, 0.06);
   color: var(--text-dim);
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -3993,18 +4006,18 @@ table.scoreboard-table {
   max-width: 560px; /* keeps the pitch portrait-shaped instead of stretching full-width and flat */
   margin: 0 auto;
   padding: 74px 12px;
-  border-radius: var(--radius-md);
+  border-radius: 2px;
   overflow: hidden;
   background:
     repeating-linear-gradient(
       0deg,
-      rgba(255, 255, 255, 0.035) 0,
-      rgba(255, 255, 255, 0.035) 34px,
+      rgba(27, 26, 23, 0.035) 0,
+      rgba(27, 26, 23, 0.035) 34px,
       transparent 34px,
       transparent 68px
     ),
     linear-gradient(180deg, #0f3d1f 0%, #164a28 50%, #0f3d1f 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(27, 26, 23, 0.12);
 }
 /* Full-pitch markings (rendered by the PitchMarkings.vue component) - purely
    decorative, so none of it needs to line up with any particular row of a
@@ -4023,7 +4036,7 @@ table.scoreboard-table {
 .pitch-boundary {
   position: absolute;
   inset: 4%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(27, 26, 23, 0.2);
   border-radius: 3px;
 }
 .pitch-halfway-line {
@@ -4032,7 +4045,7 @@ table.scoreboard-table {
   right: 4%;
   top: 50%;
   height: 2px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(27, 26, 23, 0.2);
   transform: translateY(-1px);
 }
 .pitch-center-circle {
@@ -4041,7 +4054,7 @@ table.scoreboard-table {
   top: 50%;
   width: 22%;
   aspect-ratio: 1 / 1;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(27, 26, 23, 0.2);
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
@@ -4052,7 +4065,7 @@ table.scoreboard-table {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(27, 26, 23, 0.35);
   transform: translate(-50%, -50%);
 }
 /* Penalty area + six-yard box + spot + arc, mirrored at both ends - one end
@@ -4063,7 +4076,7 @@ table.scoreboard-table {
   left: 50%;
   width: 64%;
   height: 15%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(27, 26, 23, 0.2);
   transform: translateX(-50%);
 }
 .pitch-penalty-box.bottom { bottom: 4%; border-bottom: none; }
@@ -4073,7 +4086,7 @@ table.scoreboard-table {
   left: 50%;
   width: 32%;
   height: 6%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(27, 26, 23, 0.2);
   transform: translateX(-50%);
 }
 .pitch-six-yard-box.bottom { bottom: 4%; border-bottom: none; }
@@ -4084,7 +4097,7 @@ table.scoreboard-table {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(27, 26, 23, 0.35);
   transform: translateX(-50%);
 }
 .pitch-penalty-spot.bottom { bottom: calc(4% + 11%); }
@@ -4097,7 +4110,7 @@ table.scoreboard-table {
   left: 50%;
   width: 26%;
   aspect-ratio: 2.2 / 1;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(27, 26, 23, 0.2);
   transform: translateX(-50%);
 }
 .pitch-penalty-arc.bottom {
@@ -4126,7 +4139,7 @@ table.scoreboard-table {
   position: absolute;
   width: 32px;
   height: 32px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(27, 26, 23, 0.2);
   border-radius: 50%;
 }
 .pitch-corner-arc-circle.top-left { top: -16px; left: -16px; }
@@ -4169,7 +4182,7 @@ table.scoreboard-table {
 .pitch-shirt {
   /* --kit-color/--kit-text are set inline per slot (goalkeeper vs outfield) -
      these are just a sane fallback if a slot ever renders without one. */
-  --kit-color: rgba(15, 23, 20, 0.55);
+  --kit-color: rgba(27, 26, 23, 0.55);
   --kit-text: var(--gold);
   position: relative;
   z-index: 0; /* gives the sleeves' negative z-index below a local stacking
@@ -4189,7 +4202,7 @@ table.scoreboard-table {
   font-size: 1.05rem;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
-  box-shadow: inset 0 -7px 9px rgba(0, 0, 0, 0.22), inset 0 3px 5px rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 -7px 9px rgba(0, 0, 0, 0.22), inset 0 3px 5px rgba(27, 26, 23, 0.16);
 }
 .pitch-shirt:hover {
   transform: scale(1.05);
@@ -4198,7 +4211,7 @@ table.scoreboard-table {
   background: var(--teal);
   border-color: var(--teal);
   border-width: 3px;
-  color: #05261a;
+  color: #fbf7ef;
   cursor: default;
   box-shadow: none;
 }
@@ -4217,7 +4230,7 @@ table.scoreboard-table {
   background: var(--coral);
   border-color: var(--coral);
   border-width: 3px;
-  color: #3a0410;
+  color: #fbf7ef;
   cursor: default;
   box-shadow: none;
 }
@@ -4278,7 +4291,7 @@ table.scoreboard-table {
   height: 16px;
   border-radius: 50%;
   background: var(--gold);
-  color: #241c00;
+  color: #fbf7ef;
   font-size: 0.6rem;
   font-weight: 800;
   display: flex;
@@ -4290,7 +4303,7 @@ table.scoreboard-table {
   font-size: 0.74rem;
   font-weight: 500;
   text-align: center;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(27, 26, 23, 0.92);
   line-height: 1.25;
   word-break: break-word;
   min-height: 1.6em;
@@ -4419,7 +4432,7 @@ table.scoreboard-table {
    pages, everywhere they're used (question bank, subjects, and the other admin lists).
    ===================================================================== */
 
-.btn { border-radius: 12px; }
+.btn { border-radius: 2px; }
 
 /* Page header for admin lists: eyebrow + title + blurb on the left, actions on the right. */
 .admin-head {
@@ -4448,35 +4461,35 @@ table.scoreboard-table {
 .field select,
 .field textarea {
   padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.16);
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.08);
+  border-color: rgba(27, 26, 23, 0.16);
 }
 .field input:focus, .field select:focus, .field textarea:focus {
   outline: none;
   border-color: var(--gold);
-  background: rgba(255, 255, 255, 0.11);
-  box-shadow: 0 0 0 4px rgba(242, 183, 5, 0.16);
+  background: rgba(27, 26, 23, 0.11);
+  box-shadow: 0 0 0 4px rgba(216, 67, 43, 0.16);
 }
 .field input::placeholder, .field textarea::placeholder { color: rgba(188, 195, 222, 0.6); }
 
 /* Filter bar / stats panel: one soft glass card */
 .filter-bar,
 .stats-panel {
-  border-radius: 18px;
-  border-color: rgba(255, 255, 255, 0.16);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.05));
-  box-shadow: 0 10px 28px rgba(9, 13, 40, 0.18);
+  border-radius: 2px;
+  border-color: rgba(27, 26, 23, 0.16);
+  background: linear-gradient(160deg, rgba(27, 26, 23, 0.10), rgba(27, 26, 23, 0.05));
+  box-shadow: none;
 }
 .filter-bar { align-items: flex-end; padding: 18px; }
 .filter-bar .field { margin-bottom: 0; }
 
 /* Tables live in a rounded card; the header is a quiet band, rows breathe */
 .table-scroll {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 18px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
-  box-shadow: 0 10px 28px rgba(9, 13, 40, 0.18);
+  border: 1px solid rgba(27, 26, 23, 0.16);
+  border-radius: 2px;
+  background: linear-gradient(160deg, rgba(27, 26, 23, 0.09), rgba(27, 26, 23, 0.04));
+  box-shadow: none;
 }
 .stats-panel .table-scroll {
   border: none;
@@ -4487,19 +4500,19 @@ table.scoreboard-table {
   padding: 12px 14px;
   font-size: 0.72rem;
   letter-spacing: 0.07em;
-  background: rgba(255, 255, 255, 0.06);
-  border-bottom-color: rgba(255, 255, 255, 0.12);
+  background: rgba(27, 26, 23, 0.06);
+  border-bottom-color: rgba(27, 26, 23, 0.12);
   white-space: nowrap;
 }
 .table td {
   padding: 13px 14px;
-  border-bottom-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgba(27, 26, 23, 0.08);
   vertical-align: middle;
 }
 .table tbody tr:last-child td { border-bottom: none; }
-.table tbody tr:hover td { background: rgba(255, 255, 255, 0.07); }
+.table tbody tr:hover td { background: rgba(27, 26, 23, 0.07); }
 .table th.sortable:hover { color: var(--gold); }
-.table-scroll .pagination-bar { margin: 0; padding: 14px; border-top: 1px solid rgba(255, 255, 255, 0.10); }
+.table-scroll .pagination-bar { margin: 0; padding: 14px; border-top: 1px solid rgba(27, 26, 23, 0.10); }
 
 .pagination-bar { gap: 14px; }
 
@@ -4509,8 +4522,8 @@ table.scoreboard-table {
   border-radius: 999px;
   font-size: 0.68rem;
 }
-.tag.category { background: rgba(255, 255, 255, 0.12); }
-.tag.changeable { background: rgba(255, 212, 92, 0.18); color: var(--dq-wait); }
+.tag.category { background: rgba(27, 26, 23, 0.12); }
+.tag.changeable { background: rgba(154, 106, 0, 0.18); color: var(--dq-wait); }
 
 /* Segmented controls (language / category pickers, view tabs) become a row of pills */
 .language-row,
@@ -4522,45 +4535,45 @@ table.scoreboard-table {
 }
 .language-btn,
 .view-tab {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-right: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(27, 26, 23, 0.16);
+  border-right: 1px solid rgba(27, 26, 23, 0.16);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(27, 26, 23, 0.06);
   padding: 8px 15px;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 .language-btn:hover:not(.active),
-.view-tab:hover:not(.active) { background: rgba(255, 255, 255, 0.12); color: var(--text); }
+.view-tab:hover:not(.active) { background: rgba(27, 26, 23, 0.12); color: var(--text); }
 .language-btn.active,
 .view-tab.active {
-  background: linear-gradient(135deg, #8b7cff, #6f61e8);
+  background: linear-gradient(135deg, #3d4f9f, #2f3f86);
   border-color: transparent;
   color: #fff;
-  box-shadow: 0 6px 16px rgba(111, 97, 232, 0.35);
+  box-shadow: none;
 }
-.team-chip { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.16); }
+.team-chip { background: rgba(27, 26, 23, 0.06); border-color: rgba(27, 26, 23, 0.16); }
 
 /* Empty / banner polish */
-.empty-state { border-radius: 18px; border-color: rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.04); }
-.banner { border-radius: 14px; }
+.empty-state { border-radius: 2px; border-color: rgba(27, 26, 23, 0.2); background: rgba(27, 26, 23, 0.04); }
+.banner { border-radius: 2px; }
 
 /* Modals: rounder, roomier, with a clear title */
 .modal {
   padding: 30px;
-  border-radius: 24px;
-  border-color: rgba(255, 255, 255, 0.18);
+  border-radius: 2px;
+  border-color: rgba(27, 26, 23, 0.18);
 }
 .modal > h2:first-child {
   font-size: 1.45rem;
   margin: 0 0 18px;
 }
 .modal .field:last-of-type { margin-bottom: 8px; }
-.modal-backdrop { background: rgba(12, 16, 44, 0.66); }
+.modal-backdrop { background: rgba(27, 26, 23, 0.55); }
 @media (max-width: 760px) {
   .filter-bar { align-items: stretch; }
 }
 @media (max-width: 640px) {
-  .modal { padding: 22px 18px; border-radius: 20px; }
+  .modal { padding: 22px 18px; border-radius: 2px; }
   .modal-backdrop { padding: 20px 12px; }
 }
 
@@ -4573,7 +4586,7 @@ table.scoreboard-table {
   padding-top: 14px;
   position: sticky;
   bottom: 0;
-  background: linear-gradient(to bottom, rgba(41, 50, 92, 0), var(--ink-raised) 38%);
+  background: linear-gradient(to bottom, rgba(251, 247, 239, 0), var(--ink-raised) 38%);
 }
 /* A checkbox row with a description (e.g. "Answer could change over time") reads as one option card. */
 .modal input[type="checkbox"] { width: 18px; height: 18px; }
@@ -4583,9 +4596,9 @@ table.scoreboard-table {
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  border: 1px solid rgba(27, 26, 23, 0.14);
+  background: rgba(27, 26, 23, 0.06);
 }
 .option-card input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
 .option-card label { font-size: 0.92rem !important; letter-spacing: 0 !important; color: var(--text) !important; }
@@ -4628,9 +4641,9 @@ table.scoreboard-table {
 /* Every "checkbox + title (+ description)" toggle reads as the same option card. */
 .field:has(> label > input[type="checkbox"]) {
   padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  border: 1px solid rgba(27, 26, 23, 0.14);
+  background: rgba(27, 26, 23, 0.06);
 }
 .field:has(> label > input[type="checkbox"]) > .page-subtitle { margin-bottom: 0; }
 .field:has(> label > input[type="checkbox"]) > label {

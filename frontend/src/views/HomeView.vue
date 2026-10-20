@@ -31,7 +31,7 @@
              every click still goes through Google's real, working auth flow underneath. -->
         <div
           v-show="clientIdConfigured && cookieConsent.state.status !== 'accepted'"
-          style="text-align:center; padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); color:var(--text-dim); font-size:0.85rem;"
+          style="text-align:center; padding:14px; border:1px solid var(--border); border-radius: 2px; color:var(--text-dim); font-size:0.85rem;"
         >
           Sign in with Google needs the optional cookie setting turned on.
           <div style="margin-top:8px;">
@@ -159,10 +159,10 @@
         <span class="landing-eyebrow-dot"></span>
         A new daily quiz, every day
       </span>
-      <h1>Quizzes, party games and trivia - <span class="landing-hero-accent">all in one place</span></h1>
+      <h1>Quiz night, <span class="landing-hero-accent">every night.</span></h1>
       <p class="page-subtitle landing-lede">
-        Build a custom quiz from a shared question bank, take on the daily quiz, or gather
-        friends for a party game - on one screen or each on your own phone.
+        Take the daily quiz, build your own from a shared question bank, or pass the phone around
+        for a party game - on one screen or each on your own.
       </p>
     </section>
 

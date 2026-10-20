@@ -48,7 +48,7 @@
             {{ rerolling ? 'Finding more…' : '↻ Show 3 different boards' }}
           </button>
         </template>
-        <div v-else class="banner" style="text-align:center; background:rgba(255,255,255,0.07);">
+        <div v-else class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
           Waiting for <strong style="color:var(--gold);">{{ pickerName }}</strong> to choose a board…
         </div>
       </div>
@@ -109,7 +109,7 @@
         @cancel="showSkipConfirm = false"
       />
 
-      <div v-if="!state.lineupComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(255,255,255,0.07);">
+      <div v-if="!state.lineupComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
         Waiting for {{ currentTurnName }}'s turn…
       </div>
 
@@ -168,7 +168,7 @@
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
       <button class="btn btn-secondary btn-sm no-print" @click="leave">← Leave game</button>
-      <span class="tag no-print" style="background:rgba(255,255,255,0.06); color:var(--text-dim);">Room: {{ roomCode }}</span>
+      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">Room: {{ roomCode }}</span>
     </div>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">

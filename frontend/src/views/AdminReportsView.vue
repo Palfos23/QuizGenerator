@@ -82,7 +82,7 @@ async function confirmResolve() {
 }
 
 function statusStyle(status) {
-  if (status === 'RESOLVED') return { background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }
-  return { background: 'rgba(242,183,5,0.15)', color: 'var(--gold)' }
+  if (status === 'RESOLVED') return { background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }
+  return { background: 'rgba(216, 67, 43, 0.15)', color: 'var(--gold)' }
 }
 </script>

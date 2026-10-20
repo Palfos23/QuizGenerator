@@ -15,7 +15,7 @@
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
-      <div v-if="savedRoomCode" class="banner" style="background:rgba(242,183,5,0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div v-if="savedRoomCode" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <span>You have a game in progress in room <strong>{{ savedRoomCode }}</strong>.</span>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-primary btn-sm" :disabled="rejoining" @click="rejoinSavedRoom">
@@ -25,7 +25,7 @@
         </div>
       </div>
 
-      <div v-if="savedPassAndPlay" class="banner" style="background:rgba(242,183,5,0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div v-if="savedPassAndPlay" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <span>You have a pass-the-device game in progress.</span>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Resume</button>
@@ -160,7 +160,7 @@
             </div>
           </div>
           <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">Disconnected</span>
-            <span v-else class="tag" :style="{ background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }">In room</span>
+            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">In room</span>
         </div>
       </div>
 

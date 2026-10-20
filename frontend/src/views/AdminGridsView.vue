@@ -39,8 +39,8 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ g.title }}
-              <span v-if="g.excludedFromGridBattle" class="tag" style="background:rgba(255,77,109,0.15); color:var(--coral); margin-left:6px;">Not in Grid Battle</span>
-              <span v-if="g.entireCategoryPool" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
+              <span v-if="g.excludedFromGridBattle" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">Not in Grid Battle</span>
+              <span v-if="g.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">Auto pool</span>
               <span v-if="g.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">Can expire</span>
             </div>
             <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} entries · {{ g.maxStrikes }} {{ g.maxStrikes === 1 ? 'life' : 'lives' }} · week of {{ g.weekStartDate }}</div>

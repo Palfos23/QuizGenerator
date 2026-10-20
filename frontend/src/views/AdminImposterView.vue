@@ -127,7 +127,7 @@
 
       <div v-if="!tiles.length" class="empty-state" style="padding:20px;">No subjects added yet - search above.</div>
 
-      <div v-for="(t, i) in tiles" :key="i" class="field" style="border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px;">
+      <div v-for="(t, i) in tiles" :key="i" class="field" style="border:1px solid var(--border); border-radius: 2px; padding:12px 14px;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
           <strong>{{ t.name }}</strong>
           <div style="display:flex; gap:6px;">

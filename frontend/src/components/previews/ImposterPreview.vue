@@ -43,9 +43,9 @@ const tiles = [
 .ip-tile {
   position: relative;
   height: 58px;
-  border-radius: 8px;
+  border-radius: 2px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.07);
+  background: rgba(27, 26, 23, 0.07);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,11 +63,11 @@ const tiles = [
 }
 .ip-tile.fit {
   border-color: var(--teal);
-  background: rgba(61, 220, 151, 0.12);
+  background: rgba(31, 122, 80, 0.12);
 }
 .ip-tile.imposter {
   border-color: var(--coral);
-  background: rgba(255, 77, 109, 0.14);
+  background: rgba(179, 38, 30, 0.14);
 }
 .ip-tile.fit .ip-name,
 .ip-tile.imposter .ip-name {

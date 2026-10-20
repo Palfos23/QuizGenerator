@@ -15,11 +15,11 @@
 
       <div class="candidate-list" style="max-height:380px; overflow-y:auto;">
         <p v-if="!visibleItems.length" class="page-subtitle" style="margin:0;">Every name here already matches a subject.</p>
-        <div v-for="item in visibleItems" :key="item.key" style="display:flex; flex-direction:column; gap:6px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px;">
+        <div v-for="item in visibleItems" :key="item.key" style="display:flex; flex-direction:column; gap:6px; border:1px solid var(--border); border-radius: 2px; padding:10px 12px;">
           <label class="candidate-row" style="cursor:pointer; border:none; padding:0;">
             <input type="checkbox" v-model="item.include" style="width:auto;" />
             <span style="flex:1; min-width:140px; font-weight:600;">{{ item.name }}</span>
-            <span v-if="item.athlete" class="tag" style="background:rgba(61,220,151,0.15); color:var(--teal); flex-shrink:0;">✓ {{ item.athlete.name }}</span>
+            <span v-if="item.athlete" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); flex-shrink:0;">✓ {{ item.athlete.name }}</span>
             <button
               v-if="pool.length"
               type="button"

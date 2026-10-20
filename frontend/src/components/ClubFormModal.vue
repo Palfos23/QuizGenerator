@@ -42,7 +42,7 @@
         <label>Hint badge color <span class="picker-hint">shown on grid tiles instead of the default gold</span></label>
         <div style="display:flex; align-items:center; gap:10px;">
           <input type="color" v-model="colorValue" style="width:52px; height:38px; padding:2px; cursor:pointer;" />
-          <input type="text" v-model="local.color" placeholder="#F2B705 (leave blank for default gold)" style="flex:1;" />
+          <input type="text" v-model="local.color" placeholder="#d8432b (leave blank for default gold)" style="flex:1;" />
         </div>
       </div>
 
@@ -86,7 +86,7 @@ const local = reactive(props.club
 // gold just for what the swatch displays, without writing that default back until
 // the admin actually picks something.
 const colorValue = computed({
-  get: () => local.color || '#f2b705',
+  get: () => local.color || '#d8432b',
   set: (val) => { local.color = val }
 })
 

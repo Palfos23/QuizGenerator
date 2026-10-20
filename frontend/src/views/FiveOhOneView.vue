@@ -14,7 +14,7 @@
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
-      <div v-if="savedRoomCode" class="banner" style="background:rgba(242,183,5,0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div v-if="savedRoomCode" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <span>You have a game in progress in room <strong>{{ savedRoomCode }}</strong>.</span>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-primary btn-sm" :disabled="rejoining" @click="rejoinSavedRoom">
@@ -24,7 +24,7 @@
         </div>
       </div>
 
-      <div v-if="savedPassAndPlay" class="banner" style="background:rgba(242,183,5,0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div v-if="savedPassAndPlay" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <span>You have a pass-the-device game in progress.</span>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">Resume</button>
@@ -49,7 +49,7 @@
 
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>Not sure how it works? See an example</summary>
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(255,255,255,0.06);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgba(27, 26, 23, 0.06);">
           <p style="margin-top:0;">
             Say the category is "Premier League appearances." You're on 501, and you search for a player -
             say one with <strong>136</strong> appearances. That's under 180 and not one of the unreachable numbers,
@@ -192,7 +192,7 @@
             </div>
           </div>
           <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">Disconnected</span>
-            <span v-else class="tag" :style="{ background: 'rgba(61,220,151,0.15)', color: 'var(--teal)' }">In room</span>
+            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">In room</span>
         </div>
       </div>
 

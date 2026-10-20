@@ -7,7 +7,7 @@
         </div>
         <p style="font-size:1.4rem; font-weight:700; margin:0 0 20px;">{{ groupDigits ? formatNumber(targetValue) : targetValue }} {{ statLabel }}</p>
 
-        <div v-if="answeredPlayers.length" style="text-align:left; margin-bottom:20px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 14px;">
+        <div v-if="answeredPlayers.length" style="text-align:left; margin-bottom:20px; border:1px solid var(--border); border-radius: 2px; padding:10px 14px;">
           <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
             Answered so far this round
           </div>

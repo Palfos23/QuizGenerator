@@ -44,7 +44,7 @@
       <div v-else-if="state.revealed" class="banner error">
         <div><strong>Game over.</strong> You found {{ guessedCount }} / {{ state.entries.length }} before revealing the rest.</div>
       </div>
-      <div v-else-if="state.overtime" class="banner" style="background:rgba(139,124,255,0.15); color:var(--violet); border:1px solid rgba(139,124,255,0.35);">
+      <div v-else-if="state.overtime" class="banner" style="background:rgba(61, 79, 159, 0.15); color:var(--violet); border:1px solid rgba(61, 79, 159, 0.35);">
         Overtime - further guesses don't cost strikes, and won't count toward a clean solve.
       </div>
       <div v-else-if="gameOver" class="banner error">

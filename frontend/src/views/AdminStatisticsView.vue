@@ -160,7 +160,7 @@
         </section>
         <section class="dq-card stat-section">
           <h2>Questions by language</h2>
-          <StatBarList :items="stats.questionsByLanguage" color="#a99cff" empty="No questions yet." />
+          <StatBarList :items="stats.questionsByLanguage" color="#3d4f9f" empty="No questions yet." />
         </section>
       </div>
 
@@ -290,29 +290,30 @@ onMounted(load)
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
-  border-radius: 16px;
+  border-radius: 2px;
   text-decoration: none;
   color: var(--text);
-  background: var(--dq-wait-bg);
-  border: 1px solid rgba(255, 212, 92, 0.45);
-  transition: transform 0.15s ease, background 0.15s ease;
+  background: var(--ink-raised);
+  border: 2px solid var(--rule);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.stat-attn:hover { transform: translateY(-2px); }
-.stat-attn.is-clear { background: var(--dq-card); border-color: var(--dq-line); }
+.stat-attn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--gold); }
+.stat-attn.is-clear { border-color: var(--line); }
+.stat-attn.is-clear:hover { box-shadow: none; transform: none; }
 .stat-attn-count {
   display: grid;
   place-items: center;
   min-width: 44px;
   height: 44px;
   padding: 0 8px;
-  border-radius: 12px;
+  border-radius: 2px;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.3rem;
-  color: #3a2c00;
-  background: var(--dq-wait);
+  font-weight: 600;
+  font-size: 1.4rem;
+  color: #fff;
+  background: var(--gold);
 }
-.stat-attn.is-clear .stat-attn-count { color: var(--dq-ok); background: var(--dq-ok-bg); }
+.stat-attn.is-clear .stat-attn-count { color: var(--teal); background: transparent; border: 1.5px solid var(--teal); }
 .stat-attn-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .stat-attn-text small { color: var(--text-dim); font-size: 0.82rem; }
 .stat-attn .dq-chevron { flex-shrink: 0; }
@@ -327,25 +328,23 @@ onMounted(load)
 .stat-kpi {
   --accent: var(--gold);
   padding: 18px 20px;
-  border-radius: 18px;
-  border: 1px solid var(--dq-line);
-  background:
-    radial-gradient(260px circle at 100% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.05));
-  box-shadow: var(--dq-shadow);
+  border-radius: 2px;
+  border: 2px solid var(--rule);
+  background: var(--ink-raised);
+  box-shadow: none;
 }
 .stat-kpi--gold { --accent: var(--gold); }
 .stat-kpi--teal { --accent: var(--teal); }
-.stat-kpi--violet { --accent: #a99cff; }
-.stat-kpi--coral { --accent: #ff7893; }
+.stat-kpi--violet { --accent: var(--violet); }
+.stat-kpi--coral { --accent: var(--coral); }
 .stat-kpi-value {
   font-family: var(--font-display);
-  font-size: 2.1rem;
-  font-weight: 700;
+  font-size: 2.3rem;
+  font-weight: 600;
   line-height: 1.1;
 }
 .stat-kpi-label { margin-top: 4px; color: var(--text-dim); font-size: 0.86rem; }
-.stat-kpi-note { margin-top: 8px; font-size: 0.8rem; font-weight: 650; color: var(--accent); }
+.stat-kpi-note { margin-top: 8px; font-size: 0.8rem; font-weight: 600; color: var(--accent); }
 
 /* Sections */
 .stat-section { margin-bottom: 20px; }
@@ -394,12 +393,12 @@ onMounted(load)
 .stat-bar-col-track { flex: 1; width: 100%; display: flex; align-items: flex-end; }
 .stat-bar-col-fill {
   width: 100%;
-  background: linear-gradient(180deg, var(--gold), #e08a1a);
-  border-radius: 6px 6px 2px 2px;
+  background: var(--text);
+  border-radius: 0;
   min-height: 2px;
   transition: height 0.4s ease, filter 0.15s ease;
 }
-.stat-bar-col-fill--teal { background: linear-gradient(180deg, #55e8ac, #1f9f78); }
+.stat-bar-col-fill--teal { background: var(--teal); }
 .stat-bar-col:hover .stat-bar-col-fill { filter: brightness(1.18); }
 .stat-bar-col-label {
   margin-top: 6px;
@@ -426,8 +425,8 @@ onMounted(load)
 .stat-num-label { font-size: 0.72rem; color: var(--text-dim); }
 .stat-card-empty { margin-top: 12px; color: var(--text-dim); font-size: 0.86rem; }
 .stat-range { margin-top: 16px; }
-.stat-range-track { position: relative; height: 8px; background: rgba(255, 255, 255, 0.10); border-radius: 999px; }
-.stat-range-fill { position: absolute; top: 0; bottom: 0; background: rgba(85, 232, 172, 0.45); border-radius: 999px; min-width: 2px; }
+.stat-range-track { position: relative; height: 8px; background: rgba(27, 26, 23, 0.10); border-radius: 999px; }
+.stat-range-fill { position: absolute; top: 0; bottom: 0; background: rgba(31, 122, 80, 0.45); border-radius: 999px; min-width: 2px; }
 .stat-range-avg { position: absolute; top: -3px; width: 3px; height: 14px; background: var(--dq-ok); border-radius: 2px; transform: translateX(-50%); }
 .stat-range-ends { display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.7rem; color: var(--text-dim); }
 
