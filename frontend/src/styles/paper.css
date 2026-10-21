@@ -474,3 +474,22 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 
 /* English labels are longer - keep nav items on one line rather than wrapping them in two */
 .top-nav .nav-link, .top-nav .btn, .top-nav-dropdown-toggle { white-space: nowrap; }
+
+/* "Show earlier winners" - a quiet text button under last week's winner */
+.dq-more-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 2px;
+  padding: 4px 0;
+  background: none;
+  border: none;
+  border-bottom: 1.5px solid var(--rule);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dq-more-toggle svg { width: 14px; height: 14px; transition: transform 0.15s ease; }
+.dq-more-toggle svg.is-open { transform: rotate(180deg); }
