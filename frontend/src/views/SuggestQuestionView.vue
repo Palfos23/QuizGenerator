@@ -132,8 +132,8 @@ function statusLabel(status) {
   return { PENDING: _t('Venter på gjennomgang§SuggestQuestionViewJ'), APPROVED: _t('Godkjent'), REJECTED: _t('Avvist') }[status] || status
 }
 function statusStyle(status) {
-  if (status === 'APPROVED') return { background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }
-  if (status === 'REJECTED') return { background: 'rgba(179, 38, 30, 0.15)', color: 'var(--coral)' }
-  return { background: 'rgba(216, 67, 43, 0.15)', color: 'var(--gold)' }
+  if (status === 'APPROVED') return { background: 'rgb(var(--teal-rgb) / 0.15)', color: 'var(--teal)' }
+  if (status === 'REJECTED') return { background: 'rgb(var(--coral-rgb) / 0.15)', color: 'var(--coral)' }
+  return { background: 'rgb(var(--gold-rgb) / 0.15)', color: 'var(--gold)' }
 }
 </script>

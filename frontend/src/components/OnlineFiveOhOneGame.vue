@@ -77,7 +77,7 @@
           </div>
         </div>
       </div>
-      <div v-else class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
+      <div v-else class="banner" style="text-align:center; background:rgb(var(--fg-rgb) / 0.07);">
         {{ $t('Venter på') }} {{ currentTurnName }}{{ $t('sin tur…') }}
       </div>
 

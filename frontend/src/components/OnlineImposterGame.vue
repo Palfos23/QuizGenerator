@@ -36,7 +36,7 @@
             {{ rerolling ? $t('Finner flere…') : $t('↻ Vis 3 andre brett') }}
           </button>
         </template>
-        <div v-else class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
+        <div v-else class="banner" style="text-align:center; background:rgb(var(--fg-rgb) / 0.07);">
           {{ $t('Venter på') }} <strong style="color:var(--gold);">{{ pickerName }}</strong> {{ $t('å velge et brett…') }}
         </div>
       </div>
@@ -122,7 +122,7 @@
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
       <button class="btn btn-secondary btn-sm no-print" @click="leave">{{ $t('← Forlat spillet') }}</button>
-      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
+      <span class="tag no-print" style="background:rgb(var(--fg-rgb) / 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
     </div>
 
     <div v-if="flipOverlay" class="imposter-flip-overlay" :class="flipOverlay.imposter ? 'imposter-hit' : 'imposter-fit'">

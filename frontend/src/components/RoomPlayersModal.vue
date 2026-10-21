@@ -19,7 +19,7 @@
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
             <span v-if="p.connected === false && p.id !== yourParticipantId" class="tag offline">{{ $t('Frakoblet§RoomPlayersModalT') }}</span>
-            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">{{ $t('I rommet') }}</span>
+            <span v-else class="tag" :style="{ background: 'rgb(var(--teal-rgb) / 0.15)', color: 'var(--teal)' }">{{ $t('I rommet') }}</span>
             <button
               v-if="isHost && !p.host && p.id !== yourParticipantId"
               class="btn btn-danger btn-sm"

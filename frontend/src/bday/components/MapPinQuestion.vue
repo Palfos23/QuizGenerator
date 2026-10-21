@@ -176,7 +176,7 @@ function onPointerCancel(event) {
   cursor: crosshair;
   touch-action: none; /* the page must not scroll or zoom while the map is being pinched / dragged */
   user-select: none;
-  background: rgba(27, 26, 23, 0.04);
+  background: rgb(var(--fg-rgb) / 0.04);
 }
 .bday-map.is-dragging { cursor: grabbing; }
 
@@ -206,8 +206,8 @@ function onPointerCancel(event) {
   width: 36px;
   height: 36px;
   border-radius: 2px;
-  border: 1px solid rgba(27, 26, 23, 0.3);
-  background: rgba(243, 237, 225, 0.96);
+  border: 1px solid rgb(var(--fg-rgb) / 0.3);
+  background: rgb(var(--page-rgb) / 0.96);
   color: var(--text);
   font-size: 1.2rem;
   font-weight: 700;

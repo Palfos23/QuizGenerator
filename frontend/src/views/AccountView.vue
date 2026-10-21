@@ -120,8 +120,8 @@ async function deleteAccount(password) {
   min-width: 200px;
   padding: 12px 14px;
   border-radius: 2px;
-  border: 1px solid rgba(27, 26, 23, 0.16);
-  background: rgba(27, 26, 23, 0.08);
+  border: 1px solid rgb(var(--fg-rgb) / 0.16);
+  background: rgb(var(--fg-rgb) / 0.08);
   color: var(--text);
   font-size: 0.95rem;
   font-family: var(--font-body);
@@ -129,6 +129,6 @@ async function deleteAccount(password) {
 .display-name-row input:focus {
   outline: none;
   border-color: var(--gold);
-  box-shadow: 0 0 0 4px rgba(216, 67, 43, 0.16);
+  box-shadow: 0 0 0 4px rgb(var(--gold-rgb) / 0.16);
 }
 </style>

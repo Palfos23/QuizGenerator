@@ -426,8 +426,8 @@ onMounted(load)
 .stat-num-label { font-size: 0.72rem; color: var(--text-dim); }
 .stat-card-empty { margin-top: 12px; color: var(--text-dim); font-size: 0.86rem; }
 .stat-range { margin-top: 16px; }
-.stat-range-track { position: relative; height: 8px; background: rgba(27, 26, 23, 0.10); border-radius: 999px; }
-.stat-range-fill { position: absolute; top: 0; bottom: 0; background: rgba(31, 122, 80, 0.45); border-radius: 999px; min-width: 2px; }
+.stat-range-track { position: relative; height: 8px; background: rgb(var(--fg-rgb) / 0.10); border-radius: 999px; }
+.stat-range-fill { position: absolute; top: 0; bottom: 0; background: rgb(var(--teal-rgb) / 0.45); border-radius: 999px; min-width: 2px; }
 .stat-range-avg { position: absolute; top: -3px; width: 3px; height: 14px; background: var(--dq-ok); border-radius: 2px; transform: translateX(-50%); }
 .stat-range-ends { display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.7rem; color: var(--text-dim); }
 

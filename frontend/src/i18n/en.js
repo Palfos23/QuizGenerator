@@ -247,6 +247,8 @@ export default {
  "Bytt på å gjette - gjetter du riktig, avsløres ruten (og du får ett poeng), gjetter du feil, mister du et liv. Spillet fortsetter til et grid er helt løst eller alle er tomme for liv.": "Take turns guessing - get it right and the tile reveals (and you score a point), get it wrong and you lose a life. Play continues until a grid is fully solved or everyone's out of lives.",
  "Bytt på å nevne noen nær målet. Hver runde blir den": "Take turns naming someone close to the target. Each round the",
  "Bytt på å nevne spillere som passer.": "Take turns naming players that fit.",
+ "Bytt til lyst tema": "Switch to light theme",
+ "Bytt til mørkt tema": "Switch to dark theme",
  "CSV trenger minst kolonnene \"name\" og \"sport\".": "CSV needs at least \"name\" and \"sport\" columns.",
  "CSV-format: én rad per oppføring,": "CSV format: one row per entry,",
  "CSV-format: én rad per svar,": "CSV format: one row per answer,",

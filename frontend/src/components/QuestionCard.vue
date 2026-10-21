@@ -7,7 +7,7 @@
         <span class="tag difficulty-tag" :style="{ background: difficultyColor(question.difficultyLevel), color: difficultyTextColor(question.difficultyLevel) }">
           {{ question.difficultyLevel }}/10
         </span>
-        <span v-for="name in (question.labelNames || [])" :key="name" class="tag" style="background:rgba(61, 79, 159, 0.15); color:#3d4f9f;">{{ name }}</span>
+        <span v-for="name in (question.labelNames || [])" :key="name" class="tag" style="background:rgb(var(--violet-rgb) / 0.15); color:#3d4f9f;">{{ name }}</span>
       </div>
     </div>
 

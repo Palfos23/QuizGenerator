@@ -64,12 +64,12 @@ const clues = [
   gap: 12px;
   padding: 10px 12px;
   border-radius: 2px;
-  background: rgba(27, 26, 23, 0.025);
+  background: rgb(var(--fg-rgb) / 0.025);
   border: 1px solid var(--border);
 }
 .fp-clue.win {
   border-color: var(--gold);
-  background: rgba(216, 67, 43, 0.08);
+  background: rgb(var(--gold-rgb) / 0.08);
 }
 .fp-num {
   flex-shrink: 0;
@@ -79,14 +79,14 @@ const clues = [
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: rgba(27, 26, 23, 0.06);
+  background: rgb(var(--fg-rgb) / 0.06);
   color: var(--text-dim);
   font-size: 0.72rem;
   font-weight: 700;
 }
 .fp-clue.win .fp-num {
   background: var(--gold);
-  color: #fbf7ef;
+  color: var(--ink-raised);
 }
 .fp-body {
   min-width: 0;
@@ -113,8 +113,8 @@ const clues = [
 }
 .fp-chip.win {
   color: var(--gold);
-  border-color: rgba(216, 67, 43, 0.5);
-  background: rgba(216, 67, 43, 0.12);
+  border-color: rgb(var(--gold-rgb) / 0.5);
+  background: rgb(var(--gold-rgb) / 0.12);
 }
 .fp-answer {
   display: flex;

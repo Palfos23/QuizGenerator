@@ -45,7 +45,7 @@ const max = computed(() => Math.max(...props.items.map(i => i.count), 1))
   text-overflow: ellipsis;
 }
 .stat-barlist-track {
-  background: rgba(27, 26, 23, 0.10);
+  background: rgb(var(--fg-rgb) / 0.10);
   border-radius: 0;
   height: 10px;
   overflow: hidden;

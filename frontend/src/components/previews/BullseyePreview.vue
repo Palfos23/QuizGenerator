@@ -47,11 +47,11 @@ const guesses = [
   border-radius: 50%;
   background:
     radial-gradient(circle,
-      rgba(179, 38, 30, 0.6) 0 15%,
+      rgb(var(--coral-rgb) / 0.6) 0 15%,
       transparent 15% 22%,
-      rgba(216, 67, 43, 0.4) 22% 42%,
+      rgb(var(--gold-rgb) / 0.4) 22% 42%,
       transparent 42% 48%,
-      rgba(27, 26, 23, 0.16) 48% 72%,
+      rgb(var(--fg-rgb) / 0.16) 48% 72%,
       transparent 72%);
 }
 .bp-val {
@@ -82,7 +82,7 @@ const guesses = [
   gap: 10px;
   padding: 7px 12px;
   border-radius: 2px;
-  background: rgba(27, 26, 23, 0.025);
+  background: rgb(var(--fg-rgb) / 0.025);
   border: 1px solid var(--border);
   font-size: 0.76rem;
 }
@@ -98,10 +98,10 @@ const guesses = [
   min-width: 54px;
   text-align: right;
 }
-.bp-guess.best { border-color: var(--teal); background: rgba(31, 122, 80, 0.09); }
+.bp-guess.best { border-color: var(--teal); background: rgb(var(--teal-rgb) / 0.09); }
 .bp-guess.best .bp-flag { color: var(--teal); }
 .bp-guess.safe .bp-flag { color: var(--text-dim); }
-.bp-guess.out { opacity: 0.55; border-color: rgba(179, 38, 30, 0.4); }
+.bp-guess.out { opacity: 0.55; border-color: rgb(var(--coral-rgb) / 0.4); }
 .bp-guess.out .bp-pick,
 .bp-guess.out .bp-who { text-decoration: line-through; }
 .bp-guess.out .bp-flag { color: var(--coral); }

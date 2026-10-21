@@ -44,7 +44,7 @@
   position: relative;
   height: 12px;
   border-radius: 999px;
-  background: rgba(27, 26, 23, 0.06);
+  background: rgb(var(--fg-rgb) / 0.06);
   /* Bottom margin has to clear the "hi"/"trap" pin labels below, which are
      ~2 lines tall and absolutely positioned starting 20px under the track -
      too little room here and .tp-scale (the safe/risky/overshoot captions,
@@ -57,7 +57,7 @@
   position: absolute;
   inset: 0 32% 0 0;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(31, 122, 80, 0.25), var(--teal));
+  background: linear-gradient(90deg, rgb(var(--teal-rgb) / 0.25), var(--teal));
 }
 .tp-danger {
   position: absolute;
@@ -66,7 +66,7 @@
   left: 68%;
   right: 0;
   border-radius: 0 999px 999px 0;
-  background: repeating-linear-gradient(-45deg, rgba(179, 38, 30, 0.3) 0 6px, rgba(179, 38, 30, 0.12) 6px 12px);
+  background: repeating-linear-gradient(-45deg, rgb(var(--coral-rgb) / 0.3) 0 6px, rgb(var(--coral-rgb) / 0.12) 6px 12px);
 }
 .tp-danger span {
   position: absolute;

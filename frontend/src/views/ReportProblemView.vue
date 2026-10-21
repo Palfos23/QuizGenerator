@@ -99,7 +99,7 @@ async function submit() {
 }
 
 function statusStyle(status) {
-  if (status === 'RESOLVED') return { background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }
-  return { background: 'rgba(216, 67, 43, 0.15)', color: 'var(--gold)' }
+  if (status === 'RESOLVED') return { background: 'rgb(var(--teal-rgb) / 0.15)', color: 'var(--teal)' }
+  return { background: 'rgb(var(--gold-rgb) / 0.15)', color: 'var(--gold)' }
 }
 </script>

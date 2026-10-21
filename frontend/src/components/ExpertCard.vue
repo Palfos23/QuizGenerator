@@ -63,7 +63,7 @@ const detail = computed(() => {
   border: 2px solid var(--rule);
   text-align: left;
 }
-.expert-card.is-ahead { border-color: var(--teal); background: rgba(31, 122, 80, 0.08); }
+.expert-card.is-ahead { border-color: var(--teal); background: rgb(var(--teal-rgb) / 0.08); }
 
 .expert-card-star { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: var(--gold); }
 .expert-card.is-ahead .expert-card-star { color: var(--teal); }

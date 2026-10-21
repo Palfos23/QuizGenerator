@@ -39,8 +39,8 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ g.title }}
-              <span v-if="g.excludedFromGridBattle" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">{{ $t('Ikke i Grid Battle') }}</span>
-              <span v-if="g.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">{{ $t('Automatisk utvalg') }}</span>
+              <span v-if="g.excludedFromGridBattle" class="tag" style="background:rgb(var(--coral-rgb) / 0.15); color:var(--coral); margin-left:6px;">{{ $t('Ikke i Grid Battle') }}</span>
+              <span v-if="g.entireCategoryPool" class="tag" style="background:rgb(var(--teal-rgb) / 0.15); color:var(--teal); margin-left:6px;">{{ $t('Automatisk utvalg') }}</span>
               <span v-if="g.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">{{ $t('Kan utløpe') }}</span>
             </div>
             <div class="saved-quiz-meta">{{ sportLabel(g.sport) }} · {{ g.entryCount }} {{ $t('oppføringer ·') }} {{ $t('{0} liv¦{0} liv', [g.maxStrikes]) }} {{ $t('· uke') }} {{ g.weekStartDate }}</div>

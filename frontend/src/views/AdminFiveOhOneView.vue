@@ -29,7 +29,7 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ c.title }}
-              <span v-if="c.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">{{ $t('Automatisk utvalg') }}</span>
+              <span v-if="c.entireCategoryPool" class="tag" style="background:rgb(var(--teal-rgb) / 0.15); color:var(--teal); margin-left:6px;">{{ $t('Automatisk utvalg') }}</span>
               <span v-if="c.canExpire" class="tag" style="background:rgba(255,196,0,0.15); color:var(--gold); margin-left:6px;">{{ $t('Kan utløpe') }}</span>
             </div>
             <div class="saved-quiz-meta">{{ c.entryCount }} {{ $t('oppføringer') }}<span v-if="c.description"> · {{ c.description }}</span></div>
@@ -131,7 +131,7 @@
         {{ $t('CSV-format: én rad per oppføring,') }} <code>name,value</code> - e.g. <code>Mohamed Salah,233</code>{{ $t('. Legger til (eller oppdaterer) det som står under, erstatter det ikke.') }}
       </p>
 
-      <div v-if="csvUnmatchedNames.length" style="background:rgba(216, 67, 43, 0.1); border:1px solid rgba(216, 67, 43, 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:14px;">
+      <div v-if="csvUnmatchedNames.length" style="background:rgb(var(--gold-rgb) / 0.1); border:1px solid rgb(var(--gold-rgb) / 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:14px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
           <strong style="color:var(--gold);">
             {{ csvUnmatchedNames.length }} navn ble ikke funnet i "{{ form.sport }}"
@@ -187,7 +187,7 @@
             <span
               v-if="e.athleteId"
               class="tag"
-              style="background:rgba(31, 122, 80, 0.15); color:var(--teal); flex-shrink:0;"
+              style="background:rgb(var(--teal-rgb) / 0.15); color:var(--teal); flex-shrink:0;"
               :title="$t('Koblet til et emne')"
             >{{ $t('✓ Emne') }}</span>
             <input

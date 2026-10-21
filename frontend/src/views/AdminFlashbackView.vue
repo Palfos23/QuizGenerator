@@ -38,8 +38,8 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ y.title }}
-              <span v-if="y.excludedFromFlashback" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">{{ $t('Ikke i Flashback') }}</span>
-              <span v-if="y.canExpire" class="tag" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim); margin-left:6px;">{{ $t('Kan utløpe') }}</span>
+              <span v-if="y.excludedFromFlashback" class="tag" style="background:rgb(var(--coral-rgb) / 0.15); color:var(--coral); margin-left:6px;">{{ $t('Ikke i Flashback') }}</span>
+              <span v-if="y.canExpire" class="tag" style="background:rgb(var(--fg-rgb) / 0.06); color:var(--text-dim); margin-left:6px;">{{ $t('Kan utløpe') }}</span>
             </div>
             <div class="saved-quiz-meta">
               {{ y.year }} · {{ $t('{0} hint¦{0} hint', [y.hintCount]) }}
@@ -106,7 +106,7 @@
         <div v-else style="display:flex; flex-direction:column; gap:8px;">
           <div v-for="(hint, i) in form.hints" :key="i" class="candidate-row">
             <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
-              <span class="tag" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim); flex-shrink:0;">{{ i + 1 }}</span>
+              <span class="tag" style="background:rgb(var(--fg-rgb) / 0.06); color:var(--text-dim); flex-shrink:0;">{{ i + 1 }}</span>
               <input type="text" v-model="form.hints[i]" :placeholder="`Hint ${i + 1}`" style="flex:1;" />
             </div>
             <div style="display:flex; gap:4px;">

@@ -126,7 +126,7 @@
         <div v-else>
           <div v-for="(k, i) in kicks" :key="i" class="candidate-row">
             <div style="display:flex; align-items:center; gap:8px; font-weight:600;">
-              <span class="tag" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">{{ i + 1 }}</span>
+              <span class="tag" style="background:rgb(var(--fg-rgb) / 0.06); color:var(--text-dim);">{{ i + 1 }}</span>
               {{ k.name }} <span style="color:var(--text-dim); font-weight:400; font-size:0.85rem;">{{ k.team }}</span>
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">

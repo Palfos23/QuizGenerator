@@ -73,8 +73,8 @@
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(circle, transparent 34%, rgba(216, 67, 43, 0.14) 35% 44%, transparent 45%),
-    conic-gradient(from 0deg, rgba(27, 26, 23, 0.05) 0 25%, rgba(27, 26, 23, 0.06) 25% 50%, rgba(27, 26, 23, 0.05) 50% 75%, rgba(27, 26, 23, 0.06) 75% 100%);
+    radial-gradient(circle, transparent 34%, rgb(var(--gold-rgb) / 0.14) 35% 44%, transparent 45%),
+    conic-gradient(from 0deg, rgb(var(--fg-rgb) / 0.05) 0 25%, rgb(var(--fg-rgb) / 0.06) 25% 50%, rgb(var(--fg-rgb) / 0.05) 50% 75%, rgb(var(--fg-rgb) / 0.06) 75% 100%);
   border: 1px solid var(--border);
 }
 .fp-score {
@@ -82,7 +82,7 @@
   height: 62px;
   border-radius: 50%;
   background: var(--gold-soft);
-  border: 1px solid rgba(216, 67, 43, 0.4);
+  border: 1px solid rgb(var(--gold-rgb) / 0.4);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -114,14 +114,14 @@
   gap: 10px;
   padding: 5px 10px;
   border-radius: 2px;
-  background: rgba(27, 26, 23, 0.06);
+  background: rgb(var(--fg-rgb) / 0.06);
   font-size: 0.74rem;
 }
 .fp-p { color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fp-p i { font-style: normal; color: var(--text); font-family: var(--font-mono); font-size: 0.68rem; }
 .fp-d { font-family: var(--font-mono); font-size: 0.66rem; color: var(--text-dim); }
 .fp-t { font-family: var(--font-mono); font-weight: 700; color: var(--text); text-align: right; }
-.fp-throw.bust { background: rgba(179, 38, 30, 0.1); }
+.fp-throw.bust { background: rgb(var(--coral-rgb) / 0.1); }
 .fp-throw.bust .fp-d, .fp-throw.bust .fp-t { color: var(--coral); }
 .fp-throw.now { background: var(--gold-soft); }
 .fp-throw.now .fp-t { color: var(--gold); }

@@ -38,9 +38,9 @@
           <div class="saved-quiz-info">
             <div class="saved-quiz-title">
               {{ q.title }}
-              <span v-if="q.excludedFromBullseye" class="tag" style="background:rgba(179, 38, 30, 0.15); color:var(--coral); margin-left:6px;">{{ $t('Ikke i Bullseye') }}</span>
-              <span v-if="q.entireCategoryPool" class="tag" style="background:rgba(31, 122, 80, 0.15); color:var(--teal); margin-left:6px;">{{ $t('Automatisk utvalg') }}</span>
-              <span v-if="q.canExpire" class="tag" style="background:rgba(216, 67, 43, 0.15); color:var(--gold); margin-left:6px;">{{ $t('Kan utløpe') }}</span>
+              <span v-if="q.excludedFromBullseye" class="tag" style="background:rgb(var(--coral-rgb) / 0.15); color:var(--coral); margin-left:6px;">{{ $t('Ikke i Bullseye') }}</span>
+              <span v-if="q.entireCategoryPool" class="tag" style="background:rgb(var(--teal-rgb) / 0.15); color:var(--teal); margin-left:6px;">{{ $t('Automatisk utvalg') }}</span>
+              <span v-if="q.canExpire" class="tag" style="background:rgb(var(--gold-rgb) / 0.15); color:var(--gold); margin-left:6px;">{{ $t('Kan utløpe') }}</span>
             </div>
             <div class="saved-quiz-meta">
               {{ sportLabel(q.sport) }} · {{ q.entryCount }} {{ $t('svar · "') }}{{ q.groupDigits === false ? q.targetValue : formatNumber(q.targetValue) }} {{ q.statLabel }}"
@@ -176,7 +176,7 @@
 
         <div
           v-if="showFiveOhOnePicker"
-          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:12px 14px; border:1px solid var(--border); border-radius: 2px; background:rgba(27, 26, 23, 0.06);"
+          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:12px 14px; border:1px solid var(--border); border-radius: 2px; background:rgb(var(--fg-rgb) / 0.06);"
         >
           <span v-if="loadingFiveOhOneCategories" style="color:var(--text-dim);">{{ $t('Laster 501-quizer…') }}</span>
           <span v-else-if="!fiveOhOneCategories.length" style="color:var(--text-dim);">{{ $t('Ingen 501-quizer finnes ennå.') }}</span>
@@ -200,7 +200,7 @@
           <button class="btn btn-secondary btn-sm" @click="showFiveOhOnePicker = false">{{ $t('Avbryt') }}</button>
         </div>
 
-        <div v-if="csvUnmatchedNames.length" style="background:rgba(216, 67, 43, 0.1); border:1px solid rgba(216, 67, 43, 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:10px;">
+        <div v-if="csvUnmatchedNames.length" style="background:rgb(var(--gold-rgb) / 0.1); border:1px solid rgb(var(--gold-rgb) / 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:10px;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
             <strong style="color:var(--gold);">
               {{ csvUnmatchedNames.length }} navn ble ikke funnet i "{{ form.sport }}"

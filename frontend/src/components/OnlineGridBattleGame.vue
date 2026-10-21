@@ -32,7 +32,7 @@
             {{ rerolling ? $t('Finner flere…') : $t('↻ Vis 3 andre grids') }}
           </button>
         </template>
-        <div v-else class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
+        <div v-else class="banner" style="text-align:center; background:rgb(var(--fg-rgb) / 0.07);">
           {{ $t('Venter på') }} <strong style="color:var(--gold);">{{ pickerName }}</strong> {{ $t('å velge et grid…') }}
         </div>
       </div>
@@ -99,7 +99,7 @@
         @cancel="showSkipConfirm = false"
       />
 
-      <div v-if="!state.gridComplete && !isYourTurn" class="banner" style="text-align:center; background:rgba(27, 26, 23, 0.07);">
+      <div v-if="!state.gridComplete && !isYourTurn" class="banner" style="text-align:center; background:rgb(var(--fg-rgb) / 0.07);">
         {{ $t('Venter på') }} {{ currentTurnName }}{{ $t('sin tur…') }}
       </div>
 
@@ -186,7 +186,7 @@
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
       <button class="btn btn-secondary btn-sm no-print" @click="leave">{{ $t('← Forlat spillet') }}</button>
-      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
+      <span class="tag no-print" style="background:rgb(var(--fg-rgb) / 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
     </div>
 
     <div v-if="resultOverlay" class="grid-result-overlay" :class="resultOverlay.correct ? 'correct' : 'wrong'">

@@ -44,7 +44,7 @@
       <div v-else-if="state.revealed" class="banner error">
         <div><strong>{{ $t('Spillet er over.') }}</strong> {{ $t('Du fant') }} {{ guessedCount }} / {{ state.entries.length }} {{ $t('før du viste resten.') }}</div>
       </div>
-      <div v-else-if="state.overtime" class="banner" style="background:rgba(61, 79, 159, 0.15); color:var(--violet); border:1px solid rgba(61, 79, 159, 0.35);">
+      <div v-else-if="state.overtime" class="banner" style="background:rgb(var(--violet-rgb) / 0.15); color:var(--violet); border:1px solid rgb(var(--violet-rgb) / 0.35);">
         {{ $t('Overtid - flere gjetninger koster ikke liv, og teller ikke mot en ren løsning.') }}
       </div>
       <div v-else-if="gameOver" class="banner error">

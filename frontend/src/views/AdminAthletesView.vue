@@ -94,7 +94,7 @@
         </p>
         <ul style="margin:0 0 16px; padding-left:20px; line-height:1.8;">
           <li v-for="(u, idx) in pendingUsage.usage" :key="u.gameType + '-' + u.id + '-' + idx">
-            <span class="tag" style="background:rgba(27, 26, 23, 0.08);">{{ u.gameType }}</span>
+            <span class="tag" style="background:rgb(var(--fg-rgb) / 0.08);">{{ u.gameType }}</span>
             {{ u.title }}
             <span v-if="u.isCorrectAnswer" style="color:var(--coral); font-weight:600;"> {{ $t('- et riktig svar her, ikke bare en avleder') }}</span>
           </li>

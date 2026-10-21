@@ -167,7 +167,7 @@
 
     <div style="display:flex; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap;">
       <button class="btn btn-secondary btn-sm no-print" @click="leave">{{ $t('← Forlat spillet') }}</button>
-      <span class="tag no-print" style="background:rgba(27, 26, 23, 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
+      <span class="tag no-print" style="background:rgb(var(--fg-rgb) / 0.06); color:var(--text-dim);">{{ $t('Rom:') }} {{ roomCode }}</span>
     </div>
   </div>
 </template>

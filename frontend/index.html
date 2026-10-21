@@ -6,6 +6,16 @@
     <title>Quizzes</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="theme-color" content="#f3ede1" />
+    <script>
+      // Apply the saved light/dark choice before first paint (see src/services/theme.js).
+      try {
+        if (localStorage.getItem('quiz_theme') === 'dark') {
+          document.documentElement.dataset.theme = 'dark';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#171510');
+        }
+      } catch (e) {}
+    </script>
     <!-- Google Identity Services (the sign-in button) is deliberately NOT loaded
          here - it's injected on demand, only after cookie consent is accepted,
          by services/loadScript.js (see HomeView.vue). Loading it unconditionally

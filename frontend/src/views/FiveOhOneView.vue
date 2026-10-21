@@ -13,7 +13,7 @@
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
-      <div v-if="savedRoomCode" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div v-if="savedRoomCode" class="banner" style="background:rgb(var(--gold-rgb) / 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <span>{{ $t('Du har et spill i gang i rom') }} <strong>{{ savedRoomCode }}</strong>.</span>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-primary btn-sm" :disabled="rejoining" @click="rejoinSavedRoom">
@@ -23,7 +23,7 @@
         </div>
       </div>
 
-      <div v-if="savedPassAndPlay" class="banner" style="background:rgba(216, 67, 43, 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div v-if="savedPassAndPlay" class="banner" style="background:rgb(var(--gold-rgb) / 0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <span>{{ $t('Du har et spill der enheten sendes rundt, i gang.') }}</span>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-primary btn-sm" @click="resumePassAndPlay">{{ $t('Fortsett§FiveOhOneViewT') }}</button>
@@ -48,7 +48,7 @@
 
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>{{ $t('Usikker på hvordan det fungerer? Se et eksempel') }}</summary>
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgba(27, 26, 23, 0.06);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgb(var(--fg-rgb) / 0.06);">
           <p style="margin-top:0;">
             {{ $t('La oss si at kategorien er «Premier League-kamper». Du står på 501, og du søker etter en spiller - si en med') }} <strong>136</strong> {{ $t('kamper. Det er under 180 og ikke ett av de uoppnåelige tallene, så det gir full poengsum: du står nå på') }} <strong>365</strong>.
           </p>
@@ -184,7 +184,7 @@
             </div>
           </div>
           <span v-if="p.connected === false && p.id !== onlineRoom?.yourParticipantId" class="tag offline">{{ $t('Frakoblet§FiveOhOneViewT') }}</span>
-            <span v-else class="tag" :style="{ background: 'rgba(31, 122, 80, 0.15)', color: 'var(--teal)' }">{{ $t('I rommet') }}</span>
+            <span v-else class="tag" :style="{ background: 'rgb(var(--teal-rgb) / 0.15)', color: 'var(--teal)' }">{{ $t('I rommet') }}</span>
         </div>
       </div>
 
