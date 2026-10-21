@@ -128,7 +128,6 @@ h1 { font-size: 2.2rem; line-height: 1.1; }
 .dq-review,
 .dq-qrow,
 .dq-board-row,
-.dq-winner,
 .saved-quiz-row,
 .candidate-row,
 .dq-compare-cell,
@@ -140,7 +139,7 @@ h1 { font-size: 2.2rem; line-height: 1.1; }
 }
 .dq-row:hover { background: var(--field-bg); border-color: var(--rule); }
 .dq-q.is-answered { border-color: var(--rule); }
-.dq-board-row.is-you, .dq-winner.is-latest { background: rgb(var(--gold-rgb) / 0.08); border-color: var(--gold); box-shadow: none; }
+.dq-board-row.is-you { background: rgb(var(--gold-rgb) / 0.08); border-color: var(--gold); box-shadow: none; }
 
 /* ---------- Small things ---------- */
 .dq-pill, .tag, .dq-chip-btn, .stat-card .dq-pill {
@@ -289,3 +288,189 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .theme-toggle svg { width: 16px; height: 16px; }
 .theme-toggle:hover { color: var(--text); background: rgb(var(--fg-rgb) / 0.07); }
+
+/* ---------- Results ledger: the daily and weekly leaderboards ----------
+   Rank, name, a dotted leader, the score - like a newspaper results table. The winner's row is
+   inverted (ink fill), "you" gets a small tag, the expert is italic and unranked. */
+.dq-ledger { margin: 4px 0 6px; }
+.dq-led {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+}
+.dq-ledger > .dq-led:first-child { border-top: none; }
+.dq-led-rank {
+  width: 24px;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+.dq-led-name {
+  min-width: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.02rem;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+.dq-led-meta {
+  flex-basis: 100%;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  margin-top: -2px;
+}
+.dq-led-dots {
+  flex: 1;
+  min-width: 14px;
+  border-bottom: 1.5px dotted var(--text-dim);
+  transform: translateY(-4px);
+  opacity: 0.7;
+}
+.dq-led-score {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  white-space: nowrap;
+}
+.dq-led-score small {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-left: 2px;
+}
+.dq-led.is-winner {
+  background: var(--text);
+  color: var(--ink-raised);
+  margin: 0 -10px;
+  padding: 9px 10px;
+  border-top-color: transparent;
+}
+.dq-led.is-winner .dq-led-rank,
+.dq-led.is-winner .dq-led-score small,
+.dq-led.is-winner .dq-led-meta { color: inherit; opacity: 0.75; }
+.dq-led.is-winner .dq-led-dots { border-bottom-color: currentColor; }
+.dq-led.is-you:not(.is-winner) { box-shadow: inset 3px 0 0 var(--gold); padding-left: 8px; margin-left: -8px; }
+.dq-you-tag {
+  background: var(--gold);
+  color: var(--ink-raised);
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+.dq-led--expert .dq-led-name i { font-weight: 500; }
+.dq-led-pill {
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border: 1.5px solid var(--rule);
+  border-radius: 3px;
+  padding: 0 6px;
+}
+.dq-led-gap { text-align: center; color: var(--text-dim); letter-spacing: 0.3em; line-height: 0.7; padding: 2px 0; }
+.dq-led-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 2px solid var(--rule);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.dq-led-foot-avg { font-family: var(--font-mono); }
+
+/* ---------- Previous winners: last week in the spotlight, the rest as a dated roll, then a win tally ---------- */
+.dq-champ {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--gold);
+  color: var(--ink-raised);
+  border-radius: 3px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  box-shadow: 3px 3px 0 var(--rule);
+}
+.dq-champ-icon { width: 30px; height: 30px; flex-shrink: 0; }
+.dq-champ-main { flex: 1; min-width: 0; }
+.dq-champ-when {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.dq-champ-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.45rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.dq-champ-flags { display: flex; gap: 6px; margin-top: 4px; }
+.dq-champ-pill {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  padding: 0 6px;
+}
+.dq-champ-score {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.9rem;
+  line-height: 1;
+  text-align: right;
+  white-space: nowrap;
+}
+.dq-champ-score small {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.7rem;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+.dq-roll {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+}
+.dq-roll:first-of-type { border-top: none; }
+.dq-roll-when {
+  width: 124px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+.dq-roll-name { font-family: var(--font-display); font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.dq-roll-score { font-family: var(--font-mono); font-size: 0.82rem; white-space: nowrap; }
+.dq-tally { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+.dq-tally-name { width: 84px; flex-shrink: 0; font-family: var(--font-display); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dq-tally-pips { display: flex; gap: 3px; flex-wrap: wrap; }
+.dq-tally-pips i { display: block; width: 11px; height: 11px; background: var(--gold); border-radius: 2px; }
+.dq-tally-count { font-family: var(--font-mono); font-size: 0.82rem; }
+@media (max-width: 520px) {
+  .dq-roll { flex-wrap: wrap; }
+  .dq-roll-when { width: 100%; }
+}
+
+/* English labels are longer - keep nav items on one line rather than wrapping them in two */
+.top-nav .nav-link, .top-nav .btn, .top-nav-dropdown-toggle { white-space: nowrap; }

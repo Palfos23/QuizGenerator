@@ -265,7 +265,7 @@ const ADMIN_MENUS = [
     label: _t('Innhold'),
     items: [
       { to: '/admin/athletes', label: _t('Emner') },
-      { to: '/admin/athlete-pools', label: 'Emneutvalg' },
+      { to: '/admin/athlete-pools', label: _t('Emneutvalg') },
       { to: '/admin/grid-categories', label: _t('Kategorier') },
       { to: '/admin/clubs', label: _t('Klubber') },
       { to: '/admin/tension-categories', label: _t('Tension-kategorier') }

@@ -12,52 +12,44 @@
       </div>
 
       <template v-else>
-        <div class="dq-stat">
-          <span>{{ $t('Snitt') }}</span>
-          <strong>{{ data.averageScore.toFixed(1) }} / {{ data.maxScore }}</strong>
-        </div>
         <!-- Only for a viewer who is on the board - hidden for admins and anyone who hasn't played. -->
         <p v-if="yourDelta !== null" class="dq-delta" :class="{ 'is-up': yourDelta > 0, 'is-down': yourDelta < 0 }">
           {{ yourDelta === 0 ? $t('Akkurat på snittet') : (yourDelta > 0 ? $t('Du er {0} over snittet', [Math.abs(yourDelta)]) : $t('Du er {0} under snittet', [Math.abs(yourDelta)])) }}
         </p>
 
-        <div class="dq-board">
+        <!-- A results ledger: rank, name, a dotted leader, the score. The winner's row is inverted. -->
+        <div class="dq-ledger">
           <template v-for="row in rows" :key="row.kind === 'expert' ? 'expert' : row.entry.userName + row.rank">
-            <!-- The expert sits in the list at their real score, but isn't ranked: a star instead of a number. -->
-            <div v-if="row.kind === 'expert'" class="dq-board-row dq-board-row--expert">
-              <span class="dq-rank dq-rank--star" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3z" /></svg>
-              </span>
-              <div style="min-width:0;">
-                <div class="dq-board-name">{{ $t('Eksperten') }}<small>{{ $t('Ikke rangert') }}</small></div>
-                <div class="dq-board-bar"><i :style="{ width: barWidth(row) }"></i></div>
-              </div>
-              <div class="dq-board-score">{{ row.score }}<small> / {{ row.maxScore }}</small></div>
+            <!-- The expert sits in the list at their real score, but isn't ranked: a dash instead of a number. -->
+            <div v-if="row.kind === 'expert'" class="dq-led dq-led--expert">
+              <span class="dq-led-rank">&ndash;</span>
+              <span class="dq-led-name"><i>{{ $t('Eksperten') }}</i><span class="dq-led-pill">{{ $t('Ikke rangert') }}</span></span>
+              <span class="dq-led-dots"></span>
+              <span class="dq-led-score">{{ row.score }}<small>/{{ row.maxScore }}</small></span>
             </div>
 
-            <div v-else class="dq-board-row" :class="{ 'is-you': row.entry.isYou }">
-              <span class="dq-rank" :class="row.rank <= 3 ? `dq-rank--${row.rank}` : ''">{{ row.rank }}</span>
-              <div style="min-width:0;">
-                <div class="dq-board-name">
-                  {{ displayName(row.entry.userName) }}<small v-if="row.entry.isYou">{{ $t('Det er deg') }}</small>
-                </div>
-                <div class="dq-board-bar"><i :style="{ width: barWidth(row.entry) }"></i></div>
-              </div>
-              <div class="dq-board-score">{{ row.entry.score }}<small> / {{ row.entry.maxScore }}</small></div>
+            <div v-else class="dq-led" :class="{ 'is-winner': row.rank === 1, 'is-you': row.entry.isYou }">
+              <span class="dq-led-rank">{{ pad(row.rank) }}</span>
+              <span class="dq-led-name">{{ displayName(row.entry.userName) }}<span v-if="row.entry.isYou" class="dq-you-tag" :title="$t('Det er deg')">{{ $t('DU') }}</span></span>
+              <span class="dq-led-dots"></span>
+              <span class="dq-led-score">{{ row.entry.score }}<small>/{{ row.entry.maxScore }}</small></span>
             </div>
           </template>
 
           <template v-if="yourRank && yourRank.rank > shownPlayers.length">
-            <div class="dq-board-gap">···</div>
-            <div class="dq-board-row is-you">
-              <span class="dq-rank">{{ yourRank.rank }}</span>
-              <div style="min-width:0;">
-                <div class="dq-board-name">{{ displayName(yourRank.entry.userName) }}<small>{{ $t('Det er deg') }}</small></div>
-                <div class="dq-board-bar"><i :style="{ width: barWidth(yourRank.entry) }"></i></div>
-              </div>
-              <div class="dq-board-score">{{ yourRank.entry.score }}<small> / {{ yourRank.entry.maxScore }}</small></div>
+            <div class="dq-led-gap">···</div>
+            <div class="dq-led is-you">
+              <span class="dq-led-rank">{{ pad(yourRank.rank) }}</span>
+              <span class="dq-led-name">{{ displayName(yourRank.entry.userName) }}<span class="dq-you-tag" :title="$t('Det er deg')">{{ $t('DU') }}</span></span>
+              <span class="dq-led-dots"></span>
+              <span class="dq-led-score">{{ yourRank.entry.score }}<small>/{{ yourRank.entry.maxScore }}</small></span>
             </div>
           </template>
+
+          <div class="dq-led-foot">
+            <span>{{ $t('{0} spiller¦{0} spillere', [entries.length]) }}</span>
+            <span class="dq-led-foot-avg">{{ $t('snitt {0} / {1}', [data.averageScore.toFixed(1), data.maxScore]) }}</span>
+          </div>
         </div>
       </template>
 
@@ -135,8 +127,8 @@ function displayName(name) {
   return props.compact ? shortName.value(name) : name
 }
 
-function barWidth(entry) {
-  const pct = entry.maxScore ? (entry.score / entry.maxScore) * 100 : 0
-  return `${Math.max(0, Math.min(100, pct))}%`
+// 01, 02 ... - the ledger sets rank in a fixed two-digit column
+function pad(n) {
+  return String(n).padStart(2, '0')
 }
 </script>

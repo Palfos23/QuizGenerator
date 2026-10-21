@@ -64,8 +64,7 @@
     <DailyQuizWeeklyPanel
       style="margin-top:34px;"
       :fetcher="() => api.getGridWeeklyStandings()"
-      unit="brett"
-      unit-plural="brett"
+      unit="board"
       :blurb="$t('Det du finner på hvert av ukens brett legges sammen fra mandag til søndag - høyest sum vinner.')"
     />
 

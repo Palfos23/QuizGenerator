@@ -591,24 +591,6 @@ a.dq-row:hover, .dq-row--link:hover {
   color: var(--text-dim);
   margin: 18px 0 8px;
 }
-.dq-winner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  border-radius: 2px;
-  background: rgb(var(--fg-rgb) / 0.07);
-}
-.dq-winner.is-latest {
-  background: linear-gradient(135deg, rgb(var(--gold-rgb) / 0.22), rgb(var(--gold-rgb) / 0.08));
-  box-shadow: inset 0 0 0 1.5px rgb(var(--gold-rgb) / 0.5);
-}
-.dq-winner-icon { width: 22px; height: 22px; color: var(--amber-ink); flex-shrink: 0; }
-.dq-winner-main { flex: 1; min-width: 0; }
-.dq-winner-name { font-weight: 700; }
-.dq-winner-meta { color: var(--text-dim); font-size: 0.84rem; margin-top: 1px; }
-
 /* ---------- Admin review ---------- */
 
 .dq-attempt-head { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }

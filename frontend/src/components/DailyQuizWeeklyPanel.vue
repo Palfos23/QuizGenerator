@@ -14,63 +14,80 @@
       <div class="dq-weekly-label">{{ $t('Denne uken ·') }} {{ formatRange(weekly.current.weekStart, weekly.current.weekEnd) }}</div>
 
       <div v-if="!standings.length" class="dq-row-meta" style="padding:6px 0 2px;">{{ $t('Ingen resultater denne uken ennå - vær den første.') }}</div>
-      <div v-else class="dq-board">
+      <div v-else class="dq-ledger">
         <template v-for="row in rows" :key="row.kind === 'expert' ? 'expert' : row.entry.playerName + row.rank">
-          <!-- The expert is in the list at their real total, but not ranked: a star instead of a number. -->
-          <div v-if="row.kind === 'expert'" class="dq-board-row dq-board-row--expert">
-            <span class="dq-rank dq-rank--star" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3z" /></svg>
+          <!-- The expert is in the list at their real total, but not ranked: a dash instead of a number. -->
+          <div v-if="row.kind === 'expert'" class="dq-led dq-led--expert">
+            <span class="dq-led-rank">&ndash;</span>
+            <span class="dq-led-name">
+              <i>{{ $t('Eksperten') }}</i><span class="dq-led-pill">{{ $t('Ikke rangert') }}</span>
+              <small class="dq-led-meta">{{ daysNote(row.daysPlayed) }}</small>
             </span>
-            <div style="min-width:0;">
-              <div class="dq-board-name">
-                {{ $t('Eksperten') }}
-                <small>{{ $t('Ikke rangert ·') }} {{ daysNote(row.daysPlayed) }} {{ $t('spilt') }}</small>
-              </div>
-              <div class="dq-board-bar"><i :style="{ width: barWidth(row) }"></i></div>
-            </div>
-            <div class="dq-board-score">{{ row.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></div>
+            <span class="dq-led-dots"></span>
+            <span class="dq-led-score">{{ row.total }}<small>{{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></span>
           </div>
 
-          <div v-else class="dq-board-row" :class="{ 'is-you': row.entry.isYou }">
-            <span class="dq-rank" :class="row.rank <= 3 ? `dq-rank--${row.rank}` : ''">{{ row.rank }}</span>
-            <div style="min-width:0;">
-              <div class="dq-board-name">
-                {{ firstName(row.entry.playerName) }}
-                <small>{{ row.entry.isYou ? $t('Det er deg · §DailyQuizWeeklyPanelM') : '' }}{{ daysNote(row.entry.daysPlayed) }} {{ $t('spilt') }}</small>
-              </div>
-              <div class="dq-board-bar"><i :style="{ width: barWidth(row.entry) }"></i></div>
-            </div>
-            <div class="dq-board-score">{{ row.entry.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></div>
+          <div v-else class="dq-led" :class="{ 'is-winner': row.rank === 1, 'is-you': row.entry.isYou }">
+            <span class="dq-led-rank">{{ pad(row.rank) }}</span>
+            <span class="dq-led-name">
+              {{ firstName(row.entry.playerName) }}<span v-if="row.entry.isYou" class="dq-you-tag" :title="$t('Det er deg')">{{ $t('DU') }}</span>
+              <small class="dq-led-meta">{{ daysNote(row.entry.daysPlayed) }}</small>
+            </span>
+            <span class="dq-led-dots"></span>
+            <span class="dq-led-score">{{ row.entry.total }}<small>{{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></span>
           </div>
         </template>
 
         <template v-if="yourRank && yourRank.rank > 5">
-          <div class="dq-board-gap">···</div>
-          <div class="dq-board-row is-you">
-            <span class="dq-rank">{{ yourRank.rank }}</span>
-            <div style="min-width:0;">
-              <div class="dq-board-name">
-                {{ firstName(yourRank.entry.playerName) }}
-                <small>{{ $t('Det er deg ·§DailyQuizWeeklyPanelT') }} {{ yourRank.entry.daysPlayed }} {{ yourRank.entry.daysPlayed === 1 ? unit : unitPlural }} {{ $t('spilt') }}</small>
-              </div>
-              <div class="dq-board-bar"><i :style="{ width: barWidth(yourRank.entry) }"></i></div>
-            </div>
-            <div class="dq-board-score">{{ yourRank.entry.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></div>
+          <div class="dq-led-gap">···</div>
+          <div class="dq-led is-you">
+            <span class="dq-led-rank">{{ pad(yourRank.rank) }}</span>
+            <span class="dq-led-name">
+              {{ firstName(yourRank.entry.playerName) }}<span class="dq-you-tag" :title="$t('Det er deg')">{{ $t('DU') }}</span>
+              <small class="dq-led-meta">{{ daysNote(yourRank.entry.daysPlayed) }}</small>
+            </span>
+            <span class="dq-led-dots"></span>
+            <span class="dq-led-score">{{ yourRank.entry.total }}<small>{{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></span>
           </div>
         </template>
       </div>
 
       <template v-if="weekly.pastWeeks.length">
         <div class="dq-weekly-label">{{ $t('Tidligere vinnere') }}</div>
-        <div v-for="(w, i) in weekly.pastWeeks" :key="w.weekStart" class="dq-winner" :class="{ 'is-latest': i === 0 }">
-          <svg class="dq-winner-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" /></svg>
-          <div class="dq-winner-main">
-            <div class="dq-winner-name">{{ winnersLabel(w) }}</div>
-            <div class="dq-winner-meta">{{ formatRange(w.weekStart, w.weekEnd) }} · {{ w.winningScore }} {{ $t('poeng§DailyQuizWeeklyPanelT') }}</div>
+
+        <!-- Last week's winner gets the spotlight; the weeks before it are a plain dated roll. -->
+        <div class="dq-champ">
+          <svg class="dq-champ-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" /></svg>
+          <div class="dq-champ-main">
+            <div class="dq-champ-when">{{ $t('Forrige uke') }} &middot; {{ formatRange(latestWeek.weekStart, latestWeek.weekEnd) }}</div>
+            <div class="dq-champ-name">{{ winnersLabel(latestWeek) }}</div>
+            <div v-if="latestWeek.winners.length > 1 || latestWeek.provisional" class="dq-champ-flags">
+              <span v-if="latestWeek.winners.length > 1" class="dq-champ-pill">{{ $t('Delt') }}</span>
+              <span v-if="latestWeek.provisional" class="dq-champ-pill" :title="$t('Noen av svarene den uken ble fortsatt gjennomgått')">{{ $t('Foreløpig') }}</span>
+            </div>
           </div>
-          <span v-if="w.winners.length > 1" class="dq-pill">{{ $t('Delt') }}</span>
-          <span v-if="w.provisional" class="dq-pill dq-pill--wait" :title="$t('Noen av svarene den uken ble fortsatt gjennomgått')">{{ $t('Foreløpig') }}</span>
+          <div class="dq-champ-score">{{ latestWeek.winningScore }}<small>{{ $t('poeng§DailyQuizWeeklyPanelT') }}</small></div>
         </div>
+
+        <div v-for="w in olderWeeks" :key="w.weekStart" class="dq-roll">
+          <span class="dq-roll-when">{{ formatRange(w.weekStart, w.weekEnd) }}</span>
+          <span class="dq-roll-name">{{ winnersLabel(w) }}</span>
+          <span v-if="w.winners.length > 1" class="dq-led-pill">{{ $t('Delt') }}</span>
+          <span v-if="w.provisional" class="dq-led-pill" :title="$t('Noen av svarene den uken ble fortsatt gjennomgått')">{{ $t('Foreløpig') }}</span>
+          <span class="dq-led-dots"></span>
+          <span class="dq-roll-score">{{ $t('{0} poeng¦{0} poeng', [w.winningScore]) }}</span>
+        </div>
+
+        <!-- Who has won the most of the weeks listed above (a tie counts as a win for each winner). -->
+        <template v-if="winTally.length && weekly.pastWeeks.length > 1">
+          <div class="dq-weekly-label">{{ $t('Flest seiere · siste {0} uker', [weekly.pastWeeks.length]) }}</div>
+          <div v-for="row in winTally" :key="row.name" class="dq-tally">
+            <span class="dq-tally-name">{{ firstName(row.name) }}</span>
+            <span class="dq-tally-pips" aria-hidden="true"><i v-for="n in row.wins" :key="n"></i></span>
+            <span class="dq-led-dots"></span>
+            <span class="dq-tally-count">{{ row.wins }}</span>
+          </div>
+        </template>
       </template>
     </div>
   </section>
@@ -86,8 +103,7 @@ import { shortNames } from '../services/displayNames'
 // every endpoint returns the same { current, pastWeeks } shape.
 const props = defineProps({
   fetcher: { type: Function, default: () => api.getDailyQuizWeekly() },
-  unit: { type: String, default: 'dag' }, // what one "played" is - 'dag' for the daily quiz, 'brett' for the weekly games
-  unitPlural: { type: String, default: 'dager' },
+  unit: { type: String, default: 'day' }, // what one "played" is - 'day' for the daily quiz, 'board' for the weekly games
   blurb: { type: String, default: _t('Poengene fra hver dag legges sammen fra mandag til søndag - høyest sum vinner.') }
 })
 
@@ -103,7 +119,6 @@ onMounted(async () => {
 
 const standings = computed(() => weekly.value?.current.standings || [])
 const topFive = computed(() => standings.value.slice(0, 5))
-const topTotal = computed(() => Math.max(1, weekly.value?.expert?.total ?? 0, ...standings.value.map(s => s.total)))
 
 // The top five players with the expert slotted in at their real total (after everyone who has at least as
 // many points, before the first with fewer) - listed, but not ranked.
@@ -123,11 +138,14 @@ const yourRank = computed(() => {
 })
 
 function daysNote(n) {
-  return `${n} ${n === 1 ? props.unit : props.unitPlural}`
+  return props.unit === 'board'
+    ? _t('{0} brett spilt¦{0} brett spilt', [n])
+    : _t('{0} dag spilt¦{0} dager spilt', [n])
 }
 
-function barWidth(entry) {
-  return `${Math.max(0, Math.min(100, (entry.total / topTotal.value) * 100))}%`
+// 01, 02 ... - the ledger sets rank in a fixed two-digit column
+function pad(n) {
+  return String(n).padStart(2, '0')
 }
 
 // First names, with a surname initial added where two people on the panel share one.
@@ -139,6 +157,21 @@ const shortName = computed(() => shortNames([
 function firstName(name) {
   return shortName.value(name)
 }
+
+const latestWeek = computed(() => weekly.value.pastWeeks[0])
+const olderWeeks = computed(() => weekly.value.pastWeeks.slice(1))
+
+// Wins per player across the past weeks the server sends, most first (ties broken by name).
+const winTally = computed(() => {
+  const wins = new Map()
+  for (const w of weekly.value?.pastWeeks || []) {
+    for (const name of w.winners) wins.set(name, (wins.get(name) || 0) + 1)
+  }
+  return [...wins.entries()]
+    .map(([name, count]) => ({ name, wins: count }))
+    .sort((a, b) => b.wins - a.wins || a.name.localeCompare(b.name))
+    .slice(0, 5)
+})
 
 function winnersLabel(w) {
   return w.winners.map(firstName).join(' & ')
