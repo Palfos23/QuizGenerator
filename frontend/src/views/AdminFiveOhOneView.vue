@@ -134,7 +134,7 @@
       <div v-if="csvUnmatchedNames.length" style="background:rgb(var(--gold-rgb) / 0.1); border:1px solid rgb(var(--gold-rgb) / 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:14px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
           <strong style="color:var(--gold);">
-            {{ csvUnmatchedNames.length }} navn ble ikke funnet i "{{ form.sport }}"
+            {{ csvUnmatchedNames.length }} {{ $t('navn ble ikke funnet i "') }}{{ form.sport }}"
           </strong>
           <div style="display:flex; gap:8px;">
             <button class="btn btn-primary btn-sm" @click="showAddSubjectsModal = true">{{ $t('+ Legg til som emner') }}</button>

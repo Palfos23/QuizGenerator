@@ -28,7 +28,7 @@
               </div>
               <div class="dq-board-bar"><i :style="{ width: barWidth(row) }"></i></div>
             </div>
-            <div class="dq-board-score">{{ row.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelT') }}</small></div>
+            <div class="dq-board-score">{{ row.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></div>
           </div>
 
           <div v-else class="dq-board-row" :class="{ 'is-you': row.entry.isYou }">
@@ -40,7 +40,7 @@
               </div>
               <div class="dq-board-bar"><i :style="{ width: barWidth(row.entry) }"></i></div>
             </div>
-            <div class="dq-board-score">{{ row.entry.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelT') }}</small></div>
+            <div class="dq-board-score">{{ row.entry.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></div>
           </div>
         </template>
 
@@ -55,7 +55,7 @@
               </div>
               <div class="dq-board-bar"><i :style="{ width: barWidth(yourRank.entry) }"></i></div>
             </div>
-            <div class="dq-board-score">{{ yourRank.entry.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelT') }}</small></div>
+            <div class="dq-board-score">{{ yourRank.entry.total }}<small> {{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></div>
           </div>
         </template>
       </div>

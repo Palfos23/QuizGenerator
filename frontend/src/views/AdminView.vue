@@ -2,7 +2,7 @@
   <div>
     <header class="admin-head">
       <div>
-        <span class="dq-eyebrow">{{ $t('Spørsmål§AdminViewT') }}</span>
+        <span class="dq-eyebrow">{{ $t('Spørsmål§AdminViewHdr') }}</span>
         <h1 class="dq-title">{{ $t('Spørsmålsbank') }}</h1>
         <p class="dq-sub">
           {{ $t('Alle spørsmål her er tilgjengelige for quizgeneratoren.') }}
@@ -22,7 +22,7 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <div v-if="importResult" class="banner" :class="importResult.errors.length ? 'error' : 'success'">
-      <div>{{ $t('Importerte') }} {{ importResult.imported }} {{ $t('spørsmål§AdminViewT') }}{{ importResult.skipped ? $t(', hoppet over {0}', [importResult.skipped]) : '' }}.</div>
+      <div>{{ $t('Importerte') }} {{ importResult.imported }} {{ $t('spørsmål§AdminViewImp') }}{{ importResult.skipped ? $t(', hoppet over {0}', [importResult.skipped]) : '' }}.</div>
       <ul v-if="importResult.errors.length" style="margin:8px 0 0; padding-left:18px;">
         <li v-for="(e, i) in importResult.errors" :key="i">{{ e }}</li>
       </ul>
@@ -39,9 +39,9 @@
           <thead>
             <tr>
               <th>{{ $t('Kategori') }}</th>
-              <th>{{ $t('Språk§AdminViewT') }}</th>
-              <th>{{ $t('Spørsmål§AdminViewT') }}</th>
-              <th>{{ $t('Vanskelighetsgrad§AdminViewT') }}</th>
+              <th>{{ $t('Språk§AdminViewHdr') }}</th>
+              <th>{{ $t('Spørsmål§AdminViewHdr') }}</th>
+              <th>{{ $t('Vanskelighetsgrad§AdminViewHdr') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -64,7 +64,7 @@
         <label>{{ $t('Søk') }}<input type="text" v-model="searchText" :placeholder="$t('Søk etter spørsmål, kategori eller svar…')" /></label>
       </div>
       <div class="field" style="margin-bottom:0; flex:1; min-width:160px;">
-        <label>{{ $t('Språk§AdminViewT') }}
+        <label>{{ $t('Språk§AdminViewHdr') }}
           <select v-model="languageFilter">
             <option value="ALL">{{ $t('Alle språk') }}</option>
             <option v-for="lang in LANGUAGES" :key="lang.code" :value="lang.code">{{ lang.flag }} {{ lang.label }}</option>
