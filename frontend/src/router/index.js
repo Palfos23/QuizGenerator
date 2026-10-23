@@ -51,7 +51,7 @@ import PrivacyPolicyView from '../views/PrivacyPolicyView.vue'
 import CookiePolicyView from '../views/CookiePolicyView.vue'
 import AccountView from '../views/AccountView.vue'
 // Birthday quiz (one-off - delete together with frontend/src/bday/)
-import BdayHostView from '../bday/views/BdayHostView.vue'
+import BdayPlayView from '../bday/views/BdayPlayView.vue'
 import BdayLeaderboardView from '../bday/views/BdayLeaderboardView.vue'
 import BdayAdminView from '../bday/views/BdayAdminView.vue'
 import auth from '../services/auth'
@@ -123,9 +123,9 @@ const routes = [
   // Birthday quiz (one-off): its own PIN gate handles access, not the real
   // auth system - no requiresAuth/requiresAdmin, and deliberately unlinked
   // from any nav menu.
-  { path: '/bday', name: 'bday-host', component: BdayHostView },
+  { path: '/bday', name: 'bday-play', component: BdayPlayView },
   { path: '/bday/leaderboard', name: 'bday-leaderboard', component: BdayLeaderboardView },
-  { path: '/bday/admin', name: 'bday-admin', component: BdayAdminView }
+  { path: '/bday/admin', name: 'bday-admin', component: BdayAdminView, meta: { requiresAuth: true, requiresAdmin: true } }
 ]
 
 const router = createRouter({

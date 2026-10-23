@@ -2,139 +2,59 @@ package com.quizapp.dto;
 
 import java.util.List;
 
+/** What a guest sees after submitting: the score, how the map pin did, and how many they got right per section. */
 public class BdayResultDto {
+
     private int score;
     private int maxScore;
     private List<MapResult> mapResults;
-    private List<TileResult> tileResults;
+    private List<SectionResult> sections;
 
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
-    }
-
-    public int getMaxScore() {
-        return maxScore;
-    }
-
-    public void setMaxScore(int maxScore) {
-        this.maxScore = maxScore;
-    }
-
-    public List<MapResult> getMapResults() {
-        return mapResults;
-    }
-
-    public void setMapResults(List<MapResult> mapResults) {
-        this.mapResults = mapResults;
-    }
-
-    public List<TileResult> getTileResults() {
-        return tileResults;
-    }
-
-    public void setTileResults(List<TileResult> tileResults) {
-        this.tileResults = tileResults;
-    }
+    public int getScore() { return score; }
+    public void setScore(int score) { this.score = score; }
+    public int getMaxScore() { return maxScore; }
+    public void setMaxScore(int maxScore) { this.maxScore = maxScore; }
+    public List<MapResult> getMapResults() { return mapResults; }
+    public void setMapResults(List<MapResult> mapResults) { this.mapResults = mapResults; }
+    public List<SectionResult> getSections() { return sections; }
+    public void setSections(List<SectionResult> sections) { this.sections = sections; }
 
     public static class MapResult {
         private String questionId;
         private boolean correct;
         private String correctCityName;
-        private int pointsEarned;
+        private int points;
         private double distanceKm;
 
-        public MapResult() {
-        }
-
-        public MapResult(String questionId, boolean correct, String correctCityName, int pointsEarned, double distanceKm) {
+        public MapResult(String questionId, boolean correct, String correctCityName, int points, double distanceKm) {
             this.questionId = questionId;
             this.correct = correct;
             this.correctCityName = correctCityName;
-            this.pointsEarned = pointsEarned;
+            this.points = points;
             this.distanceKm = distanceKm;
         }
 
-        public String getQuestionId() {
-            return questionId;
-        }
-
-        public void setQuestionId(String questionId) {
-            this.questionId = questionId;
-        }
-
-        public boolean isCorrect() {
-            return correct;
-        }
-
-        public void setCorrect(boolean correct) {
-            this.correct = correct;
-        }
-
-        public String getCorrectCityName() {
-            return correctCityName;
-        }
-
-        public void setCorrectCityName(String correctCityName) {
-            this.correctCityName = correctCityName;
-        }
-
-        public int getPointsEarned() {
-            return pointsEarned;
-        }
-
-        public void setPointsEarned(int pointsEarned) {
-            this.pointsEarned = pointsEarned;
-        }
-
-        public double getDistanceKm() {
-            return distanceKm;
-        }
-
-        public void setDistanceKm(double distanceKm) {
-            this.distanceKm = distanceKm;
-        }
+        public String getQuestionId() { return questionId; }
+        public boolean isCorrect() { return correct; }
+        public String getCorrectCityName() { return correctCityName; }
+        public int getPoints() { return points; }
+        public double getDistanceKm() { return distanceKm; }
     }
 
-    public static class TileResult {
-        private String tileId;
-        private boolean correct;
-        private String correctOwner;
+    /** "7 of 10 statements right" - only counts, never which ones, so a finished guest can't pass the answers on. */
+    public static class SectionResult {
+        private String type;
+        private int correct;
+        private int total;
 
-        public TileResult() {
-        }
-
-        public TileResult(String tileId, boolean correct, String correctOwner) {
-            this.tileId = tileId;
+        public SectionResult(String type, int correct, int total) {
+            this.type = type;
             this.correct = correct;
-            this.correctOwner = correctOwner;
+            this.total = total;
         }
 
-        public String getTileId() {
-            return tileId;
-        }
-
-        public void setTileId(String tileId) {
-            this.tileId = tileId;
-        }
-
-        public boolean isCorrect() {
-            return correct;
-        }
-
-        public void setCorrect(boolean correct) {
-            this.correct = correct;
-        }
-
-        public String getCorrectOwner() {
-            return correctOwner;
-        }
-
-        public void setCorrectOwner(String correctOwner) {
-            this.correctOwner = correctOwner;
-        }
+        public String getType() { return type; }
+        public int getCorrect() { return correct; }
+        public int getTotal() { return total; }
     }
 }

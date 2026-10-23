@@ -4,6 +4,7 @@
       ref="viewport"
       class="bday-map"
       :class="{ 'is-dragging': dragging }"
+      :style="{ touchAction: zoom > 1 ? 'none' : 'pan-y' }"
       @wheel.prevent="onWheel"
       @pointerdown="onPointerDown"
       @pointermove="onPointerMove"
@@ -12,7 +13,7 @@
     >
       <!-- Everything inside is scaled/moved together, so the pin stays glued to the spot it was placed. -->
       <div ref="inner" class="bday-map-inner" :style="{ transform: `translate(${tx}px, ${ty}px) scale(${zoom})` }">
-        <img :src="imageUrl" alt="Kart over Norge" draggable="false" />
+        <img :src="imageUrl" alt="Kart over Vestland" draggable="false" />
         <div
           v-if="modelValue"
           class="bday-map-pin"
@@ -174,7 +175,8 @@ function onPointerCancel(event) {
   border: 1px solid var(--border);
   border-radius: 2px;
   cursor: crosshair;
-  touch-action: none; /* the page must not scroll or zoom while the map is being pinched / dragged */
+  /* touch-action is set inline: while zoomed in the page must not scroll or zoom under a finger that is panning
+     the map, but at 1:1 a vertical swipe on the (nearly screen-high) map has to keep scrolling the page */
   user-select: none;
   background: rgb(var(--fg-rgb) / 0.04);
 }

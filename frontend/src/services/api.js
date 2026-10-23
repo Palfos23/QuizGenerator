@@ -32,6 +32,18 @@ client.interceptors.response.use(
 )
 
 export default {
+  // --- Admin: the birthday quiz (players, questions, score fixes) ---
+  adminBdayGuests() { return client.get('/admin/bday/guests').then(r => r.data) },
+  adminBdayAddGuest(name) { return client.post('/admin/bday/guests', { name }).then(r => r.data) },
+  adminBdayDeleteGuest(id) { return client.delete(`/admin/bday/guests/${id}`) },
+  adminBdaySetScore(id, score) { return client.put(`/admin/bday/guests/${id}/score`, { score }).then(r => r.data) },
+  adminBdayResetGuest(id) { return client.post(`/admin/bday/guests/${id}/reset`).then(r => r.data) },
+  adminBdayGuestAnswers(id) { return client.get(`/admin/bday/guests/${id}/answers`).then(r => r.data) },
+  adminBdayQuestions() { return client.get('/admin/bday/questions').then(r => r.data) },
+  adminBdayCreateQuestion(payload) { return client.post('/admin/bday/questions', payload).then(r => r.data) },
+  adminBdayUpdateQuestion(id, payload) { return client.put(`/admin/bday/questions/${id}`, payload).then(r => r.data) },
+  adminBdayDeleteQuestion(id) { return client.delete(`/admin/bday/questions/${id}`) },
+
   // --- Admin: Norwegian / English versions of a game board's text (see TranslationEditor) ---
   adminGetTranslations(type, id) {
     return client.get(`/admin/translations/${type}/${id}`).then(r => r.data)

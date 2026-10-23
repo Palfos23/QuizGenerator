@@ -2,35 +2,28 @@ package com.quizapp.config;
 
 import java.util.List;
 
-// Hardcoded quiz content for the one-off birthday-quiz feature (see
-// BdayController/BdayQuizService) - deliberately not admin-editable content:
-// the host supplies real questions (and correct answers) over chat, they get
-// added here, and a redeploy picks them up. No admin authoring UI needed for
-// a party that happens once.
+// The fixed parts of the one-off birthday quiz (see BdayController/BdayQuizService): the map question, the two
+// people the quiz is about, and the answer options. Everything else - the statements, the photo questions and the
+// text questions - is written by the host on the admin page and lives in the bday_questions table.
 //
-// The frontend still just reports a click as {x, y} fractions (0..1) of
-// MAP_IMAGE_URL's rendered width/height (see MapPinQuestion.vue) - it knows
-// nothing about geography. The backend converts that click into a real
-// lat/lng using the map's calibration bounds below, then scores it against
-// each question's real correctLat/correctLng with a great-circle (Haversine)
-// distance in km. MAP_IMAGE_URL is the actual NordNordWest "Norway location
-// map.svg" from Wikimedia Commons (CC BY-SA 3.0 / GFDL, blank base map, no
-// text/labels) - MAP_TOP_LAT/BOTTOM_LAT/LEFT_LNG/RIGHT_LNG are the exact
-// bounds Wikipedia's own Module:Location_map/data/Norway uses to place
-// markers on this same file, so linear interpolation against them lines up
-// with the image's drawn coastline (the image itself is a deliberately
-// N/S-stretched equirectangular projection - these bounds already account
-// for that; do not "correct" them against a plain globe).
+// The frontend reports a map click as {x, y} fractions (0..1) of the map image's width/height (see
+// MapPinQuestion.vue) and knows nothing about geography. The backend converts that click into a real lat/lng using
+// the map's calibration bounds below, then scores it against the question's real correctLat/correctLng with a
+// great-circle (Haversine) distance in km.
+//
+// MAP_IMAGE_URL is Wikimedia Commons' "Norway Vestland rel location map" (relief base map of Vestland county, no
+// labels). The bounds are the ones Wikipedia's own Module:Location_map/data/Norway_Vestland uses to place markers
+// on that same file, so linear interpolation against them lines up with the drawn coastline.
 public final class BdayQuestionCatalog {
 
     private BdayQuestionCatalog() {
     }
 
-    public static final String MAP_IMAGE_URL = "/norway-map.svg";
-    public static final double MAP_TOP_LAT = 71.5;
-    public static final double MAP_BOTTOM_LAT = 57.6;
-    public static final double MAP_LEFT_LNG = 4.1;
-    public static final double MAP_RIGHT_LNG = 31.6;
+    public static final String MAP_IMAGE_URL = "/vestland-map.jpg";
+    public static final double MAP_TOP_LAT = 62.25;
+    public static final double MAP_BOTTOM_LAT = 59.45;
+    public static final double MAP_LEFT_LNG = 4.15;
+    public static final double MAP_RIGHT_LNG = 8.9;
     public static final int MAP_POINTS = 10;
     private static final double EARTH_RADIUS_KM = 6371.0;
 
@@ -61,6 +54,15 @@ public final class BdayQuestionCatalog {
         return MAP_LEFT_LNG + x * (MAP_RIGHT_LNG - MAP_LEFT_LNG);
     }
 
+    /** The inverse of the two above - where on the map image a real place is. Used by the tests and the admin preview. */
+    public static double latToY(double lat) {
+        return (MAP_TOP_LAT - lat) / (MAP_TOP_LAT - MAP_BOTTOM_LAT);
+    }
+
+    public static double lngToX(double lng) {
+        return (lng - MAP_LEFT_LNG) / (MAP_RIGHT_LNG - MAP_LEFT_LNG);
+    }
+
     public static double distanceKm(double lat1, double lng1, double lat2, double lng2) {
         double dLat = Math.toRadians(lat2 - lat1);
         double dLng = Math.toRadians(lng2 - lng1);
@@ -71,60 +73,30 @@ public final class BdayQuestionCatalog {
         return EARTH_RADIUS_KM * c;
     }
 
-    public static class Tile {
-        public final String id;
-        public final String label;
-        public final String correctOwner; // "A" or "B"
+    // --- The two people the quiz is about, and what a guest can answer. ---
 
-        public Tile(String id, String label, String correctOwner) {
-            this.id = id;
-            this.label = label;
-            this.correctOwner = correctOwner;
-        }
+    public static final String PAL = "PAL";
+    public static final String ERIK = "ERIK";
+    public static final String BEGGE = "BEGGE";
+    public static final String INGEN = "INGEN";
+
+    /** Statement questions: who does it fit? */
+    public static final List<String> STATEMENT_OPTIONS = List.of(PAL, ERIK, BEGGE, INGEN);
+    /** Photo questions: who is on the photo? */
+    public static final List<String> PHOTO_OPTIONS = List.of(PAL, ERIK);
+
+    public static String optionLabel(String code) {
+        return switch (code) {
+            case PAL -> "Pål";
+            case ERIK -> "Erik";
+            case BEGGE -> "Begge";
+            case INGEN -> "Ingen";
+            default -> code;
+        };
     }
 
-    public static class TileQuestion {
-        public final String id;
-        public final String prompt;
-        public final String personALabel;
-        public final String personBLabel;
-        public final List<Tile> tiles;
-
-        public TileQuestion(String id, String prompt, String personALabel, String personBLabel, List<Tile> tiles) {
-            this.id = id;
-            this.prompt = prompt;
-            this.personALabel = personALabel;
-            this.personBLabel = personBLabel;
-            this.tiles = tiles;
-        }
-    }
-
-    // --- The quiz content. A = Pål, B = Erik (the labels the guests see are personALabel / personBLabel). ---
-
-    public static final String PERSON_A = "Pål";
-    public static final String PERSON_B = "Erik";
-
+    // The one map question: where were Pål and Erik born? Førde, 20 km either way.
     public static final List<MapQuestion> MAP_QUESTIONS = List.of(
             new MapQuestion("map-1", "Hvor er Pål og Erik født?", 61.4522, 5.8572, 20, "Førde")
     );
-
-    // One question, five statements: for each, pick whether it's true for Pål or for Erik (a point each).
-    public static final List<TileQuestion> TILE_QUESTIONS = List.of(
-            new TileQuestion("tiles-1", "Hvem av dem stemmer dette for?", PERSON_A, PERSON_B, List.of(
-                    new Tile("tiles-1-a", "Favorittlag: Middlesbrough", "B"),
-                    new Tile("tiles-1-b", "Har vært i Japan", "A"),
-                    new Tile("tiles-1-c", "Har vært i militæret", "B"),
-                    new Tile("tiles-1-d", "Vart tatt ut på sonelaget i fotball", "B"),
-                    new Tile("tiles-1-e", "Har flest mål i følge fotball.no", "A")
-            ))
-    );
-
-    /** The most points anyone can score: every map question and every tile right. */
-    public static int maxTotalScore() {
-        return MAP_QUESTIONS.size() * MAP_POINTS + TILE_QUESTIONS.stream().mapToInt(q -> q.tiles.size()).sum();
-    }
-
-    public static MapQuestion findMapQuestion(String id) {
-        return MAP_QUESTIONS.stream().filter(q -> q.id.equals(id)).findFirst().orElse(null);
-    }
 }

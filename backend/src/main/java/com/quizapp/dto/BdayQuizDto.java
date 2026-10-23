@@ -2,151 +2,69 @@ package com.quizapp.dto;
 
 import java.util.List;
 
-// Sent to the player - deliberately carries no correct-answer data (no
-// map x/y/city, no tile correctOwner). See BdayResultDto for the reveal.
+/** What a guest sees when starting the quiz - never the correct answers. */
 public class BdayQuizDto {
+
     private String mapImageUrl;
     private List<MapQuestionDto> mapQuestions;
-    private List<TileQuestionDto> tileQuestions;
+    private List<QuestionDto> questions;
+    private List<OptionDto> statementOptions;
+    private List<OptionDto> photoOptions;
 
-    public String getMapImageUrl() {
-        return mapImageUrl;
-    }
-
-    public void setMapImageUrl(String mapImageUrl) {
-        this.mapImageUrl = mapImageUrl;
-    }
-
-    public List<MapQuestionDto> getMapQuestions() {
-        return mapQuestions;
-    }
-
-    public void setMapQuestions(List<MapQuestionDto> mapQuestions) {
-        this.mapQuestions = mapQuestions;
-    }
-
-    public List<TileQuestionDto> getTileQuestions() {
-        return tileQuestions;
-    }
-
-    public void setTileQuestions(List<TileQuestionDto> tileQuestions) {
-        this.tileQuestions = tileQuestions;
-    }
+    public String getMapImageUrl() { return mapImageUrl; }
+    public void setMapImageUrl(String mapImageUrl) { this.mapImageUrl = mapImageUrl; }
+    public List<MapQuestionDto> getMapQuestions() { return mapQuestions; }
+    public void setMapQuestions(List<MapQuestionDto> mapQuestions) { this.mapQuestions = mapQuestions; }
+    public List<QuestionDto> getQuestions() { return questions; }
+    public void setQuestions(List<QuestionDto> questions) { this.questions = questions; }
+    public List<OptionDto> getStatementOptions() { return statementOptions; }
+    public void setStatementOptions(List<OptionDto> statementOptions) { this.statementOptions = statementOptions; }
+    public List<OptionDto> getPhotoOptions() { return photoOptions; }
+    public void setPhotoOptions(List<OptionDto> photoOptions) { this.photoOptions = photoOptions; }
 
     public static class MapQuestionDto {
         private String id;
         private String prompt;
-
-        public MapQuestionDto() {
-        }
 
         public MapQuestionDto(String id, String prompt) {
             this.id = id;
             this.prompt = prompt;
         }
 
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public String getPrompt() {
-            return prompt;
-        }
-
-        public void setPrompt(String prompt) {
-            this.prompt = prompt;
-        }
+        public String getId() { return id; }
+        public String getPrompt() { return prompt; }
     }
 
-    public static class TileDto {
+    /** type is STATEMENT, PHOTO or TEXT; photoUrl is only set for PHOTO. */
+    public static class QuestionDto {
         private String id;
+        private String type;
+        private String prompt;
+        private String photoUrl;
+
+        public QuestionDto(String id, String type, String prompt, String photoUrl) {
+            this.id = id;
+            this.type = type;
+            this.prompt = prompt;
+            this.photoUrl = photoUrl;
+        }
+
+        public String getId() { return id; }
+        public String getType() { return type; }
+        public String getPrompt() { return prompt; }
+        public String getPhotoUrl() { return photoUrl; }
+    }
+
+    public static class OptionDto {
+        private String code;
         private String label;
 
-        public TileDto() {
-        }
-
-        public TileDto(String id, String label) {
-            this.id = id;
+        public OptionDto(String code, String label) {
+            this.code = code;
             this.label = label;
         }
 
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public void setLabel(String label) {
-            this.label = label;
-        }
-    }
-
-    public static class TileQuestionDto {
-        private String id;
-        private String prompt;
-        private String personALabel;
-        private String personBLabel;
-        private List<TileDto> tiles;
-
-        public TileQuestionDto() {
-        }
-
-        public TileQuestionDto(String id, String prompt, String personALabel, String personBLabel, List<TileDto> tiles) {
-            this.id = id;
-            this.prompt = prompt;
-            this.personALabel = personALabel;
-            this.personBLabel = personBLabel;
-            this.tiles = tiles;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public String getPrompt() {
-            return prompt;
-        }
-
-        public void setPrompt(String prompt) {
-            this.prompt = prompt;
-        }
-
-        public String getPersonALabel() {
-            return personALabel;
-        }
-
-        public void setPersonALabel(String personALabel) {
-            this.personALabel = personALabel;
-        }
-
-        public String getPersonBLabel() {
-            return personBLabel;
-        }
-
-        public void setPersonBLabel(String personBLabel) {
-            this.personBLabel = personBLabel;
-        }
-
-        public List<TileDto> getTiles() {
-            return tiles;
-        }
-
-        public void setTiles(List<TileDto> tiles) {
-            this.tiles = tiles;
-        }
+        public String getCode() { return code; }
+        public String getLabel() { return label; }
     }
 }

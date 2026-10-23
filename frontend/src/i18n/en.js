@@ -243,6 +243,7 @@ export default {
  "Bruk knappene ↑ / ↓ for å endre rekkefølgen på spørsmålene.": "Use the ↑ / ↓ buttons to reorder questions.",
  "Bruk knappene ↑ / ↓ for å endre rekkefølgen, eller forkast/bytt ut spørsmål - trykk deretter «Oppdater» for å lagre endringene.": "Use the ↑ / ↓ buttons to reorder, or discard/replace questions - then hit \"Update\" to save your changes.",
  "Brukernavn": "Username",
+ "Bursdagsquiz": "Birthday quiz",
  "Bytt på å gjette - gjetter du riktig, avsløres drakten (og du får ett poeng), gjetter du feil, mister du et liv. Spillet fortsetter til et brett er helt løst eller alle er tomme for liv.": "Take turns guessing - get it right and the shirt reveals (and you score a point), get it wrong and you lose a life. Play continues until a board is fully solved or everyone's out of lives.",
  "Bytt på å gjette - gjetter du riktig, avsløres ruten (og du får ett poeng), gjetter du feil, mister du et liv. Spillet fortsetter til et grid er helt løst eller alle er tomme for liv.": "Take turns guessing - get it right and the tile reveals (and you score a point), get it wrong and you lose a life. Play continues until a grid is fully solved or everyone's out of lives.",
  "Bytt på å nevne noen nær målet. Hver runde blir den": "Take turns naming someone close to the target. Each round the",
