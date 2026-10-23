@@ -1,4 +1,5 @@
 <template>
+  <BdayPinGate>
   <div class="ba">
     <div class="ba-top">
       <div>
@@ -112,7 +113,7 @@
         <div v-if="form.type === 'PHOTO'" class="field">
           <label>Bilde</label>
           <input type="text" v-model="form.photoUrl" placeholder="https://… eller last opp under" />
-          <div style="margin-top:8px;"><PhotoUploadButton label="Last opp bilde" @uploaded="url => form.photoUrl = url" /></div>
+          <div style="margin-top:8px;"><PhotoUploadButton label="Last opp bilde" :upload="bdayApi.adminUploadImage" @uploaded="url => form.photoUrl = url" /></div>
           <img v-if="form.photoUrl" :src="form.photoUrl" alt="" class="ba-preview" />
         </div>
 
@@ -187,16 +188,18 @@
       @cancel="pendingDelete = null"
     />
   </div>
+  </BdayPinGate>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import api from '../../services/api'
+import bdayApi from '../services/bdayApi'
+import BdayPinGate from '../components/BdayPinGate.vue'
 import ConfirmModal from '../../components/ConfirmModal.vue'
 import PhotoUploadButton from '../../components/PhotoUploadButton.vue'
 
-// The host's page for the birthday quiz - behind the real admin login (router meta + /api/admin/bday/**), so only the
-// site's admin gets here. Two tabs: the players (add, remove, fix a score, reset, see answers) and the questions
+// The host's page for the birthday quiz - behind the quiz's own PIN (BdayPinGate + /api/bday/admin/**), not the site's
+// admin login: some admins are guests at the party, and this page shows the answers. Two tabs: the players (add, remove, fix a score, reset, see answers) and the questions
 // (statements with Pål / Erik / Begge / Ingen, photo questions, text questions).
 const tab = ref('players')
 const error = ref('')
@@ -227,7 +230,7 @@ const done = computed(() => guests.value.filter(g => g.status === 'DONE'))
 async function loadGuests() {
   loadingGuests.value = true
   try {
-    guests.value = await api.adminBdayGuests()
+    guests.value = await bdayApi.adminGuests()
   } catch (e) {
     error.value = 'Kunne ikke laste spillerne.'
   } finally {
@@ -241,7 +244,7 @@ async function addGuest() {
   addingGuest.value = true
   error.value = ''
   try {
-    await api.adminBdayAddGuest(name)
+    await bdayApi.adminAddGuest(name)
     newGuestName.value = ''
     await loadGuests()
   } catch (e) {
@@ -254,7 +257,7 @@ async function addGuest() {
 async function removeGuest(guest) {
   error.value = ''
   try {
-    await api.adminBdayDeleteGuest(guest.id)
+    await bdayApi.adminDeleteGuest(guest.id)
     guests.value = guests.value.filter(g => g.id !== guest.id)
   } catch (e) {
     error.value = e.response?.data?.message || 'Kunne ikke fjerne gjesten.'
@@ -271,7 +274,7 @@ async function saveScore(g) {
   savingId.value = g.id
   error.value = ''
   try {
-    const updated = await api.adminBdaySetScore(g.id, scoreDrafts[g.id])
+    const updated = await bdayApi.adminSetScore(g.id, scoreDrafts[g.id])
     guests.value = guests.value.map(x => (x.id === g.id ? { ...x, score: updated.score } : x))
     delete scoreDrafts[g.id]
   } catch (e) {
@@ -287,7 +290,7 @@ async function doReset() {
   if (!g) return
   error.value = ''
   try {
-    await api.adminBdayResetGuest(g.id)
+    await bdayApi.adminResetGuest(g.id)
     delete scoreDrafts[g.id]
     await loadGuests()
   } catch (e) {
@@ -304,7 +307,7 @@ async function openAnswers(g) {
   answerSheet.value = []
   loadingAnswers.value = true
   try {
-    answerSheet.value = await api.adminBdayGuestAnswers(g.id)
+    answerSheet.value = await bdayApi.adminGuestAnswers(g.id)
   } catch (e) {
     error.value = 'Kunne ikke laste svarene.'
     answersFor.value = null
@@ -330,7 +333,7 @@ const sections = computed(() => [
 async function loadQuestions() {
   loadingQuestions.value = true
   try {
-    questions.value = await api.adminBdayQuestions()
+    questions.value = await bdayApi.adminQuestions()
   } catch (e) {
     error.value = 'Kunne ikke laste spørsmålene.'
   } finally {
@@ -366,8 +369,8 @@ async function saveQuestion() {
   savingQuestion.value = true
   try {
     const payload = { type: f.type, prompt: f.prompt, photoUrl: f.photoUrl, correctOption: f.correctOption, acceptedAnswers: f.acceptedAnswers }
-    if (f.id) await api.adminBdayUpdateQuestion(f.id, payload)
-    else await api.adminBdayCreateQuestion(payload)
+    if (f.id) await bdayApi.adminUpdateQuestion(f.id, payload)
+    else await bdayApi.adminCreateQuestion(payload)
     form.value = null
     await loadQuestions()
   } catch (e) {
@@ -382,7 +385,7 @@ async function doDeleteQuestion() {
   pendingDelete.value = null
   if (!q) return
   try {
-    await api.adminBdayDeleteQuestion(q.id)
+    await bdayApi.adminDeleteQuestion(q.id)
     questions.value = questions.value.filter(x => x.id !== q.id)
   } catch (e) {
     error.value = e.response?.data?.message || 'Kunne ikke slette spørsmålet.'

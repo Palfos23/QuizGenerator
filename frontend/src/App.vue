@@ -282,8 +282,7 @@ const ADMIN_MENUS = [
       { to: '/admin/imposter', label: 'Imposter' },
       { to: '/admin/bullseye', label: 'Bullseye' },
       { to: '/admin/penalty-shootouts', label: _t('Straffekonkurranse') },
-      { to: '/admin/flashback', label: 'Flashback' },
-      { to: '/bday/admin', label: _t('Bursdagsquiz') }
+      { to: '/admin/flashback', label: 'Flashback' }
     ]
   },
   {

@@ -125,7 +125,7 @@ const routes = [
   // from any nav menu.
   { path: '/bday', name: 'bday-play', component: BdayPlayView },
   { path: '/bday/leaderboard', name: 'bday-leaderboard', component: BdayLeaderboardView },
-  { path: '/bday/admin', name: 'bday-admin', component: BdayAdminView, meta: { requiresAuth: true, requiresAdmin: true } }
+  { path: '/bday/admin', name: 'bday-admin', component: BdayAdminView }
 ]
 
 const router = createRouter({

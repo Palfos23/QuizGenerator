@@ -2,23 +2,36 @@ package com.quizapp.controller;
 
 import com.quizapp.dto.*;
 import com.quizapp.service.BdayQuizService;
+import com.quizapp.service.ImageStorageService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
-// The host's side of the birthday quiz: players, the questions, and fixing a score by hand. Under /api/admin/**,
-// so it needs the real admin login (SecurityConfig) - only the site's admin can reach any of it.
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+// The host's side of the birthday quiz: players, the questions, and fixing a score by hand. Gated by the quiz's own PIN
+// (BdayPinAuthFilter), not by the site's admin role - some admins are guests at the party, and this side shows the answers.
 @RestController
-@RequestMapping("/api/admin/bday")
+@RequestMapping("/api/bday/admin")
 public class BdayAdminController {
 
     private final BdayQuizService quizService;
+    private final ImageStorageService imageStorageService;
 
-    public BdayAdminController(BdayQuizService quizService) {
+    public BdayAdminController(BdayQuizService quizService, ImageStorageService imageStorageService) {
         this.quizService = quizService;
+        this.imageStorageService = imageStorageService;
+    }
+
+    /** A photo for a picture question - the same storage the site's admin uploads use, but behind the quiz's PIN. */
+    @PostMapping("/images")
+    public Map<String, String> uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
+        return Map.of("url", imageStorageService.upload(file.getBytes()));
     }
 
     @GetMapping("/guests")

@@ -17,7 +17,11 @@ import api from '../services/api'
 // 'Last opp et bilde' next to a photo-link field: sends the file to the server, which stores it and
 // hands back a link - emitted as `uploaded`, for the parent to put in the same field a pasted link
 // would go in.
-defineProps({ label: { type: String, default: _t('Last opp et bilde') } })
+const props = defineProps({
+  label: { type: String, default: _t('Last opp et bilde') },
+  // Optional: how to send the file (default: the site admin's upload). The birthday quiz's host uses a PIN-guarded one.
+  upload: { type: Function, default: null }
+})
 const emit = defineEmits(['uploaded'])
 
 const fileInput = ref(null)
@@ -31,7 +35,7 @@ async function onChosen(e) {
   busy.value = true
   error.value = ''
   try {
-    const { url } = await api.adminUploadImage(file)
+    const { url } = await (props.upload ? props.upload(file) : api.adminUploadImage(file))
     emit('uploaded', url)
   } catch (err) {
     error.value = err.response?.data?.message || _t('Kunne ikke laste opp bildet.')
