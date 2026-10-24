@@ -161,7 +161,7 @@ public class BdayStandingsService {
     // ------------------------------------------------------------------ the combined board
 
     private static boolean hasNoResult(PlayerStanding p) {
-        return !p.quizDone() && p.marioKartTimeMs() == null && p.teamName() == null && p.bonusPoints() == 0 && p.total() == 0;
+        return !p.quizDone() && p.marioKartTimeMs() == null && p.musicPoints() == 0 && p.bonusPoints() == 0;
     }
 
     /** The host's view: everything, whatever the reveal state is. */
@@ -184,7 +184,7 @@ public class BdayStandingsService {
                     quizDone, quiz, lap == null ? null : lap.timeMs(), lap == null ? null : lap.rank(), mk, music, bonus,
                     quiz + mk + music + bonus, false));
         }
-        // Someone with nothing registered yet - no finished quiz, no lap, no team, no spin - hasn't taken part, so they have
+        // Someone with nothing registered yet - no finished quiz, no lap, no music or bonus points (being on a team doesn't count) - hasn't taken part, so they have
         // no place (rank 0) and sit below everyone who has, instead of all sharing first place on zero points.
         unsorted.sort(Comparator.comparing(BdayStandingsService::hasNoResult)
                 .thenComparing(Comparator.comparingInt(PlayerStanding::total).reversed())

@@ -381,6 +381,7 @@ class BdayNightServiceTest {
         BdayGuestDto negative = guest("Minus");
         night.recordSpin(new SpinRequest(negative.getId(), -5, null));
 
+        night.assignTeam(idle.getId(), createTeam("Lag uten poeng " + System.nanoTime()).id()); // being on a team with no score yet is not taking part
         PlayerStanding none = row(idle.getId());
         assertThat(none.rank()).isZero();
         assertThat(none.total()).isZero();
