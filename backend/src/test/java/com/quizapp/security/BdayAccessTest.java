@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // The birthday quiz has two sides: guests play on their own phones with no login and no PIN, and the host's side
@@ -72,6 +73,22 @@ class BdayAccessTest {
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/bday/admin/questions").header("X-Forwarded-For", ip()).contentType("application/json").content("{\"type\":\"STATEMENT\"}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void onlyTheHostCanTurnATileOrChangeTheReveal() throws Exception {
+        String site = jwtService.generateToken("admin", "ADMIN", 2L, "admin"); // a site admin is not the host
+        for (String auth : new String[] {null, "Bearer " + site}) {
+            var next = post("/api/bday/admin/reveal/next").header("X-Forwarded-For", ip());
+            var set = put("/api/bday/admin/reveal").header("X-Forwarded-For", ip()).contentType("application/json").content("{\"hideTop\":0}");
+            if (auth != null) {
+                next = next.header("Authorization", auth);
+                set = set.header("Authorization", auth);
+            }
+            mockMvc.perform(next).andExpect(status().isUnauthorized());
+            mockMvc.perform(set).andExpect(status().isUnauthorized());
+        }
+        mockMvc.perform(post("/api/bday/admin/reveal/next").header("X-Bday-Pin", pin).header("X-Forwarded-For", ip())).andExpect(status().isOk());
     }
 
     @Test

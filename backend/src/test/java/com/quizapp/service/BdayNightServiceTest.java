@@ -371,8 +371,24 @@ class BdayNightServiceTest {
 
         assertThat(row(a.getId()).rank()).isLessThan(row(b.getId()).rank());
         assertThat(row(b.getId()).rank()).isEqualTo(row(c.getId()).rank());
-        List<Integer> totals = standings.standings().players().stream().map(PlayerStanding::total).toList();
+        List<Integer> totals = standings.standings().players().stream().filter(p -> p.rank() > 0).map(PlayerStanding::total).toList();
         assertThat(totals).isSortedAccordingTo(java.util.Comparator.reverseOrder());
+    }
+
+    @Test
+    void guestsWithNothingRegisteredHaveNoPlaceAndSitBelowEveryoneElse() {
+        BdayGuestDto idle = guest("Ingenting");
+        BdayGuestDto negative = guest("Minus");
+        night.recordSpin(new SpinRequest(negative.getId(), -5, null));
+
+        PlayerStanding none = row(idle.getId());
+        assertThat(none.rank()).isZero();
+        assertThat(none.total()).isZero();
+        assertThat(row(negative.getId()).rank()).isGreaterThan(0); // took part, even if below zero
+
+        List<PlayerStanding> all = standings.standings().players();
+        assertThat(all.indexOf(none)).isGreaterThan(all.indexOf(row(negative.getId())));
+        assertThat(all.subList(all.indexOf(none), all.size())).allMatch(p -> p.rank() == 0);
     }
 
     @Test

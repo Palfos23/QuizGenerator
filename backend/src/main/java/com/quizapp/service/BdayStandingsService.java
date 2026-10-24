@@ -96,12 +96,12 @@ public class BdayStandingsService {
     /** The reveal state as it stands now, given how many players there are. */
     @Transactional(readOnly = true)
     public RevealState revealState() {
-        return revealState((int) guestRepository.count());
+        return revealState((int) standings().players().stream().filter(p -> p.rank() > 0).count());
     }
 
-    private RevealState revealState(int playerCount) {
+    private RevealState revealState(int rankedCount) {
         int hideTop = Math.max(0, parseIntOr(read(KEY_HIDE_TOP, "0"), 0));
-        int tiles = Math.min(hideTop, playerCount);
+        int tiles = Math.min(hideTop, rankedCount);
         int revealed = Math.min(Math.max(0, parseIntOr(read(KEY_REVEALED, "0"), 0)), tiles);
         return new RevealState(hideTop, revealed, tiles, hideTop > 0 && revealed < tiles);
     }
@@ -160,6 +160,10 @@ public class BdayStandingsService {
 
     // ------------------------------------------------------------------ the combined board
 
+    private static boolean hasNoResult(PlayerStanding p) {
+        return !p.quizDone() && p.marioKartTimeMs() == null && p.teamName() == null && p.bonusPoints() == 0 && p.total() == 0;
+    }
+
     /** The host's view: everything, whatever the reveal state is. */
     @Transactional(readOnly = true)
     public Standings standings() {
@@ -180,14 +184,17 @@ public class BdayStandingsService {
                     quizDone, quiz, lap == null ? null : lap.timeMs(), lap == null ? null : lap.rank(), mk, music, bonus,
                     quiz + mk + music + bonus, false));
         }
-        unsorted.sort(Comparator.comparingInt(PlayerStanding::total).reversed()
+        // Someone with nothing registered yet - no finished quiz, no lap, no team, no spin - hasn't taken part, so they have
+        // no place (rank 0) and sit below everyone who has, instead of all sharing first place on zero points.
+        unsorted.sort(Comparator.comparing(BdayStandingsService::hasNoResult)
+                .thenComparing(Comparator.comparingInt(PlayerStanding::total).reversed())
                 .thenComparing(p -> p.name().toLowerCase(Locale.ROOT)));
 
         // equal totals share a rank
         List<PlayerStanding> players = new ArrayList<>();
         for (int i = 0; i < unsorted.size(); i++) {
             PlayerStanding p = unsorted.get(i);
-            int rank = i > 0 && unsorted.get(i - 1).total() == p.total() ? players.get(i - 1).rank() : i + 1;
+            int rank = hasNoResult(p) ? 0 : i > 0 && unsorted.get(i - 1).total() == p.total() ? players.get(i - 1).rank() : i + 1;
             players.add(new PlayerStanding(p.guestId(), p.name(), p.teamName(), rank, p.quizDone(), p.quizScore(),
                     p.marioKartTimeMs(), p.marioKartRank(), p.marioKartPoints(), p.musicPoints(), p.bonusPoints(), p.total(), false));
         }
@@ -200,7 +207,7 @@ public class BdayStandingsService {
                 .sorted(Comparator.comparingInt(TeamStanding::musicScore).reversed().thenComparing(TeamStanding::name))
                 .collect(Collectors.toList());
 
-        return new Standings(players, teams, laps, settings().marioKartOpen(), revealState(players.size()));
+        return new Standings(players, teams, laps, settings().marioKartOpen(), revealState((int) players.stream().filter(p -> p.rank() > 0).count()));
     }
 
     /**

@@ -15,7 +15,7 @@
       </div>
       <p class="picker-hint" style="margin:6px 0 10px;">
         Skjul de beste plasseringene og snu dem én og én mot slutten. Så lenge noe er skjult, ser gjestene hverken navn på de skjulte plassene
-        eller poeng for noen konkurranse. På Topplisten kan du trykke på neste flis selv, hvis du åpner den her i nettleseren.
+        eller poeng for noen konkurranse. Bare du kan snu flisene, her (PIN-koden kreves) - Topplisten for gjestene bare viser det.
       </p>
       <div class="rv-row">
         <span class="rv-label">Skjul topp</span>

@@ -9,7 +9,7 @@
       <template v-else>Quiz + Mario Kart + musikkquiz + bonus fra hjulet. Oppdateres automatisk.</template>
     </p>
 
-    <BdayStandingsTable :players="standings.players" :show-parts="!masked" :turnable="masked && hasPin" :flipped="flipped" large @reveal="turnNext" />
+    <BdayStandingsTable :players="standings.players" :show-parts="!masked" :flipped="flipped" large />
 
     <div class="bl-grid">
       <section v-if="standings.marioKart.length" class="bl-box">
@@ -39,15 +39,12 @@ import bdayApi from '../services/bdayApi'
 import BdayStandingsTable from '../components/BdayStandingsTable.vue'
 import { formatLap } from '../lib/lap'
 import { usePolling } from '../../composables/usePolling'
-import bdayPin from '../composables/useBdayPin'
 
 // The big-screen board for the whole night: every competition added together, with the two team/lap lists below.
 const standings = ref({ players: [], teams: [], marioKart: [], marioKartOpen: false, reveal: { masked: false, tiles: 0 } })
 const flipped = ref([]) // guests whose tile was just turned, for the flip animation
 
 const masked = computed(() => !!standings.value.reveal?.masked)
-// with the host's PIN in this browser (they opened the board on the big screen themselves), the next tile can be clicked
-const hasPin = computed(() => bdayPin.hasPin.value)
 
 async function fetchStandings() {
   try {
@@ -61,16 +58,9 @@ async function fetchStandings() {
   }
 }
 
-async function turnNext() {
-  try {
-    await bdayApi.adminRevealNext()
-    await fetchStandings()
-  } catch (e) {
-    // a wrong or missing PIN just leaves the tile as it was
-  }
-}
-
-usePolling(fetchStandings, 2500)
+// this board only shows - tiles are turned by the host, from the PIN-gated admin page - so it polls often enough that a
+// turn shows up within a couple of seconds
+usePolling(fetchStandings, 2000)
 </script>
 
 <style scoped>
