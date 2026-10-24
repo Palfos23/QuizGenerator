@@ -52,13 +52,20 @@ class BdayNightServiceTest {
 
     // ------------------------------------------------------------------ the final reveal
 
+    /** A guest alone on a team with the given music score - a way to a high total (the wheel only gives a few points). */
+    private BdayGuestDto leader(String name, int musicScore) {
+        BdayGuestDto g = guest(name);
+        Team team = createTeam(name + "-lag " + System.nanoTime());
+        night.updateTeam(team.id(), new TeamRequest(team.name(), musicScore));
+        night.assignTeam(g.getId(), team.id());
+        return g;
+    }
+
     private List<BdayGuestDto> threeLeaders() {
         List<BdayGuestDto> leaders = new ArrayList<>();
-        int bonus = 100; // nobody else in the shared test database gets near these totals
+        int score = 1000; // a team's score, so nobody else in the shared test database gets near these totals
         for (String name : new String[] {"Gull", "Solv", "Bronse"}) {
-            BdayGuestDto g = guest(name);
-            night.recordSpin(new SpinRequest(g.getId(), bonus--, ""));
-            leaders.add(g);
+            leaders.add(leader(name, score--));
         }
         return leaders;
     }
@@ -80,7 +87,7 @@ class BdayNightServiceTest {
         assertThat(pub.marioKart()).isEmpty();
         // the host still sees everything
         assertThat(standings.standings().players().get(0).name()).isEqualTo(leaders.get(0).getName());
-        assertThat(standings.standings().players().get(0).bonusPoints()).isEqualTo(100);
+        assertThat(standings.standings().players().get(0).musicPoints()).isEqualTo(1000);
     }
 
     @Test
@@ -92,8 +99,8 @@ class BdayNightServiceTest {
         Standings one = standings.publicStandings();
         assertThat(one.players().get(2).hidden()).isFalse();
         assertThat(one.players().get(2).name()).isEqualTo(leaders.get(2).getName());
-        assertThat(one.players().get(2).total()).isEqualTo(98);
-        assertThat(one.players().get(2).bonusPoints()).isZero(); // the total, not where it came from
+        assertThat(one.players().get(2).total()).isEqualTo(998);
+        assertThat(one.players().get(2).musicPoints()).isZero(); // the total, not where it came from
         assertThat(one.players().get(1).hidden()).isTrue();
         assertThat(one.players().get(0).hidden()).isTrue();
 
@@ -102,7 +109,7 @@ class BdayNightServiceTest {
         Standings done = standings.publicStandings();
         assertThat(done.reveal().masked()).isFalse();
         assertThat(done.players().get(0).name()).isEqualTo(leaders.get(0).getName());
-        assertThat(done.players().get(0).bonusPoints()).isEqualTo(100); // everything open once the last tile is turned
+        assertThat(done.players().get(0).musicPoints()).isEqualTo(1000); // everything open once the last tile is turned
         assertThat(standings.revealNext().revealed()).isEqualTo(3); // nothing left to turn
     }
 
@@ -306,20 +313,26 @@ class BdayNightServiceTest {
     }
 
     @Test
-    void theWheelCanGiveNegativePointsButNotAbsurdOnes() {
+    void theWheelCanOnlyGiveTheSixValuesOnIt() {
         BdayGuestDto a = guest("Minus");
-        night.recordSpin(new SpinRequest(a.getId(), -4, "Bomben"));
-        assertThat(row(a.getId()).bonusPoints()).isEqualTo(-4);
+        night.recordSpin(new SpinRequest(a.getId(), -3, "Bomben"));
+        assertThat(row(a.getId()).bonusPoints()).isEqualTo(-3);
 
-        assertThatThrownBy(() -> night.updateSpin(a.getId(), new SpinRequest(a.getId(), 500, null))).isInstanceOf(IllegalArgumentException.class);
-        night.updateSpin(a.getId(), new SpinRequest(a.getId(), 10, "Jackpot"));
-        assertThat(row(a.getId()).bonusPoints()).isEqualTo(10);
+        // the wheel only has -3, -1, +1, +2, +3 and +5 on it
+        for (int bad : new int[] {0, 4, -2, -5, 10, 500}) {
+            assertThatThrownBy(() -> night.updateSpin(a.getId(), new SpinRequest(a.getId(), bad, null))).as("" + bad).isInstanceOf(IllegalArgumentException.class);
+        }
+        assertThat(row(a.getId()).bonusPoints()).isEqualTo(-3);
+        for (int ok : new int[] {-3, -1, 1, 2, 3, 5}) {
+            night.updateSpin(a.getId(), new SpinRequest(a.getId(), ok, "Jackpot"));
+            assertThat(row(a.getId()).bonusPoints()).isEqualTo(ok);
+        }
     }
 
     @Test
     void removingASpinGivesTheTurnBack() {
         BdayGuestDto a = guest("Tilbake");
-        night.recordSpin(new SpinRequest(a.getId(), 6, null));
+        night.recordSpin(new SpinRequest(a.getId(), 5, null));
         night.deleteSpin(a.getId());
 
         assertThat(night.wheelAdmin().candidates()).extracting(Person::id).contains(a.getId());
@@ -364,10 +377,7 @@ class BdayNightServiceTest {
 
     @Test
     void theBoardIsRankedByTotalWithEqualTotalsSharingARank() {
-        BdayGuestDto a = guest("Rang1"), b = guest("Rang2"), c = guest("Rang3");
-        night.recordSpin(new SpinRequest(a.getId(), 90, null));
-        night.recordSpin(new SpinRequest(b.getId(), 80, null));
-        night.recordSpin(new SpinRequest(c.getId(), 80, null));
+        BdayGuestDto a = leader("Rang1", 90), b = leader("Rang2", 80), c = leader("Rang3", 80);
 
         assertThat(row(a.getId()).rank()).isLessThan(row(b.getId()).rank());
         assertThat(row(b.getId()).rank()).isEqualTo(row(c.getId()).rank());
@@ -379,7 +389,7 @@ class BdayNightServiceTest {
     void guestsWithNothingRegisteredHaveNoPlaceAndSitBelowEveryoneElse() {
         BdayGuestDto idle = guest("Ingenting");
         BdayGuestDto negative = guest("Minus");
-        night.recordSpin(new SpinRequest(negative.getId(), -5, null));
+        night.recordSpin(new SpinRequest(negative.getId(), -3, null));
 
         night.assignTeam(idle.getId(), createTeam("Lag uten poeng " + System.nanoTime()).id()); // being on a team with no score yet is not taking part
         PlayerStanding none = row(idle.getId());
@@ -397,7 +407,7 @@ class BdayNightServiceTest {
         openMarioKart();
         BdayGuestDto g = guest("Borte");
         night.enterOwnTime(g.getId(), "1:30.000");
-        night.recordSpin(new SpinRequest(g.getId(), 4, null));
+        night.recordSpin(new SpinRequest(g.getId(), 2, null));
 
         quiz.deleteGuest(g.getId());
 

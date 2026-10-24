@@ -25,6 +25,8 @@ public class BdayNightService {
     private static final Pattern LAP_TIME = Pattern.compile("^(?:(\\d{1,2}):)?(\\d{1,3})(?:\\.(\\d{1,3}))?$");
     static final int MIN_LAP_MS = 5_000;
     static final int MAX_LAP_MS = 10 * 60 * 1000;
+    /** What the wheel can land on - the only bonus values the host can record. */
+    static final List<Integer> WHEEL_POINTS = List.of(-3, -1, 1, 2, 3, 5);
 
     private final BdayGuestRepository guestRepository;
     private final BdayMarioKartTimeRepository timeRepository;
@@ -271,8 +273,8 @@ public class BdayNightService {
     }
 
     private void apply(BdayWheelSpin spin, SpinRequest request) {
-        if (request.points() < -100 || request.points() > 100) {
-            throw new IllegalArgumentException("Bonuspoengene må være mellom -100 og 100.");
+        if (!WHEEL_POINTS.contains(request.points())) {
+            throw new IllegalArgumentException("Hjulet gir bare -3, -1, +1, +2, +3 eller +5 poeng.");
         }
         spin.setBonusPoints(request.points());
         String note = request.note() == null ? "" : request.note().trim();

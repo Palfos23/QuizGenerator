@@ -18,10 +18,9 @@
       <div v-if="current && !rolling" class="wh-form">
         <h2 style="margin:0 0 8px; font-size:1.2rem;">{{ current.name }} snurret…</h2>
         <div class="field">
-          <label>Bonuspoeng <span class="picker-hint">negativt går også an</span></label>
-          <input type="number" step="1" v-model.number="points" @keydown.enter="record" />
+          <label>Hva landet hjulet på?</label>
           <div class="wh-chips">
-            <button v-for="n in [-5, -3, -1, 1, 2, 3, 5, 10]" :key="n" type="button" class="wh-chip" @click="points = n">{{ n > 0 ? '+' + n : n }}</button>
+            <button v-for="n in WHEEL_POINTS" :key="n" type="button" class="wh-chip" :class="{ 'is-on': points === n }" :aria-pressed="points === n" @click="points = n">{{ label(n) }}</button>
           </div>
         </div>
         <div class="field">
@@ -49,8 +48,10 @@
       <div v-else class="candidate-list">
         <div v-for="s in data.spins" :key="s.guestId" class="candidate-row wh-row">
           <span class="wh-row-name">{{ s.name }}</span>
-          <input type="number" step="1" class="wh-row-pts" :value="edits[s.guestId]?.points ?? s.bonusPoints" aria-label="Bonuspoeng"
-                 @input="edit(s).points = $event.target.value === '' ? null : Number($event.target.value)" @keydown.enter="saveEdit(s)" />
+          <select class="wh-row-pts" :value="edits[s.guestId]?.points ?? s.bonusPoints" aria-label="Bonuspoeng"
+                  @change="edit(s).points = Number($event.target.value)">
+            <option v-for="n in WHEEL_POINTS" :key="n" :value="n">{{ label(n) }}</option>
+          </select>
           <input type="text" class="wh-row-note" maxlength="100" :value="edits[s.guestId]?.note ?? (s.note || '')" placeholder="Landet på"
                  @input="edit(s).note = $event.target.value" @keydown.enter="saveEdit(s)" />
           <button class="btn btn-secondary btn-sm" :disabled="!edited(s)" @click="saveEdit(s)">Lagre</button>
@@ -68,6 +69,10 @@ import bdayApi from '../services/bdayApi'
 // The host's wheel tab: the spinning itself happens on the real wheel - this keeps score. "Trekk" has the app pick a
 // random guest who hasn't spun yet (with a little roll through the names), then the host saves the bonus points the
 // wheel gave. Each guest spins once; removing a spin gives them the turn back.
+// what the wheel can land on - the server accepts nothing else
+const WHEEL_POINTS = [-3, -1, 1, 2, 3, 5]
+const label = n => (n > 0 ? '+' + n : '−' + Math.abs(n))
+
 const data = ref({ candidates: [], spins: [] })
 const loading = ref(true)
 const error = ref('')
@@ -181,11 +186,13 @@ async function remove(s) {
 .wh-form { margin-top: 16px; border: 2px solid var(--gold); border-radius: 3px; padding: 14px; }
 .wh-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .wh-chip { padding: 3px 12px; background: transparent; color: var(--text); border: 1.5px solid var(--rule); border-radius: 3px; font-family: var(--font-mono); cursor: pointer; }
+.wh-chip { padding: 8px 18px; font-size: 1.05rem; }
+.wh-chip.is-on { background: var(--text); color: var(--ink-raised); }
 .wh-chip:hover { background: var(--text); color: var(--ink-raised); }
 .wh-manual { margin-top: 14px; }
 .wh-manual summary { cursor: pointer; color: var(--text-dim); font-size: 0.9rem; }
 .wh-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .wh-row-name { flex: 1; min-width: 110px; }
-.wh-row-pts { width: 70px; padding: 6px 8px; }
+.wh-row-pts { width: 84px; padding: 6px 8px; }
 .wh-row-note { flex: 1.2; min-width: 120px; padding: 6px 8px; }
 </style>
