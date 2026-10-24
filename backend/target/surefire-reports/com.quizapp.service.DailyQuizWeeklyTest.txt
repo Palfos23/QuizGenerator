@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.quizapp.service.DailyQuizWeeklyTest
+-------------------------------------------------------------------------------
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.207 s -- in com.quizapp.service.DailyQuizWeeklyTest

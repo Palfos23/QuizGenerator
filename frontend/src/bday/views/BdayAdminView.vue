@@ -166,10 +166,16 @@
             <div class="ba-ans-main">
               <div>{{ a.prompt }}</div>
               <div class="ba-q-answer">{{ a.response }}</div>
+              <div v-if="a.correctAnswer" class="picker-hint">Fasit: {{ a.correctAnswer }}</div>
             </div>
-            <span class="ba-ans-pts">{{ a.points }}/{{ a.maxPoints }}</span>
+            <div class="ba-ans-side">
+              <span class="ba-ans-pts">{{ a.points }}/{{ a.maxPoints }}</span>
+              <button type="button" class="btn btn-secondary btn-sm" :disabled="markingId === a.id" @click="mark(a, a.points < a.maxPoints)">
+                {{ a.points >= a.maxPoints ? 'Merk som feil' : 'Merk som riktig' }}
+              </button>
+            </div>
           </div>
-          <p class="picker-hint" style="margin-top:10px;">Er et tekstsvar riktig men ikke godkjent? Endre poengsummen til spilleren i listen.</p>
+          <p class="picker-hint" style="margin-top:10px;">Rett opp et svar med knappen - totalen til spilleren regnes om automatisk.</p>
         </div>
         <div class="modal-actions"><button class="btn btn-secondary" @click="answersFor = null">Lukk</button></div>
       </div>
@@ -332,6 +338,24 @@ async function openAnswers(g) {
   }
 }
 
+const markingId = ref(null)
+
+// Overrides the automatic check on one answer (e.g. a text answer spelled differently); the guest's score is recomputed
+// on the server, so the player list is updated from the returned sheet's sum.
+async function mark(a, correct) {
+  markingId.value = a.id
+  try {
+    answerSheet.value = await bdayApi.adminMarkAnswer(answersFor.value.id, a.id, correct)
+    const total = answerSheet.value.reduce((sum, x) => sum + x.points, 0)
+    guests.value = guests.value.map(x => (x.id === answersFor.value.id ? { ...x, score: total } : x))
+    delete scoreDrafts[answersFor.value.id]
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Kunne ikke endre svaret.'
+  } finally {
+    markingId.value = null
+  }
+}
+
 // ---------------------------------------------------------------- questions
 const questions = ref([])
 const loadingQuestions = ref(true)
@@ -434,5 +458,6 @@ async function doDeleteQuestion() {
 .ba-ans-mark { font-weight: 700; width: 18px; }
 .ba-ans-mark.is-ok { color: var(--teal); }
 .ba-ans-mark.is-bad { color: var(--coral); }
+.ba-ans-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .ba-ans-pts { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim); white-space: nowrap; }
 </style>

@@ -32,6 +32,7 @@ class BdayNightServiceTest {
         // laps, spins, teams and the settings are shared by the whole night - leave them as found
         timeRepository.deleteAll();
         spinRepository.deleteAll();
+        standings.updateReveal(new RevealRequest(0, 0));
         teams.forEach(night::deleteTeam);
         teams.clear();
         standings.updateSettings(new Settings(false, BdayStandingsService.DEFAULT_MK_POINTS, BdayStandingsService.DEFAULT_MK_OTHER));
@@ -47,6 +48,88 @@ class BdayNightServiceTest {
 
     private PlayerStanding row(Long guestId) {
         return standings.standings().players().stream().filter(p -> p.guestId().equals(guestId)).findFirst().orElseThrow();
+    }
+
+    // ------------------------------------------------------------------ the final reveal
+
+    private List<BdayGuestDto> threeLeaders() {
+        List<BdayGuestDto> leaders = new ArrayList<>();
+        int bonus = 100; // nobody else in the shared test database gets near these totals
+        for (String name : new String[] {"Gull", "Solv", "Bronse"}) {
+            BdayGuestDto g = guest(name);
+            night.recordSpin(new SpinRequest(g.getId(), bonus--, ""));
+            leaders.add(g);
+        }
+        return leaders;
+    }
+
+    @Test
+    void hiddenTopPlacesLeaveTheServerAsAnonymousTilesWithNoPoints() {
+        List<BdayGuestDto> leaders = threeLeaders();
+        standings.updateReveal(new RevealRequest(3, null));
+
+        Standings pub = standings.publicStandings();
+
+        assertThat(pub.reveal().masked()).isTrue();
+        assertThat(pub.players().subList(0, 3)).allMatch(PlayerStanding::hidden)
+                .allMatch(p -> p.guestId() == null && p.name() == null && p.teamName() == null && p.total() == 0 && p.bonusPoints() == 0);
+        assertThat(pub.players().subList(0, 3)).extracting(PlayerStanding::rank).containsExactly(1, 2, 3);
+        // no competition's points for anyone, and no per-competition lists
+        assertThat(pub.players()).allMatch(p -> p.quizScore() == 0 && p.bonusPoints() == 0 && p.marioKartPoints() == 0 && p.musicPoints() == 0);
+        assertThat(pub.teams()).isEmpty();
+        assertThat(pub.marioKart()).isEmpty();
+        // the host still sees everything
+        assertThat(standings.standings().players().get(0).name()).isEqualTo(leaders.get(0).getName());
+        assertThat(standings.standings().players().get(0).bonusPoints()).isEqualTo(100);
+    }
+
+    @Test
+    void tilesTurnFromTheLowestHiddenPlaceUpToFirst() {
+        List<BdayGuestDto> leaders = threeLeaders();
+        standings.updateReveal(new RevealRequest(3, null));
+
+        standings.revealNext();
+        Standings one = standings.publicStandings();
+        assertThat(one.players().get(2).hidden()).isFalse();
+        assertThat(one.players().get(2).name()).isEqualTo(leaders.get(2).getName());
+        assertThat(one.players().get(2).total()).isEqualTo(98);
+        assertThat(one.players().get(2).bonusPoints()).isZero(); // the total, not where it came from
+        assertThat(one.players().get(1).hidden()).isTrue();
+        assertThat(one.players().get(0).hidden()).isTrue();
+
+        standings.revealNext();
+        standings.revealNext();
+        Standings done = standings.publicStandings();
+        assertThat(done.reveal().masked()).isFalse();
+        assertThat(done.players().get(0).name()).isEqualTo(leaders.get(0).getName());
+        assertThat(done.players().get(0).bonusPoints()).isEqualTo(100); // everything open once the last tile is turned
+        assertThat(standings.revealNext().revealed()).isEqualTo(3); // nothing left to turn
+    }
+
+    @Test
+    void changingHowManyPlacesAreHiddenTurnsEveryTileBack() {
+        threeLeaders();
+        standings.updateReveal(new RevealRequest(3, null));
+        standings.revealNext();
+
+        RevealState state = standings.updateReveal(new RevealRequest(2, null));
+
+        assertThat(state.revealed()).isZero();
+        assertThat(state.tiles()).isEqualTo(2);
+        assertThat(standings.updateReveal(new RevealRequest(0, null)).masked()).isFalse();
+        assertThatThrownBy(() -> standings.updateReveal(new RevealRequest(-1, null))).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void whileTheTopIsHiddenMarioKartLapsAreShownWithoutWhatTheyAreWorth() {
+        BdayGuestDto g = guest("Kart");
+        openMarioKart();
+        night.enterOwnTime(g.getId(), "1:30.000");
+
+        assertThat(night.marioKartPublic().ranking()).extracting(LapEntry::points).doesNotContainNull();
+        standings.updateReveal(new RevealRequest(1, null));
+        assertThat(night.marioKartPublic().ranking()).extracting(LapEntry::points).containsOnlyNulls();
+        assertThat(night.marioKartPublic().ranking()).extracting(LapEntry::timeMs).contains(90_000);
     }
 
     // ------------------------------------------------------------------ lap times

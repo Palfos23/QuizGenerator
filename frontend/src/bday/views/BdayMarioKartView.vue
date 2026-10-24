@@ -58,7 +58,7 @@
           <span class="bm-rank-n">{{ r.rank }}</span>
           <span class="bm-rank-name">{{ r.name }}</span>
           <span class="bm-rank-time">{{ formatLap(r.timeMs) }}</span>
-          <span class="bm-rank-pts">{{ r.points }} p</span>
+          <span v-if="r.points !== null && r.points !== undefined" class="bm-rank-pts">{{ r.points }} p</span>
         </div>
       </section>
     </template>

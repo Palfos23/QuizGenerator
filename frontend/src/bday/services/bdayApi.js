@@ -64,6 +64,12 @@ export default {
   adminSetScore(id, score) { return client.put(`/bday/admin/guests/${id}/score`, { score }).then(r => r.data) },
   adminResetGuest(id) { return client.post(`/bday/admin/guests/${id}/reset`).then(r => r.data) },
   adminGuestAnswers(id) { return client.get(`/bday/admin/guests/${id}/answers`).then(r => r.data) },
+  adminMarkAnswer(guestId, answerId, correct) { return client.put(`/bday/admin/guests/${guestId}/answers/${answerId}`, { correct }).then(r => r.data) },
+  adminStandings() { return client.get('/bday/admin/standings').then(r => r.data) },
+  adminReveal() { return client.get('/bday/admin/reveal').then(r => r.data) },
+  /** { hideTop?, revealed? } - hideTop hides that many places (0 = none) and turns every tile back. */
+  adminSetReveal(payload) { return client.put('/bday/admin/reveal', payload).then(r => r.data) },
+  adminRevealNext() { return client.post('/bday/admin/reveal/next').then(r => r.data) },
   adminQuestions() { return client.get('/bday/admin/questions').then(r => r.data) },
   adminCreateQuestion(payload) { return client.post('/bday/admin/questions', payload).then(r => r.data) },
   adminUpdateQuestion(id, payload) { return client.put(`/bday/admin/questions/${id}`, payload).then(r => r.data) },

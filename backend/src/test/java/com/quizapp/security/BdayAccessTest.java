@@ -45,7 +45,7 @@ class BdayAccessTest {
     @Test
     void theHostsSideNeedsThePin() throws Exception {
         for (String path : new String[] {"/api/bday/admin/guests", "/api/bday/admin/questions", "/api/bday/admin/settings",
-                "/api/bday/admin/mariokart", "/api/bday/admin/teams", "/api/bday/admin/wheel"}) {
+                "/api/bday/admin/mariokart", "/api/bday/admin/teams", "/api/bday/admin/wheel", "/api/bday/admin/standings", "/api/bday/admin/reveal"}) {
             mockMvc.perform(get(path).header("X-Forwarded-For", ip())).andExpect(status().isUnauthorized());
             mockMvc.perform(get(path).header("X-Bday-Pin", "not-the-pin").header("X-Forwarded-For", ip())).andExpect(status().isUnauthorized());
             mockMvc.perform(get(path).header("X-Bday-Pin", pin).header("X-Forwarded-For", ip())).andExpect(status().isOk());

@@ -72,6 +72,37 @@ public class BdayAdminController {
         return quizService.guestAnswers(id);
     }
 
+    /** Host override: mark one of a finished guest's answers right or wrong. Body: {"correct": true}. */
+    @PutMapping("/guests/{id}/answers/{answerId}")
+    public List<BdayAnswerViewDto> markAnswer(@PathVariable Long id, @PathVariable Long answerId,
+                                              @RequestBody java.util.Map<String, Boolean> body) {
+        if (body == null || body.get("correct") == null) {
+            throw new IllegalArgumentException("Mangler «correct».");
+        }
+        return quizService.markAnswer(id, answerId, body.get("correct"));
+    }
+
+    // the full board and the final reveal of the public one
+    @GetMapping("/standings")
+    public BdayNightDto.Standings standings() {
+        return standingsService.standings();
+    }
+
+    @GetMapping("/reveal")
+    public BdayNightDto.RevealState reveal() {
+        return standingsService.revealState();
+    }
+
+    @PutMapping("/reveal")
+    public BdayNightDto.RevealState updateReveal(@RequestBody BdayNightDto.RevealRequest request) {
+        return standingsService.updateReveal(request);
+    }
+
+    @PostMapping("/reveal/next")
+    public BdayNightDto.RevealState revealNext() {
+        return standingsService.revealNext();
+    }
+
     @GetMapping("/questions")
     public List<BdayQuestionAdminDto> questions() {
         return quizService.listQuestions();

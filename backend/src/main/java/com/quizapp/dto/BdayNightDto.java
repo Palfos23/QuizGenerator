@@ -16,14 +16,26 @@ public final class BdayNightDto {
     /** One guest's total and where it comes from. */
     public record PlayerStanding(Long guestId, String name, String teamName, int rank, boolean quizDone, int quizScore,
                                  Integer marioKartTimeMs, Integer marioKartRank, int marioKartPoints,
-                                 int musicPoints, int bonusPoints, int total) {}
+                                 int musicPoints, int bonusPoints, int total, boolean hidden) {}
 
     public record TeamStanding(Long id, String name, int musicScore, int members) {}
 
     /** One line of the Mario Kart best-lap ranking. */
-    public record LapEntry(int rank, Long guestId, String name, int timeMs, int points) {}
+    public record LapEntry(int rank, Long guestId, String name, int timeMs, Integer points) {}
 
-    public record Standings(List<PlayerStanding> players, List<TeamStanding> teams, List<LapEntry> marioKart, boolean marioKartOpen) {}
+    public record Standings(List<PlayerStanding> players, List<TeamStanding> teams, List<LapEntry> marioKart, boolean marioKartOpen,
+                            RevealState reveal) {}
+
+    /**
+     * The final-reveal state of the public board. The host hides the top {@code hideTop} places and turns the tiles one at a
+     * time from the lowest of them up to first place; {@code revealed} counts the turned ones. {@code tiles} is how many
+     * places are really hidden (hideTop, but never more than there are players) and {@code masked} is true until the last
+     * tile is turned - while masked the public board shows no per-competition points at all.
+     */
+    public record RevealState(int hideTop, int revealed, int tiles, boolean masked) {}
+
+    /** The host sets how many places to hide and/or how many tiles are turned; null leaves a value as it is. */
+    public record RevealRequest(Integer hideTop, Integer revealed) {}
 
     // ---------------------------------------------------------------- Mario Kart
 

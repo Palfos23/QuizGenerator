@@ -151,19 +151,43 @@ public class BdayQuizService {
                 BdayQuestionCatalog.MapQuestion mq = BdayQuestionCatalog.MAP_QUESTIONS.stream()
                         .filter(q -> q.id.equals(a.getQuestionId())).findFirst().orElse(null);
                 String where = json.has("x") ? "Pinne satt på kartet" : "(ikke besvart)";
-                out.add(new BdayAnswerViewDto(mq != null ? mq.prompt : a.getQuestionId(), "MAP", where,
-                        a.getPointsEarned(), a.getMaxPoints()));
+                out.add(new BdayAnswerViewDto(a.getId(), mq != null ? mq.prompt : a.getQuestionId(), "MAP", where,
+                        mq != null ? mq.correctCityName : "", a.getPointsEarned(), a.getMaxPoints()));
                 continue;
             }
             BdayQuestion q = questions.get(a.getQuestionId());
             String value = json.path("value").asText("");
             String shown = q != null && q.getType() != BdayQuestion.Type.TEXT && !value.isEmpty()
                     ? BdayQuestionCatalog.optionLabel(value) : value;
-            out.add(new BdayAnswerViewDto(q != null ? q.getPrompt() : "(slettet spørsmål)",
-                    q != null ? q.getType().name() : "TEXT", shown.isEmpty() ? "(tomt)" : shown,
+            out.add(new BdayAnswerViewDto(a.getId(), q != null ? q.getPrompt() : "(slettet spørsmål)",
+                    q != null ? q.getType().name() : "TEXT", shown.isEmpty() ? "(tomt)" : shown, correctAnswerText(q),
                     a.getPointsEarned(), a.getMaxPoints()));
         }
         return out;
+    }
+
+    private static String correctAnswerText(BdayQuestion q) {
+        if (q == null) return "";
+        if (q.getType() == BdayQuestion.Type.TEXT) return String.join(" / ", parseAccepted(q.getAcceptedAnswers()));
+        return q.getCorrectOption() == null ? "" : BdayQuestionCatalog.optionLabel(q.getCorrectOption());
+    }
+
+    /**
+     * Host override on one answer: mark it right (full points) or wrong (none) whatever the automatic check said - a text
+     * answer that is spelled differently but should count, or the other way round. The guest's total is then the sum of
+     * their answers again, so this replaces any score typed in by hand.
+     */
+    @Transactional
+    public List<BdayAnswerViewDto> markAnswer(Long guestId, Long answerId, boolean correct) {
+        BdayGuest guest = requireGuest(guestId);
+        BdayAnswer answer = answerRepository.findById(answerId)
+                .filter(a -> a.getGuest().getId().equals(guestId))
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke svaret."));
+        answer.setPointsEarned(correct ? answer.getMaxPoints() : 0);
+        answerRepository.save(answer);
+        guest.setScore(answerRepository.findByGuest_IdOrderByIdAsc(guestId).stream().mapToInt(BdayAnswer::getPointsEarned).sum());
+        guestRepository.save(guest);
+        return guestAnswers(guestId);
     }
 
     // ------------------------------------------------------------------ questions: admin

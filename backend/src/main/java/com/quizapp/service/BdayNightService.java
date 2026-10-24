@@ -74,7 +74,12 @@ public class BdayNightService {
                 .sorted(Comparator.comparing(g -> g.getName().toLowerCase(Locale.ROOT)))
                 .map(g -> new GuestSlot(g.getId(), g.getName(), withTime.contains(g.getId())))
                 .collect(Collectors.toList());
-        return new MarioKartPublic(standingsService.settings().marioKartOpen(), guests, standingsService.lapRanking());
+        List<LapEntry> ranking = standingsService.lapRanking();
+        if (standingsService.isMasked()) {
+            // the lap times are public, what they are worth is not until the final reveal is done
+            ranking = ranking.stream().map(l -> new LapEntry(l.rank(), l.guestId(), l.name(), l.timeMs(), null)).collect(Collectors.toList());
+        }
+        return new MarioKartPublic(standingsService.settings().marioKartOpen(), guests, ranking);
     }
 
     /** A guest enters their own best lap - once, and only while the host has registration open. */

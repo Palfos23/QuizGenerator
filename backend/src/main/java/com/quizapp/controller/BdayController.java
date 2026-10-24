@@ -48,13 +48,14 @@ public class BdayController {
 
     @GetMapping("/leaderboard")
     public List<BdayGuestDto> leaderboard() {
-        return quizService.leaderboard();
+        // quiz scores are one competition's points - not public while the final reveal is pending
+        return standingsService.isMasked() ? List.of() : quizService.leaderboard();
     }
 
     /** The combined board: every guest's total and where it comes from, the music teams, and the Mario Kart ranking. */
     @GetMapping("/standings")
     public BdayNightDto.Standings standings() {
-        return standingsService.standings();
+        return standingsService.publicStandings();
     }
 
     /** Who can still enter a Mario Kart time, and the ranking so far. */

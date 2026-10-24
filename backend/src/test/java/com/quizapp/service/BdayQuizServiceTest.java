@@ -208,6 +208,40 @@ class BdayQuizServiceTest {
     }
 
     @Test
+    void theHostCanMarkAnAnswerRightOrWrongAndTheTotalFollows() {
+        create(request("TEXT", "Hvilken by?", null, null, "Bergen"));
+        BdayGuestDto guest = newGuest();
+        service.submitAnswers(guest.getId(), perfectAnswers());
+        int full = guestRepository.findById(guest.getId()).orElseThrow().getScore();
+
+        // a right text answer the automatic check missed ... or one it let through that shouldn't count
+        var text = service.guestAnswers(guest.getId()).stream().filter(a -> a.getType().equals("TEXT")).findFirst().orElseThrow();
+        assertThat(text.getCorrectAnswer()).isEqualTo("Bergen");
+        service.markAnswer(guest.getId(), text.getId(), false);
+        assertThat(guestRepository.findById(guest.getId()).orElseThrow().getScore()).isEqualTo(full - 1);
+
+        var after = service.markAnswer(guest.getId(), text.getId(), true);
+        assertThat(guestRepository.findById(guest.getId()).orElseThrow().getScore()).isEqualTo(full);
+        assertThat(after).filteredOn(a -> a.getId().equals(text.getId())).allMatch(a -> a.getPoints() == a.getMaxPoints());
+
+        // the map question is worth more than a point
+        var map = service.guestAnswers(guest.getId()).stream().filter(a -> a.getType().equals("MAP")).findFirst().orElseThrow();
+        service.markAnswer(guest.getId(), map.getId(), false);
+        assertThat(guestRepository.findById(guest.getId()).orElseThrow().getScore()).isEqualTo(full - map.getMaxPoints());
+    }
+
+    @Test
+    void anAnswerBelongingToSomeoneElseCannotBeMarked() {
+        BdayGuestDto a = newGuest();
+        BdayGuestDto b = newGuest();
+        service.submitAnswers(a.getId(), perfectAnswers());
+        service.submitAnswers(b.getId(), perfectAnswers());
+        Long bsAnswer = service.guestAnswers(b.getId()).get(0).getId();
+
+        assertThatThrownBy(() -> service.markAnswer(a.getId(), bsAnswer, false)).isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
     void waitingPlayersAreListedAlphabetically() {
         service.addGuest("Zeta " + System.nanoTime());
         service.addGuest("Alfa " + System.nanoTime());

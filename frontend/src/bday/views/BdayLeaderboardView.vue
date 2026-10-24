@@ -4,9 +4,12 @@
       <h1>🎉 Toppliste</h1>
       <router-link to="/bday" class="bl-link">Oversikt</router-link>
     </div>
-    <p class="page-subtitle">Quiz + Mario Kart + musikkquiz + bonus fra hjulet. Oppdateres automatisk.</p>
+    <p class="page-subtitle">
+      <template v-if="masked">Topp {{ standings.reveal.tiles }} er skjult og avsløres på slutten. Poengene per konkurranse vises etterpå.</template>
+      <template v-else>Quiz + Mario Kart + musikkquiz + bonus fra hjulet. Oppdateres automatisk.</template>
+    </p>
 
-    <BdayStandingsTable :players="standings.players" large />
+    <BdayStandingsTable :players="standings.players" :show-parts="!masked" :turnable="masked && hasPin" :flipped="flipped" large @reveal="turnNext" />
 
     <div class="bl-grid">
       <section v-if="standings.marioKart.length" class="bl-box">
@@ -31,24 +34,43 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import bdayApi from '../services/bdayApi'
 import BdayStandingsTable from '../components/BdayStandingsTable.vue'
 import { formatLap } from '../lib/lap'
 import { usePolling } from '../../composables/usePolling'
+import bdayPin from '../composables/useBdayPin'
 
 // The big-screen board for the whole night: every competition added together, with the two team/lap lists below.
-const standings = ref({ players: [], teams: [], marioKart: [], marioKartOpen: false })
+const standings = ref({ players: [], teams: [], marioKart: [], marioKartOpen: false, reveal: { masked: false, tiles: 0 } })
+const flipped = ref([]) // guests whose tile was just turned, for the flip animation
+
+const masked = computed(() => !!standings.value.reveal?.masked)
+// with the host's PIN in this browser (they opened the board on the big screen themselves), the next tile can be clicked
+const hasPin = computed(() => bdayPin.hasPin.value)
 
 async function fetchStandings() {
   try {
-    standings.value = await bdayApi.standings()
+    const next = await bdayApi.standings()
+    const before = standings.value.players
+    // a place that was a face-down tile a moment ago and now has a name has just been turned
+    flipped.value = next.players.filter((p, i) => !p.hidden && before[i]?.hidden).map(p => p.guestId)
+    standings.value = next
   } catch (e) {
     // display-only board - fail quietly and just try again next poll
   }
 }
 
-usePolling(fetchStandings, 5000)
+async function turnNext() {
+  try {
+    await bdayApi.adminRevealNext()
+    await fetchStandings()
+  } catch (e) {
+    // a wrong or missing PIN just leaves the tile as it was
+  }
+}
+
+usePolling(fetchStandings, 2500)
 </script>
 
 <style scoped>

@@ -23,6 +23,9 @@ public class BdayStandingsService {
     static final String KEY_MK_OTHER = "mk_other";
     static final String DEFAULT_MK_POINTS = "10, 8, 6, 5, 4, 3, 2, 1";
     static final int DEFAULT_MK_OTHER = 1;
+    static final String KEY_HIDE_TOP = "lb_hide_top";
+    static final String KEY_REVEALED = "lb_revealed";
+    static final int MAX_HIDE_TOP = 50;
 
     private final BdayGuestRepository guestRepository;
     private final BdayMarioKartTimeRepository timeRepository;
@@ -88,6 +91,54 @@ public class BdayStandingsService {
         return rank >= 1 && rank <= table.size() ? table.get(rank - 1) : otherPoints;
     }
 
+    // ------------------------------------------------------------------ final reveal
+
+    /** The reveal state as it stands now, given how many players there are. */
+    @Transactional(readOnly = true)
+    public RevealState revealState() {
+        return revealState((int) guestRepository.count());
+    }
+
+    private RevealState revealState(int playerCount) {
+        int hideTop = Math.max(0, parseIntOr(read(KEY_HIDE_TOP, "0"), 0));
+        int tiles = Math.min(hideTop, playerCount);
+        int revealed = Math.min(Math.max(0, parseIntOr(read(KEY_REVEALED, "0"), 0)), tiles);
+        return new RevealState(hideTop, revealed, tiles, hideTop > 0 && revealed < tiles);
+    }
+
+    /** True while the public board must not show any competition's points: the top places are hidden and not all turned. */
+    @Transactional(readOnly = true)
+    public boolean isMasked() {
+        return revealState().masked();
+    }
+
+    /** Hide the top N places (0 = show everything) and/or set how many tiles are turned. Changing N turns every tile back. */
+    @Transactional
+    public RevealState updateReveal(RevealRequest request) {
+        if (request.hideTop() != null) {
+            if (request.hideTop() < 0 || request.hideTop() > MAX_HIDE_TOP) {
+                throw new IllegalArgumentException("Antall plasser å skjule må være mellom 0 og " + MAX_HIDE_TOP + ".");
+            }
+            write(KEY_HIDE_TOP, String.valueOf(request.hideTop()));
+            write(KEY_REVEALED, "0");
+        }
+        if (request.revealed() != null) {
+            if (request.revealed() < 0) throw new IllegalArgumentException("Antall avslørte kan ikke være negativt.");
+            write(KEY_REVEALED, String.valueOf(request.revealed()));
+        }
+        return revealState();
+    }
+
+    /** Turns the next tile: the lowest place still hidden. */
+    @Transactional
+    public RevealState revealNext() {
+        RevealState state = revealState();
+        if (state.revealed() < state.tiles()) {
+            write(KEY_REVEALED, String.valueOf(state.revealed() + 1));
+        }
+        return revealState();
+    }
+
     // ------------------------------------------------------------------ Mario Kart ranking
 
     /** Everyone with a lap time, fastest first. Equal times share a rank (and the points that rank is worth). */
@@ -109,6 +160,7 @@ public class BdayStandingsService {
 
     // ------------------------------------------------------------------ the combined board
 
+    /** The host's view: everything, whatever the reveal state is. */
     @Transactional(readOnly = true)
     public Standings standings() {
         List<LapEntry> laps = lapRanking();
@@ -126,7 +178,7 @@ public class BdayStandingsService {
             int bonus = bonusByGuest.getOrDefault(g.getId(), 0);
             unsorted.add(new PlayerStanding(g.getId(), g.getName(), g.getTeam() == null ? null : g.getTeam().getName(), 0,
                     quizDone, quiz, lap == null ? null : lap.timeMs(), lap == null ? null : lap.rank(), mk, music, bonus,
-                    quiz + mk + music + bonus));
+                    quiz + mk + music + bonus, false));
         }
         unsorted.sort(Comparator.comparingInt(PlayerStanding::total).reversed()
                 .thenComparing(p -> p.name().toLowerCase(Locale.ROOT)));
@@ -137,7 +189,7 @@ public class BdayStandingsService {
             PlayerStanding p = unsorted.get(i);
             int rank = i > 0 && unsorted.get(i - 1).total() == p.total() ? players.get(i - 1).rank() : i + 1;
             players.add(new PlayerStanding(p.guestId(), p.name(), p.teamName(), rank, p.quizDone(), p.quizScore(),
-                    p.marioKartTimeMs(), p.marioKartRank(), p.marioKartPoints(), p.musicPoints(), p.bonusPoints(), p.total()));
+                    p.marioKartTimeMs(), p.marioKartRank(), p.marioKartPoints(), p.musicPoints(), p.bonusPoints(), p.total(), false));
         }
 
         Map<Long, Long> memberCounts = guestRepository.findAll().stream()
@@ -148,7 +200,32 @@ public class BdayStandingsService {
                 .sorted(Comparator.comparingInt(TeamStanding::musicScore).reversed().thenComparing(TeamStanding::name))
                 .collect(Collectors.toList());
 
-        return new Standings(players, teams, laps, settings().marioKartOpen());
+        return new Standings(players, teams, laps, settings().marioKartOpen(), revealState(players.size()));
+    }
+
+    /**
+     * What the public board may see. Until the last tile is turned no competition's points leave the server: the hidden places
+     * come back as anonymous tiles (only their place number), the rest as name and total, and the Mario Kart and team lists
+     * are left out. Once everything is turned - or when nothing is hidden - it is the full board.
+     */
+    @Transactional(readOnly = true)
+    public Standings publicStandings() {
+        Standings full = standings();
+        RevealState reveal = full.reveal();
+        if (!reveal.masked()) return full;
+
+        int stillHidden = reveal.tiles() - reveal.revealed(); // places 1..stillHidden are the face-down tiles
+        List<PlayerStanding> players = new ArrayList<>();
+        for (int i = 0; i < full.players().size(); i++) {
+            PlayerStanding p = full.players().get(i);
+            if (i < stillHidden) {
+                players.add(new PlayerStanding(null, null, null, i + 1, false, 0, null, null, 0, 0, 0, 0, true));
+            } else {
+                players.add(new PlayerStanding(p.guestId(), p.name(), p.teamName(), p.rank(), p.quizDone(), 0, null, null, 0, 0, 0,
+                        p.total(), false));
+            }
+        }
+        return new Standings(players, List.of(), List.of(), full.marioKartOpen(), reveal);
     }
 
     // ------------------------------------------------------------------ helpers
