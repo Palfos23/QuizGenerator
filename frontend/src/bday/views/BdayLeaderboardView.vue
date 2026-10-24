@@ -74,7 +74,7 @@ usePolling(fetchStandings, 2500)
 </script>
 
 <style scoped>
-.bl { max-width: 820px; margin: 0 auto; padding: 24px 16px 60px; width: 100%; }
+.bl { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; width: 100%; }
 .bl-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .bl-top h1 { margin: 0; font-size: 2.4rem; }
 .bl-link { color: var(--text); font-weight: 600; font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; }
