@@ -7,21 +7,25 @@
         <h1 style="margin:2px 0 0;">🎂 Bursdagsquiz</h1>
       </div>
       <div class="ba-links">
-        <router-link to="/bday" class="btn btn-secondary btn-sm">Åpne quizen</router-link>
+        <router-link to="/bday" class="btn btn-secondary btn-sm">Gjesteside</router-link>
         <router-link to="/bday/leaderboard" class="btn btn-secondary btn-sm">Topplisten</router-link>
       </div>
     </div>
-    <p class="page-subtitle">Her styrer du spillerne og spørsmålene. Gjestene trenger ikke å logge inn - de åpner <strong>/bday</strong> på sin egen telefon og velger navnet sitt.</p>
+    <p class="page-subtitle">Her styrer du hele kvelden: quiz, Mario Kart, musikkquiz og hjulet. Gjestene trenger ikke å logge inn - de åpner <strong>/bday</strong> på sin egen telefon og velger navnet sitt.</p>
 
     <div class="ba-tabs" role="tablist">
-      <button type="button" role="tab" :aria-selected="tab === 'players'" :class="{ 'is-on': tab === 'players' }" @click="tab = 'players'">Spillere</button>
-      <button type="button" role="tab" :aria-selected="tab === 'questions'" :class="{ 'is-on': tab === 'questions' }" @click="tab = 'questions'">Spørsmål</button>
+      <button v-for="t in TABS" :key="t.id" type="button" role="tab" :aria-selected="tab === t.id" :class="{ 'is-on': tab === t.id }" @click="tab = t.id">{{ t.label }}</button>
     </div>
 
-    <div v-if="error" class="banner error">{{ error }}</div>
+    <div v-if="error && (tab === 'players' || tab === 'questions')" class="banner error">{{ error }}</div>
+
+    <BdayAdminTotals v-if="tab === 'totals'" />
+    <BdayAdminMarioKart v-else-if="tab === 'mariokart'" />
+    <BdayAdminTeams v-else-if="tab === 'teams'" />
+    <BdayAdminWheel v-else-if="tab === 'wheel'" />
 
     <!-- ===================================================== Players -->
-    <template v-if="tab === 'players'">
+    <template v-else-if="tab === 'players'">
       <div class="field">
         <label>Legg til en gjest</label>
         <div style="display:flex; gap:10px;">
@@ -73,7 +77,7 @@
     </template>
 
     <!-- ===================================================== Questions -->
-    <template v-else>
+    <template v-else-if="tab === 'questions'">
       <p class="page-subtitle">
         Selve kartspørsmålet (Førde) er fast. Resten skriver du her. Anbefalt: 10 påstander, 5 bildespørsmål og 5 tekstspørsmål - hvert riktig svar er ett poeng.
       </p>
@@ -196,12 +200,24 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import bdayApi from '../services/bdayApi'
 import BdayPinGate from '../components/BdayPinGate.vue'
 import ConfirmModal from '../../components/ConfirmModal.vue'
+import BdayAdminTotals from '../admin/BdayAdminTotals.vue'
+import BdayAdminMarioKart from '../admin/BdayAdminMarioKart.vue'
+import BdayAdminTeams from '../admin/BdayAdminTeams.vue'
+import BdayAdminWheel from '../admin/BdayAdminWheel.vue'
 import PhotoUploadButton from '../../components/PhotoUploadButton.vue'
 
 // The host's page for the birthday quiz - behind the quiz's own PIN (BdayPinGate + /api/bday/admin/**), not the site's
 // admin login: some admins are guests at the party, and this page shows the answers. Two tabs: the players (add, remove, fix a score, reset, see answers) and the questions
 // (statements with Pål / Erik / Begge / Ingen, photo questions, text questions).
-const tab = ref('players')
+const TABS = [
+  { id: 'totals', label: 'Totalt' },
+  { id: 'players', label: 'Quiz' },
+  { id: 'mariokart', label: 'Mario Kart' },
+  { id: 'teams', label: 'Lag' },
+  { id: 'wheel', label: 'Hjulet' },
+  { id: 'questions', label: 'Spørsmål' },
+]
+const tab = ref('totals')
 const error = ref('')
 
 const statementOptions = [
@@ -397,9 +413,8 @@ async function doDeleteQuestion() {
 .ba { max-width: 720px; margin: 0 auto; padding: 20px 16px 60px; width: 100%; }
 .ba-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
 .ba-links { display: flex; gap: 8px; }
-.ba-tabs { display: flex; gap: 0; margin: 14px 0 18px; border: 2px solid var(--rule); border-radius: 2px; width: fit-content; }
-.ba-tabs button { padding: 8px 20px; background: transparent; color: var(--text); border: none; font-family: var(--font-body); font-weight: 600; cursor: pointer; }
-.ba-tabs button + button { border-left: 2px solid var(--rule); }
+.ba-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 18px; }
+.ba-tabs button { padding: 8px 16px; background: transparent; color: var(--text); border: 2px solid var(--rule); border-radius: 2px; font-family: var(--font-body); font-weight: 600; cursor: pointer; }
 .ba-tabs button.is-on { background: var(--text); color: var(--ink-raised); }
 .ba-section { margin-bottom: 28px; }
 .ba-section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }

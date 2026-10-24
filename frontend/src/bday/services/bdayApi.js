@@ -41,6 +41,17 @@ export default {
   leaderboard() {
     return client.get('/bday/leaderboard').then(r => r.data)
   },
+  /** The combined board: every guest's total and breakdown, the music teams and the Mario Kart ranking. */
+  standings() {
+    return client.get('/bday/standings').then(r => r.data)
+  },
+  /** Who can still enter a Mario Kart time, and the ranking so far. */
+  marioKart() {
+    return client.get('/bday/mariokart').then(r => r.data)
+  },
+  enterLapTime(guestId, time) {
+    return client.post(`/bday/mariokart/${guestId}/time`, { time }).then(r => r.data)
+  },
 
   // --- The host (PIN) ---
   // No dedicated "check PIN" endpoint - the question list is harmless to call just to confirm a freshly typed PIN works.
@@ -61,5 +72,22 @@ export default {
     const formData = new FormData()
     formData.append('file', file)
     return client.post('/bday/admin/images', formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
-  }
+  },
+
+  // Mario Kart, teams and the wheel
+  adminSettings() { return client.get('/bday/admin/settings').then(r => r.data) },
+  adminUpdateSettings(settings) { return client.put('/bday/admin/settings', settings).then(r => r.data) },
+  adminMarioKart() { return client.get('/bday/admin/mariokart').then(r => r.data) },
+  adminSetLapTime(guestId, time) { return client.put(`/bday/admin/mariokart/${guestId}`, { time }).then(r => r.data) },
+  adminClearLapTime(guestId) { return client.delete(`/bday/admin/mariokart/${guestId}`) },
+  adminTeams() { return client.get('/bday/admin/teams').then(r => r.data) },
+  adminCreateTeam(name) { return client.post('/bday/admin/teams', { name, musicScore: 0 }).then(r => r.data) },
+  adminUpdateTeam(id, name, musicScore) { return client.put(`/bday/admin/teams/${id}`, { name, musicScore }).then(r => r.data) },
+  adminDeleteTeam(id) { return client.delete(`/bday/admin/teams/${id}`).then(r => r.data) },
+  adminAssignTeam(guestId, teamId) { return client.put(`/bday/admin/guests/${guestId}/team`, { teamId }).then(r => r.data) },
+  adminWheel() { return client.get('/bday/admin/wheel').then(r => r.data) },
+  adminPickSpinner() { return client.post('/bday/admin/wheel/pick').then(r => r.data) },
+  adminRecordSpin(guestId, points, note) { return client.post('/bday/admin/wheel/spins', { guestId, points, note }).then(r => r.data) },
+  adminUpdateSpin(guestId, points, note) { return client.put(`/bday/admin/wheel/spins/${guestId}`, { guestId, points, note }).then(r => r.data) },
+  adminDeleteSpin(guestId) { return client.delete(`/bday/admin/wheel/spins/${guestId}`).then(r => r.data) }
 }

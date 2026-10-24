@@ -10,7 +10,9 @@ import com.quizapp.model.BdayGuest;
 import com.quizapp.model.BdayQuestion;
 import com.quizapp.repository.BdayAnswerRepository;
 import com.quizapp.repository.BdayGuestRepository;
+import com.quizapp.repository.BdayMarioKartTimeRepository;
 import com.quizapp.repository.BdayQuestionRepository;
+import com.quizapp.repository.BdayWheelSpinRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,13 +37,18 @@ public class BdayQuizService {
     private final BdayGuestRepository guestRepository;
     private final BdayAnswerRepository answerRepository;
     private final BdayQuestionRepository questionRepository;
+    private final BdayMarioKartTimeRepository marioKartTimeRepository;
+    private final BdayWheelSpinRepository wheelSpinRepository;
     private final ObjectMapper objectMapper;
 
     public BdayQuizService(BdayGuestRepository guestRepository, BdayAnswerRepository answerRepository,
-                           BdayQuestionRepository questionRepository, ObjectMapper objectMapper) {
+                           BdayQuestionRepository questionRepository, BdayMarioKartTimeRepository marioKartTimeRepository,
+                           BdayWheelSpinRepository wheelSpinRepository, ObjectMapper objectMapper) {
         this.guestRepository = guestRepository;
         this.answerRepository = answerRepository;
         this.questionRepository = questionRepository;
+        this.marioKartTimeRepository = marioKartTimeRepository;
+        this.wheelSpinRepository = wheelSpinRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -93,6 +100,9 @@ public class BdayQuizService {
         if (guest.getStatus() != BdayGuest.Status.PENDING) {
             throw new IllegalStateException("Denne gjesten har allerede fullført quizen.");
         }
+        // anything the guest has picked up in the night's other competitions goes with them
+        marioKartTimeRepository.deleteByGuest_Id(guest.getId());
+        wheelSpinRepository.deleteByGuest_Id(guest.getId());
         guestRepository.delete(guest);
     }
 

@@ -1,7 +1,9 @@
 package com.quizapp.controller;
 
 import com.quizapp.dto.*;
+import com.quizapp.service.BdayNightService;
 import com.quizapp.service.BdayQuizService;
+import com.quizapp.service.BdayStandingsService;
 import com.quizapp.service.ImageStorageService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,10 +23,15 @@ import java.util.Map;
 public class BdayAdminController {
 
     private final BdayQuizService quizService;
+    private final BdayNightService nightService;
+    private final BdayStandingsService standingsService;
     private final ImageStorageService imageStorageService;
 
-    public BdayAdminController(BdayQuizService quizService, ImageStorageService imageStorageService) {
+    public BdayAdminController(BdayQuizService quizService, BdayNightService nightService,
+                               BdayStandingsService standingsService, ImageStorageService imageStorageService) {
         this.quizService = quizService;
+        this.nightService = nightService;
+        this.standingsService = standingsService;
         this.imageStorageService = imageStorageService;
     }
 
@@ -84,5 +91,87 @@ public class BdayAdminController {
     public ResponseEntity<Void> deleteQuestion(@PathVariable Long id) {
         quizService.deleteQuestion(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ---------------------------------------------------------------- Mario Kart
+
+    @GetMapping("/settings")
+    public BdayNightDto.Settings settings() {
+        return standingsService.settings();
+    }
+
+    @PutMapping("/settings")
+    public BdayNightDto.Settings updateSettings(@RequestBody BdayNightDto.Settings settings) {
+        return standingsService.updateSettings(settings);
+    }
+
+    @GetMapping("/mariokart")
+    public BdayNightDto.MarioKartAdmin marioKart() {
+        return nightService.marioKartAdmin();
+    }
+
+    @PutMapping("/mariokart/{guestId}")
+    public BdayNightDto.LapResult setTime(@PathVariable Long guestId, @Valid @RequestBody BdayNightDto.TimeRequest request) {
+        return nightService.setTime(guestId, request.time());
+    }
+
+    @DeleteMapping("/mariokart/{guestId}")
+    public ResponseEntity<Void> clearTime(@PathVariable Long guestId) {
+        nightService.clearTime(guestId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ---------------------------------------------------------------- music quiz teams
+
+    @GetMapping("/teams")
+    public BdayNightDto.TeamsAdmin teams() {
+        return nightService.teamsAdmin();
+    }
+
+    @PostMapping("/teams")
+    public BdayNightDto.TeamsAdmin createTeam(@Valid @RequestBody BdayNightDto.TeamRequest request) {
+        return nightService.createTeam(request);
+    }
+
+    @PutMapping("/teams/{id}")
+    public BdayNightDto.TeamsAdmin updateTeam(@PathVariable Long id, @Valid @RequestBody BdayNightDto.TeamRequest request) {
+        return nightService.updateTeam(id, request);
+    }
+
+    @DeleteMapping("/teams/{id}")
+    public BdayNightDto.TeamsAdmin deleteTeam(@PathVariable Long id) {
+        return nightService.deleteTeam(id);
+    }
+
+    @PutMapping("/guests/{id}/team")
+    public BdayNightDto.TeamsAdmin assignTeam(@PathVariable Long id, @RequestBody BdayNightDto.AssignTeamRequest request) {
+        return nightService.assignTeam(id, request.teamId());
+    }
+
+    // ---------------------------------------------------------------- the wheel
+
+    @GetMapping("/wheel")
+    public BdayNightDto.WheelAdmin wheel() {
+        return nightService.wheelAdmin();
+    }
+
+    @PostMapping("/wheel/pick")
+    public BdayNightDto.Person pickSpinner() {
+        return nightService.pickNextSpinner();
+    }
+
+    @PostMapping("/wheel/spins")
+    public BdayNightDto.WheelAdmin recordSpin(@Valid @RequestBody BdayNightDto.SpinRequest request) {
+        return nightService.recordSpin(request);
+    }
+
+    @PutMapping("/wheel/spins/{guestId}")
+    public BdayNightDto.WheelAdmin updateSpin(@PathVariable Long guestId, @Valid @RequestBody BdayNightDto.SpinRequest request) {
+        return nightService.updateSpin(guestId, request);
+    }
+
+    @DeleteMapping("/wheel/spins/{guestId}")
+    public BdayNightDto.WheelAdmin deleteSpin(@PathVariable Long guestId) {
+        return nightService.deleteSpin(guestId);
     }
 }

@@ -4,7 +4,10 @@ import com.quizapp.dto.BdayGuestDto;
 import com.quizapp.dto.BdayQuizDto;
 import com.quizapp.dto.BdayResultDto;
 import com.quizapp.dto.BdaySubmitRequest;
+import com.quizapp.dto.BdayNightDto;
+import com.quizapp.service.BdayNightService;
 import com.quizapp.service.BdayQuizService;
+import com.quizapp.service.BdayStandingsService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,9 +21,13 @@ import java.util.List;
 public class BdayController {
 
     private final BdayQuizService quizService;
+    private final BdayNightService nightService;
+    private final BdayStandingsService standingsService;
 
-    public BdayController(BdayQuizService quizService) {
+    public BdayController(BdayQuizService quizService, BdayNightService nightService, BdayStandingsService standingsService) {
         this.quizService = quizService;
+        this.nightService = nightService;
+        this.standingsService = standingsService;
     }
 
     /** The names still waiting to play. */
@@ -42,5 +49,23 @@ public class BdayController {
     @GetMapping("/leaderboard")
     public List<BdayGuestDto> leaderboard() {
         return quizService.leaderboard();
+    }
+
+    /** The combined board: every guest's total and where it comes from, the music teams, and the Mario Kart ranking. */
+    @GetMapping("/standings")
+    public BdayNightDto.Standings standings() {
+        return standingsService.standings();
+    }
+
+    /** Who can still enter a Mario Kart time, and the ranking so far. */
+    @GetMapping("/mariokart")
+    public BdayNightDto.MarioKartPublic marioKart() {
+        return nightService.marioKartPublic();
+    }
+
+    /** A guest types their own best lap - once, and only while the host has registration open. */
+    @PostMapping("/mariokart/{guestId}/time")
+    public BdayNightDto.LapResult enterTime(@PathVariable Long guestId, @Valid @RequestBody BdayNightDto.TimeRequest request) {
+        return nightService.enterOwnTime(guestId, request.time());
     }
 }

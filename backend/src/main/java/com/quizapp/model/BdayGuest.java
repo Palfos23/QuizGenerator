@@ -34,6 +34,11 @@ public class BdayGuest {
 
     private Instant completedAt;
 
+    // The music quiz is played in teams: a guest's team (null = not on one). The team's music score counts for each member.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private BdayTeam team;
+
     public Long getId() {
         return id;
     }
@@ -72,6 +77,14 @@ public class BdayGuest {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public BdayTeam getTeam() {
+        return team;
+    }
+
+    public void setTeam(BdayTeam team) {
+        this.team = team;
     }
 
     public Instant getCompletedAt() {

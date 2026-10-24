@@ -2,7 +2,7 @@
   <div class="bp">
     <div class="bp-top">
       <h1>🎂 Bursdagsquiz</h1>
-      <router-link to="/bday/leaderboard" class="bp-link">Topplisten</router-link>
+      <router-link to="/bday" class="bp-link">Oversikt</router-link>
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
@@ -82,6 +82,7 @@
 
       <p class="page-subtitle" style="margin-top:18px;">Takk for at du spilte! Se hvordan det går på topplisten.</p>
       <router-link to="/bday/leaderboard" class="btn btn-primary">Se topplisten</router-link>
+      <router-link to="/bday/mariokart" class="bp-link" style="margin-left:14px;">Mario Kart</router-link>
     </template>
   </div>
 </template>

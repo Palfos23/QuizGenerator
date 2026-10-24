@@ -26,37 +26,51 @@ class BdayAccessTest {
     @Value("${app.birthday.password}")
     private String pin;
 
+    // Each request pretends to come from its own address: repeated wrong PINs lock a client out (by design), and
+    // these tests deliberately make many wrong attempts.
+    private int next = 0;
+
+    private String ip() {
+        return "10.9.8." + (next++ % 250);
+    }
+
     @Test
     void guestsReachTheQuizWithoutLoggingInOrAnyPin() throws Exception {
         mockMvc.perform(get("/api/bday/guests")).andExpect(status().isOk());
         mockMvc.perform(get("/api/bday/leaderboard")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/bday/standings")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/bday/mariokart")).andExpect(status().isOk());
     }
 
     @Test
     void theHostsSideNeedsThePin() throws Exception {
-        for (String path : new String[] {"/api/bday/admin/guests", "/api/bday/admin/questions"}) {
-            mockMvc.perform(get(path)).andExpect(status().isUnauthorized());
-            mockMvc.perform(get(path).header("X-Bday-Pin", "not-the-pin")).andExpect(status().isUnauthorized());
-            mockMvc.perform(get(path).header("X-Bday-Pin", pin)).andExpect(status().isOk());
+        for (String path : new String[] {"/api/bday/admin/guests", "/api/bday/admin/questions", "/api/bday/admin/settings",
+                "/api/bday/admin/mariokart", "/api/bday/admin/teams", "/api/bday/admin/wheel"}) {
+            mockMvc.perform(get(path).header("X-Forwarded-For", ip())).andExpect(status().isUnauthorized());
+            mockMvc.perform(get(path).header("X-Bday-Pin", "not-the-pin").header("X-Forwarded-For", ip())).andExpect(status().isUnauthorized());
+            mockMvc.perform(get(path).header("X-Bday-Pin", pin).header("X-Forwarded-For", ip())).andExpect(status().isOk());
         }
     }
 
     @Test
     void beingASiteAdminDoesNotOpenTheHostsSide() throws Exception {
         String adminToken = jwtService.generateToken("admin", "ADMIN", 2L, "admin");
-        mockMvc.perform(get("/api/bday/admin/questions").header("Authorization", "Bearer " + adminToken))
+        mockMvc.perform(get("/api/bday/admin/questions").header("Authorization", "Bearer " + adminToken).header("X-Forwarded-For", ip()))
                 .andExpect(status().isUnauthorized());
-        mockMvc.perform(get("/api/bday/admin/guests/1/answers").header("Authorization", "Bearer " + adminToken))
+        mockMvc.perform(get("/api/bday/admin/guests/1/answers").header("Authorization", "Bearer " + adminToken).header("X-Forwarded-For", ip()))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void aStrangerCannotAddPlayersOrQuestions() throws Exception {
-        mockMvc.perform(post("/api/bday/admin/guests").contentType("application/json").content("{\"name\":\"Hacker\"}"))
+        mockMvc.perform(post("/api/bday/admin/guests").header("X-Forwarded-For", ip()).contentType("application/json").content("{\"name\":\"Hacker\"}"))
                 .andExpect(status().isUnauthorized());
-        mockMvc.perform(multipart("/api/bday/admin/images").file("file", new byte[] {1, 2, 3}))
+        mockMvc.perform(post("/api/bday/admin/wheel/pick").header("X-Forwarded-For", ip())).andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/bday/admin/teams").header("X-Forwarded-For", ip()).contentType("application/json").content("{\"name\":\"Hackerlaget\"}"))
                 .andExpect(status().isUnauthorized());
-        mockMvc.perform(post("/api/bday/admin/questions").contentType("application/json").content("{\"type\":\"STATEMENT\"}"))
+        mockMvc.perform(multipart("/api/bday/admin/images").file("file", new byte[] {1, 2, 3}).header("X-Forwarded-For", ip()))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/bday/admin/questions").header("X-Forwarded-For", ip()).contentType("application/json").content("{\"type\":\"STATEMENT\"}"))
                 .andExpect(status().isUnauthorized());
     }
 
