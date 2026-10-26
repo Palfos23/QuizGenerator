@@ -113,9 +113,8 @@ public class DailyQuizService {
     // "recently used" sets below is a lazy collection).
     @Transactional
     DailyQuizSet generateSet(LocalDate quizDate) {
-        // Norwegian-only for now, same one-language-at-a-time approach as the
-        // birthday quiz's Norway-specific content - revisit if a
-        // multi-language daily quiz is ever wanted.
+        // Norwegian-only for now - revisit if a multi-language daily quiz is
+        // ever wanted.
         List<Question> candidates = new ArrayList<>(questionRepository.findByLanguage(Language.NO));
 
         // When each question last appeared: from the durable log (covers the whole no-repeat window) plus the

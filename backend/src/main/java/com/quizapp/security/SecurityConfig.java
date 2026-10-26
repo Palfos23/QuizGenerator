@@ -22,18 +22,13 @@ public class SecurityConfig {
     @Value("${quiz.cors.allowed-origins:http://localhost:5173}")
     private String[] allowedOrigins;
 
-    // --- Birthday quiz (one-off, delete together with the rest of the Bday* files) ---
-    // The PIN for the host's side of it (BdayPinAuthFilter) - not the site's admin login.
-    @Value("${app.birthday.password}")
-    private String birthdayPassword;
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService, LoginRateLimiter loginRateLimiter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
@@ -97,11 +92,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/penalty-shootouts/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/flashback/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/play-access/**").hasAnyRole("USER", "ADMIN")
-                        // Birthday quiz (one-off): the guests' side is open to everyone - no login, no PIN. The host's
-                        // side (/api/bday/admin/**) is gated by BdayPinAuthFilter's PIN check below, deliberately not by
-                        // the role system (admins may be playing); permitAll here just means Spring Security itself
-                        // doesn't also demand a JWT on top of that.
-                        .requestMatchers("/api/bday/**").permitAll()
                         .anyRequest().hasAnyRole("USER", "ADMIN"))
                 .headers(headers -> headers
                         // sameOrigin (not disable()) - the local H2 console still frames itself
@@ -110,8 +100,7 @@ public class SecurityConfig {
                         // application-wide, not just for the H2 console as the old comment implied.
                         .frameOptions(frame -> frame.sameOrigin())
                         .referrerPolicy(policy -> policy.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new BdayPinAuthFilter(birthdayPassword, loginRateLimiter), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

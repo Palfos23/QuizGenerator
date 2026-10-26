@@ -5,8 +5,7 @@ import java.util.List;
 
 // Everything a self-service "download my data" request hands back - see
 // AccountService#exportData. Grouped into nested classes in one file rather
-// than a dozen tiny top-level DTOs, same call made for the birthday-quiz DTOs
-// earlier in this project.
+// than a dozen tiny top-level DTOs.
 public class AccountExportDto {
     private String email;
     private String name;
