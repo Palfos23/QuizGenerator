@@ -2028,7 +2028,6 @@ export default {
  "Årstall": "Year",
  "Årstallsspørsmål": "Year question",
  "Én spiller får ikke svaret - finn ut hvem ved å spørre rundt bordet.": "One player doesn't get the answer - find out who by asking around the table.",
- "Økten din utløp - logg inn igjen.": "Your session expired - please sign in again.",
  "Økten din utløper snart": "Your session will expire soon",
  "å bli med i et rom som gjest (uten konto) lagrer bare et valgt visningsnavn for den økten - ingenting annet, og det opprettes ingen konto.": "joining a room as a guest (no account) only ever stores a chosen display name for that session - nothing else, and no account is created.",
  "å finne": "to find",

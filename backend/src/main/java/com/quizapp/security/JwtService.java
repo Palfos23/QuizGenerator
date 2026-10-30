@@ -16,19 +16,19 @@ import java.util.Date;
 public class JwtService {
 
     private final SecretKey key;
-    // Admins and guests: short-lived (12h by default) - an admin session can change anything, and a
+    // Admins and guests: short-lived (24h by default) - an admin session can change anything, and a
     // guest token only has to outlast one game night.
     private final long expirationMinutes;
-    // Regular players: a long, sliding session (30 days by default). The frontend renews the token
+    // Regular players: a long, sliding session (90 days by default). The frontend renews the token
     // whenever the app is opened, so in practice a player who comes back at least once a month never
-    // sees a sign-in screen; the 12h cap used to log out anyone who skipped a day (the daily quiz
+    // sees a sign-in screen; the old 12h cap used to log out anyone who skipped a day (the daily quiz
     // habit - play in the evening, come back the next morning).
     private final long userExpirationMinutes;
 
     public JwtService(
             @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.expiration-minutes:720}") long expirationMinutes,
-            @Value("${app.jwt.user-expiration-minutes:43200}") long userExpirationMinutes
+            @Value("${app.jwt.expiration-minutes:1440}") long expirationMinutes,
+            @Value("${app.jwt.user-expiration-minutes:129600}") long userExpirationMinutes
     ) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMinutes = expirationMinutes;

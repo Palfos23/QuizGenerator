@@ -347,13 +347,13 @@ function logout() {
 }
 
 // Logs out after a period of no interaction, separate from the JWT's own expiry - the JWT expiring
-// handles "stayed away for a month", this handles "left a tab open and walked away". Regular players
-// get 24 hours: the limit used to be 60 minutes, then 4 hours, and both were the main source of
+// handles "stayed away for months", this handles "left a tab open and walked away". Regular players
+// get 7 days: the limit used to be 60 minutes, then 4 hours, then 24 hours, and each was a source of
 // "logged out too often" - a slow party-game round or an unhurried quiz routinely outlasts them.
-// Admins (and guests) keep the tighter 4 hours, since an admin session can change anything and a
+// Admins (and guests) get a tighter 12 hours, since an admin session can change anything and a
 // forgotten tab on a shared device is the case this exists for.
-const USER_INACTIVITY_LIMIT_MS = 24 * 60 * 60 * 1000
-const STRICT_INACTIVITY_LIMIT_MS = 4 * 60 * 60 * 1000
+const USER_INACTIVITY_LIMIT_MS = 7 * 24 * 60 * 60 * 1000
+const STRICT_INACTIVITY_LIMIT_MS = 12 * 60 * 60 * 1000
 function inactivityLimitMs() {
   return auth.state.role === 'USER' ? USER_INACTIVITY_LIMIT_MS : STRICT_INACTIVITY_LIMIT_MS
 }
@@ -368,7 +368,7 @@ const EXPIRY_WARNING_MS = 2 * 60 * 1000
 // blip, well before EXPIRY_WARNING_MS would ever need to show.
 const REFRESH_BEFORE_EXPIRY_MS = 30 * 60 * 1000
 // Sliding session: while the app is open, swap in a fresh token once the current one is this old, so
-// a player's 30-day token keeps moving forward every time they come back (admins/guests have a 12h
+// a player's 90-day token keeps moving forward every time they come back (admins/guests have a 24h
 // token and get renewed at the same age, leaving them plenty of runway).
 const REFRESH_AFTER_AGE_MS = 6 * 60 * 60 * 1000
 let lastActivity = Date.now()
@@ -426,7 +426,7 @@ function checkSessionTimers() {
   if (idleRemaining <= 0) {
     showInactivityWarning.value = false
     auth.logout()
-    router.push('/?sessionExpired=1')
+    router.push('/')
     return
   }
   showInactivityWarning.value = idleRemaining <= INACTIVITY_WARNING_MS
@@ -488,7 +488,7 @@ const activityEvents = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll']
 function checkTokenOnResume() {
   if (document.visibilityState === 'visible' && auth.isAuthenticated.value && auth.isTokenExpired()) {
     auth.logout()
-    router.push('/?sessionExpired=1')
+    router.push('/')
   }
 }
 

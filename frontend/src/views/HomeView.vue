@@ -159,7 +159,7 @@
         <span class="landing-eyebrow-dot"></span>
         {{ $t('En ny daglig quiz, hver dag') }}
       </span>
-      <h1>Quizzes</h1>
+      <h1><span class="landing-hero-accent">Quizzes</span></h1>
       <p class="page-subtitle landing-lede">
         {{ $t('Ta den daglige quizen, lag din egen fra en felles spørsmålsbank, eller send telefonen rundt for et selskapsspill - på én skjerm eller hver på sin egen.') }}
       </p>
@@ -290,9 +290,6 @@ onMounted(async () => {
   if (auth.isAuthenticated.value) {
     router.push(auth.isAdmin.value ? '/admin/questions' : safeRedirectTarget(route, '/dashboard'))
     return
-  }
-  if (route.query.sessionExpired) {
-    error.value = _t('Økten din utløp - logg inn igjen.')
   }
   if (!clientIdConfigured) {
     return

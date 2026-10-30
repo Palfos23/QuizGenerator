@@ -25,7 +25,7 @@ client.interceptors.response.use(
   error => {
     if (auth.state.token && (error.response?.status === 401 || auth.isTokenExpired())) {
       auth.logout()
-      router.push('/?sessionExpired=1')
+      router.push('/')
     }
     return Promise.reject(error)
   }
