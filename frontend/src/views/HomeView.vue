@@ -159,7 +159,7 @@
         <span class="landing-eyebrow-dot"></span>
         {{ $t('En ny daglig quiz, hver dag') }}
       </span>
-      <h1>{{ $t('Quizkveld,') }} <span class="landing-hero-accent">{{ $t('hver kveld.') }}</span></h1>
+      <h1>Quizzes</h1>
       <p class="page-subtitle landing-lede">
         {{ $t('Ta den daglige quizen, lag din egen fra en felles spørsmålsbank, eller send telefonen rundt for et selskapsspill - på én skjerm eller hver på sin egen.') }}
       </p>
