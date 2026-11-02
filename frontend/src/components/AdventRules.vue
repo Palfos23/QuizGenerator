@@ -4,7 +4,7 @@
       <li>{{ $t('Hver dag fra 1. til 24. desember åpnes en ny luke med en kategori - for eksempel «land med T i navnet».') }}</li>
       <li>{{ $t('Du velger 4 svar du tror passer. Spillmesteren har i skjul valgt sine egne svar.') }}</li>
       <li>{{ $t('Hvert svar du har som matcher et av spillmesterens, gir poeng. Målet er å tenke likt som spillmesteren - men helst ikke like åpenbart som alle andre.') }}</li>
-      <li>{{ $t('Luka er åpen hele dagen og stenger ved midnatt. Dagen etter får du se spillmesterens svar og poengene dine.') }}</li>
+      <li>{{ $t('Luka er åpen hele dagen og stenger ved midnatt. Du får se over svarene før du sender dem inn - men når de er sendt, kan de ikke endres. Dagen etter får du se spillmesterens svar og poengene dine.') }}</li>
       <li>{{ $t('Treffer ingen av spillerne et eneste av svarene, får spillmesteren poeng.') }}</li>
     </ol>
 
@@ -22,7 +22,7 @@
       <div>
         <strong>{{ $t('Jokeren') }}</strong>
         <p>{{ $t('Du har 3 jokere i hele julekalenderen. Bruker du en på en luke, får du dobbelt så mange poeng på den luka. Huk av for jokeren før du sender inn svarene.') }}</p>
-        <p>{{ $t('Får du minuspoeng, dobles de ikke. Du kan ombestemme deg frem til midnatt - da får du jokeren tilbake. Jokeren kan ikke brukes på finalen.') }}</p>
+        <p>{{ $t('Får du minuspoeng, dobles de ikke. Jokeren velger du når du sender inn svarene - etterpå kan den ikke tas tilbake. Jokeren kan ikke brukes på finalen.') }}</p>
       </div>
     </div>
 

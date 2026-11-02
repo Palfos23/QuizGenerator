@@ -136,14 +136,19 @@ class AdventServiceTest {
     }
 
     @Test
-    void answersCanBeChangedUntilMidnightAndNotAfter() {
+    void answersAreFinalOnceTheyAreSentIn() {
         normalDoor(4);
         AppUser u = user("Endrer");
         play(u, 4, "Oslo", "Kristiansand", "Stavanger", "Drammen");
-        DayDetailDto second = play(u, 4, "Oslo", "Bergen", "Stavanger", "Drammen");
 
-        assertThat(second.entry().answers()).containsExactly("Oslo", "Bergen", "Stavanger", "Drammen");
+        assertThatThrownBy(() -> play(u, 4, "Oslo", "Bergen", "Stavanger", "Drammen")).hasMessageContaining("allerede sendt inn");
+        assertThatThrownBy(() -> play(u, 4, false, true, "Oslo", "Kristiansand", "Stavanger", "Drammen")).hasMessageContaining("allerede sendt inn");
+
+        DayDetailDto still = service.dayDetail(u.getEmail(), 4, d(4));
+        assertThat(still.entry().answers()).containsExactly("Oslo", "Kristiansand", "Stavanger", "Drammen");
+        assertThat(still.entry().jokerUsed()).isFalse();
         assertThat(entryRepository.countByDayId(dayRepository.findBySeasonYearAndDayNumber(YEAR, 4).orElseThrow().getId())).isEqualTo(1);
+        // and once the day is over there is nothing to send in either
         assertThatThrownBy(() -> service.submit(u.getEmail(), 4, new EntryRequest(List.of("a", "b", "c", "e"), false, false), d(5)))
                 .hasMessageContaining("stengt");
     }
@@ -337,15 +342,15 @@ class AdventServiceTest {
     }
 
     @Test
-    void takingTheJokerBackGivesItBackAndItNeverMakesAMinusWorse() {
+    void aJokerIsSpentForGoodOnceSentInAndNeverMakesAMinusWorse() {
         door(1, "RISK_REWARD", "Risiko", List.of("Oslo", "Bergen", "Tromsø", "Ålesund"), null);
         normalDoor(2);
-        AppUser u = user("Angrer");
+        AppUser u = user("Bruker");
 
         play(u, 2, false, true, "Oslo", "Bergen", "Tromsø", "Skien");
         assertThat(service.state(u.getEmail(), d(2)).jokersLeft()).isEqualTo(2);
-        play(u, 2, false, false, "Oslo", "Bergen", "Tromsø", "Skien");
-        assertThat(service.state(u.getEmail(), d(2)).jokersLeft()).isEqualTo(3);
+        assertThatThrownBy(() -> play(u, 2, false, false, "Oslo", "Bergen", "Tromsø", "Skien")).hasMessageContaining("allerede sendt inn");
+        assertThat(service.state(u.getEmail(), d(2)).jokersLeft()).as("no taking it back").isEqualTo(2);
 
         play(u, 1, true, true, "Narvik", "Bodø", "Hamar", "Skien"); // risk + joker, hits nothing
         assertThat(closed(u, 1).result().points()).isEqualTo(-1);

@@ -16,14 +16,40 @@
         <p class="adv-rule">{{ info.rules }}</p>
       </header>
 
+      <!-- ============================================================ open, already sent in: final -->
+      <section v-if="detail.status === 'OPEN' && detail.entry" class="dq-card adv-form">
+        <h2 class="adv-sent-title">✓ {{ $t('Svarene dine er sendt inn') }}</h2>
+        <ol class="adv-sent-list">
+          <li v-for="(a, i) in detail.entry.answers" :key="i">{{ a }}</li>
+        </ol>
+        <p v-if="detail.entry.risky" class="adv-hint" style="margin:0 0 6px;">🎲 {{ $t('Du satset') }}</p>
+        <p v-if="detail.entry.jokerUsed" class="adv-hint" style="margin:0 0 6px;">🃏 {{ $t('Du brukte en joker på denne luka') }}</p>
+        <p class="adv-hint" style="margin:10px 0 0;">{{ $t('Svarene kan ikke endres. Luka stenger ved midnatt - i morgen får du se spillmesterens svar og poengene dine.') }}</p>
+      </section>
+
+      <!-- ============================================================ open: look them over, then send -->
+      <section v-else-if="detail.status === 'OPEN' && reviewing" class="dq-card adv-form">
+        <h2 class="adv-sent-title">{{ $t('Se over svarene dine') }}</h2>
+        <ol class="adv-sent-list">
+          <li v-for="(a, i) in cleanAnswers" :key="i">{{ a }}</li>
+        </ol>
+        <p v-if="detail.type === 'RISK_REWARD'" class="adv-hint" style="margin:0 0 6px;">{{ risky ? '🎲 ' + $t('Du satser') : $t('Du spiller trygt') }}</p>
+        <p v-if="detail.jokerAllowed" class="adv-hint" style="margin:0 0 6px;">{{ useJoker ? '🃏 ' + $t('Du bruker en joker på denne luka') : $t('Du bruker ikke joker') }}</p>
+        <p class="adv-final">{{ $t('Når du sender inn, kan ingenting endres - verken svarene, jokeren eller valget om å satse.') }}</p>
+        <div class="adv-submit">
+          <button class="btn btn-primary" :disabled="saving" @click="save">{{ saving ? $t('Sender…') : $t('Send inn for godt') }}</button>
+          <button class="btn btn-secondary" :disabled="saving" @click="reviewing = false">{{ $t('Tilbake og endre') }}</button>
+        </div>
+      </section>
+
       <!-- ============================================================ open: the form -->
-      <section v-if="detail.status === 'OPEN'" class="dq-card adv-form">
+      <section v-else-if="detail.status === 'OPEN'" class="dq-card adv-form">
         <p v-if="detail.type === 'ONE_OF_FOUR'" class="adv-hint">{{ $t('Spillmesteren har bare ett svar - skriv 4 forskjellige svar, så øker du sjansen.') }}</p>
         <p v-else class="adv-hint">{{ $t('Skriv 4 forskjellige svar du tror spillmesteren også har valgt.') }}</p>
 
         <div v-for="(_, i) in answers" :key="i" class="adv-answer">
           <label :for="'ans' + i">{{ i + 1 }}</label>
-          <input :id="'ans' + i" type="text" v-model="answers[i]" maxlength="100" autocomplete="off" :placeholder="$t('Svar {0}', [i + 1])" />
+          <input :id="'ans' + i" class="adv-input adv-input--lg" type="text" v-model="answers[i]" maxlength="100" autocomplete="off" :placeholder="$t('Svar {0}', [i + 1])" />
         </div>
 
         <!-- Risk or reward: pick before sending -->
@@ -45,7 +71,7 @@
             <input type="checkbox" v-model="useJoker" :disabled="!useJoker && detail.jokersLeft === 0" />
             <span>
               <strong>🃏 {{ $t('Bruk en joker på denne luka') }}</strong><br />
-              <template v-if="detail.jokersLeft > 0 || useJoker">{{ $t('Poengene dine på luka dobles. Du har {0} av 3 jokere igjen. Ombestemmer du deg før midnatt, får du den tilbake.', [detail.jokersLeft]) }}</template>
+              <template v-if="detail.jokersLeft > 0 || useJoker">{{ $t('Poengene dine på luka dobles. Du har {0} av 3 jokere igjen. Når du har sendt inn, kan den ikke tas tilbake.', [detail.jokersLeft]) }}</template>
               <template v-else>{{ $t('Du har brukt alle 3 jokerne dine.') }}</template>
             </span>
           </label>
@@ -53,16 +79,13 @@
         <p v-else-if="detail.finale" class="adv-hint">🃏 {{ $t('Jokeren kan ikke brukes på finalen.') }}</p>
 
         <div class="adv-submit">
-          <button class="btn btn-primary" :disabled="saving" @click="save">
-            {{ saving ? $t('Lagrer…') : detail.entry ? $t('Oppdater svarene') : $t('Send inn svarene') }}
-          </button>
-          <span v-if="saved" class="adv-saved">✓ {{ $t('Lagret') }}</span>
+          <button class="btn btn-primary" @click="lookOver">{{ $t('Se over svarene') }}</button>
         </div>
-        <p class="adv-hint" style="margin-bottom:0;">{{ $t('Du kan endre svarene frem til midnatt. Dagen etter får du se spillmesterens svar og poengene dine.') }}</p>
+        <p class="adv-hint" style="margin-bottom:0;">{{ $t('Du får se over svarene før de sendes. Når de er sendt inn, kan de ikke endres. Dagen etter får du se spillmesterens svar og poengene dine.') }}</p>
       </section>
 
       <!-- ============================================================ closed: the result -->
-      <template v-else>
+      <template v-else-if="detail.status === 'CLOSED'">
         <section v-if="detail.provisional" class="adv-prelim">{{ $t('Foreløpig resultat - spillmesteren gjennomgår fortsatt svarene, så poengene kan endre seg.') }}</section>
 
         <section v-if="detail.result" class="dq-card adv-result">
@@ -140,7 +163,7 @@ const year = ref(new Date().getFullYear())
 const loading = ref(true)
 const error = ref('')
 const saving = ref(false)
-const saved = ref(false)
+const reviewing = ref(false)
 const shareNote = ref('')
 const answers = ref(['', '', '', ''])
 const risky = ref(false)
@@ -179,7 +202,7 @@ async function load() {
   answers.value = ['', '', '', '']
   risky.value = false
   useJoker.value = false
-  saved.value = false
+  reviewing.value = false
   try {
     apply(await api.getAdventDay(day.value))
   } catch (e) {
@@ -190,15 +213,33 @@ async function load() {
 }
 watch(day, load, { immediate: true })
 
+// the answers as they will be sent: trimmed, and four different ones
+const cleanAnswers = computed(() => answers.value.map(a => a.replace(/\s+/g, ' ').trim()))
+
+function lookOver() {
+  error.value = ''
+  const filled = cleanAnswers.value
+  if (filled.some(a => !a)) {
+    error.value = _t('Du må skrive inn 4 svar.')
+    return
+  }
+  if (new Set(filled.map(a => a.toLowerCase())).size !== filled.length) {
+    error.value = _t('Du har skrevet det samme svaret to ganger - de 4 svarene må være ulike.')
+    return
+  }
+  reviewing.value = true
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 async function save() {
   saving.value = true
-  saved.value = false
   error.value = ''
   try {
-    apply(await api.submitAdventEntry(day.value, { answers: answers.value, risky: risky.value, useJoker: useJoker.value }))
-    saved.value = true
+    apply(await api.submitAdventEntry(day.value, { answers: cleanAnswers.value, risky: risky.value, useJoker: useJoker.value }))
+    reviewing.value = false
   } catch (e) {
-    error.value = e.response?.data?.message || _t('Kunne ikke lagre svarene.')
+    error.value = e.response?.data?.message || _t('Kunne ikke sende inn svarene.')
+    reviewing.value = false
   } finally {
     saving.value = false
   }
@@ -219,9 +260,9 @@ async function share() {
 .adv-rule { margin: 12px 0 0; color: var(--text-dim); }
 .adv-hint { color: var(--text-dim); font-size: 0.92rem; margin: 0 0 14px; }
 
-.adv-answer { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.adv-answer label { width: 20px; font-family: var(--font-mono); color: var(--text-dim); margin: 0; }
-.adv-answer input { flex: 1; font-size: 1.05rem; }
+.adv-answer { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.adv-answer label { width: 22px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-dim); margin: 0; text-align: right; }
+.adv-answer input { flex: 1; min-width: 0; }
 
 .adv-choice { border: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; }
 .adv-choice legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
@@ -230,10 +271,13 @@ async function share() {
 .adv-joker { margin-top: 16px; }
 .adv-joker-label { border-style: dashed; }
 .adv-joker.is-on .adv-joker-label { border-style: solid; border-color: var(--gold); background: rgb(var(--gold-rgb) / 0.1); }
-.adv-option input, .adv-joker-label input { margin-top: 4px; }
+.adv-option input, .adv-joker-label input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
 
-.adv-submit { display: flex; align-items: center; gap: 14px; margin: 18px 0 10px; }
+.adv-submit { display: flex; align-items: center; gap: 14px; margin: 18px 0 10px; flex-wrap: wrap; }
 .adv-saved { color: var(--teal-ink, var(--teal)); font-weight: 600; font-size: 0.92rem; }
+.adv-sent-title { margin: 0 0 10px; font-size: 1.3rem; }
+.adv-sent-list { margin: 0 0 12px; padding-left: 24px; display: grid; gap: 6px; font-size: 1.05rem; }
+.adv-final { margin: 14px 0 0; padding: 10px 12px; border: 2px solid var(--gold); border-radius: 3px; background: rgb(var(--gold-rgb) / 0.08); font-weight: 600; font-size: 0.95rem; }
 
 .adv-result { text-align: center; }
 .adv-points { font-family: var(--font-display); font-weight: 700; font-size: 4rem; line-height: 1; color: var(--teal-ink, var(--teal)); }

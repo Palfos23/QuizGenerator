@@ -48,9 +48,9 @@
           <p v-if="todayDoor.type" class="adv-today-type">{{ typeInfo(todayDoor.type).name }}</p>
           <div class="adv-today-cta">
             <router-link :to="`/julekalender/luke/${todayDoor.day}`" class="btn btn-primary">
-              {{ todayDoor.entered ? $t('Se eller endre svarene dine') : $t('Åpne luka') }}
+              {{ todayDoor.entered ? $t('Se svarene dine') : $t('Åpne luka') }}
             </router-link>
-            <span class="adv-today-note">{{ todayDoor.entered ? $t('Svarene dine er lagret. Du kan endre dem til midnatt.') : $t('Stenger ved midnatt.') }}</span>
+            <span class="adv-today-note">{{ todayDoor.entered ? $t('Svarene dine er sendt inn - resultatet kommer i morgen.') : $t('Stenger ved midnatt.') }}</span>
           </div>
         </section>
         <div v-else-if="state.phase === 'RUNNING'" class="dq-card adv-today">

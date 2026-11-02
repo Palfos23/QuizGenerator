@@ -17,7 +17,7 @@
           {{ $t('Late som om det er en annen dato, så du kan prøve julekalenderen før 1. desember. Gjelder alle som åpner siden, og slår seg av av seg selv etter 3 timer. Du må være logget inn som en vanlig spiller (ikke admin) for å spille lukene.') }}
         </p>
         <div class="adm-test-row">
-          <input type="date" v-model="testDate" :min="testMin" :max="testMax" />
+          <input type="date" class="adv-input" v-model="testDate" :min="testMin" :max="testMax" />
           <button class="btn btn-secondary btn-sm" :disabled="!testDate || testBusy" @click="setTest(testDate)">{{ $t('Sett dato') }}</button>
           <button v-if="test?.active" class="btn btn-secondary btn-sm" :disabled="testBusy" @click="setTest(null)">{{ $t('Slå av') }}</button>
           <button v-if="test?.canReset" class="btn btn-danger btn-sm" :disabled="testBusy" @click="confirmReset = true">{{ $t('Nullstill testdata') }}</button>
@@ -104,7 +104,7 @@
                 <strong>{{ a.text }}</strong>
                 <span class="adm-count">{{ a.count }}×</span>
               </div>
-              <select :value="selectValue(a)" @change="decide(a, $event.target.value)">
+              <select class="adv-input" :value="selectValue(a)" @change="decide(a, $event.target.value)">
                 <option value="auto">{{ $t('Automatisk') }} ({{ a.corrected ? '…' : readLabel(a) }})</option>
                 <option value="-1">{{ $t('Teller IKKE som treff') }}</option>
                 <option v-for="(h, i) in review.hidden" :key="i" :value="String(i)">= {{ h }}</option>
@@ -318,7 +318,6 @@ async function approve(approved) {
 <style scoped>
 .adm-test { margin-bottom: 16px; }
 .adm-test-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.adm-test-row input[type="date"] { width: auto; }
 .adm-test-status { margin: 10px 0 0; font-size: 0.9rem; color: var(--teal-ink, var(--teal)); }
 .adm-test-status--off { color: var(--text-dim); }
 .adm-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
@@ -333,6 +332,8 @@ async function approve(approved) {
 .adm-dot.is-ready { background: rgb(var(--teal-rgb) / 0.3); }
 .adm-dot.is-review { border-color: var(--gold); background: rgb(var(--gold-rgb) / 0.3); }
 .adm-editor, .adm-review { margin-top: 14px; }
+.adm-editor input:disabled, .adm-editor select:disabled { opacity: 0.6; cursor: not-allowed; }
+.adm-wild input { width: 18px; height: 18px; }
 .adm-h { margin: 0 0 14px; font-size: 1.3rem; }
 .adm-h small { font-size: 0.8rem; color: var(--text-dim); font-family: var(--font-body); font-weight: 400; }
 .adm-answer { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -347,7 +348,7 @@ async function approve(approved) {
 .adm-row.is-miss .adm-row-text strong { color: var(--coral-ink, var(--coral)); }
 .adm-row-text { flex: 1; min-width: 160px; overflow-wrap: anywhere; }
 .adm-count { margin-left: 8px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim); }
-.adm-row select { max-width: 280px; }
+.adm-row select { max-width: 300px; flex: 1 1 220px; }
 .adm-approve { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
 @media (max-width: 560px) { .adm-grid { grid-template-columns: repeat(6, 1fr); } }
 </style>

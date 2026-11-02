@@ -402,6 +402,10 @@ public class AdventService {
         Season s = openSeason(day, today);
         if (!"OPEN".equals(s.status(day))) throw new IllegalStateException("Denne luka er stengt.");
         AdventDay d = s.days.get(day);
+        // sent in is sent in: no changing the answers (or the joker or risk choice) afterwards
+        if (entryRepository.findByDayIdAndUserId(d.getId(), user.getId()).isPresent()) {
+            throw new IllegalStateException("Du har allerede sendt inn svarene dine for denne luka - de kan ikke endres.");
+        }
 
         List<String> answers = cleanAnswers(request.answers());
         boolean finale = AdventScoring.isFinale(day);
@@ -414,7 +418,7 @@ public class AdventService {
             if (usedElsewhere >= AdventScoring.JOKERS_PER_SEASON) throw new IllegalArgumentException("Du har brukt alle jokerne dine.");
         }
 
-        AdventEntry entry = entryRepository.findByDayIdAndUserId(d.getId(), user.getId()).orElseGet(AdventEntry::new);
+        AdventEntry entry = new AdventEntry();
         entry.setDayId(d.getId());
         entry.setUserId(user.getId());
         entry.setAnswers(answers);
@@ -424,9 +428,7 @@ public class AdventService {
         AdventEntry saved = entryRepository.save(entry);
 
         // reflect the save in the loaded season, then answer from it
-        List<AdventEntry> list = s.entriesByDay.computeIfAbsent(d.getId(), k -> new ArrayList<>());
-        list.removeIf(e -> e.getUserId().equals(user.getId()));
-        list.add(saved);
+        s.entriesByDay.computeIfAbsent(d.getId(), k -> new ArrayList<>()).add(saved);
         return detail(s, day, user.getId());
     }
 

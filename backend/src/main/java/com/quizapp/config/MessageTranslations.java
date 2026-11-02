@@ -12,6 +12,7 @@ import java.util.Map;
 public final class MessageTranslations {
     private static final Map<String, String> FRAGMENTS = new LinkedHashMap<>();
     static {
+        FRAGMENTS.put("Du har allerede sendt inn svarene dine for denne luka - de kan ikke endres.", "You've already sent in your answers for this door - they can't be changed.");
         FRAGMENTS.put("Du har skrevet det samme svaret to ganger - de 4 svarene må være ulike.", "You wrote the same answer twice - the 4 answers must all be different.");
         FRAGMENTS.put("Julekalender-wrapped er klar etter 24. desember.", "Advent Wrapped is ready after 24 December.");
         FRAGMENTS.put("Bare spillere kan delta i julekalenderen.", "Only players can take part in the advent calendar.");
