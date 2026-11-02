@@ -4,12 +4,17 @@ import com.quizapp.dto.AccountExportDto;
 import com.quizapp.dto.AuthResponse;
 import com.quizapp.security.JwtService;
 import com.quizapp.exception.ResourceNotFoundException;
+import com.quizapp.model.AdventDay;
+import com.quizapp.model.AdventEntry;
 import com.quizapp.model.AppUser;
 import com.quizapp.model.Report;
 import com.quizapp.model.SubmittedQuestion;
 import com.quizapp.repository.AppUserRepository;
 import com.quizapp.repository.DailyQuizAnswerRepository;
 import com.quizapp.repository.DailyQuizAttemptRepository;
+import com.quizapp.repository.AdventDayRepository;
+import com.quizapp.repository.AdventEntryRepository;
+import com.quizapp.repository.AdventProfileRepository;
 import com.quizapp.repository.DailyQuizResultRepository;
 import com.quizapp.repository.GridAttemptRepository;
 import com.quizapp.repository.LineupAttemptRepository;
@@ -21,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 // Self-service GDPR rights - "download my data" and "delete my account". See
@@ -40,6 +46,9 @@ public class AccountService {
     private final DailyQuizAttemptRepository dailyQuizAttemptRepository;
     private final DailyQuizAnswerRepository dailyQuizAnswerRepository;
     private final DailyQuizResultRepository dailyQuizResultRepository;
+    private final AdventDayRepository adventDayRepository;
+    private final AdventEntryRepository adventEntryRepository;
+    private final AdventProfileRepository adventProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
@@ -52,6 +61,9 @@ public class AccountService {
                            DailyQuizAttemptRepository dailyQuizAttemptRepository,
                            DailyQuizAnswerRepository dailyQuizAnswerRepository,
                            DailyQuizResultRepository dailyQuizResultRepository,
+                           AdventDayRepository adventDayRepository,
+                           AdventEntryRepository adventEntryRepository,
+                           AdventProfileRepository adventProfileRepository,
                            PasswordEncoder passwordEncoder,
                            JwtService jwtService) {
         this.jwtService = jwtService;
@@ -64,6 +76,9 @@ public class AccountService {
         this.dailyQuizAttemptRepository = dailyQuizAttemptRepository;
         this.dailyQuizAnswerRepository = dailyQuizAnswerRepository;
         this.dailyQuizResultRepository = dailyQuizResultRepository;
+        this.adventDayRepository = adventDayRepository;
+        this.adventEntryRepository = adventEntryRepository;
+        this.adventProfileRepository = adventProfileRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -136,6 +151,14 @@ public class AccountService {
                 .map(a -> new AccountExportDto.DailyQuizAttemptExport(a.getSet().getQuizDate(), a.getStatus().name(), a.getScore()))
                 .collect(Collectors.toList()));
 
+        Map<Long, AdventDay> adventDays = adventDayRepository.findAllById(adventEntryRepository.findByUserId(user.getId()).stream()
+                .map(AdventEntry::getDayId).collect(Collectors.toSet())).stream().collect(Collectors.toMap(AdventDay::getId, d -> d));
+        dto.setAdventEntries(adventEntryRepository.findByUserId(user.getId()).stream()
+                .filter(e -> adventDays.containsKey(e.getDayId()))
+                .map(e -> new AccountExportDto.AdventEntryExport(adventDays.get(e.getDayId()).getSeasonYear(),
+                        adventDays.get(e.getDayId()).getDayNumber(), e.getAnswers(), e.isRisky(), e.isJokerUsed()))
+                .collect(Collectors.toList()));
+
         // The compact per-day results behind the weekly standings - kept for weeks after the quiz
         // itself (and its attempt, above) has been deleted, so they're part of "everything tied to you".
         dto.setDailyQuizResults(dailyQuizResultRepository.findByUserIdOrderByQuizDateDesc(user.getId()).stream()
@@ -176,6 +199,9 @@ public class AccountService {
         dailyQuizAttemptRepository.deleteAll(dailyQuizAttemptRepository.findByUser_Email(email));
         // Keyed by user id with no foreign key (see DailyQuizResult), so nothing cleans these up for us.
         dailyQuizResultRepository.deleteByUserId(user.getId());
+        // Same for the advent calendar: entries and the one setting are keyed by user id only.
+        adventEntryRepository.deleteByUserId(user.getId());
+        adventProfileRepository.deleteById(user.getId());
 
         appUserRepository.delete(user);
     }

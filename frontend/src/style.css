@@ -2670,6 +2670,26 @@ table.scoreboard-table {
   border-color: var(--coral);
   background: rgb(var(--fg-rgb) / 0.08);
 }
+.dashboard-advent {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 28px;
+  padding: 16px 22px;
+  border: 2px solid var(--rule);
+  border-left: 6px solid var(--gold);
+  border-radius: 2px;
+  background: rgb(var(--gold-rgb) / 0.07);
+  color: var(--text);
+  text-decoration: none;
+}
+.dashboard-advent:hover { background: rgb(var(--gold-rgb) / 0.12); }
+.dashboard-advent-emoji { font-size: 2rem; }
+.dashboard-advent > div { flex: 1; min-width: 0; }
+.dashboard-advent h3 { margin: 0 0 2px; font-size: 1.1rem; }
+.dashboard-advent p { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
+.dashboard-advent .btn { flex-shrink: 0; pointer-events: none; }
+@media (max-width: 560px) { .dashboard-advent { flex-wrap: wrap; } .dashboard-advent .btn { width: 100%; text-align: center; } }
 .dashboard-report-callout h3 { margin: 0 0 4px; font-size: 1rem; }
 .dashboard-report-callout p { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
 .dashboard-report-callout .btn { flex-shrink: 0; pointer-events: none; }

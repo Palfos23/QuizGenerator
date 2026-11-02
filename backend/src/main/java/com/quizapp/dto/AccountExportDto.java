@@ -18,6 +18,7 @@ public class AccountExportDto {
     private List<LineupAttemptExport> lineupAttempts;
     private List<DailyQuizAttemptExport> dailyQuizAttempts;
     private List<DailyQuizResultExport> dailyQuizResults;
+    private List<AdventEntryExport> adventEntries;
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -39,6 +40,8 @@ public class AccountExportDto {
     public void setLineupAttempts(List<LineupAttemptExport> lineupAttempts) { this.lineupAttempts = lineupAttempts; }
     public List<DailyQuizResultExport> getDailyQuizResults() { return dailyQuizResults; }
     public void setDailyQuizResults(List<DailyQuizResultExport> dailyQuizResults) { this.dailyQuizResults = dailyQuizResults; }
+    public List<AdventEntryExport> getAdventEntries() { return adventEntries; }
+    public void setAdventEntries(List<AdventEntryExport> adventEntries) { this.adventEntries = adventEntries; }
     public List<DailyQuizAttemptExport> getDailyQuizAttempts() { return dailyQuizAttempts; }
     public void setDailyQuizAttempts(List<DailyQuizAttemptExport> dailyQuizAttempts) { this.dailyQuizAttempts = dailyQuizAttempts; }
 
@@ -145,6 +148,28 @@ public class AccountExportDto {
         public java.time.LocalDate getQuizDate() { return quizDate; }
         public String getStatus() { return status; }
         public int getScore() { return score; }
+    }
+
+    public static class AdventEntryExport {
+        private int year;
+        private int day;
+        private List<String> answers;
+        private boolean risk;
+        private boolean joker;
+
+        public AdventEntryExport(int year, int day, List<String> answers, boolean risk, boolean joker) {
+            this.year = year;
+            this.day = day;
+            this.answers = answers;
+            this.risk = risk;
+            this.joker = joker;
+        }
+
+        public int getYear() { return year; }
+        public int getDay() { return day; }
+        public List<String> getAnswers() { return answers; }
+        public boolean isRisk() { return risk; }
+        public boolean isJoker() { return joker; }
     }
 
     public static class DailyQuizResultExport {

@@ -24,6 +24,16 @@
       </section>
     </div>
 
+    <!-- The advent calendar: a banner from November until the season is over (it says "coming soon" until 1 December). -->
+    <router-link v-if="showAdventBanner" to="/julekalender" class="dashboard-advent">
+      <span class="dashboard-advent-emoji" aria-hidden="true">🎄</span>
+      <div>
+        <h3>{{ $t('Julekalender') }}</h3>
+        <p>{{ $t('En ny luke hver dag 1.-24. desember - tenk som spillmesteren og samle poeng.') }}</p>
+      </div>
+      <span class="btn btn-primary">{{ $t('Åpne →') }}</span>
+    </router-link>
+
     <template v-for="section in dashboardSections" :key="section.title">
       <h2 class="dashboard-section-title">{{ section.title }}</h2>
       <div class="dashboard-features">
@@ -125,6 +135,9 @@ import api from '../services/api'
 // solo quizzes, the pass-the-device/online games, and the non-game "manage
 // your quizzes" actions each read as their own thing now, not just a color.
 // "Report a problem" isn't in any section - see the callout below instead.
+// The advent calendar banner shows from 1 November through January (the season's wrapped is up until then).
+const showAdventBanner = [0, 10, 11].includes(new Date().getMonth())
+
 const WEEKLY_QUIZ_ACCENT = 'var(--teal)'
 const GAME_ACCENT = 'var(--violet)'
 const QUIZ_MANAGEMENT_ACCENT = 'var(--gold)'

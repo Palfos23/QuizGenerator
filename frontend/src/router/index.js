@@ -9,6 +9,10 @@ import MyQuizzesView from '../views/MyQuizzesView.vue'
 import WeeklyGridListView from '../views/WeeklyGridListView.vue'
 import DailyQuizListView from '../views/DailyQuizListView.vue'
 import DailyQuizPlayView from '../views/DailyQuizPlayView.vue'
+import AdventView from '../views/AdventView.vue'
+import AdventDayView from '../views/AdventDayView.vue'
+import AdventWrappedView from '../views/AdventWrappedView.vue'
+import AdminAdventView from '../views/AdminAdventView.vue'
 import AdminDailyQuizReviewView from '../views/AdminDailyQuizReviewView.vue'
 import AdminDailyQuizAttemptView from '../views/AdminDailyQuizAttemptView.vue'
 import AdminDailyQuizDayView from '../views/AdminDailyQuizDayView.vue'
@@ -73,6 +77,10 @@ const routes = [
   { path: '/weekly-grid', name: 'weekly-grid', component: WeeklyGridListView, meta: { requiresAuth: true } },
   { path: '/daily-quiz', name: 'daily-quiz', component: DailyQuizListView, meta: { requiresAuth: true } },
   { path: '/daily-quiz/:id', name: 'daily-quiz-play', component: DailyQuizPlayView, meta: { requiresAuth: true } },
+  { path: '/julekalender', name: 'advent', component: AdventView, meta: { requiresAuth: true } },
+  { path: '/julekalender/luke/:n(\\d+)', name: 'advent-day', component: AdventDayView, meta: { requiresAuth: true } },
+  { path: '/julekalender/wrapped', name: 'advent-wrapped', component: AdventWrappedView, meta: { requiresAuth: true } },
+  { path: '/admin/advent', name: 'admin-advent', component: AdminAdventView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/weekly-grid/:id', name: 'weekly-grid-play', component: WeeklyGridPlayView, meta: { requiresAuth: true } },
 
   // The admin's own front door - a dedicated login landing page, separate from the

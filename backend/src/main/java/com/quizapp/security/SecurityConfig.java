@@ -22,13 +22,17 @@ public class SecurityConfig {
     @Value("${quiz.cors.allowed-origins:http://localhost:5173}")
     private String[] allowedOrigins;
 
+    // The password for the advent calendar's game master page (see AdventPasswordFilter) - on top of the admin login.
+    @Value("${app.advent.password:}")
+    private String adventPassword;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService, LoginRateLimiter loginRateLimiter) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
@@ -100,7 +104,9 @@ public class SecurityConfig {
                         // application-wide, not just for the H2 console as the old comment implied.
                         .frameOptions(frame -> frame.sameOrigin())
                         .referrerPolicy(policy -> policy.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
+                // after the JWT filter, so it knows who is signed in
+                .addFilterAfter(new AdventPasswordFilter(adventPassword, loginRateLimiter), JwtAuthenticationFilter.class);
 
         return http.build();
     }

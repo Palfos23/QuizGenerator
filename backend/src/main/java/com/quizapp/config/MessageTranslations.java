@@ -12,6 +12,18 @@ import java.util.Map;
 public final class MessageTranslations {
     private static final Map<String, String> FRAGMENTS = new LinkedHashMap<>();
     static {
+        FRAGMENTS.put("Du har skrevet det samme svaret to ganger - de 4 svarene må være ulike.", "You wrote the same answer twice - the 4 answers must all be different.");
+        FRAGMENTS.put("Julekalender-wrapped er klar etter 24. desember.", "Advent Wrapped is ready after 24 December.");
+        FRAGMENTS.put("Bare spillere kan delta i julekalenderen.", "Only players can take part in the advent calendar.");
+        FRAGMENTS.put("Julekalenderen åpner 1. desember.", "The advent calendar opens on 1 December.");
+        FRAGMENTS.put("Jokeren kan ikke brukes på finalen.", "The joker can't be used on the finale.");
+        FRAGMENTS.put("Du har brukt alle jokerne dine.", "You've used all your jokers.");
+        FRAGMENTS.put("Denne luka er ikke åpnet ennå.", "This door hasn't opened yet.");
+        FRAGMENTS.put("Bare spillere kan velge dette.", "Only players can choose this.");
+        FRAGMENTS.put("Du må skrive inn 4 svar.", "You need to write 4 answers.");
+        FRAGMENTS.put("Det er ingen luke her.", "There's no door here.");
+        FRAGMENTS.put("Denne luka er stengt.", "This door is closed.");
+        FRAGMENTS.put("Fant ikke luke ", "Couldn't find door ");
         FRAGMENTS.put("Denne kategorien brukes fortsatt av minst ett emne, én klubb, ett grid, ett utvalg, et bullseye-, tension-, 501- eller imposter-element - flytt dem først.", "This category is still used by at least one athlete, club, grid, pool, bullseye, tension, 501 or imposter item - reassign those first.");
         FRAGMENTS.put("Gjester kan ikke være vert for et spill - logg inn for å opprette et rom, eller be verten om en romkode for å bli med.", "Guests can't host a game - sign in to create a room, or ask the host for a room code to join.");
         FRAGMENTS.put("Bildeopplasting er ikke satt opp ennå - legg til lagringsinnstillingene (se README) eller lim inn en lenke i stedet.", "Picture uploads aren't set up yet - add the storage settings (see the README) or paste a link instead.");

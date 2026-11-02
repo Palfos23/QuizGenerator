@@ -190,6 +190,7 @@ const PLAYER_MENUS = [
     key: 'games',
     label: _t('Spill§AppJ'),
     items: [
+      { to: '/julekalender', label: _t('🎄 Julekalender'), key: null },
       { to: '/tension', label: 'Tension', key: 'tension' },
       { to: '/501', label: '501', key: 'fiveOhOne' },
       { to: '/imposter', label: 'Imposter', key: 'imposter' },
@@ -275,6 +276,7 @@ const ADMIN_MENUS = [
     label: _t('Spill§AppJ'),
     items: [
       { to: '/admin/daily-quiz-review', label: _t('Gjennomgang av dagens quiz') },
+      { to: '/admin/advent', label: _t('Julekalender') },
       { to: '/admin/grids', label: _t('Ukentlige grids') },
       { to: '/admin/lineups', label: 'Starting XI' },
       { to: '/admin/tension-questions', label: 'Tension' },

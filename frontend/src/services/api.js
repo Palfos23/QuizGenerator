@@ -1,5 +1,6 @@
 import axios from 'axios'
 import auth from './auth'
+import adventAdmin from './adventAdmin'
 import router from '../router'
 import { lang } from '../i18n'
 
@@ -17,12 +18,20 @@ client.interceptors.request.use(config => {
   if (auth.state.token) {
     config.headers.Authorization = `Bearer ${auth.state.token}`
   }
+  // the game master's page of the advent calendar has its own password on top of the admin login
+  if (adventAdmin.state.password && String(config.url || '').startsWith('/admin/advent')) {
+    config.headers['X-Advent-Password'] = adventAdmin.state.password
+  }
   return config
 })
 
 client.interceptors.response.use(
   response => response,
   error => {
+    // a password the server turns away (403 - never 401, which would log the admin out) puts the password prompt back
+    if (error.response?.status === 403 && String(error.config?.url || '').startsWith('/admin/advent')) {
+      adventAdmin.clear()
+    }
     if (auth.state.token && (error.response?.status === 401 || auth.isTokenExpired())) {
       auth.logout()
       router.push('/')
@@ -612,6 +621,46 @@ export default {
   },
   setDailyQuizLeaderboardPreference(id, include) {
     return client.put(`/daily-quiz/${id}/leaderboard-preference?include=${include}`)
+  },
+
+  // --- Advent calendar (player) ---
+  getAdvent() {
+    return client.get('/advent').then(r => r.data)
+  },
+  getAdventDay(day) {
+    return client.get(`/advent/days/${day}`).then(r => r.data)
+  },
+  submitAdventEntry(day, entry) {
+    return client.put(`/advent/days/${day}/entry`, entry).then(r => r.data)
+  },
+  setAdventShowName(showName) {
+    return client.put('/advent/profile', { showName })
+  },
+  getAdventLeaderboard() {
+    return client.get('/advent/leaderboard').then(r => r.data)
+  },
+  getAdventWrapped() {
+    return client.get('/advent/wrapped').then(r => r.data)
+  },
+
+  // --- Advent calendar (admin: the game master) ---
+  adminGetAdventSeason() {
+    return client.get('/admin/advent').then(r => r.data)
+  },
+  adminGetAdventDay(day) {
+    return client.get(`/admin/advent/days/${day}`).then(r => r.data)
+  },
+  adminSaveAdventDay(day, payload) {
+    return client.put(`/admin/advent/days/${day}`, payload).then(r => r.data)
+  },
+  adminGetAdventReview(day) {
+    return client.get(`/admin/advent/days/${day}/review`).then(r => r.data)
+  },
+  adminDecideAdventAnswer(day, text, answerIndex) {
+    return client.put(`/admin/advent/days/${day}/decision`, { text, answerIndex }).then(r => r.data)
+  },
+  adminApproveAdventDay(day, approved) {
+    return client.post(`/admin/advent/days/${day}/approve`, { approved }).then(r => r.data)
   },
 
   // --- Daily quiz: admin review of non-exact answers ---
