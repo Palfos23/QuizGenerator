@@ -6,9 +6,9 @@
       <p class="dq-sub">{{ $t('En ny luke hver dag til jul - velg 4 svar og prøv å treffe spillmesterens skjulte svar.') }}</p>
     </header>
 
+    <p v-if="state && state.simulatedDate" class="adv-testbanner">🧪 {{ $t('Testmodus: kalenderen later som om det er {0}.', [simulatedLabel]) }}</p>
     <div v-if="error" class="banner error">{{ error }}</div>
     <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
-    <p v-if="state && state.simulatedDate" class="adv-testbanner">🧪 {{ $t('Testmodus: kalenderen later som om det er {0}.', [simulatedLabel]) }}</p>
 
     <template v-else-if="state">
       <!-- Before the 1st of December -->
