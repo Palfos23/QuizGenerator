@@ -402,16 +402,29 @@ class DailyQuizWeeklyTest {
     }
 
     @Test
+    void theLastTenFinishedWeeksAreListedAndNoMore() {
+        AppUser user = newUser("Veteran");
+        result(user, monday().minusWeeks(10), 9, true); // the oldest week still listed
+        result(user, monday().minusWeeks(11), 9, true); // one older - out
+
+        List<DailyQuizWeeklyDto.PastWeekDto> past = weeklyService.getWeekly(user.getEmail(), TODAY).getPastWeeks();
+
+        assertThat(past).extracting(DailyQuizWeeklyDto.PastWeekDto::getWeekStart).containsExactly(monday().minusWeeks(10));
+        // and the retention window keeps those records at least until they have scrolled off the list
+        assertThat(DailyQuizResultService.RESULT_RETENTION_DAYS).isGreaterThan(10 * 7 + 6);
+    }
+
+    @Test
     void resultRecordsAreAlsoPrunedButMuchLaterThanTheQuizzes() {
         AppUser user = newUser("Pruned");
         LocalDate today = LocalDate.now();
         result(user, today.minusDays(30), 5, true);  // way past the quiz's 7 days, still within the keep window
-        result(user, today.minusDays(61), 5, true);  // beyond it
+        result(user, today.minusDays(91), 5, true);  // beyond it
 
         resultService.pruneOld(today);
 
         assertThat(resultRepository.findByUserIdAndQuizDate(user.getId(), today.minusDays(30))).isPresent();
-        assertThat(resultRepository.findByUserIdAndQuizDate(user.getId(), today.minusDays(61))).isEmpty();
+        assertThat(resultRepository.findByUserIdAndQuizDate(user.getId(), today.minusDays(91))).isEmpty();
     }
 
     // ---- privacy ----

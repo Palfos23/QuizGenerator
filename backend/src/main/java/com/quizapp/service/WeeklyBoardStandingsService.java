@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public class WeeklyBoardStandingsService {
 
     // How many finished weeks' winners to list below the current standings.
-    static final int PAST_WEEKS = 4;
+    static final int PAST_WEEKS = 10;
 
     private final GridAttemptRepository gridAttemptRepository;
     private final LineupAttemptRepository lineupAttemptRepository;

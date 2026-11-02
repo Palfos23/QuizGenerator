@@ -29,8 +29,9 @@ public class DailyQuizResultService {
     private static final Logger log = LoggerFactory.getLogger(DailyQuizResultService.class);
 
     // The quizzes themselves are deleted after 7 days; these one-line records are kept much longer so
-    // "last week's winner" and a few weeks of history remain - but not forever.
-    static final int RESULT_RETENTION_DAYS = 60;
+    // "last week's winner" and the weekly history remain - but not forever. Must cover every week the
+    // standings list (DailyQuizWeeklyService.PAST_WEEKS = 10, so up to ~76 days back) with some margin.
+    static final int RESULT_RETENTION_DAYS = 90;
 
     private final DailyQuizResultRepository resultRepository;
     private final DailyQuizAttemptRepository attemptRepository;

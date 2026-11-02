@@ -17,11 +17,11 @@ public class GridAttemptCleanupService {
 
     private static final Logger log = LoggerFactory.getLogger(GridAttemptCleanupService.class);
 
-    // Matches GridPlayService.findActive() (1 grid) + findArchive() (9 grids) -
-    // the exact set a player sees on the weekly grid page. Computed the same
-    // way here (grids with weekStartDate <= today, newest first) so the two
-    // can never drift apart from each other over time.
-    private static final int VISIBLE_GRID_COUNT = 10;
+    // Attempts are kept for the newest 12 grids (grids with weekStartDate <= today, newest first): the
+    // 1 + 9 a player sees on the weekly grid page (GridPlayService.findActive() + findArchive()), plus
+    // two more so the weekly standings can still name the winners of the last
+    // WeeklyBoardStandingsService.PAST_WEEKS = 10 weeks.
+    private static final int VISIBLE_GRID_COUNT = 12;
 
     private final GridRepository gridRepository;
     private final GridAttemptRepository gridAttemptRepository;
