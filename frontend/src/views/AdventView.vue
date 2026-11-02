@@ -98,15 +98,6 @@
           </label>
         </div>
         <div v-else class="dq-card dq-empty">{{ $t('Topplisten dukker opp når den første luka er over.') }}</div>
-
-        <!-- Badges -->
-        <h2 class="dq-section-title">{{ $t('Merker') }}</h2>
-        <div class="adv-badges">
-          <div v-for="b in state.badges" :key="b.code" class="adv-badge" :class="{ 'is-locked': !b.earned }">
-            <span class="adv-badge-emoji" aria-hidden="true">{{ b.earned ? BADGES[b.code].emoji : '🔒' }}</span>
-            <div><strong>{{ BADGES[b.code].name }}</strong><br /><small>{{ BADGES[b.code].text }}</small></div>
-          </div>
-        </div>
       </template>
 
       <!-- Rules: open while it is "coming soon", folded away once it is running -->
@@ -127,7 +118,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { t as _t, locale } from '../i18n'
 import api from '../services/api'
-import { BADGES, typeInfo, pointsText } from '../services/advent'
+import { typeInfo, pointsText } from '../services/advent'
 import AdventRules from '../components/AdventRules.vue'
 
 const router = useRouter()
@@ -239,11 +230,6 @@ async function changeShowName(value) {
 .adv-row--gm { border-top: 2px solid var(--rule); color: var(--text-dim); }
 .adv-showname { display: flex; gap: 8px; align-items: center; margin-top: 10px; font-size: 0.92rem; text-transform: none; letter-spacing: normal; font-weight: 400; color: var(--text); }
 
-.adv-badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
-.adv-badge { display: flex; gap: 10px; align-items: center; border: 2px solid var(--rule); border-radius: 3px; background: var(--ink-raised); padding: 10px 12px; }
-.adv-badge small { color: var(--text-dim); }
-.adv-badge-emoji { font-size: 1.6rem; }
-.adv-badge.is-locked { opacity: 0.5; border-style: dashed; }
 .adv-rules-card { margin-top: 8px; }
 
 @media (max-width: 560px) {

@@ -60,16 +60,6 @@
         </div>
       </div>
 
-      <template v-if="earned.length">
-        <h2 class="dq-section-title">{{ $t('Merkene dine') }}</h2>
-        <div class="adv-badges">
-          <div v-for="code in earned" :key="code" class="adv-badge">
-            <span class="adv-badge-emoji" aria-hidden="true">{{ BADGES[code].emoji }}</span>
-            <div><strong>{{ BADGES[code].name }}</strong><br /><small>{{ BADGES[code].text }}</small></div>
-          </div>
-        </div>
-      </template>
-
       <template v-if="w.podium.length">
         <h2 class="dq-section-title">{{ $t('Pallen') }}</h2>
         <div class="dq-card adv-board">
@@ -95,16 +85,15 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { t as _t } from '../i18n'
 import api from '../services/api'
-import { BADGES, pointsText, shareOrCopy } from '../services/advent'
+import { pointsText, shareOrCopy } from '../services/advent'
 
 const w = ref(null)
 const loading = ref(true)
 const error = ref('')
 const note = ref('')
-const earned = computed(() => (w.value ? w.value.badges : []))
 
 onMounted(async () => {
   try {
@@ -148,10 +137,6 @@ async function share() {
 .adv-w-card strong { font-family: var(--font-display); font-size: 1.5rem; }
 .adv-w-card span:last-child { color: var(--text-dim); font-size: 0.88rem; }
 .adv-w-emoji { font-size: 1.8rem; }
-.adv-badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
-.adv-badge { display: flex; gap: 10px; align-items: center; border: 2px solid var(--rule); border-radius: 3px; background: var(--ink-raised); padding: 10px 12px; }
-.adv-badge small { color: var(--text-dim); }
-.adv-badge-emoji { font-size: 1.6rem; }
 .adv-board { padding: 6px 14px 12px; }
 .adv-row { display: flex; align-items: baseline; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
 .adv-row:first-child { border-top: none; }

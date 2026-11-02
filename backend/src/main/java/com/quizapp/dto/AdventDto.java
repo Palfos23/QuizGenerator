@@ -13,15 +13,13 @@ public final class AdventDto {
     /** One door in the grid. type/points/matches are only there once they're meant to be known. */
     public record DoorDto(int day, LocalDate date, String status, boolean entered, String type, Integer points, Integer matches) {}
 
-    public record BadgeDto(String code, boolean earned) {}
-
     /**
      * phase: BEFORE (coming soon) | RUNNING | FINISHED. doors: empty before the start. Door status: LOCKED (opens
      * later) | OPEN (today's) | CLOSED (over, results out) | EMPTY (the game master never filled this one in).
      */
     public record StateDto(String phase, int year, LocalDate startDate, int daysUntilStart, Integer todayDay,
                            boolean player, List<DoorDto> doors, int jokersLeft, int jokersTotal, int totalPoints,
-                           Integer rank, int streak, int bestStreak, List<BadgeDto> badges, boolean showName,
+                           Integer rank, int streak, int bestStreak, boolean showName,
                            boolean wrappedAvailable, LocalDate simulatedDate) {}
 
     // ---------------------------------------------------------------- one door
@@ -59,7 +57,7 @@ public final class AdventDto {
     public record WrappedDto(int year, int totalPoints, Integer rank, int participants, int daysPlayed, int daysTotal,
                              BestDayDto bestDay, int bestStreak, int syncPercent, int matchesTotal, int jokersUsed,
                              int jokerBonusPoints, int risksTaken, int risksWon, int wildcardHits, int perfectDays,
-                             int gamemasterPoints, List<String> badges, List<StandingDto> podium) {}
+                             int gamemasterPoints, List<StandingDto> podium) {}
 
     // ---------------------------------------------------------------- admin
 

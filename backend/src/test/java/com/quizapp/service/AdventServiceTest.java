@@ -426,7 +426,7 @@ class AdventServiceTest {
     }
 
     @Test
-    void streaksAndBadges() {
+    void streaks() {
         for (int n = 1; n <= 8; n++) normalDoor(n);
         door(9, "WILDCARD", "Wildcard", List.of("Oslo", "Bergen", "Tromsø", "Ålesund"), 0);
         AppUser a = user("Streak");
@@ -436,18 +436,12 @@ class AdventServiceTest {
         StateDto afterSeven = service.state(a.getEmail(), d(8));
         assertThat(afterSeven.streak()).isEqualTo(7);
         assertThat(afterSeven.bestStreak()).isEqualTo(7);
-        assertThat(earned(afterSeven)).contains("FIRST_DOOR", "STREAK_7", "PERFECT_DAY").doesNotContain("FINALE", "ALL_24");
 
         StateDto missedOne = service.state(a.getEmail(), d(9)); // door 8 closed unplayed
         assertThat(missedOne.streak()).isZero();
         assertThat(missedOne.bestStreak()).isEqualTo(7);
         play(a, 9, "Oslo", "Hamar", "Skien", "Bodø");
         assertThat(service.state(a.getEmail(), d(9)).streak()).isEqualTo(1);
-        assertThat(earned(service.state(a.getEmail(), d(10)))).contains("WILDCARD_HIT");
-    }
-
-    private static List<String> earned(StateDto state) {
-        return state.badges().stream().filter(BadgeDto::earned).map(BadgeDto::code).toList();
     }
 
     @Test

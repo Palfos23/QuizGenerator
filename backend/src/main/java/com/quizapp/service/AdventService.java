@@ -37,10 +37,6 @@ public class AdventService {
     static final int LEADERBOARD_SIZE = 50;
     static final int CROWD_SIZE = 8;
 
-    /** Every badge there is, in the order the page shows them. */
-    static final List<String> BADGES = List.of("FIRST_DOOR", "STREAK_7", "PERFECT_DAY", "WILDCARD_HIT", "RISK_PAYOFF",
-            "CONTRARIAN", "GOLD_HIT", "JOKER_PAYOFF", "FINALE", "ALL_24");
-
     private final AdventDayRepository dayRepository;
     private final AdventEntryRepository entryRepository;
     private final AdventAliasRepository aliasRepository;
@@ -153,7 +149,7 @@ public class AdventService {
 
         if (BEFORE.equals(s.phase)) {
             return new StateDto(s.phase, year, start, (int) ChronoUnit.DAYS.between(today, start), null, me.isPresent(), List.of(),
-                    AdventScoring.JOKERS_PER_SEASON, AdventScoring.JOKERS_PER_SEASON, 0, null, 0, 0, badgeList(Set.of()),
+                    AdventScoring.JOKERS_PER_SEASON, AdventScoring.JOKERS_PER_SEASON, 0, null, 0, 0,
                     showName(myId), false, clock.simulatedDate());
         }
 
@@ -174,11 +170,7 @@ public class AdventService {
         Integer todayDay = RUNNING.equals(s.phase) ? today.getDayOfMonth() : null;
         return new StateDto(s.phase, year, start, 0, todayDay, me.isPresent(), doors,
                 Math.max(0, AdventScoring.JOKERS_PER_SEASON - mine.jokersUsed), AdventScoring.JOKERS_PER_SEASON, mine.total, rank,
-                mine.streak, mine.bestStreak, badgeList(mine.badges), showName(myId), wrapped, clock.simulatedDate());
-    }
-
-    private static List<BadgeDto> badgeList(Set<String> earned) {
-        return BADGES.stream().map(code -> new BadgeDto(code, earned.contains(code))).collect(Collectors.toList());
+                mine.streak, mine.bestStreak, showName(myId), wrapped, clock.simulatedDate());
     }
 
     private boolean showName(Long userId) {
@@ -195,7 +187,7 @@ public class AdventService {
 
     // ------------------------------------------------------------------ one player's numbers
 
-    /** Everything about one player across the season: their closed-door results, streaks, jokers and badges. */
+    /** Everything about one player across the season: their closed-door results, streaks and jokers. */
     static final class MyStats {
         final Map<Integer, EntryResult> results = new TreeMap<>();
         final Set<Integer> entered = new TreeSet<>();
@@ -203,7 +195,6 @@ public class AdventService {
         int jokersUsed;
         int streak;
         int bestStreak;
-        Set<String> badges = new LinkedHashSet<>();
     }
 
     MyStats myStats(Season s, Long userId) {
@@ -235,21 +226,6 @@ public class AdventService {
         for (int n = 1; n <= DOORS; n++) {
             run = m.entered.contains(n) ? run + 1 : 0;
             m.bestStreak = Math.max(m.bestStreak, run);
-        }
-
-        if (!m.entered.isEmpty()) m.badges.add("FIRST_DOOR");
-        if (m.bestStreak >= 7) m.badges.add("STREAK_7");
-        if (m.entered.contains(AdventScoring.FINALE_DAY)) m.badges.add("FINALE");
-        if (m.entered.size() == DOORS) m.badges.add("ALL_24");
-        for (Map.Entry<Integer, EntryResult> r : m.results.entrySet()) {
-            EntryResult er = r.getValue();
-            AdventType type = s.days.get(r.getKey()).getType();
-            if (type != AdventType.ONE_OF_FOUR && er.matches() == 4) m.badges.add("PERFECT_DAY");
-            if (er.wildcardHit()) m.badges.add("WILDCARD_HIT");
-            if (type == AdventType.RISK_REWARD && er.entry().isRisky() && er.matches() >= 1) m.badges.add("RISK_PAYOFF");
-            if (type == AdventType.OPPOSITE && er.matches() == 0) m.badges.add("CONTRARIAN");
-            if (type == AdventType.ONE_OF_FOUR && er.matches() >= 1) m.badges.add("GOLD_HIT");
-            if (er.entry().isJokerUsed() && er.points() >= 6) m.badges.add("JOKER_PAYOFF");
         }
         return m;
     }
@@ -485,6 +461,6 @@ public class AdventService {
         List<StandingDto> podium = all.stream().filter(p -> p.rank() <= 3).limit(5).collect(Collectors.toList());
         return new WrappedDto(s.year, m.total, rank, all.size(), m.results.size(), daysTotal, best, m.bestStreak,
                 percent(matchesTotal, hiddenTotal), matchesTotal, m.jokersUsed, jokerBonus, risksTaken, risksWon, wildcardHits,
-                perfect, gm, new ArrayList<>(m.badges), podium);
+                perfect, gm, podium);
     }
 }
