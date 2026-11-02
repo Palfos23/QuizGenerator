@@ -30,6 +30,21 @@ public class AdminAdventController {
         return adminService.saveDay(day, request);
     }
 
+    @GetMapping("/test")
+    public TestModeDto testMode() {
+        return adminService.testMode();
+    }
+
+    @PutMapping("/test")
+    public TestModeDto setTestDate(@RequestBody TestDateRequest request) {
+        return adminService.setTestDate(request.date());
+    }
+
+    @PostMapping("/test/reset")
+    public TestModeDto resetTestData() {
+        return adminService.resetTestData();
+    }
+
     @GetMapping("/days/{day}/review")
     public ReviewDto review(@PathVariable int day) {
         return adminService.review(day);

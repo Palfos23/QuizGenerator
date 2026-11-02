@@ -46,22 +46,20 @@ public class AdventService {
     private final AdventAliasRepository aliasRepository;
     private final AdventProfileRepository profileRepository;
     private final AppUserRepository appUserRepository;
+    private final AdventClock clock;
 
     public AdventService(AdventDayRepository dayRepository, AdventEntryRepository entryRepository,
                          AdventAliasRepository aliasRepository, AdventProfileRepository profileRepository,
-                         AppUserRepository appUserRepository) {
+                         AppUserRepository appUserRepository, AdventClock clock) {
         this.dayRepository = dayRepository;
         this.entryRepository = entryRepository;
         this.aliasRepository = aliasRepository;
         this.profileRepository = profileRepository;
         this.appUserRepository = appUserRepository;
+        this.clock = clock;
     }
 
     // ------------------------------------------------------------------ the calendar
-
-    public static LocalDate today() {
-        return LocalDate.now(OSLO);
-    }
 
     /** January still belongs to the season that just ended (so its final standings and "wrapped" stay up). */
     static int seasonYear(LocalDate today) {
@@ -141,7 +139,7 @@ public class AdventService {
 
     @Transactional(readOnly = true)
     public StateDto state(String email) {
-        return state(email, today());
+        return state(email, clock.today());
     }
 
     @Transactional(readOnly = true)
@@ -156,7 +154,7 @@ public class AdventService {
         if (BEFORE.equals(s.phase)) {
             return new StateDto(s.phase, year, start, (int) ChronoUnit.DAYS.between(today, start), null, me.isPresent(), List.of(),
                     AdventScoring.JOKERS_PER_SEASON, AdventScoring.JOKERS_PER_SEASON, 0, null, 0, 0, badgeList(Set.of()),
-                    showName(myId), false);
+                    showName(myId), false, clock.simulatedDate());
         }
 
         MyStats mine = myStats(s, myId);
@@ -176,7 +174,7 @@ public class AdventService {
         Integer todayDay = RUNNING.equals(s.phase) ? today.getDayOfMonth() : null;
         return new StateDto(s.phase, year, start, 0, todayDay, me.isPresent(), doors,
                 Math.max(0, AdventScoring.JOKERS_PER_SEASON - mine.jokersUsed), AdventScoring.JOKERS_PER_SEASON, mine.total, rank,
-                mine.streak, mine.bestStreak, badgeList(mine.badges), showName(myId), wrapped);
+                mine.streak, mine.bestStreak, badgeList(mine.badges), showName(myId), wrapped, clock.simulatedDate());
     }
 
     private static List<BadgeDto> badgeList(Set<String> earned) {
@@ -287,7 +285,7 @@ public class AdventService {
 
     @Transactional(readOnly = true)
     public LeaderboardDto leaderboard(String email) {
-        return leaderboard(email, today());
+        return leaderboard(email, clock.today());
     }
 
     @Transactional(readOnly = true)
@@ -307,7 +305,7 @@ public class AdventService {
 
     @Transactional(readOnly = true)
     public DayDetailDto dayDetail(String email, int day) {
-        return dayDetail(email, day, today());
+        return dayDetail(email, day, clock.today());
     }
 
     @Transactional(readOnly = true)
@@ -395,7 +393,7 @@ public class AdventService {
 
     @Transactional
     public DayDetailDto submit(String email, int day, EntryRequest request) {
-        return submit(email, day, request, today());
+        return submit(email, day, request, clock.today());
     }
 
     @Transactional
@@ -452,7 +450,7 @@ public class AdventService {
 
     @Transactional(readOnly = true)
     public WrappedDto wrapped(String email) {
-        return wrapped(email, today());
+        return wrapped(email, clock.today());
     }
 
     @Transactional(readOnly = true)

@@ -10,6 +10,32 @@
     <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
 
     <template v-else-if="season">
+      <!-- try it out before December -->
+      <section class="dq-card adm-test">
+        <h2 class="adm-h">🧪 {{ $t('Testmodus') }}</h2>
+        <p class="picker-hint" style="margin:0 0 10px;">
+          {{ $t('Late som om det er en annen dato, så du kan prøve julekalenderen før 1. desember. Gjelder alle som åpner siden, og slår seg av av seg selv etter 3 timer. Du må være logget inn som en vanlig spiller (ikke admin) for å spille lukene.') }}
+        </p>
+        <div class="adm-test-row">
+          <input type="date" v-model="testDate" :min="testMin" :max="testMax" />
+          <button class="btn btn-secondary btn-sm" :disabled="!testDate || testBusy" @click="setTest(testDate)">{{ $t('Sett dato') }}</button>
+          <button v-if="test?.active" class="btn btn-secondary btn-sm" :disabled="testBusy" @click="setTest(null)">{{ $t('Slå av') }}</button>
+          <button v-if="test?.canReset" class="btn btn-danger btn-sm" :disabled="testBusy" @click="confirmReset = true">{{ $t('Nullstill testdata') }}</button>
+        </div>
+        <p v-if="test?.active" class="adm-test-status">
+          ✓ {{ $t('Testmodus er på: kalenderen tror det er {0}. Slås av automatisk {1}.', [dateLabel(test.date), untilLabel]) }}
+        </p>
+        <p v-else class="adm-test-status adm-test-status--off">{{ $t('Testmodus er av - kalenderen følger den ekte datoen.') }}</p>
+      </section>
+      <ConfirmModal
+        v-if="confirmReset"
+        :title="$t('Nullstille testdata?')"
+        :message="$t('Alle svar fra spillere, dine rettelser og «gjennomgått»-markeringene slettes. Lukene du har fylt ut blir stående. Dette kan bare gjøres før julekalenderen har startet.')"
+        :confirm-text="$t('Nullstill')"
+        @confirm="doReset"
+        @cancel="confirmReset = false"
+      />
+
       <!-- the 24 doors -->
       <div class="adm-grid">
         <button
@@ -103,6 +129,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { t as _t, locale } from '../i18n'
 import api from '../services/api'
 import { TYPES, typeInfo } from '../services/advent'
+import ConfirmModal from './ConfirmModal.vue'
 
 const season = ref(null)
 const selected = ref(null)
@@ -113,6 +140,10 @@ const reviewLoading = ref(false)
 const saving = ref(false)
 const saved = ref(false)
 const error = ref('')
+const test = ref(null)
+const testDate = ref('')
+const testBusy = ref(false)
+const confirmReset = ref(false)
 const form = reactive({ category: '', type: 'NORMAL', answers: ['', '', '', ''], wildcardIndex: null })
 
 const sortedAnswers = computed(() => {
@@ -127,9 +158,51 @@ const dayState = computed(() => {
   return day.value.date === season.value.today ? _t('åpen i dag') : _t('åpner senere')
 })
 
+// the pretend date can be anywhere from 1 November to 31 January of the season
+const testMin = computed(() => (season.value ? `${season.value.year}-11-01` : ''))
+const testMax = computed(() => (season.value ? `${season.value.year + 1}-01-31` : ''))
+const untilLabel = computed(() => (test.value?.until
+  ? new Date(test.value.until).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+  : ''))
+
+async function loadTest() {
+  test.value = await api.adminGetAdventTest()
+  if (!testDate.value) testDate.value = test.value.date || `${season.value.year}-12-05`
+}
+
+async function setTest(date) {
+  testBusy.value = true
+  error.value = ''
+  try {
+    test.value = await api.adminSetAdventTestDate(date)
+    season.value = await api.adminGetAdventSeason()
+    await select(selected.value)
+  } catch (e) {
+    error.value = e.response?.data?.message || _t('Kunne ikke endre testmodus.')
+  } finally {
+    testBusy.value = false
+  }
+}
+
+async function doReset() {
+  confirmReset.value = false
+  testBusy.value = true
+  error.value = ''
+  try {
+    test.value = await api.adminResetAdventTest()
+    season.value = await api.adminGetAdventSeason()
+    await select(selected.value)
+  } catch (e) {
+    error.value = e.response?.data?.message || _t('Kunne ikke nullstille testdata.')
+  } finally {
+    testBusy.value = false
+  }
+}
+
 onMounted(async () => {
   try {
     season.value = await api.adminGetAdventSeason()
+    await loadTest()
     const today = season.value.days.find(d => d.date === season.value.today)
     await select(today ? today.day : 1)
   } catch (e) {
@@ -243,6 +316,11 @@ async function approve(approved) {
 </script>
 
 <style scoped>
+.adm-test { margin-bottom: 16px; }
+.adm-test-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.adm-test-row input[type="date"] { width: auto; }
+.adm-test-status { margin: 10px 0 0; font-size: 0.9rem; color: var(--teal-ink, var(--teal)); }
+.adm-test-status--off { color: var(--text-dim); }
 .adm-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
 .adm-door { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; background: var(--ink-raised); border: 2px solid var(--rule); border-radius: 3px; color: var(--text); font-family: var(--font-body); cursor: pointer; }
 .adm-door-n { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }

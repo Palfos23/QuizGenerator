@@ -28,9 +28,11 @@ public class AdventAdminService {
     private final AdventDayRepository dayRepository;
     private final AdventEntryRepository entryRepository;
     private final AdventAliasRepository aliasRepository;
+    private final AdventClock clock;
 
     public AdventAdminService(AdventDayRepository dayRepository, AdventEntryRepository entryRepository,
-                              AdventAliasRepository aliasRepository) {
+                              AdventAliasRepository aliasRepository, AdventClock clock) {
+        this.clock = clock;
         this.dayRepository = dayRepository;
         this.entryRepository = entryRepository;
         this.aliasRepository = aliasRepository;
@@ -44,7 +46,7 @@ public class AdventAdminService {
 
     @Transactional(readOnly = true)
     public AdminSeasonDto season() {
-        return season(AdventService.today());
+        return season(clock.today());
     }
 
     @Transactional(readOnly = true)
@@ -68,7 +70,7 @@ public class AdventAdminService {
 
     @Transactional(readOnly = true)
     public AdminDayDto day(int day) {
-        return day(day, AdventService.today());
+        return day(day, clock.today());
     }
 
     @Transactional(readOnly = true)
@@ -88,7 +90,7 @@ public class AdventAdminService {
 
     @Transactional
     public AdminDayDto saveDay(int day, AdminDayRequest request) {
-        return saveDay(day, request, AdventService.today());
+        return saveDay(day, request, clock.today());
     }
 
     @Transactional
@@ -147,7 +149,7 @@ public class AdventAdminService {
 
     @Transactional(readOnly = true)
     public ReviewDto review(int day) {
-        return review(day, AdventService.today());
+        return review(day, clock.today());
     }
 
     @Transactional(readOnly = true)
@@ -189,7 +191,7 @@ public class AdventAdminService {
     /** Read this text as hidden answer answerIndex, as no match (-1), or - null - the automatic way again. */
     @Transactional
     public ReviewDto decide(int day, DecisionRequest request) {
-        return decide(day, request, AdventService.today());
+        return decide(day, request, clock.today());
     }
 
     @Transactional
@@ -218,7 +220,7 @@ public class AdventAdminService {
     /** Marks the door as gone through - players stop seeing its results as preliminary. */
     @Transactional
     public ReviewDto approve(int day, boolean approved) {
-        return approve(day, approved, AdventService.today());
+        return approve(day, approved, clock.today());
     }
 
     @Transactional
@@ -229,6 +231,65 @@ public class AdventAdminService {
         d.setApproved(approved);
         dayRepository.save(d);
         return review(n, today);
+    }
+
+    // ------------------------------------------------------------------ test mode
+
+    /** Whether a pretend date is on, and whether the test data may be wiped (only while the real season hasn't started). */
+    @Transactional(readOnly = true)
+    public TestModeDto testMode() {
+        return testMode(clock.realToday());
+    }
+
+    TestModeDto testMode(LocalDate realToday) {
+        LocalDate date = clock.simulatedDate();
+        return new TestModeDto(date != null, date, clock.simulatedUntil(), realToday, canReset(realToday));
+    }
+
+    private static boolean canReset(LocalDate realToday) {
+        return realToday.isBefore(AdventService.doorDate(AdventService.seasonYear(realToday), 1));
+    }
+
+    /** Pretend it is this date for the next few hours (null = back to the real date). Everyone sees the calendar on it. */
+    public TestModeDto setTestDate(LocalDate date) {
+        return setTestDate(date, clock.realToday());
+    }
+
+    TestModeDto setTestDate(LocalDate date, LocalDate realToday) {
+        if (date == null) {
+            clock.clear();
+        } else {
+            int year = AdventService.seasonYear(realToday);
+            if (date.isBefore(LocalDate.of(year, 11, 1)) || date.isAfter(LocalDate.of(year + 1, 1, 31))) {
+                throw new IllegalArgumentException("Velg en dato mellom 1. november og 31. januar.");
+            }
+            clock.simulate(date);
+        }
+        return testMode(realToday);
+    }
+
+    /**
+     * Wipes everything players did on this season's doors (entries, the game master's corrections, "gjennomgått" marks) so
+     * a test run leaves nothing behind. The doors themselves stay. Only allowed before the season really starts - never
+     * once real players have answered.
+     */
+    @Transactional
+    public TestModeDto resetTestData() {
+        return resetTestData(clock.realToday());
+    }
+
+    @Transactional
+    TestModeDto resetTestData(LocalDate realToday) {
+        if (!canReset(realToday)) throw new IllegalStateException("Testdata kan bare nullstilles før julekalenderen har startet.");
+        List<AdventDay> days = dayRepository.findBySeasonYearOrderByDayNumberAsc(AdventService.seasonYear(realToday));
+        List<Long> ids = days.stream().map(AdventDay::getId).collect(Collectors.toList());
+        if (!ids.isEmpty()) {
+            entryRepository.deleteByDayIdIn(ids);
+            aliasRepository.deleteByDayIdIn(ids);
+            days.forEach(d -> d.setApproved(false));
+            dayRepository.saveAll(days);
+        }
+        return testMode(realToday);
     }
 
     private Map<String, Integer> corrections(Long dayId) {

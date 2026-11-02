@@ -8,6 +8,7 @@
 
     <div v-if="error" class="banner error">{{ error }}</div>
     <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <p v-if="state && state.simulatedDate" class="adv-testbanner">🧪 {{ $t('Testmodus: kalenderen later som om det er {0}.', [simulatedLabel]) }}</p>
 
     <template v-else-if="state">
       <!-- Before the 1st of December -->
@@ -142,6 +143,11 @@ const startLabel = computed(() => {
   const [y, m, d] = state.value.startDate.split('-').map(Number)
   return new Date(y, m - 1, d).toLocaleDateString(locale, { day: 'numeric', month: 'long' })
 })
+const simulatedLabel = computed(() => {
+  if (!state.value?.simulatedDate) return ''
+  const [y, m, d] = state.value.simulatedDate.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString(locale, { day: 'numeric', month: 'long' })
+})
 const todayDoor = computed(() => state.value?.doors?.find(d => d.status === 'OPEN') || null)
 const visiblePlayers = computed(() => (leaderboard.value ? (showAll.value ? leaderboard.value.players : leaderboard.value.players.slice(0, 10)) : []))
 
@@ -186,6 +192,7 @@ async function changeShowName(value) {
 
 <style scoped>
 .adv-page { max-width: 760px; }
+.adv-testbanner { margin: 0 0 14px; padding: 8px 14px; border: 2px dashed var(--gold); border-radius: 3px; background: rgb(var(--gold-rgb) / 0.08); font-size: 0.92rem; }
 .adv-soon { text-align: center; padding: 34px 20px; }
 .adv-soon-emoji { font-size: 3rem; display: block; }
 .adv-soon-title { margin: 6px 0; font-size: 2rem; }

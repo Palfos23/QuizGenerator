@@ -22,7 +22,7 @@ public final class AdventDto {
     public record StateDto(String phase, int year, LocalDate startDate, int daysUntilStart, Integer todayDay,
                            boolean player, List<DoorDto> doors, int jokersLeft, int jokersTotal, int totalPoints,
                            Integer rank, int streak, int bestStreak, List<BadgeDto> badges, boolean showName,
-                           boolean wrappedAvailable) {}
+                           boolean wrappedAvailable, LocalDate simulatedDate) {}
 
     // ---------------------------------------------------------------- one door
 
@@ -83,4 +83,10 @@ public final class AdventDto {
     public record DecisionRequest(String text, Integer answerIndex) {}
 
     public record ApproveRequest(boolean approved) {}
+
+    /** The game master's test mode: a pretend date (for a few hours) and whether the test data may be wiped. */
+    public record TestModeDto(boolean active, LocalDate date, java.time.Instant until, LocalDate realToday, boolean canReset) {}
+
+    /** date null = back to the real date. */
+    public record TestDateRequest(LocalDate date) {}
 }

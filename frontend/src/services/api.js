@@ -647,6 +647,15 @@ export default {
   adminGetAdventSeason() {
     return client.get('/admin/advent').then(r => r.data)
   },
+  adminGetAdventTest() {
+    return client.get('/admin/advent/test').then(r => r.data)
+  },
+  adminSetAdventTestDate(date) {
+    return client.put('/admin/advent/test', { date }).then(r => r.data)
+  },
+  adminResetAdventTest() {
+    return client.post('/admin/advent/test/reset').then(r => r.data)
+  },
   adminGetAdventDay(day) {
     return client.get(`/admin/advent/days/${day}`).then(r => r.data)
   },

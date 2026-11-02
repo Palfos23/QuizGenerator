@@ -31,6 +31,7 @@ class AdventServiceTest {
     @Autowired private AdventProfileRepository profileRepository;
     @Autowired private AppUserRepository appUserRepository;
     @Autowired private AccountService accountService;
+    @Autowired private AdventClock adventClock;
 
     private static final int YEAR = 2031;
     private final List<AppUser> users = new ArrayList<>();
@@ -41,6 +42,7 @@ class AdventServiceTest {
 
     @AfterEach
     void cleanUp() {
+        adventClock.clear();
         List<Long> dayIds = dayRepository.findBySeasonYearOrderByDayNumberAsc(YEAR).stream().map(AdventDay::getId).toList();
         if (!dayIds.isEmpty()) {
             entryRepository.deleteByDayIdIn(dayIds);
@@ -490,5 +492,59 @@ class AdventServiceTest {
         assertThat(entryRepository.findByUserId(a.getId())).isEmpty();
         assertThat(profileRepository.findById(a.getId())).isEmpty();
         assertThat(entryRepository.findByUserId(b.getId())).hasSize(1);
+    }
+
+    // ------------------------------------------------------------------ test mode
+
+    @Test
+    void theGamemasterCanPretendItIsDecemberAndWipeTheTestDataAfterwards() {
+        normalDoor(5);
+        AppUser u = user("Tester");
+        LocalDate november = LocalDate.of(YEAR, 11, 10); // really: before the season
+
+        TestModeDto on = admin.setTestDate(d(6), november);
+        assertThat(on.active()).isTrue();
+        assertThat(on.date()).isEqualTo(d(6));
+        assertThat(on.canReset()).isTrue();
+        // the whole calendar now runs on the pretend date: door 5 is over, door 6 is today
+        assertThat(service.state(u.getEmail()).simulatedDate()).isEqualTo(d(6));
+        assertThat(service.state(u.getEmail()).phase()).isEqualTo("RUNNING");
+        assertThat(service.state(u.getEmail()).todayDay()).isEqualTo(6);
+
+        play(u, 5, "Oslo", "Bergen", "Tromsø", "Ålesund");
+        admin.decide(5, new DecisionRequest("Oslo", -1), d(6));
+        admin.approve(5, true, d(6));
+        assertThat(entryRepository.countByDayId(dayRepository.findBySeasonYearAndDayNumber(YEAR, 5).orElseThrow().getId())).isEqualTo(1);
+
+        admin.resetTestData(november);
+
+        Long dayId = dayRepository.findBySeasonYearAndDayNumber(YEAR, 5).orElseThrow().getId();
+        assertThat(entryRepository.countByDayId(dayId)).isZero();
+        assertThat(aliasRepository.findByDayId(dayId)).isEmpty();
+        assertThat(dayRepository.findBySeasonYearAndDayNumber(YEAR, 5).orElseThrow().isApproved()).isFalse();
+        assertThat(dayRepository.findBySeasonYearAndDayNumber(YEAR, 5).orElseThrow().isReady()).as("the door itself stays").isTrue();
+
+        assertThat(admin.setTestDate(null, november).active()).isFalse();
+        assertThat(service.state(u.getEmail()).simulatedDate()).isNull();
+    }
+
+    @Test
+    void theDataCanNeverBeWipedOnceTheSeasonHasReallyStarted() {
+        normalDoor(5);
+        play(user("Ekte"), 5, "Oslo", "Bergen", "Tromsø", "Ålesund");
+
+        assertThatThrownBy(() -> admin.resetTestData(d(3))).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> admin.resetTestData(d(30))).isInstanceOf(IllegalStateException.class);
+        assertThat(entryRepository.countByDayId(dayRepository.findBySeasonYearAndDayNumber(YEAR, 5).orElseThrow().getId())).isEqualTo(1);
+        assertThat(admin.testMode(d(3)).canReset()).isFalse();
+    }
+
+    @Test
+    void thePretendDateMustBeSomewhereInTheSeason() {
+        LocalDate november = LocalDate.of(YEAR, 11, 10);
+        assertThatThrownBy(() -> admin.setTestDate(LocalDate.of(YEAR, 6, 1), november)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> admin.setTestDate(LocalDate.of(YEAR + 1, 3, 1), november)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(admin.setTestDate(LocalDate.of(YEAR + 1, 1, 15), november).active()).isTrue();
+        assertThat(admin.setTestDate(LocalDate.of(YEAR, 11, 1), november).active()).isTrue();
     }
 }

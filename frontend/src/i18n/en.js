@@ -2238,5 +2238,17 @@ export default {
  "Denne siden er bare for spillmesteren - skriv inn passordet.": "This page is only for the game master - enter the password.",
  "Feil passord.": "Wrong password.",
  "For mange forsøk. Prøv igjen senere.": "Too many attempts. Try again later.",
- "Kunne ikke sjekke passordet.": "Couldn't check the password."
+ "Kunne ikke sjekke passordet.": "Couldn't check the password.",
+ "Testmodus: kalenderen later som om det er {0}.": "Test mode: the calendar is pretending it is {0}.",
+ "Testmodus": "Test mode",
+ "Late som om det er en annen dato, så du kan prøve julekalenderen før 1. desember. Gjelder alle som åpner siden, og slår seg av av seg selv etter 3 timer. Du må være logget inn som en vanlig spiller (ikke admin) for å spille lukene.": "Pretend it is a different date so you can try the advent calendar before 1 December. It applies to everyone who opens the page and switches itself off after 3 hours. You need to be signed in as a regular player (not admin) to play the doors.",
+ "Sett dato": "Set date",
+ "Slå av": "Turn off",
+ "Nullstill testdata": "Reset test data",
+ "Testmodus er på: kalenderen tror det er {0}. Slås av automatisk {1}.": "Test mode is on: the calendar thinks it is {0}. Switches off automatically at {1}.",
+ "Testmodus er av - kalenderen følger den ekte datoen.": "Test mode is off - the calendar follows the real date.",
+ "Nullstille testdata?": "Reset the test data?",
+ "Alle svar fra spillere, dine rettelser og «gjennomgått»-markeringene slettes. Lukene du har fylt ut blir stående. Dette kan bare gjøres før julekalenderen har startet.": "All players' answers, your corrections and the \"reviewed\" marks are deleted. The doors you've filled in stay. This can only be done before the advent calendar has started.",
+ "Kunne ikke endre testmodus.": "Couldn't change test mode.",
+ "Kunne ikke nullstille testdata.": "Couldn't reset the test data."
 }
