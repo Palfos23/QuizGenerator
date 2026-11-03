@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AdventScoringTest {
 
     private static int base(AdventType type, boolean risky, int matches, boolean wildcardHit) {
-        return AdventScoring.basePoints(type, 5, risky, matches, wildcardHit);
+        return AdventScoring.basePoints(type, 5, risky, matches, wildcardHit, true);
     }
 
     @Test
@@ -53,6 +53,31 @@ class AdventScoringTest {
     }
 
     @Test
+    void theUpsideDownDoorPaysNothingUnlessAllFourAnswersFitTheCategory() {
+        assertThat(AdventScoring.basePoints(AdventType.OPPOSITE, 5, false, 0, false, true)).isEqualTo(5);
+        assertThat(AdventScoring.basePoints(AdventType.OPPOSITE, 5, false, 0, false, false)).as("nonsense dodges nothing").isZero();
+        assertThat(AdventScoring.basePoints(AdventType.OPPOSITE, 5, false, 1, false, true)).isZero();
+        // every other door ignores the category check
+        assertThat(AdventScoring.basePoints(AdventType.NORMAL, 5, false, 2, false, false)).isEqualTo(2);
+    }
+
+    @Test
+    void anAnswerFitsTheCategoryWhenItIsTheGamemastersOrOnTheListOrApproved() {
+        List<String> hidden = List.of("Oslo", "Bergen", "Tromsø", "Ålesund");
+        List<String> pool = List.of("Stavanger", "Bodø");
+        assertThat(AdventScoring.fits("tromso", hidden, pool, Map.of())).isTrue();
+        assertThat(AdventScoring.fits("STAVANGER", hidden, pool, Map.of())).isTrue();
+        assertThat(AdventScoring.fits("banan", hidden, pool, Map.of())).as("nonsense").isFalse();
+        assertThat(AdventScoring.fits("Hammerfest", hidden, pool, Map.of())).as("valid but nobody listed it").isFalse();
+        assertThat(AdventScoring.fits("Hammerfest", hidden, pool, Map.of("hammerfest", AdventScoring.FITS_CATEGORY))).as("approved").isTrue();
+        assertThat(AdventScoring.fits("", hidden, pool, Map.of())).isFalse();
+        // a hit corrected to "not a match" still fits - it is the game master's own text
+        assertThat(AdventScoring.fits("Oslo", hidden, pool, Map.of("oslo", AdventScoring.NOT_A_MATCH))).isTrue();
+        // "fits the category" is not a hit
+        assertThat(AdventScoring.matchIndex("Hammerfest", hidden, Map.of("hammerfest", AdventScoring.FITS_CATEGORY))).isEqualTo(-1);
+    }
+
+    @Test
     void oneOfFourPaysFiveForTheGoldAnswerAndNothingOtherwise() {
         assertThat(base(AdventType.ONE_OF_FOUR, false, 1, false)).isEqualTo(5);
         assertThat(base(AdventType.ONE_OF_FOUR, false, 0, false)).isZero();
@@ -60,9 +85,9 @@ class AdventScoringTest {
 
     @Test
     void theFinaleTriplesWhateverTheDoorGives() {
-        assertThat(AdventScoring.basePoints(AdventType.NORMAL, 24, false, 3, false)).isEqualTo(9);
-        assertThat(AdventScoring.basePoints(AdventType.RISK_REWARD, 24, true, 0, false)).isEqualTo(-3);
-        assertThat(AdventScoring.basePoints(AdventType.NORMAL, 23, false, 3, false)).isEqualTo(3);
+        assertThat(AdventScoring.basePoints(AdventType.NORMAL, 24, false, 3, false, true)).isEqualTo(9);
+        assertThat(AdventScoring.basePoints(AdventType.RISK_REWARD, 24, true, 0, false, true)).isEqualTo(-3);
+        assertThat(AdventScoring.basePoints(AdventType.NORMAL, 23, false, 3, false, true)).isEqualTo(3);
     }
 
     @Test

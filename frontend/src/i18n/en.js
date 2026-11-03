@@ -2079,7 +2079,6 @@ export default {
  "Wildcard-luke": "Wildcard door",
  "Spillmesteren har valgt ett av sine fire svar som wildcard. Treffer du det, får du 3 ekstra poeng.": "The game master has picked one of their four answers as the wildcard. Hit it and you get 3 extra points.",
  "Opp-ned-luke": "Upside-down door",
- "Her gjelder det å IKKE tenke som spillmesteren! Treffer du ingen av svarene hans, får du 5 poeng. Treffer du minst ett, får du 0.": "Here you must NOT think like the game master! Match none of their answers and you get 5 points. Match at least one and you get 0.",
  "Én av fire-luke": "One-of-four door",
  "Spillmesteren har bare valgt ETT svar. Treffer du det med ett av dine 4 svar, får du 5 poeng.": "The game master has picked just ONE answer. Hit it with one of your 4 answers and you get 5 points.",
  "poeng¦poeng": "point¦points",
@@ -2238,5 +2237,16 @@ export default {
  "Se svarene dine": "See your answers",
  "Svarene dine er sendt inn - resultatet kommer i morgen.": "Your answers are sent in - the result comes tomorrow.",
  "Luka er åpen hele dagen og stenger ved midnatt. Du får se over svarene før du sender dem inn - men når de er sendt, kan de ikke endres. Dagen etter får du se spillmesterens svar og poengene dine.": "The door is open all day and closes at midnight. You get to look over your answers before sending them - but once sent, they can't be changed. The next day you see the game master's answers and your points.",
- "Får du minuspoeng, dobles de ikke. Jokeren velger du når du sender inn svarene - etterpå kan den ikke tas tilbake. Jokeren kan ikke brukes på finalen.": "If you get minus points, they are not doubled. You choose the joker when you send your answers - afterwards it can't be taken back. The joker can't be used on the finale."
+ "Får du minuspoeng, dobles de ikke. Jokeren velger du når du sender inn svarene - etterpå kan den ikke tas tilbake. Jokeren kan ikke brukes på finalen.": "If you get minus points, they are not doubled. You choose the joker when you send your answers - afterwards it can't be taken back. The joker can't be used on the finale.",
+ "Her gjelder det å IKKE tenke som spillmesteren! Alle 4 svarene dine må passe kategorien, og ingen av dem må være blant spillmesterens - da får du 5 poeng. Treffer du minst ett, eller skriver noe som ikke passer, får du 0.": "Here you must NOT think like the game master! All 4 of your answers must fit the category, and none of them may be among the game master's - then you get 5 points. Match at least one, or write something that doesn't fit, and you get 0.",
+ "Skriv 4 forskjellige svar som passer kategorien, men som du tror spillmesteren IKKE har valgt. Svar som ikke passer kategorien, gir 0 poeng.": "Write 4 different answers that fit the category but that you think the game master did NOT pick. Answers that don't fit the category give 0 points.",
+ "traff spillmesteren": "matched the game master",
+ "passer ikke i kategorien": "doesn't fit the category",
+ "Minst ett av svarene dine passet ikke i kategorien - derfor ingen poeng.": "At least one of your answers didn't fit the category - so no points.",
+ "Andre svar som passer kategorien (valgfritt)": "Other answers that fit the category (optional)",
+ "Ett svar per linje": "One answer per line",
+ "Alle de 4 svarene til en spiller må passe kategorien for å få 5 poeng - ellers kunne man bare skrive tull. Dine egne svar passer alltid. Legg inn andre svar som passer her; svar som ikke står her, regnes som feil til du godkjenner dem i gjennomgangen. Listen kan utvides selv etter at spillere har svart.": "All 4 of a player's answers must fit the category to get 5 points - otherwise they could just write nonsense. Your own answers always fit. Add other fitting answers here; answers that aren't listed count as not fitting until you approve them in the review. The list can be extended even after players have answered.",
+ "Passer kategorien (ikke treff)": "Fits the category (not a match)",
+ "passer, ikke treff": "fits, not a match",
+ "passer ikke": "doesn't fit"
 }

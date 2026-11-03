@@ -83,6 +83,12 @@
           <p v-if="day.locked" class="picker-hint" style="margin:6px 0 0;">{{ $t('{0} spillere har allerede svart - type og svar kan ikke endres lenger. Bruk gjennomgangen under for å rette hvordan svar leses.', [day.entries]) }}</p>
         </div>
 
+        <div v-if="form.type === 'OPPOSITE'" class="field">
+          <label>{{ $t('Andre svar som passer kategorien (valgfritt)') }}</label>
+          <textarea v-model="form.validAnswers" rows="5" :placeholder="$t('Ett svar per linje')"></textarea>
+          <p class="picker-hint" style="margin:6px 0 0;">{{ $t('Alle de 4 svarene til en spiller må passe kategorien for å få 5 poeng - ellers kunne man bare skrive tull. Dine egne svar passer alltid. Legg inn andre svar som passer her; svar som ikke står her, regnes som feil til du godkjenner dem i gjennomgangen. Listen kan utvides selv etter at spillere har svart.') }}</p>
+        </div>
+
         <button class="btn btn-primary" :disabled="saving" @click="save">{{ saving ? $t('Lagrer…') : $t('Lagre luka') }}</button>
         <span v-if="saved" class="adm-saved">✓ {{ $t('Lagret') }}</span>
         <p v-if="!day.locked && form.type === 'ONE_OF_FOUR'" class="picker-hint">{{ $t('Spillerne skriver fortsatt 4 svar - bare ett av dem trenger å treffe.') }}</p>
@@ -99,14 +105,15 @@
           <p class="adm-gm">🎩 {{ $t('Spillmesteren har {0} poeng på denne luka akkurat nå.', [review.gamemasterPoints]) }}</p>
 
           <div class="adm-table">
-            <div v-for="a in sortedAnswers" :key="a.normalized" class="adm-row" :class="{ 'is-miss': a.matchedIndex < 0 }">
+            <div v-for="a in sortedAnswers" :key="a.normalized" class="adm-row" :class="{ 'is-miss': review.type === 'OPPOSITE' ? !a.fits : a.matchedIndex < 0 }">
               <div class="adm-row-text">
                 <strong>{{ a.text }}</strong>
                 <span class="adm-count">{{ a.count }}×</span>
               </div>
               <select class="adv-input" :value="selectValue(a)" @change="decide(a, $event.target.value)">
-                <option value="auto">{{ $t('Automatisk') }} ({{ a.corrected ? '…' : readLabel(a) }})</option>
+                <option value="auto">{{ $t('Automatisk') }} ({{ a.decision !== null ? '…' : readLabel(a) }})</option>
                 <option value="-1">{{ $t('Teller IKKE som treff') }}</option>
+                <option v-if="review.type === 'OPPOSITE'" value="-2">{{ $t('Passer kategorien (ikke treff)') }}</option>
                 <option v-for="(h, i) in review.hidden" :key="i" :value="String(i)">= {{ h }}</option>
               </select>
             </div>
@@ -144,12 +151,14 @@ const test = ref(null)
 const testDate = ref('')
 const testBusy = ref(false)
 const confirmReset = ref(false)
-const form = reactive({ category: '', type: 'NORMAL', answers: ['', '', '', ''], wildcardIndex: null })
+const form = reactive({ category: '', type: 'NORMAL', answers: ['', '', '', ''], wildcardIndex: null, validAnswers: '' })
 
 const sortedAnswers = computed(() => {
   if (!review.value) return []
   // what is not counted as a hit comes first - that's the part that may need a decision
-  return [...review.value.answers].sort((a, b) => (a.matchedIndex < 0) - (b.matchedIndex < 0) || b.count - a.count)
+  const opposite = review.value.type === 'OPPOSITE'
+  const needsLook = a => (opposite ? !a.fits : a.matchedIndex < 0)
+  return [...review.value.answers].sort((a, b) => needsLook(b) - needsLook(a) || b.count - a.count)
 })
 
 const dayState = computed(() => {
@@ -226,6 +235,7 @@ function fillForm(d) {
   form.category = d.category || ''
   form.type = d.type
   form.wildcardIndex = d.wildcardIndex
+  form.validAnswers = (d.validAnswers || []).join('\n')
   form.answers = resize(d.answers, TYPES[d.type] && d.type === 'ONE_OF_FOUR' ? 1 : 4)
 }
 
@@ -274,7 +284,8 @@ async function save() {
       category: form.category,
       type: form.type,
       answers: form.answers,
-      wildcardIndex: form.type === 'WILDCARD' ? form.wildcardIndex : null
+      wildcardIndex: form.type === 'WILDCARD' ? form.wildcardIndex : null,
+      validAnswers: form.type === 'OPPOSITE' ? form.validAnswers.split('\n') : []
     })
     fillForm(day.value)
     season.value = await api.adminGetAdventSeason()
@@ -287,12 +298,13 @@ async function save() {
 }
 
 function selectValue(a) {
-  if (!a.corrected) return 'auto'
-  return String(a.matchedIndex)
+  return a.decision === null || a.decision === undefined ? 'auto' : String(a.decision)
 }
 
 function readLabel(a) {
-  return a.matchedIndex >= 0 ? `= ${review.value.hidden[a.matchedIndex]}` : _t('ikke treff')
+  if (a.matchedIndex >= 0) return `= ${review.value.hidden[a.matchedIndex]}`
+  if (review.value.type === 'OPPOSITE') return a.fits ? _t('passer, ikke treff') : _t('passer ikke')
+  return _t('ikke treff')
 }
 
 async function decide(a, value) {

@@ -329,10 +329,17 @@ public class AdventService {
         }
         EntryResult er = myId == null ? null : result.byUser.get(myId);
         ResultDto resultDto = er == null ? null : new ResultDto(Arrays.stream(er.answerMatches()).boxed().collect(Collectors.toList()),
+                day.getType() == AdventType.OPPOSITE ? fitsList(er.answerFits()) : null,
                 er.matches(), er.wildcardHit(), er.basePoints(), er.jokerBonus(), er.points());
         return new DayDetailDto(n, s.date(n), status, day.getCategory(), day.getType().name(), finale, entry, jokersLeft, false,
                 resultDto, hiddenDtos, result.entrants, result.gamemasterPoints, !day.isApproved(),
                 crowd(entries, hidden, corrections, result.entrants));
+    }
+
+    private static List<Boolean> fitsList(boolean[] fits) {
+        List<Boolean> out = new ArrayList<>();
+        for (boolean f : fits) out.add(f);
+        return out;
     }
 
     private static int percent(int part, int whole) {

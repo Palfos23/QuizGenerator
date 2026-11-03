@@ -38,6 +38,11 @@ public class AdventDay {
     @Column(name = "answers_text", length = 1000)
     private String answersText;
 
+    // Upside-down doors only: other answers that fit the category, one per line (the hidden answers fit too). A player's
+    // answer must fit the category for the 5 points - see AdventScoring.fits. Nullable: it is a column added after launch.
+    @Column(name = "valid_answers_text", length = 4000)
+    private String validAnswersText;
+
     // Which of the hidden answers is the wildcard (0-3), only for WILDCARD doors.
     @Column(name = "wildcard_index")
     private Integer wildcardIndex;
@@ -53,6 +58,15 @@ public class AdventDay {
 
     public void setAnswers(List<String> answers) {
         this.answersText = String.join("\n", answers);
+    }
+
+    public List<String> getValidAnswers() {
+        if (validAnswersText == null || validAnswersText.isBlank()) return new ArrayList<>();
+        return new ArrayList<>(Arrays.asList(validAnswersText.split("\n")));
+    }
+
+    public void setValidAnswers(List<String> answers) {
+        this.validAnswersText = answers.isEmpty() ? null : String.join("\n", answers);
     }
 
     /** Ready to be played: it has a category and all the hidden answers (and a wildcard where one is needed). */

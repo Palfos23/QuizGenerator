@@ -68,7 +68,11 @@ class AdventServiceTest {
     }
 
     private void door(int n, String type, String category, List<String> answers, Integer wildcard) {
-        admin.saveDay(n, new AdminDayRequest(category, type, answers, wildcard), d(n));
+        door(n, type, category, answers, wildcard, null);
+    }
+
+    private void door(int n, String type, String category, List<String> answers, Integer wildcard, List<String> validPool) {
+        admin.saveDay(n, new AdminDayRequest(category, type, answers, wildcard, validPool), d(n));
     }
 
     private void normalDoor(int n) {
@@ -241,7 +245,7 @@ class AdventServiceTest {
         ReviewAnswerDto bergenBy = review.answers().stream().filter(x -> x.normalized().equals("bergen by")).findFirst().orElseThrow();
         assertThat(bergenBy.count()).isEqualTo(2);
         assertThat(bergenBy.matchedIndex()).isEqualTo(-1);
-        assertThat(bergenBy.corrected()).isFalse();
+        assertThat(bergenBy.decision()).isNull();
         assertThat(admin.approve(5, true, d(6)).approved()).isTrue();
         assertThat(closed(a, 5).provisional()).isFalse();
     }
@@ -286,7 +290,7 @@ class AdventServiceTest {
     void riskOrRewardAndTheWildcardAndTheUpsideDownDoorPlayedForReal() {
         door(10, "RISK_REWARD", "Risiko", List.of("Oslo", "Bergen", "Tromsø", "Ålesund"), null);
         door(11, "WILDCARD", "Wildcard", List.of("Oslo", "Bergen", "Tromsø", "Ålesund"), 2);
-        door(12, "OPPOSITE", "Motsatt", List.of("Oslo", "Bergen", "Tromsø", "Ålesund"), null);
+        door(12, "OPPOSITE", "Motsatt", List.of("Oslo", "Bergen", "Tromsø", "Ålesund"), null, List.of("Narvik", "Bodø", "Hamar", "Skien"));
         door(13, "ONE_OF_FOUR", "Gull", List.of("Oslo"), null);
         AppUser u = user("Spiller");
 
@@ -318,6 +322,88 @@ class AdventServiceTest {
         AppUser u = user("Dristig");
         assertThat(play(u, 14, true, false, "Narvik", "Bodø", "Hamar", "Skien").entry().risky()).isFalse();
         assertThat(closed(u, 14).result().points()).isZero();
+    }
+
+    // ------------------------------------------------------------------ the upside-down door and nonsense answers
+
+    private static final List<String> CITIES = List.of("Oslo", "Bergen", "Tromsø", "Ålesund");
+    private static final List<String> OTHER_CITIES = List.of("Stavanger", "Bodø", "Hamar", "Skien", "Narvik");
+
+    @Test
+    void nonsenseDoesNotDodgeTheGamemasterOnTheUpsideDownDoor() {
+        door(12, "OPPOSITE", "Norske byer", CITIES, null, OTHER_CITIES);
+        AppUser real = user("Ekte");
+        AppUser cheat = user("Jukser");
+        AppUser mixed = user("Blandet");
+        AppUser hit = user("Treffer");
+        play(real, 12, "Stavanger", "Bodø", "Hamar", "Skien");   // all fit the category, none is the game master's: 5
+        play(cheat, 12, "banan", "asdf", "elefant", "pizza");     // dodges everything - by writing nonsense: 0
+        play(mixed, 12, "Stavanger", "Bodø", "Hamar", "banan");   // one answer that doesn't fit: 0
+        play(hit, 12, "Oslo", "Stavanger", "Bodø", "Hamar");      // matches the game master: 0
+
+        assertThat(closed(real, 12).result().points()).isEqualTo(5);
+        assertThat(closed(real, 12).result().answerFits()).containsExactly(true, true, true, true);
+        assertThat(closed(cheat, 12).result().points()).isZero();
+        assertThat(closed(cheat, 12).result().matches()).as("no hits, but still nothing").isZero();
+        assertThat(closed(cheat, 12).result().answerFits()).containsExactly(false, false, false, false);
+        assertThat(closed(mixed, 12).result().points()).isZero();
+        assertThat(closed(mixed, 12).result().answerFits()).containsExactly(true, true, true, false);
+        assertThat(closed(hit, 12).result().points()).isZero();
+    }
+
+    @Test
+    void theGamemasterCanApproveAnAnswerThatFitsAndEveryonesPointsFollow() {
+        door(12, "OPPOSITE", "Norske byer", CITIES, null, OTHER_CITIES);
+        AppUser a = user("Anna");
+        AppUser b = user("Bo");
+        play(a, 12, "Stavanger", "Bodø", "Hamar", "Hammerfest");
+        play(b, 12, "Narvik", "Skien", "Hamar", "hammerfest");
+        assertThat(closed(a, 12).result().points()).as("Hammerfest isn't on the list yet").isZero();
+
+        ReviewDto review = admin.review(12, d(13));
+        ReviewAnswerDto hammerfest = review.answers().stream().filter(x -> x.normalized().equals("hammerfest")).findFirst().orElseThrow();
+        assertThat(hammerfest.fits()).isFalse();
+        assertThat(hammerfest.count()).isEqualTo(2);
+
+        admin.decide(12, new DecisionRequest("Hammerfest", AdventScoring.FITS_CATEGORY), d(13));
+
+        assertThat(closed(a, 12).result().points()).isEqualTo(5);
+        assertThat(closed(b, 12).result().points()).isEqualTo(5);
+        ReviewAnswerDto after = admin.review(12, d(13)).answers().stream().filter(x -> x.normalized().equals("hammerfest")).findFirst().orElseThrow();
+        assertThat(after.fits()).isTrue();
+        assertThat(after.decision()).isEqualTo(AdventScoring.FITS_CATEGORY);
+        assertThat(after.matchedIndex()).as("fitting is not hitting").isEqualTo(-1);
+
+        admin.decide(12, new DecisionRequest("Hammerfest", null), d(13));
+        assertThat(closed(a, 12).result().points()).isZero();
+    }
+
+    @Test
+    void theListOfOtherValidAnswersCanGrowAfterPlayersHaveAnswered() {
+        door(12, "OPPOSITE", "Norske byer", CITIES, null, List.of("Stavanger"));
+        AppUser a = user("Anna");
+        play(a, 12, "Stavanger", "Bodø", "Hamar", "Skien");
+        assertThat(closed(a, 12).result().points()).isZero();
+
+        door(12, "OPPOSITE", "Norske byer", CITIES, null, List.of("Stavanger", "Bodø", "Hamar", "Skien"));
+
+        assertThat(closed(a, 12).result().points()).isEqualTo(5);
+        assertThat(admin.day(12, d(13)).validAnswers()).hasSize(4);
+    }
+
+    @Test
+    void onlyTheUpsideDownDoorHasAListOfValidAnswersAndFitsDecisions() {
+        door(12, "NORMAL", "Norske byer", CITIES, null, OTHER_CITIES);
+        assertThat(admin.day(12, d(12)).validAnswers()).isEmpty();
+        assertThat(service.dayDetail(user("X").getEmail(), 12, d(13)).result()).isNull();
+        assertThatThrownBy(() -> admin.decide(12, new DecisionRequest("Hamar", AdventScoring.FITS_CATEGORY), d(13)))
+                .hasMessageContaining("opp-ned");
+        assertThatThrownBy(() -> admin.decide(12, new DecisionRequest("Hamar", -3), d(13))).isInstanceOf(IllegalArgumentException.class);
+        // the other doors never look at the category: a plain door still pays for nonsense that matches nothing... nothing
+        AppUser u = user("Vanlig");
+        play(u, 12, "banan", "asdf", "elefant", "pizza");
+        assertThat(closed(u, 12).result().points()).isZero();
+        assertThat(closed(u, 12).result().answerFits()).isNull();
     }
 
     // ------------------------------------------------------------------ jokers

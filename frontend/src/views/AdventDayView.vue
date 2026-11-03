@@ -45,6 +45,7 @@
       <!-- ============================================================ open: the form -->
       <section v-else-if="detail.status === 'OPEN'" class="dq-card adv-form">
         <p v-if="detail.type === 'ONE_OF_FOUR'" class="adv-hint">{{ $t('Spillmesteren har bare ett svar - skriv 4 forskjellige svar, så øker du sjansen.') }}</p>
+        <p v-else-if="detail.type === 'OPPOSITE'" class="adv-hint">{{ $t('Skriv 4 forskjellige svar som passer kategorien, men som du tror spillmesteren IKKE har valgt. Svar som ikke passer kategorien, gir 0 poeng.') }}</p>
         <p v-else class="adv-hint">{{ $t('Skriv 4 forskjellige svar du tror spillmesteren også har valgt.') }}</p>
 
         <div v-for="(_, i) in answers" :key="i" class="adv-answer">
@@ -93,6 +94,7 @@
           <div class="adv-points-l">{{ $t('poeng¦poeng', [Math.abs(detail.result.points)]) }}</div>
           <ul class="adv-breakdown">
             <li>{{ $t('{0} av 4 treff', [detail.result.matches]) }}<template v-if="detail.type === 'ONE_OF_FOUR'"> ({{ detail.result.matches ? $t('du traff gullsvaret!') : $t('ingen treff på gullsvaret') }})</template></li>
+            <li v-if="detail.type === 'OPPOSITE' && detail.result.matches === 0 && detail.result.answerFits && detail.result.answerFits.includes(false)">⚠️ {{ $t('Minst ett av svarene dine passet ikke i kategorien - derfor ingen poeng.') }}</li>
             <li v-if="detail.result.wildcardHit">🌟 {{ $t('Du traff wildcard: +3 poeng') }}</li>
             <li v-if="detail.entry?.risky">🎲 {{ $t('Du satset') }}</li>
             <li v-if="detail.result.jokerBonus > 0">🃏 {{ $t('Jokeren ga deg +{0} poeng', [detail.result.jokerBonus]) }}</li>
@@ -111,8 +113,8 @@
           <h2 class="dq-section-title">{{ $t('Svarene dine') }}</h2>
           <div class="dq-card adv-list">
             <div v-for="(a, i) in detail.entry.answers" :key="i" class="adv-line">
-              <span class="adv-mark" :class="matchOf(i) >= 0 ? 'is-ok' : 'is-bad'">{{ matchOf(i) >= 0 ? '✓' : '✕' }}</span>
-              <span class="adv-line-main">{{ a }}<small v-if="matchOf(i) >= 0 && differs(a, detail.hidden[matchOf(i)].text)">= {{ detail.hidden[matchOf(i)].text }}</small></span>
+              <span class="adv-mark" :class="mark(i).cls">{{ mark(i).sym }}</span>
+              <span class="adv-line-main">{{ a }}<small v-if="matchOf(i) >= 0 && differs(a, detail.hidden[matchOf(i)].text)">= {{ detail.hidden[matchOf(i)].text }}</small><small v-if="mark(i).note">{{ mark(i).note }}</small></span>
             </div>
           </div>
         </template>
@@ -178,6 +180,18 @@ const dateLabel = computed(() => {
 
 function differs(a, b) {
   return a.trim().toLowerCase() !== b.trim().toLowerCase()
+}
+
+// How one of your answers did. On the upside-down door a hit is the bad outcome, and an answer that doesn't fit the
+// category counts against you too.
+function mark(i) {
+  const hit = matchOf(i) >= 0
+  if (detail.value?.type === 'OPPOSITE') {
+    if (hit) return { sym: '✕', cls: 'is-bad', note: _t('traff spillmesteren') }
+    if (detail.value.result?.answerFits?.[i] === false) return { sym: '✕', cls: 'is-bad', note: _t('passer ikke i kategorien') }
+    return { sym: '✓', cls: 'is-ok', note: '' }
+  }
+  return { sym: hit ? '✓' : '✕', cls: hit ? 'is-ok' : 'is-bad', note: '' }
 }
 
 function matchOf(i) {

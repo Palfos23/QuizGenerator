@@ -32,8 +32,11 @@ public final class AdventDto {
     /** One of the answers players wrote most often. matchedIndex = the hidden answer it counted as, or null. */
     public record CrowdAnswerDto(String text, int count, int percent, Integer matchedIndex) {}
 
-    /** One player's result on a closed door. answerMatches: per answer they wrote, the hidden answer it matched (or -1). */
-    public record ResultDto(List<Integer> answerMatches, int matches, boolean wildcardHit, int basePoints, int jokerBonus,
+    /**
+     * One player's result on a closed door. answerMatches: per answer they wrote, the hidden answer it matched (or -1).
+     * answerFits: on upside-down doors, whether each answer fits the category (null on every other kind of door).
+     */
+    public record ResultDto(List<Integer> answerMatches, List<Boolean> answerFits, int matches, boolean wildcardHit, int basePoints, int jokerBonus,
                             int points) {}
 
     public record DayDetailDto(int day, LocalDate date, String status, String category, String type, boolean finale,
@@ -67,17 +70,26 @@ public final class AdventDto {
     public record AdminSeasonDto(int year, LocalDate today, List<AdminDayRowDto> days) {}
 
     public record AdminDayDto(int day, LocalDate date, String category, String type, List<String> answers,
-                              Integer wildcardIndex, long entries, boolean approved, boolean closed, boolean locked) {}
+                              Integer wildcardIndex, long entries, boolean approved, boolean closed, boolean locked,
+                              List<String> validAnswers) {}
 
-    public record AdminDayRequest(String category, String type, List<String> answers, Integer wildcardIndex) {}
+    public record AdminDayRequest(String category, String type, List<String> answers, Integer wildcardIndex,
+                                  List<String> validAnswers) {}
 
-    /** One distinct thing players wrote on a door and how it is currently read. */
-    public record ReviewAnswerDto(String text, String normalized, int count, int matchedIndex, boolean corrected) {}
+    /**
+     * One distinct thing players wrote on a door and how it is currently read. matchedIndex: the hidden answer it counts as
+     * (or -1). fits: whether it fits the category (only means something on upside-down doors). decision: the game master's
+     * stored correction (-1 not a match, -2 fits the category, 0-3 a hidden answer), null when read automatically.
+     */
+    public record ReviewAnswerDto(String text, String normalized, int count, int matchedIndex, boolean fits, Integer decision) {}
 
     public record ReviewDto(int day, String category, String type, List<String> hidden, int entrants, boolean approved,
                             boolean closed, int gamemasterPoints, List<ReviewAnswerDto> answers) {}
 
-    /** Read this text as hidden answer answerIndex (0-3), as no match (-1), or - null - as the automatic reading again. */
+    /**
+     * Read this text as hidden answer answerIndex (0-3), as no match (-1), on upside-down doors as "fits the category" (-2),
+     * or - null - as the automatic reading again.
+     */
     public record DecisionRequest(String text, Integer answerIndex) {}
 
     public record ApproveRequest(boolean approved) {}

@@ -29,6 +29,7 @@ public class AdventAdminService {
     private final AdventEntryRepository entryRepository;
     private final AdventAliasRepository aliasRepository;
     private final AdventClock clock;
+    static final int MAX_VALID_ANSWERS = 80;
 
     public AdventAdminService(AdventDayRepository dayRepository, AdventEntryRepository entryRepository,
                               AdventAliasRepository aliasRepository, AdventClock clock) {
@@ -80,12 +81,12 @@ public class AdventAdminService {
         LocalDate date = AdventService.doorDate(year, n);
         Optional<AdventDay> found = dayRepository.findBySeasonYearAndDayNumber(year, n);
         if (found.isEmpty()) {
-            return new AdminDayDto(n, date, null, AdventType.NORMAL.name(), List.of(), null, 0, false, date.isBefore(today), false);
+            return new AdminDayDto(n, date, null, AdventType.NORMAL.name(), List.of(), null, 0, false, date.isBefore(today), false, List.of());
         }
         AdventDay d = found.get();
         long entries = entryRepository.countByDayId(d.getId());
         return new AdminDayDto(n, date, d.getCategory(), d.getType().name(), d.getAnswers(), d.getWildcardIndex(), entries,
-                d.isApproved(), date.isBefore(today), entries > 0);
+                d.isApproved(), date.isBefore(today), entries > 0, d.getValidAnswers());
     }
 
     @Transactional
@@ -120,6 +121,14 @@ public class AdventAdminService {
         if (answers.stream().map(AdventScoring::normalize).distinct().count() != answers.size()) {
             throw new IllegalArgumentException("Du har skrevet det samme svaret to ganger.");
         }
+        // other answers that fit the category: only the upside-down door uses them
+        List<String> pool = type != AdventType.OPPOSITE || request.validAnswers() == null ? List.<String>of()
+                : request.validAnswers().stream().map(a -> a == null ? "" : a.replaceAll("\\s+", " ").trim())
+                        .filter(a -> !a.isEmpty()).collect(Collectors.toList());
+        if (pool.size() > MAX_VALID_ANSWERS) throw new IllegalArgumentException("Maks " + MAX_VALID_ANSWERS + " gyldige svar i listen.");
+        if (pool.stream().anyMatch(a -> a.length() > AdventService.MAX_ANSWER_LENGTH)) {
+            throw new IllegalArgumentException("Svarene kan ikke være lengre enn " + AdventService.MAX_ANSWER_LENGTH + " tegn.");
+        }
         Integer wildcard = type == AdventType.WILDCARD ? request.wildcardIndex() : null;
         if (wildcard != null && (wildcard < 0 || wildcard >= answers.size())) {
             throw new IllegalArgumentException("Wildcard må være ett av svarene.");
@@ -141,6 +150,8 @@ public class AdventAdminService {
         d.setType(type);
         d.setAnswers(answers);
         d.setWildcardIndex(wildcard);
+        // the list of other valid answers is a kind of correction, so it can still be changed once players have answered
+        d.setValidAnswers(pool);
         dayRepository.save(d);
         return day(n, today);
     }
@@ -162,6 +173,7 @@ public class AdventAdminService {
         List<AdventEntry> entries = entryRepository.findByDayId(d.getId());
         Map<String, Integer> corrections = corrections(d.getId());
         List<String> hidden = d.getAnswers();
+        List<String> pool = d.getValidAnswers();
 
         Map<String, Map<String, Integer>> spellings = new HashMap<>();
         Map<String, Integer> counts = new HashMap<>();
@@ -180,7 +192,8 @@ public class AdventAdminService {
                             .max(Map.Entry.<String, Integer>comparingByValue().thenComparing(Map.Entry.comparingByKey()))
                             .orElseThrow().getKey();
                     return new ReviewAnswerDto(shown, c.getKey(), c.getValue(),
-                            AdventScoring.matchIndex(shown, hidden, corrections), corrections.containsKey(c.getKey()));
+                            AdventScoring.matchIndex(shown, hidden, corrections),
+                            AdventScoring.fits(shown, hidden, pool, corrections), corrections.get(c.getKey()));
                 })
                 .sorted(Comparator.comparingInt(ReviewAnswerDto::count).reversed().thenComparing(ReviewAnswerDto::normalized))
                 .collect(Collectors.toList());
@@ -207,7 +220,10 @@ public class AdventAdminService {
             existing.ifPresent(aliasRepository::delete);
         } else {
             int idx = request.answerIndex();
-            if (idx < -1 || idx >= d.getAnswers().size()) throw new IllegalArgumentException("Ugyldig svar å knytte til.");
+            if (idx < AdventScoring.FITS_CATEGORY || idx >= d.getAnswers().size()) throw new IllegalArgumentException("Ugyldig svar å knytte til.");
+            if (idx == AdventScoring.FITS_CATEGORY && d.getType() != AdventType.OPPOSITE) {
+                throw new IllegalArgumentException("Dette valget finnes bare på opp-ned-luker.");
+            }
             AdventAlias alias = existing.orElseGet(AdventAlias::new);
             alias.setDayId(d.getId());
             alias.setNormalizedText(norm);

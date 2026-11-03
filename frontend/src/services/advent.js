@@ -26,7 +26,7 @@ export const TYPES = {
   OPPOSITE: {
     emoji: '🙃',
     name: _t('Opp-ned-luke'),
-    rules: _t('Her gjelder det å IKKE tenke som spillmesteren! Treffer du ingen av svarene hans, får du 5 poeng. Treffer du minst ett, får du 0.')
+    rules: _t('Her gjelder det å IKKE tenke som spillmesteren! Alle 4 svarene dine må passe kategorien, og ingen av dem må være blant spillmesterens - da får du 5 poeng. Treffer du minst ett, eller skriver noe som ikke passer, får du 0.')
   },
   ONE_OF_FOUR: {
     emoji: '🥇',
