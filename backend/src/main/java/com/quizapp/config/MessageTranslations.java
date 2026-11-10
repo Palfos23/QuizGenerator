@@ -12,6 +12,13 @@ import java.util.Map;
 public final class MessageTranslations {
     private static final Map<String, String> FRAGMENTS = new LinkedHashMap<>();
     static {
+        FRAGMENTS.put("Du kan be om ny vurdering når quizen din er ferdig rettet.", "You can ask for another look once your quiz has been fully graded.");
+        FRAGMENTS.put("Du har allerede bedt om ny vurdering av dette svaret.", "You've already asked for another look at this answer.");
+        FRAGMENTS.put("Dette svaret kan du ikke be om ny vurdering av.", "You can't ask for another look at this answer.");
+        FRAGMENTS.put("Dette svaret er allerede regnet som riktig.", "This answer already counts as correct.");
+        FRAGMENTS.put("klagene du har på denne quizen.", "complaints you have on this quiz.");
+        FRAGMENTS.put("Du har brukt opp de ", "You've used up the ");
+        FRAGMENTS.put("Fant ikke svaret.", "Couldn't find the answer.");
         FRAGMENTS.put("Du har allerede sendt inn svarene dine for denne luka - de kan ikke endres.", "You've already sent in your answers for this door - they can't be changed.");
         FRAGMENTS.put("Du har skrevet det samme svaret to ganger - de 4 svarene må være ulike.", "You wrote the same answer twice - the 4 answers must all be different.");
         FRAGMENTS.put("Julekalender-wrapped er klar etter 24. desember.", "Advent Wrapped is ready after 24 December.");

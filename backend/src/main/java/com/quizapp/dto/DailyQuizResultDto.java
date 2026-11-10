@@ -11,6 +11,7 @@ public class DailyQuizResultDto {
 
     private Integer score;
     private int maxScore;
+    private int complaintsLeft; // how many more answers the player may ask to have looked at again (0 while under review)
     private int pendingCount; // answers still waiting for an admin (the whole list reads PENDING until all are decided)
     private List<AnswerResultDto> answers;
     // The expert's score for this day, once the player's own result is final - for the "beat the expert"
@@ -23,6 +24,14 @@ public class DailyQuizResultDto {
 
     public void setExpert(DailyQuizScoreboardDto.ExpertScore expert) {
         this.expert = expert;
+    }
+
+    public int getComplaintsLeft() {
+        return complaintsLeft;
+    }
+
+    public void setComplaintsLeft(int complaintsLeft) {
+        this.complaintsLeft = complaintsLeft;
     }
 
     public int getPendingCount() {
@@ -68,6 +77,10 @@ public class DailyQuizResultDto {
         private Integer pointsAwarded; // null while PENDING; 0 for a wrong answer
         private Integer percentCorrect; // how easy the question was: share of the points all players earned on it; null with too few answers to say
         private int playersCounted; // how many answers that percentage rests on
+        private Long answerId; // what a complaint refers to
+        private boolean canComplain; // a wrong answer, on a graded quiz, with complaints to spare and none sent for it yet
+        private String complaintStatus; // null = no complaint; OPEN / ACCEPTED / REJECTED
+        private String complaintNote; // what the admin wrote when turning it down
 
         public AnswerResultDto() {
         }
@@ -154,6 +167,38 @@ public class DailyQuizResultDto {
 
         public void setPlayersCounted(int playersCounted) {
             this.playersCounted = playersCounted;
+        }
+
+        public Long getAnswerId() {
+            return answerId;
+        }
+
+        public void setAnswerId(Long answerId) {
+            this.answerId = answerId;
+        }
+
+        public boolean isCanComplain() {
+            return canComplain;
+        }
+
+        public void setCanComplain(boolean canComplain) {
+            this.canComplain = canComplain;
+        }
+
+        public String getComplaintStatus() {
+            return complaintStatus;
+        }
+
+        public void setComplaintStatus(String complaintStatus) {
+            this.complaintStatus = complaintStatus;
+        }
+
+        public String getComplaintNote() {
+            return complaintNote;
+        }
+
+        public void setComplaintNote(String complaintNote) {
+            this.complaintNote = complaintNote;
         }
 
         public Integer getPointsAwarded() {

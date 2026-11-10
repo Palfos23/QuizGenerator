@@ -4,7 +4,6 @@ import com.quizapp.model.AdventDay;
 import com.quizapp.model.AdventEntry;
 import com.quizapp.model.AdventType;
 
-import java.text.Normalizer;
 import java.util.*;
 
 /**
@@ -31,10 +30,7 @@ public final class AdventScoring {
 
     /** "  Ålesund!! " and "alesund" and "ÅLESUND" are the same answer; ø and æ don't decompose, so they're mapped by hand. */
     public static String normalize(String s) {
-        if (s == null) return "";
-        String lower = s.toLowerCase(Locale.ROOT).replace("ø", "o").replace("æ", "ae");
-        String decomposed = Normalizer.normalize(lower, Normalizer.Form.NFD).replaceAll("\\p{M}+", "");
-        return decomposed.replaceAll("[^\\p{L}\\p{N}]+", " ").trim();
+        return AnswerText.normalize(s);
     }
 
     public static boolean isFinale(int dayNumber) {

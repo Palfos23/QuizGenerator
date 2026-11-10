@@ -4,6 +4,8 @@ import com.quizapp.dto.DailyQuizAttemptDetailDto;
 import com.quizapp.dto.DailyQuizDayAttemptsDto;
 import com.quizapp.dto.DailyQuizPendingAttemptDto;
 import com.quizapp.dto.DailyQuizResolveRequest;
+import com.quizapp.dto.DailyQuizReviewDto;
+import com.quizapp.service.DailyQuizComplaintService;
 import com.quizapp.service.DailyQuizReviewService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +17,46 @@ import java.util.List;
 public class AdminDailyQuizController {
 
     private final DailyQuizReviewService dailyQuizReviewService;
+    private final DailyQuizComplaintService complaintService;
 
-    public AdminDailyQuizController(DailyQuizReviewService dailyQuizReviewService) {
+    public AdminDailyQuizController(DailyQuizReviewService dailyQuizReviewService, DailyQuizComplaintService complaintService) {
         this.dailyQuizReviewService = dailyQuizReviewService;
+        this.complaintService = complaintService;
+    }
+
+    // ---- per-answer review: each distinct answer once, decided for everybody who wrote it ----
+
+    @GetMapping("/answer-groups")
+    public DailyQuizReviewDto.AnswerGroups answerGroups() {
+        return dailyQuizReviewService.listAnswerGroups();
+    }
+
+    @PostMapping("/answer-groups/decide")
+    public DailyQuizReviewDto.Changed decideGroup(@RequestBody DailyQuizReviewDto.DecideGroupRequest request) {
+        return new DailyQuizReviewDto.Changed(dailyQuizReviewService.decideGroup(
+                request.questionId(), request.text(), request.correct(), request.remember()));
+    }
+
+    @PostMapping("/answer-groups/accept-typos")
+    public DailyQuizReviewDto.Changed acceptTypos(@RequestBody DailyQuizReviewDto.AcceptTyposRequest request) {
+        return new DailyQuizReviewDto.Changed(dailyQuizReviewService.acceptLikelyTypos(request.setId()));
+    }
+
+    // ---- complaints ("be om ny vurdering") ----
+
+    @GetMapping("/complaints")
+    public List<DailyQuizReviewDto.Complaint> complaints() {
+        return complaintService.listOpen();
+    }
+
+    @PostMapping("/complaints/{id}/accept")
+    public DailyQuizReviewDto.Changed acceptComplaint(@PathVariable Long id, @RequestBody DailyQuizReviewDto.AcceptComplaintRequest request) {
+        return new DailyQuizReviewDto.Changed(complaintService.accept(id, request.remember()));
+    }
+
+    @PostMapping("/complaints/{id}/reject")
+    public void rejectComplaint(@PathVariable Long id, @RequestBody DailyQuizReviewDto.RejectComplaintRequest request) {
+        complaintService.reject(id, request.note());
     }
 
     @GetMapping("/pending-attempts")

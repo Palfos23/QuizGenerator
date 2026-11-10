@@ -437,6 +437,18 @@ a.dq-row:hover, .dq-row--link:hover {
 .dq-answer-line .label { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; min-width: 5.2em; }
 .dq-answer-end { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
 
+.dq-complaint { margin-top: 10px; font-size: 0.9rem; }
+.dq-complaint-link { background: none; border: none; padding: 0; color: var(--text-dim); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font: inherit; }
+.dq-complaint-link:hover { color: var(--text); }
+.dq-complaint-status { margin: 0; color: var(--text-dim); overflow-wrap: anywhere; }
+.dq-complaint-status.is-ok { color: var(--teal-ink, var(--teal)); font-weight: 600; }
+.dq-complaint-form { display: grid; gap: 6px; }
+.dq-complaint-form label { font-size: 0.82rem; color: var(--text-dim); }
+.dq-complaint-form textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--rule); border-radius: 2px; background: var(--field-bg); color: var(--text); font: inherit; resize: vertical; }
+.dq-complaint-form textarea:focus { outline: none; box-shadow: 3px 3px 0 var(--gold); }
+.dq-complaint-actions { display: flex; gap: 8px; }
+.dq-complaint-hint { margin: 0 0 12px; color: var(--text-dim); font-size: 0.92rem; }
+
 .dq-result-list { display: flex; flex-direction: column; gap: 10px; }
 
 /* ---------- Leaderboard (shared by the modal and the weekly panel) ---------- */

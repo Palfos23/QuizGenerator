@@ -27,6 +27,11 @@ public class DailyQuizAnswer {
     @Column(nullable = false)
     private DailyQuizAnswerVerdict verdict = DailyQuizAnswerVerdict.PENDING;
 
+    // How it was graded (see DailyQuizDecisionSource). Nullable: this column was added after answers already existed.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "decided_by", length = 20)
+    private DailyQuizDecisionSource decidedBy;
+
     // Points this answer earns IF its verdict is CORRECT - 1 for an ordinary question, 1 or 2 for the
     // daily Year question (see DailyQuizScoring). The database-level default of 1 matters: this
     // column was added to a table that already held rows, and under ddl-auto=update a NOT NULL
@@ -37,6 +42,14 @@ public class DailyQuizAnswer {
 
     public Long getId() {
         return id;
+    }
+
+    public DailyQuizDecisionSource getDecidedBy() {
+        return decidedBy;
+    }
+
+    public void setDecidedBy(DailyQuizDecisionSource decidedBy) {
+        this.decidedBy = decidedBy;
     }
 
     public int getPoints() {

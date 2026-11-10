@@ -672,6 +672,31 @@ export default {
     return client.post(`/admin/advent/days/${day}/approve`, { approved }).then(r => r.data)
   },
 
+  // --- Daily quiz: asking for another look at a wrong answer ---
+  complainAboutDailyQuizAnswer(setId, answerId, comment) {
+    return client.post(`/daily-quiz/${setId}/answers/${answerId}/complaint`, { comment }).then(r => r.data)
+  },
+
+  // --- Daily quiz: admin per-answer review and complaints ---
+  adminGetDailyQuizAnswerGroups() {
+    return client.get('/admin/daily-quiz/answer-groups').then(r => r.data)
+  },
+  adminDecideDailyQuizAnswerGroup(questionId, text, correct, remember) {
+    return client.post('/admin/daily-quiz/answer-groups/decide', { questionId, text, correct, remember }).then(r => r.data)
+  },
+  adminAcceptDailyQuizTypos(setId) {
+    return client.post('/admin/daily-quiz/answer-groups/accept-typos', { setId }).then(r => r.data)
+  },
+  adminListDailyQuizComplaints() {
+    return client.get('/admin/daily-quiz/complaints').then(r => r.data)
+  },
+  adminAcceptDailyQuizComplaint(id, remember) {
+    return client.post(`/admin/daily-quiz/complaints/${id}/accept`, { remember }).then(r => r.data)
+  },
+  adminRejectDailyQuizComplaint(id, note) {
+    return client.post(`/admin/daily-quiz/complaints/${id}/reject`, { note })
+  },
+
   // --- Daily quiz: admin review of non-exact answers ---
   adminListDailyQuizPendingAttempts() {
     return client.get('/admin/daily-quiz/pending-attempts').then(r => r.data)

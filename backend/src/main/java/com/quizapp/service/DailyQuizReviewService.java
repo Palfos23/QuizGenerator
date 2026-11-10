@@ -11,14 +11,26 @@ import com.quizapp.model.DailyQuizAnswer;
 import com.quizapp.model.DailyQuizAnswerVerdict;
 import com.quizapp.model.DailyQuizAttempt;
 import com.quizapp.model.DailyQuizAttemptStatus;
+import com.quizapp.model.DailyQuizAnswerRule;
+import com.quizapp.model.DailyQuizComplaint;
+import com.quizapp.model.DailyQuizDecisionSource;
 import com.quizapp.model.DailyQuizSet;
+import com.quizapp.dto.DailyQuizReviewDto;
 import com.quizapp.repository.DailyQuizAnswerRepository;
+import com.quizapp.repository.DailyQuizAnswerRuleRepository;
+import com.quizapp.repository.DailyQuizComplaintRepository;
 import com.quizapp.repository.DailyQuizAttemptRepository;
 import com.quizapp.repository.DailyQuizSetRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,17 +48,23 @@ public class DailyQuizReviewService {
     private final DailyQuizSetRepository setRepository;
     private final DailyQuizService dailyQuizService;
     private final QuestionRepository questionRepository;
+    private final DailyQuizAnswerRuleRepository ruleRepository;
+    private final DailyQuizComplaintRepository complaintRepository;
 
     public DailyQuizReviewService(DailyQuizAnswerRepository answerRepository,
                                    DailyQuizAttemptRepository attemptRepository,
                                    DailyQuizSetRepository setRepository,
                                    DailyQuizService dailyQuizService,
-                                   QuestionRepository questionRepository) {
+                                   QuestionRepository questionRepository,
+                                   DailyQuizAnswerRuleRepository ruleRepository,
+                                   DailyQuizComplaintRepository complaintRepository) {
         this.answerRepository = answerRepository;
         this.attemptRepository = attemptRepository;
         this.setRepository = setRepository;
         this.dailyQuizService = dailyQuizService;
         this.questionRepository = questionRepository;
+        this.ruleRepository = ruleRepository;
+        this.complaintRepository = complaintRepository;
     }
 
     // How each of the day's questions went (see DailyQuizService#questionStats) - shown next to the question
@@ -182,28 +200,165 @@ public class DailyQuizReviewService {
         if (!isReviewable(answer)) {
             throw new IllegalStateException("Dette svaret rettes automatisk og kan ikke endres.");
         }
-        DailyQuizAnswerVerdict decision = correct ? DailyQuizAnswerVerdict.CORRECT : DailyQuizAnswerVerdict.INCORRECT;
-        if (answer.getVerdict() == decision) {
-            return; // already decided that way (a double click, or a page that was a little stale)
+        if (setVerdict(answer, correct, DailyQuizDecisionSource.ADMIN)) {
+            afterDecision(answer.getAttempt());
         }
+    }
+
+    /**
+     * Records a verdict on one answer. Returns false when nothing changed (already decided that way - a double click, or
+     * a page that was a little stale). A complaint still waiting on an answer that is now correct is settled in the
+     * player's favour, since that is exactly what they asked for.
+     */
+    boolean setVerdict(DailyQuizAnswer answer, boolean correct, DailyQuizDecisionSource source) {
+        DailyQuizAnswerVerdict decision = correct ? DailyQuizAnswerVerdict.CORRECT : DailyQuizAnswerVerdict.INCORRECT;
+        if (answer.getVerdict() == decision) return false;
         answer.setVerdict(decision);
         answer.setPoints(1); // an ordinary question is worth 1 when correct
+        answer.setDecidedBy(source);
         answerRepository.save(answer);
-
-        // Nothing left waiting: grade the attempt - for the first time, or again if this was a change
-        // to one that was already graded.
-        long stillPending = answerRepository.countByAttempt_IdAndVerdict(
-                answer.getAttempt().getId(), DailyQuizAnswerVerdict.PENDING);
-        if (stillPending == 0) {
-            var attempt = answer.getAttempt();
-            // Worth telling the player about: their score just became final, or an admin changed it.
-            boolean firstGrading = attempt.getStatus() != DailyQuizAttemptStatus.GRADED;
-            int scoreBefore = attempt.getScore();
-            dailyQuizService.gradeAttempt(attempt);
-            if (firstGrading || attempt.getScore() != scoreBefore) {
-                attempt.setReviewResultUnseen(true);
-            }
-            attemptRepository.save(attempt);
+        if (correct) {
+            complaintRepository.findByAnswer_Id(answer.getId())
+                    .filter(c -> c.getStatus() == DailyQuizComplaint.Status.OPEN)
+                    .ifPresent(c -> {
+                        c.setStatus(DailyQuizComplaint.Status.ACCEPTED);
+                        c.setResolvedAt(Instant.now());
+                        complaintRepository.save(c);
+                    });
         }
+        return true;
+    }
+
+    /**
+     * Once nothing is left waiting on an attempt, grade it - for the first time, or again when a decision on an
+     * already-graded one changed. Worth telling the player about: their score just became final, or it moved.
+     */
+    void afterDecision(DailyQuizAttempt attempt) {
+        long stillPending = answerRepository.countByAttempt_IdAndVerdict(attempt.getId(), DailyQuizAnswerVerdict.PENDING);
+        if (stillPending != 0) return;
+        boolean firstGrading = attempt.getStatus() != DailyQuizAttemptStatus.GRADED;
+        int scoreBefore = attempt.getScore();
+        dailyQuizService.gradeAttempt(attempt);
+        if (firstGrading || attempt.getScore() != scoreBefore) {
+            attempt.setReviewResultUnseen(true);
+        }
+        attemptRepository.save(attempt);
+    }
+
+    // ------------------------------------------------------------------ per-answer review
+
+    /**
+     * Every answer the admin may judge, across the quizzes still around, grouped by day, question and - the point of it -
+     * by what was written: the same answer from 30 players is one line, decided once. Pending groups come first, the ones
+     * that look like a typo of the right answer leading them.
+     */
+    @Transactional(readOnly = true)
+    public DailyQuizReviewDto.AnswerGroups listAnswerGroups() {
+        return buildGroups();
+    }
+
+    private DailyQuizReviewDto.AnswerGroups buildGroups() {
+        List<DailyQuizSet> sets = setRepository.findAll().stream()
+                .filter(set -> !DailyQuizService.isExpired(set.getQuizDate()))
+                .sorted(Comparator.comparing(DailyQuizSet::getQuizDate).reversed())
+                .collect(Collectors.toList());
+        List<DailyQuizReviewDto.Day> days = new ArrayList<>();
+        int pendingTotal = 0;
+        int typoTotal = 0;
+        for (DailyQuizSet set : sets) {
+            List<Long> attemptIds = attemptRepository.findBySet_Id(set.getId()).stream()
+                    .filter(a -> a.getStatus() != DailyQuizAttemptStatus.IN_PROGRESS)
+                    .map(DailyQuizAttempt::getId).collect(Collectors.toList());
+            if (attemptIds.isEmpty()) continue;
+            Map<Long, List<DailyQuizAnswer>> byQuestion = answerRepository.findByAttempt_IdIn(attemptIds).stream()
+                    .filter(DailyQuizReviewService::isReviewable)
+                    .collect(Collectors.groupingBy(a -> a.getQuestion().getId()));
+            if (byQuestion.isEmpty()) continue;
+            Map<Long, Map<String, Boolean>> rules = new HashMap<>();
+            ruleRepository.findByQuestionIdIn(byQuestion.keySet()).forEach(r ->
+                    rules.computeIfAbsent(r.getQuestionId(), k -> new HashMap<>()).put(r.getNormalizedText(), r.isCorrect()));
+
+            List<DailyQuizReviewDto.QuestionGroups> questions = new ArrayList<>();
+            int dayPending = 0;
+            for (int i = 0; i < set.getQuestionIds().size(); i++) {
+                Long questionId = set.getQuestionIds().get(i);
+                List<DailyQuizAnswer> answers = byQuestion.get(questionId);
+                if (answers == null) continue;
+                Question question = answers.get(0).getQuestion();
+                Map<String, List<DailyQuizAnswer>> grouped = answers.stream()
+                        .collect(Collectors.groupingBy(a -> AnswerText.key(a.getAnswerText()), LinkedHashMap::new, Collectors.toList()));
+                List<DailyQuizReviewDto.Group> groups = new ArrayList<>();
+                for (Map.Entry<String, List<DailyQuizAnswer>> g : grouped.entrySet()) {
+                    List<DailyQuizAnswer> list = g.getValue();
+                    int pending = (int) list.stream().filter(a -> a.getVerdict() == DailyQuizAnswerVerdict.PENDING).count();
+                    int correct = (int) list.stream().filter(a -> a.getVerdict() == DailyQuizAnswerVerdict.CORRECT).count();
+                    groups.add(new DailyQuizReviewDto.Group(mostCommonSpelling(list), g.getKey(), list.size(), pending, correct,
+                            list.size() - pending - correct, AnswerText.likelyTypo(list.get(0).getAnswerText(), question.getAnswer()),
+                            rules.getOrDefault(questionId, Map.of()).get(g.getKey())));
+                }
+                groups.sort(Comparator.comparing((DailyQuizReviewDto.Group x) -> x.pendingCount() == 0)
+                        .thenComparing(x -> !x.likelyTypo())
+                        .thenComparing(Comparator.comparingInt(DailyQuizReviewDto.Group::count).reversed())
+                        .thenComparing(DailyQuizReviewDto.Group::key));
+                dayPending += groups.stream().mapToInt(DailyQuizReviewDto.Group::pendingCount).sum();
+                typoTotal += groups.stream().filter(x -> x.pendingCount() > 0 && x.likelyTypo()).mapToInt(DailyQuizReviewDto.Group::pendingCount).sum();
+                questions.add(new DailyQuizReviewDto.QuestionGroups(questionId, i + 1, question.getQuestionText(), question.getAnswer(), groups));
+            }
+            pendingTotal += dayPending;
+            days.add(new DailyQuizReviewDto.Day(set.getId(), set.getQuizDate(), dayPending, questions));
+        }
+        return new DailyQuizReviewDto.AnswerGroups(days, pendingTotal, typoTotal);
+    }
+
+    private static String mostCommonSpelling(List<DailyQuizAnswer> list) {
+        return list.stream().collect(Collectors.groupingBy(a -> a.getAnswerText().trim(), Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.<String, Long>comparingByValue().thenComparing(Map.Entry.comparingByKey()))
+                .orElseThrow().getKey();
+    }
+
+    /**
+     * Decides one answer to one question for everybody who wrote it (anywhere the quiz still exists), and - when asked to
+     * remember - for everybody who writes it later too. Returns how many answers changed.
+     */
+    @Transactional
+    public int decideGroup(Long questionId, String text, boolean correct, boolean remember) {
+        String key = AnswerText.key(text);
+        if (key.isEmpty()) throw new IllegalArgumentException("Mangler svaret.");
+        if (remember) {
+            DailyQuizAnswerRule rule = ruleRepository.findByQuestionIdAndNormalizedText(questionId, key).orElseGet(DailyQuizAnswerRule::new);
+            rule.setQuestionId(questionId);
+            rule.setNormalizedText(key);
+            rule.setCorrect(correct);
+            ruleRepository.save(rule);
+        }
+        Set<DailyQuizAttempt> affected = new LinkedHashSet<>();
+        int changed = 0;
+        for (DailyQuizAnswer a : answerRepository.findByQuestion_Id(questionId)) {
+            if (DailyQuizService.isExpired(a.getAttempt().getSet().getQuizDate())) continue;
+            if (a.getAttempt().getStatus() == DailyQuizAttemptStatus.IN_PROGRESS) continue;
+            if (!isReviewable(a) || !AnswerText.key(a.getAnswerText()).equals(key)) continue;
+            if (setVerdict(a, correct, remember ? DailyQuizDecisionSource.RULE : DailyQuizDecisionSource.ADMIN)) {
+                changed++;
+                affected.add(a.getAttempt());
+            }
+        }
+        affected.forEach(this::afterDecision);
+        return changed;
+    }
+
+    /** Accepts, and remembers, every waiting answer that looks like a misspelling of the right one (optionally one day only). */
+    @Transactional
+    public int acceptLikelyTypos(Long setId) {
+        int changed = 0;
+        for (DailyQuizReviewDto.Day day : buildGroups().days()) {
+            if (setId != null && !setId.equals(day.setId())) continue;
+            for (DailyQuizReviewDto.QuestionGroups q : day.questions()) {
+                for (DailyQuizReviewDto.Group g : q.groups()) {
+                    if (g.pendingCount() > 0 && g.likelyTypo()) changed += decideGroup(q.questionId(), g.text(), true, true);
+                }
+            }
+        }
+        return changed;
     }
 }

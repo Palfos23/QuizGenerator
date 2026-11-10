@@ -11,6 +11,8 @@ import com.quizapp.exception.ResourceNotFoundException;
 import com.quizapp.model.*;
 import com.quizapp.repository.AppUserRepository;
 import com.quizapp.repository.DailyQuizAnswerRepository;
+import com.quizapp.repository.DailyQuizAnswerRuleRepository;
+import com.quizapp.repository.DailyQuizComplaintRepository;
 import com.quizapp.repository.DailyQuizAttemptRepository;
 import com.quizapp.repository.DailyQuizQuestionUseRepository;
 import com.quizapp.repository.DailyQuizSetRepository;
@@ -78,6 +80,8 @@ public class DailyQuizService {
     private final DailyQuizResultService resultService;
     private final ExpertConfig expertConfig;
     private final DailyQuizQuestionUseRepository questionUseRepository;
+    private final DailyQuizAnswerRuleRepository answerRuleRepository;
+    private final DailyQuizComplaintRepository complaintRepository;
 
     public DailyQuizService(DailyQuizSetRepository setRepository,
                              DailyQuizAttemptRepository attemptRepository,
@@ -87,7 +91,9 @@ public class DailyQuizService {
                              AdminNotificationService adminNotificationService,
                              DailyQuizResultService resultService,
                              ExpertConfig expertConfig,
-                             DailyQuizQuestionUseRepository questionUseRepository) {
+                             DailyQuizQuestionUseRepository questionUseRepository,
+                             DailyQuizAnswerRuleRepository answerRuleRepository,
+                             DailyQuizComplaintRepository complaintRepository) {
         this.setRepository = setRepository;
         this.attemptRepository = attemptRepository;
         this.answerRepository = answerRepository;
@@ -97,6 +103,8 @@ public class DailyQuizService {
         this.resultService = resultService;
         this.expertConfig = expertConfig;
         this.questionUseRepository = questionUseRepository;
+        this.answerRuleRepository = answerRuleRepository;
+        this.complaintRepository = complaintRepository;
     }
 
     @Transactional
@@ -228,6 +236,7 @@ public class DailyQuizService {
 
         // Children before parents: answers -> attempts -> sets.
         if (!attemptIds.isEmpty()) {
+            complaintRepository.deleteByAnswer_Attempt_IdIn(attemptIds); // they reference the answers
             answerRepository.deleteByAttempt_IdIn(attemptIds);
         }
         attemptRepository.deleteAll(attempts);
@@ -401,6 +410,11 @@ public class DailyQuizService {
         result.setPendingCount((int) answers.stream().filter(a -> a.getVerdict() == DailyQuizAnswerVerdict.PENDING).count());
         // Not simply "number of answers": the Year question is worth up to 2.
         result.setMaxScore(answers.stream().mapToInt(a -> DailyQuizScoring.maxPoints(a.getQuestion())).sum());
+        Map<Long, DailyQuizComplaint> complaints = graded
+                ? complaintRepository.findByAnswer_Attempt_Id(attempt.getId()).stream().collect(Collectors.toMap(c -> c.getAnswer().getId(), c -> c))
+                : Map.of();
+        int complaintsLeft = graded ? Math.max(0, DailyQuizComplaintService.MAX_COMPLAINTS_PER_ATTEMPT - complaints.size()) : 0;
+        result.setComplaintsLeft(complaintsLeft);
         List<DailyQuizResultDto.AnswerResultDto> rows = new ArrayList<>();
         for (int i = 0; i < answers.size(); i++) {
             DailyQuizAnswer a = answers.get(i);
@@ -416,6 +430,15 @@ public class DailyQuizService {
             if (stat != null) {
                 row.setPercentCorrect(stat.getPercentCorrect());
                 row.setPlayersCounted(stat.getPlayers());
+            }
+            if (graded) {
+                row.setAnswerId(a.getId());
+                DailyQuizComplaint complaint = complaints.get(a.getId());
+                if (complaint != null) {
+                    row.setComplaintStatus(complaint.getStatus().name());
+                    row.setComplaintNote(complaint.getAdminNote());
+                }
+                row.setCanComplain(complaint == null && complaintsLeft > 0 && DailyQuizComplaintService.isComplainable(a));
             }
             rows.add(row);
         }
@@ -453,6 +476,11 @@ public class DailyQuizService {
                 .collect(Collectors.toMap(DailyQuizSubmitRequest.AnswerSubmission::getQuestionId,
                         a -> a.getAnswerText() == null ? "" : a.getAnswerText(), (a, b) -> a));
 
+        // answers the admin has asked to remember: question id -> normalised answer -> right or wrong
+        Map<Long, Map<String, Boolean>> rules = new java.util.HashMap<>();
+        answerRuleRepository.findByQuestionIdIn(set.getQuestionIds()).forEach(r ->
+                rules.computeIfAbsent(r.getQuestionId(), k -> new java.util.HashMap<>()).put(r.getNormalizedText(), r.isCorrect()));
+
         int pendingCount = 0;
         for (Long questionId : set.getQuestionIds()) {
             Question question = byId.get(questionId);
@@ -475,6 +503,16 @@ public class DailyQuizService {
                 answer.setPoints(points);
             } else if (trimmed.equalsIgnoreCase(question.getAnswer().trim())) {
                 answer.setVerdict(DailyQuizAnswerVerdict.CORRECT);
+                answer.setDecidedBy(DailyQuizDecisionSource.EXACT);
+            } else if (AnswerText.normalize(trimmed).equals(AnswerText.normalize(question.getAnswer())) && !AnswerText.normalize(trimmed).isEmpty()) {
+                // "alesund" for "Ålesund", "oslo." for "Oslo": the same answer, only written differently
+                answer.setVerdict(DailyQuizAnswerVerdict.CORRECT);
+                answer.setDecidedBy(DailyQuizDecisionSource.NORMALIZED);
+            } else if (rules.getOrDefault(questionId, Map.of()).containsKey(AnswerText.key(trimmed))) {
+                // somebody has already decided exactly this answer to this question
+                boolean correct = rules.get(questionId).get(AnswerText.key(trimmed));
+                answer.setVerdict(correct ? DailyQuizAnswerVerdict.CORRECT : DailyQuizAnswerVerdict.INCORRECT);
+                answer.setDecidedBy(DailyQuizDecisionSource.RULE);
             } else {
                 answer.setVerdict(DailyQuizAnswerVerdict.PENDING);
                 pendingCount++;

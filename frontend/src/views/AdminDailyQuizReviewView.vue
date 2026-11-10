@@ -8,6 +8,11 @@
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
+    <router-link to="/admin/daily-quiz-answers" class="dq-card dq-card--flat" style="display:block; margin-bottom:18px; text-decoration:none; color:inherit;">
+      <strong>{{ $t('Raskere: rett svar per svar') }}</strong><br />
+      {{ $t('Hvert ulike svar vises én gang og rettes for alle som skrev det. Her ligger også klagene fra spillerne.') }}
+    </router-link>
+
     <h2 class="dq-section-title" style="margin-top:8px;">
       {{ $t('Venter på gjennomgang§AdminDailyQuizReviewViewT') }}
       <span v-if="pendingAttempts.length" class="dq-pill dq-pill--wait">{{ pendingAttempts.length }}</span>

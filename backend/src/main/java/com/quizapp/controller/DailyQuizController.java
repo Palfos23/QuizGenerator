@@ -5,6 +5,8 @@ import com.quizapp.dto.DailyQuizScoreboardDto;
 import com.quizapp.dto.DailyQuizSetSummaryDto;
 import com.quizapp.dto.DailyQuizSubmitRequest;
 import com.quizapp.dto.DailyQuizWeeklyDto;
+import com.quizapp.dto.DailyQuizReviewDto;
+import com.quizapp.service.DailyQuizComplaintService;
 import com.quizapp.service.DailyQuizService;
 import com.quizapp.service.DailyQuizWeeklyService;
 import jakarta.validation.Valid;
@@ -19,10 +21,20 @@ public class DailyQuizController {
 
     private final DailyQuizService dailyQuizService;
     private final DailyQuizWeeklyService dailyQuizWeeklyService;
+    private final DailyQuizComplaintService complaintService;
 
-    public DailyQuizController(DailyQuizService dailyQuizService, DailyQuizWeeklyService dailyQuizWeeklyService) {
+    public DailyQuizController(DailyQuizService dailyQuizService, DailyQuizWeeklyService dailyQuizWeeklyService,
+                               DailyQuizComplaintService complaintService) {
         this.dailyQuizService = dailyQuizService;
         this.dailyQuizWeeklyService = dailyQuizWeeklyService;
+        this.complaintService = complaintService;
+    }
+
+    // "Be om ny vurdering" on one of your wrong answers; answers with the updated result.
+    @PostMapping("/{id}/answers/{answerId}/complaint")
+    public DailyQuizPlayStateDto complain(@PathVariable Long id, @PathVariable Long answerId,
+                                          @RequestBody DailyQuizReviewDto.ComplaintRequest request, Authentication authentication) {
+        return complaintService.complain(id, answerId, authentication.getName(), request.comment());
     }
 
     @GetMapping("/active")

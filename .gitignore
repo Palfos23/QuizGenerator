@@ -1,1 +1,5 @@
 node_modules/
+
+# Build output - the GitHub Pages workflow builds its own copy; the backend is built by Maven
+frontend/dist/
+backend/target/

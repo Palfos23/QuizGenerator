@@ -13,6 +13,7 @@ import com.quizapp.repository.AppUserRepository;
 import com.quizapp.repository.DailyQuizAnswerRepository;
 import com.quizapp.repository.DailyQuizAttemptRepository;
 import com.quizapp.repository.AdventDayRepository;
+import com.quizapp.repository.DailyQuizComplaintRepository;
 import com.quizapp.repository.AdventEntryRepository;
 import com.quizapp.repository.AdventProfileRepository;
 import com.quizapp.repository.DailyQuizResultRepository;
@@ -47,6 +48,7 @@ public class AccountService {
     private final DailyQuizAnswerRepository dailyQuizAnswerRepository;
     private final DailyQuizResultRepository dailyQuizResultRepository;
     private final AdventDayRepository adventDayRepository;
+    private final DailyQuizComplaintRepository dailyQuizComplaintRepository;
     private final AdventEntryRepository adventEntryRepository;
     private final AdventProfileRepository adventProfileRepository;
     private final PasswordEncoder passwordEncoder;
@@ -62,6 +64,7 @@ public class AccountService {
                            DailyQuizAnswerRepository dailyQuizAnswerRepository,
                            DailyQuizResultRepository dailyQuizResultRepository,
                            AdventDayRepository adventDayRepository,
+                           DailyQuizComplaintRepository dailyQuizComplaintRepository,
                            AdventEntryRepository adventEntryRepository,
                            AdventProfileRepository adventProfileRepository,
                            PasswordEncoder passwordEncoder,
@@ -77,6 +80,7 @@ public class AccountService {
         this.dailyQuizAnswerRepository = dailyQuizAnswerRepository;
         this.dailyQuizResultRepository = dailyQuizResultRepository;
         this.adventDayRepository = adventDayRepository;
+        this.dailyQuizComplaintRepository = dailyQuizComplaintRepository;
         this.adventEntryRepository = adventEntryRepository;
         this.adventProfileRepository = adventProfileRepository;
         this.passwordEncoder = passwordEncoder;
@@ -194,8 +198,10 @@ public class AccountService {
         gridAttemptRepository.deleteAll(gridAttemptRepository.findByUser_Email(email));
         lineupAttemptRepository.deleteAll(lineupAttemptRepository.findByUser_Email(email));
         // Answers reference their attempt with a non-nullable FK - must go first.
-        dailyQuizAttemptRepository.findByUser_Email(email)
-                .forEach(a -> dailyQuizAnswerRepository.deleteByAttempt_Id(a.getId()));
+        dailyQuizAttemptRepository.findByUser_Email(email).forEach(a -> {
+            dailyQuizComplaintRepository.deleteByAnswer_Attempt_Id(a.getId()); // complaints reference the answers
+            dailyQuizAnswerRepository.deleteByAttempt_Id(a.getId());
+        });
         dailyQuizAttemptRepository.deleteAll(dailyQuizAttemptRepository.findByUser_Email(email));
         // Keyed by user id with no foreign key (see DailyQuizResult), so nothing cleans these up for us.
         dailyQuizResultRepository.deleteByUserId(user.getId());

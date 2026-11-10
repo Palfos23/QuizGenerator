@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import QuizGeneratorView from '../views/QuizGeneratorView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import MultiplayerGridView from '../views/MultiplayerGridView.vue'
+import AdminDailyQuizAnswersView from '../views/AdminDailyQuizAnswersView.vue'
 import AdminView from '../views/AdminView.vue'
 import HomeView from '../views/HomeView.vue'
 import AdminLoginView from '../views/AdminLoginView.vue'
@@ -114,6 +115,7 @@ const routes = [
   { path: '/admin/tension-categories', name: 'admin-tension-categories', component: AdminTensionCategoriesView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/suggest-question', name: 'suggest-question', component: SuggestQuestionView, meta: { requiresAuth: true } },
   { path: '/admin/question-submissions', name: 'admin-question-submissions', component: AdminSubmissionsView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/daily-quiz-answers', name: 'admin-daily-quiz-answers', component: AdminDailyQuizAnswersView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/daily-quiz-review', name: 'admin-daily-quiz-review', component: AdminDailyQuizReviewView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/daily-quiz-day/:id', name: 'admin-daily-quiz-day', component: AdminDailyQuizDayView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/daily-quiz-review/:id', name: 'admin-daily-quiz-attempt', component: AdminDailyQuizAttemptView, meta: { requiresAuth: true, requiresAdmin: true } },

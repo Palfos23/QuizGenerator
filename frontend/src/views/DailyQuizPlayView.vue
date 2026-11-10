@@ -130,6 +130,10 @@
           :your-value="state.result.score"
         />
 
+        <p v-if="!underReview && state.result.complaintsLeft > 0 && hasWrongAnswer" class="dq-complaint-hint">
+          {{ $t('Mener du at et av svarene dine ble rettet feil? Du kan be om ny vurdering av {0} svar til.¦Mener du at et av svarene dine ble rettet feil? Du kan be om ny vurdering av {0} svar til.', [state.result.complaintsLeft]) }}
+        </p>
+
         <div class="dq-result-list">
           <article
             v-for="a in state.result.answers"
@@ -150,6 +154,28 @@
                 <b>{{ a.correctAnswer }}</b>
               </div>
               <DailyQuizEasyMeter :percent="a.percentCorrect" :players="a.playersCounted" />
+
+              <!-- Disagree with how this one was graded? -->
+              <div v-if="!underReview && a.verdict === 'INCORRECT' && !a.yearQuestion && (a.canComplain || a.complaintStatus)" class="dq-complaint">
+                <p v-if="a.complaintStatus === 'OPEN'" class="dq-complaint-status">⏳ {{ $t('Du har bedt om ny vurdering - en administrator ser på det.') }}</p>
+                <p v-else-if="a.complaintStatus === 'ACCEPTED'" class="dq-complaint-status is-ok">✓ {{ $t('Klagen din ble godtatt - svaret regnes nå som riktig.') }}</p>
+                <p v-else-if="a.complaintStatus === 'REJECTED'" class="dq-complaint-status">
+                  {{ $t('Klagen din ble ikke tatt til følge.') }}<template v-if="a.complaintNote"> «{{ a.complaintNote }}»</template>
+                </p>
+                <template v-else>
+                  <button v-if="complaintFor !== a.answerId" type="button" class="dq-complaint-link" @click="openComplaint(a)">
+                    {{ $t('Uenig? Be om ny vurdering') }}
+                  </button>
+                  <div v-else class="dq-complaint-form">
+                    <label :for="'complaint-' + a.answerId">{{ $t('Hvorfor mener du at svaret ditt burde telle? (valgfritt)') }}</label>
+                    <textarea :id="'complaint-' + a.answerId" v-model="complaintText" rows="2" maxlength="300" :placeholder="$t('F.eks. «Jeg skrev det samme, bare med en annen skrivemåte»')"></textarea>
+                    <div class="dq-complaint-actions">
+                      <button type="button" class="btn btn-primary btn-sm" :disabled="complaining" @click="sendComplaint(a)">{{ complaining ? $t('Sender…') : $t('Send klage') }}</button>
+                      <button type="button" class="btn btn-secondary btn-sm" :disabled="complaining" @click="complaintFor = null">{{ $t('Avbryt') }}</button>
+                    </div>
+                  </div>
+                </template>
+              </div>
             </div>
             <div class="dq-answer-end">
               <template v-if="!underReview">
@@ -230,6 +256,30 @@ const error = ref('')
 const answers = reactive({})
 const submitting = ref(false)
 const showSubmitConfirm = ref(false)
+
+// ---- asking for another look at a wrong answer ----
+const complaintFor = ref(null) // the answer whose complaint form is open
+const complaintText = ref('')
+const complaining = ref(false)
+const hasWrongAnswer = computed(() => (state.value?.result?.answers || []).some(a => a.verdict === 'INCORRECT' && !a.yearQuestion && a.canComplain))
+
+function openComplaint(a) {
+  complaintFor.value = a.answerId
+  complaintText.value = ''
+}
+
+async function sendComplaint(a) {
+  complaining.value = true
+  try {
+    state.value = await api.complainAboutDailyQuizAnswer(quizId, a.answerId, complaintText.value)
+    complaintFor.value = null
+    toast.show(_t('Klagen er sendt - du får beskjed når en administrator har sett på den.'))
+  } catch (e) {
+    toast.show(e.response?.data?.message || _t('Kunne ikke sende klagen. Prøv igjen.'))
+  } finally {
+    complaining.value = false
+  }
+}
 
 useEscapeKey(() => { if (showSubmitConfirm.value && !submitting.value) showSubmitConfirm.value = false })
 

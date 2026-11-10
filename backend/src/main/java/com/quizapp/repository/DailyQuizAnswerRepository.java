@@ -20,6 +20,9 @@ public interface DailyQuizAnswerRepository extends JpaRepository<DailyQuizAnswer
 
     List<DailyQuizAnswer> findByVerdict(DailyQuizAnswerVerdict verdict);
 
+    // Every answer ever given to one question (admin review across days).
+    List<DailyQuizAnswer> findByQuestion_Id(Long questionId);
+
     long countByAttempt_IdAndVerdict(Long attemptId, DailyQuizAnswerVerdict verdict);
 
     // An attempt's score: the points of every answer judged CORRECT (a Year question can be

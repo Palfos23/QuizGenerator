@@ -1,0 +1,15 @@
+package com.quizapp.repository;
+
+import com.quizapp.model.DailyQuizAnswerRule;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+public interface DailyQuizAnswerRuleRepository extends JpaRepository<DailyQuizAnswerRule, Long> {
+
+    List<DailyQuizAnswerRule> findByQuestionIdIn(Collection<Long> questionIds);
+
+    Optional<DailyQuizAnswerRule> findByQuestionIdAndNormalizedText(Long questionId, String normalizedText);
+}

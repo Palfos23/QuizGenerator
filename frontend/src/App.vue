@@ -275,6 +275,7 @@ const ADMIN_MENUS = [
   {
     label: _t('Spill§AppJ'),
     items: [
+      { to: '/admin/daily-quiz-answers', label: _t('Rett svar per svar') },
       { to: '/admin/daily-quiz-review', label: _t('Gjennomgang av dagens quiz') },
       { to: '/admin/advent', label: _t('Julekalender') },
       { to: '/admin/grids', label: _t('Ukentlige grids') },
