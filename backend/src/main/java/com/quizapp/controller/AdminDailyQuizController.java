@@ -37,6 +37,11 @@ public class AdminDailyQuizController {
                 request.questionId(), request.text(), request.correct(), request.remember()));
     }
 
+    @PostMapping("/answer-groups/decide-many")
+    public DailyQuizReviewDto.Changed decideMany(@RequestBody DailyQuizReviewDto.DecideManyRequest request) {
+        return new DailyQuizReviewDto.Changed(dailyQuizReviewService.decideGroups(request.decisions()));
+    }
+
     @PostMapping("/answer-groups/accept-typos")
     public DailyQuizReviewDto.Changed acceptTypos(@RequestBody DailyQuizReviewDto.AcceptTyposRequest request) {
         return new DailyQuizReviewDto.Changed(dailyQuizReviewService.acceptLikelyTypos(request.setId()));

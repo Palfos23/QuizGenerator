@@ -13,6 +13,65 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="2.0935686274335463" />
+      <entry key="MS500" value="4.484805417168954" />
+      <entry key="S2" value="11.588880828703575" />
+      <entry key="S5" value="21.783423557005815" />
+      <entry key="S10" value="30.41680210828372" />
+      <entry key="S30" value="40.13068031520684" />
+      <entry key="S60" value="43.35516619118949" />
+      <entry key="M2" value="45.12111416332141" />
+      <entry key="M5" value="46.23435326187995" />
+      <entry key="M10" value="46.61478124693194" />
+      <entry key="M15" value="46.74265167365102" />
+      <entry key="M30" value="46.87105703950943" />
+      <entry key="H1" value="46.93546115389345" />
+      <entry key="H2" value="46.96771371461534" />
+      <entry key="H4" value="46.98385263914148" />
+      <entry key="D1" value="47.50366602804349" />
+      <entry key="W1" value="76.02749008848595" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.9927583151993664" />
+      <entry key="MS500" value="4.4296049883911675" />
+      <entry key="S2" value="11.554231850715356" />
+      <entry key="S5" value="21.755966139440044" />
+      <entry key="S10" value="30.39647389540381" />
+      <entry key="S30" value="40.121207770202005" />
+      <entry key="S60" value="43.349962623263984" />
+      <entry key="M2" value="45.11838266117922" />
+      <entry key="M5" value="46.233227712381094" />
+      <entry key="M10" value="46.61421282189686" />
+      <entry key="M15" value="46.74227145596434" />
+      <entry key="M30" value="46.870866293796084" />
+      <entry key="H1" value="46.93536562124701" />
+      <entry key="H2" value="46.96766590827293" />
+      <entry key="H4" value="46.983828725956506" />
+      <entry key="D1" value="47.50366199501164" />
+      <entry key="W1" value="76.02748914126965" />
+    </decayedShown>
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0,
   &quot;fromUser&quot;: false

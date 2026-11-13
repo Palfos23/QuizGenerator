@@ -238,6 +238,29 @@ class DailyQuizAnswerReviewTest {
     }
 
     @Test
+    void aBatchOfDecisionsIsAppliedInOneGoAcrossQuestions() {
+        Question q1 = question("Stavanger");
+        Question q2 = question("Oslo");
+        DailyQuizSet set = set(q1, q2);
+        AppUser a = user("Anna");
+        AppUser b = user("Bo");
+        submit(set, a, "Stavangr", "Olso");
+        submit(set, b, "Bergen", "Olso");
+
+        int changed = reviewService.decideGroups(List.of(
+                new DailyQuizReviewDto.DecideGroupRequest(q1.getId(), "Stavangr", true, true),
+                new DailyQuizReviewDto.DecideGroupRequest(q1.getId(), "Bergen", false, false),
+                new DailyQuizReviewDto.DecideGroupRequest(q2.getId(), "Olso", true, true)));
+
+        assertThat(changed).isEqualTo(4);
+        assertThat(attempt(set, a).getScore()).isEqualTo(2);
+        assertThat(attempt(set, b).getScore()).isEqualTo(1);
+        assertThat(attempt(set, a).getStatus()).isEqualTo(DailyQuizAttemptStatus.GRADED);
+        assertThat(ruleRepository.findByQuestionIdIn(List.of(q1.getId(), q2.getId()))).hasSize(2); // only the remembered ones
+        assertThat(reviewService.decideGroups(List.of())).isZero();
+    }
+
+    @Test
     void theBulkButtonAcceptsOnlyWhatLooksLikeATypo() {
         Question q = question("Stavanger");
         DailyQuizSet set = set(q);

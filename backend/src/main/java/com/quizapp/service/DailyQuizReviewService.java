@@ -347,6 +347,17 @@ public class DailyQuizReviewService {
         return changed;
     }
 
+    /** Applies a batch of group decisions in one transaction. Returns how many answers changed in all. */
+    @Transactional
+    public int decideGroups(List<DailyQuizReviewDto.DecideGroupRequest> decisions) {
+        if (decisions == null || decisions.size() > 500) throw new IllegalArgumentException("Ugyldig antall avgjørelser.");
+        int changed = 0;
+        for (DailyQuizReviewDto.DecideGroupRequest d : decisions) {
+            changed += decideGroup(d.questionId(), d.text(), d.correct(), d.remember());
+        }
+        return changed;
+    }
+
     /** Accepts, and remembers, every waiting answer that looks like a misspelling of the right one (optionally one day only). */
     @Transactional
     public int acceptLikelyTypos(Long setId) {

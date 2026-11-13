@@ -684,6 +684,9 @@ export default {
   adminDecideDailyQuizAnswerGroup(questionId, text, correct, remember) {
     return client.post('/admin/daily-quiz/answer-groups/decide', { questionId, text, correct, remember }).then(r => r.data)
   },
+  adminDecideDailyQuizAnswerGroups(decisions) {
+    return client.post('/admin/daily-quiz/answer-groups/decide-many', { decisions }).then(r => r.data)
+  },
   adminAcceptDailyQuizTypos(setId) {
     return client.post('/admin/daily-quiz/answer-groups/accept-typos', { setId }).then(r => r.data)
   },

@@ -24,6 +24,9 @@ public final class DailyQuizReviewDto {
 
     public record DecideGroupRequest(Long questionId, String text, boolean correct, boolean remember) {}
 
+    /** Several decisions at once - what the review page sends after a batch of quick clicks. */
+    public record DecideManyRequest(List<DecideGroupRequest> decisions) {}
+
     public record AcceptTyposRequest(Long setId) {}
 
     /** How many answers a bulk decision changed. */
