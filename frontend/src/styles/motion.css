@@ -83,6 +83,12 @@
 @media (max-width: 760px) { .modal { animation-name: sheet-in; } }
 .top-nav-dropdown-popup, .games-popup { overscroll-behavior: contain; }
 
+/* The sign-in popup leaves faster than it arrived: the backdrop fades while the card shrinks back a little */
+.dialog-leave-active { transition: opacity var(--dur-exit) var(--ease-in); }
+.dialog-leave-active .modal { transition: scale var(--dur-exit) var(--ease-in), translate var(--dur-exit) var(--ease-in); }
+.dialog-leave-to { opacity: 0; }
+.dialog-leave-to .modal { scale: 0.97; translate: 0 6px; }
+
 /* ---------- Page changes: old and new pages overlap (View Transitions API, see services/viewTransition.js) ---------- */
 @keyframes vt-out { to { opacity: 0; } }
 @keyframes vt-in { from { opacity: 0; } }

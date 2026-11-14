@@ -558,3 +558,13 @@ h1.page-title::before, .dashboard-hero h1::before {
   .top-nav .btn-sm { padding-inline: 10px; }
   .lang-toggle-btn { padding-inline: 8px; }
 }
+
+/* The header's sign-in button stays visible on phones, where the other nav buttons are hidden */
+.top-nav .btn.nav-login { display: inline-flex; margin-left: var(--space-3); }
+@media (max-width: 760px) {
+  .top-nav { padding-inline: 12px; gap: 4px; }
+  .top-nav .btn.nav-login { margin-left: auto; }
+  .palette-switch { --dot: 22px; --step: 26px; margin-left: 6px; }
+  .lang-toggle { margin-left: 6px; }
+  .lang-toggle-btn { padding-inline: 8px; }
+}

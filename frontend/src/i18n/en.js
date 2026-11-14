@@ -248,6 +248,7 @@ export default {
  "Bytt på å nevne noen nær målet. Hver runde blir den": "Take turns naming someone close to the target. Each round the",
  "Bytt på å nevne spillere som passer.": "Take turns naming players that fit.",
  "Fargetema": "Colour theme",
+ "Lukk§LoginDialogT": "Close",
  "CSV trenger minst kolonnene \"name\" og \"sport\".": "CSV needs at least \"name\" and \"sport\" columns.",
  "CSV-format: én rad per oppføring,": "CSV format: one row per entry,",
  "CSV-format: én rad per svar,": "CSV format: one row per answer,",

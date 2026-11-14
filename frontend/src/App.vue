@@ -67,6 +67,7 @@
       </template>
       <template v-else>
         <div class="top-nav-spacer"></div>
+        <button type="button" class="btn btn-primary btn-sm nav-login" @click="loginDialog.open()">{{ $t('Logg inn') }}</button>
       </template>
       <PaletteSwitcher />
       <LanguageToggle />
@@ -133,6 +134,7 @@
       <button v-if="auth.isAdmin.value || auth.isGuest.value" @click="logout">{{ auth.isGuest.value ? $t('Forlat') : $t('Logg ut') }}</button>
     </nav>
 
+    <LoginDialog />
     <ToastHost />
     <CookieConsentBanner />
 
@@ -168,6 +170,8 @@ import cookieConsent from './services/cookieConsent'
 import ToastHost from './components/ToastHost.vue'
 import LanguageToggle from './components/LanguageToggle.vue'
 import PaletteSwitcher from './components/PaletteSwitcher.vue'
+import LoginDialog from './components/LoginDialog.vue'
+import loginDialog from './services/loginDialog'
 import { popFromTrigger } from './composables/popFromTrigger'
 import CookieConsentBanner from './components/CookieConsentBanner.vue'
 import { useEscapeKey } from './composables/useEscapeKey'
