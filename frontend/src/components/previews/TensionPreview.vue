@@ -78,7 +78,7 @@ usePreviewLoop(rootEl, {
   inset: 0 32% 0 0;
   transition: inset 1.1s var(--ease-in-out);
   border-radius: 999px;
-  background: linear-gradient(90deg, rgb(var(--teal-rgb) / 0.25), var(--teal));
+  background: rgb(var(--teal-rgb) / 0.75);
 }
 .tp-danger {
   position: absolute;

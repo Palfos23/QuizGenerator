@@ -176,17 +176,8 @@ onBeforeUnmount(() => cancelAnimationFrame(rafId))
 .home-w > span { display: inline-block; animation: word-up 620ms var(--ease-out) backwards; }
 @keyframes word-up { from { translate: 0 110%; } }
 
-/* the main button gets a light sweep every few seconds */
-.home-cta .btn { position: relative; overflow: hidden; }
-.home-cta .btn::after {
-  content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
-  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.28), transparent);
-  transform: skewX(-18deg); pointer-events: none;
-  animation: shine 5.5s var(--ease-in-out) 2.4s infinite;
-}
-@keyframes shine { 0%, 40% { left: -60%; } 70%, 100% { left: 130%; } }
 
-@media (prefers-reduced-motion: reduce) { .home-w > span, .home-cta .btn::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .home-w > span { animation: none; } }
 
 .home-more h2 { font-size: 1.5rem; margin: 0 0 var(--space-5); max-width: 24ch; }
 .home-more-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-7); }

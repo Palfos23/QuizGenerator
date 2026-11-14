@@ -160,8 +160,7 @@
   overflow: hidden;
   padding: 26px;
   background:
-    radial-gradient(420px circle at 100% 0%, rgb(var(--gold-rgb) / 0.22), transparent 60%),
-    linear-gradient(160deg, rgb(var(--fg-rgb) / 0.13), rgb(var(--fg-rgb) / 0.07));
+    rgb(var(--fg-rgb) / 0.09);
 }
 .dq-today-date {
   font-family: var(--font-display);
@@ -209,7 +208,7 @@ a.dq-row:hover, .dq-row--link:hover {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3d4f9f, #5b8cff);
+  background: #4b6cc9;
   color: #fff;
   font-family: var(--font-display);
   font-weight: 700;
@@ -266,7 +265,7 @@ a.dq-row:hover, .dq-row--link:hover {
 .dq-progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #ffce3d, var(--dq-ok));
+  background: var(--dq-ok);
   transition: width 0.3s ease;
 }
 
@@ -373,13 +372,11 @@ a.dq-row:hover, .dq-row--link:hover {
   margin-bottom: 22px;
   padding: 26px;
   background:
-    radial-gradient(380px circle at 0% 0%, rgb(var(--teal-rgb) / 0.20), transparent 60%),
-    linear-gradient(160deg, rgb(var(--fg-rgb) / 0.13), rgb(var(--fg-rgb) / 0.07));
+    rgb(var(--teal-rgb) / 0.1);
 }
 .dq-score-hero--wait {
   background:
-    radial-gradient(380px circle at 0% 0%, rgb(var(--amber-rgb) / 0.20), transparent 60%),
-    linear-gradient(160deg, rgb(var(--fg-rgb) / 0.13), rgb(var(--fg-rgb) / 0.07));
+    rgb(var(--amber-rgb) / 0.1);
 }
 .dq-ring { position: relative; width: 132px; height: 132px; flex-shrink: 0; }
 .dq-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
@@ -488,13 +485,13 @@ a.dq-row:hover, .dq-row--link:hover {
   font-weight: 700;
   font-size: 0.88rem;
 }
-.dq-rank--1 { background: linear-gradient(135deg, #d8432b, #d8432b); color: var(--ink-raised); }
-.dq-rank--2 { background: linear-gradient(135deg, #1b1a17, #b4bbd3); color: #2a3150; }
-.dq-rank--3 { background: linear-gradient(135deg, #f0b98a, #c47d44); color: #3b1f08; }
+.dq-rank--1 { background: #d8432b; color: var(--ink-raised); }
+.dq-rank--2 { background: #b4bbd3; color: #2a3150; }
+.dq-rank--3 { background: #d99a66; color: #3b1f08; }
 .dq-board-name { font-weight: 650; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dq-board-name small { display: block; font-weight: 500; color: var(--text-dim); font-size: 0.78rem; }
 .dq-board-bar { height: 5px; border-radius: 999px; background: rgb(var(--fg-rgb) / 0.13); margin-top: 6px; overflow: hidden; }
-.dq-board-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #ffce3d, var(--dq-ok)); }
+.dq-board-bar i { display: block; height: 100%; border-radius: 999px; background: var(--dq-ok); }
 .dq-board-score { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; text-align: right; }
 .dq-board-score small { font-family: var(--font-body); font-weight: 500; font-size: 0.78rem; color: var(--text-dim); }
 .dq-board-gap { text-align: center; color: var(--text-dim); letter-spacing: 0.3em; line-height: 0.6; }
@@ -603,7 +600,7 @@ a.dq-row:hover, .dq-row--link:hover {
   width: 40px;
   height: 40px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #d8432b, #d8432b);
+  background: #d8432b;
   color: var(--ink-raised);
 }
 .dq-weekly-icon svg { width: 22px; height: 22px; }

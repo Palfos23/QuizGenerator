@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard" @pointermove="spot">
+  <div class="dashboard">
     <p class="dashboard-welcome">{{ $t('Velkommen tilbake,') }} <strong>{{ auth.state.displayName }}</strong></p>
 
     <div class="dashboard-hero-row">
@@ -177,15 +177,6 @@ function toColumns(cards) {
     columns.push(cards.slice(i, i + 2))
   }
   return columns
-}
-
-// The cursor spotlight on cards: remember where the pointer is inside the card it is over (the glow follows it in CSS)
-function spot(e) {
-  const card = e.target instanceof Element ? e.target.closest('.dashboard-feature-card, .dashboard-join-card, .dashboard-advent') : null
-  if (!card) return
-  const box = card.getBoundingClientRect()
-  card.style.setProperty('--mx', `${e.clientX - box.left}px`)
-  card.style.setProperty('--my', `${e.clientY - box.top}px`)
 }
 
 const dashboardSections = computed(() =>

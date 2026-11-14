@@ -95,7 +95,7 @@ const rows = [
   border-radius: var(--radius-sm);
   background:
     repeating-linear-gradient(0deg, rgb(var(--fg-rgb) / 0.07) 0 22px, transparent 22px 44px),
-    linear-gradient(180deg, var(--pitch-a), var(--pitch-b));
+    var(--pitch-a);
   border: 1px solid rgb(var(--fg-rgb) / 0.08);
 }
 .xp-row {
