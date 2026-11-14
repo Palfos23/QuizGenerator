@@ -10,7 +10,7 @@
       :aria-pressed="palette === p.id"
       :aria-label="p.name"
       :title="p.name"
-      :style="{ background: `conic-gradient(${p.swatch[0]} 0 34%, ${p.swatch[1]} 0 67%, ${p.swatch[2]} 0)` }"
+      :style="{ background: `conic-gradient(${p.swatch[0]} 0 25%, ${p.swatch[1]} 0 50%, ${p.swatch[2]} 0 75%, ${p.swatch[3]} 0)` }"
       @click="choose(p.id, $event)"
     />
   </div>

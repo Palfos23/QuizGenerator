@@ -585,3 +585,7 @@ a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
 /* "Logg ut" is the last thing in the header, after the language toggle */
 .nav-logout { margin-left: var(--space-3); flex-shrink: 0; }
 @media (min-width: 761px) and (max-width: 900px) { .nav-logout { margin-left: 4px; } }
+
+/* The secondary colour of each palette shows up where there are two of a kind */
+.home-more-list li:nth-child(even) .home-icon { background: rgb(var(--violet-rgb) / 0.13); color: var(--violet-ink); }
+.dashboard-side > :nth-child(2) { border-left: 4px solid var(--violet); }

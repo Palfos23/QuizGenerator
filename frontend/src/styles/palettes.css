@@ -1,282 +1,305 @@
-/* Colour palettes. "Plum" is the default and lives in :root (style.css); the others override the same tokens when
-   <html data-palette="..."> is set (services/palette.js, applied before first paint by a snippet in index.html).
-   Every component reads the tokens, so nothing else changes. Several come from coolors.co/palettes/popular/modern.
+/* Colour palettes. "Cream & Cobalt" is the default and lives in :root (style.css); the others override the same tokens
+   when <html data-palette="..."> is set (services/palette.js, applied before first paint by a snippet in index.html).
+   Every component reads the tokens, so nothing else changes. Each palette is a small brand system, taken from the design
+   studies at purist.design: a page, a surface, a primary, an accent and a secondary, plus the status colours.
    Dark palettes are screen-only, so printed quizzes stay on white paper. */
 
+/* Blurple */
 @media screen {
-  :root[data-palette="moss"] {
-    --ink: #0e1612;
-    --ink-raised: #17231d;
-    --primary: #a3e635;
-    --primary-hover: #bef264;
-    --primary-rgb: 163 230 53;
-    --on-primary: #12200a;
-    --stone: #6f8478;
-    --gold: #fb7185;
-    --on-accent: #2a0a10;
-    --coral: #ff6b4a;
+  :root[data-palette="blurple"] {
+    --ink: #14152b;
+    --ink-raised: #1e2040;
+    --primary: #5865f2;
+    --primary-hover: #7983f5;
+    --primary-rgb: 88 101 242;
+    --on-primary: #ffffff;
+    --stone: #6b6f9a;
+    --gold: #eb459e;
+    --on-accent: #ffffff;
+    --coral: #ff6b6b;
+    --teal: #57f287;
+    --violet: #fee75c;
+    --text: #eef0ff;
+    --text-dim: #a3a8d4;
+    --rule: #2c2f57;
+    --fg-rgb: 238 240 255;
+    --paper-rgb: 30 32 64;
+    --page-rgb: 20 21 43;
+    --gold-rgb: 235 69 158;
+    --teal-rgb: 87 242 135;
+    --coral-rgb: 255 107 107;
+    --violet-rgb: 254 231 92;
+    --field-bg: #101124;
+    --pitch-text: #eef0ff;
+    --teal-ink: #8cf5ae;
+    --coral-ink: #ff9d9d;
+    --amber-ink: #c1c5ea;
+    --amber-rgb: 193 197 234;
+    --violet-ink: #fee75c;
+    --gold-ink: #ff8ac6;
+    --pitch-a: #2f5a3a;
+    --pitch-b: #285032;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-float: 0 12px 32px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
+  }
+  html[data-palette="blurple"] { color-scheme: dark; }
+}
+
+/* Rausch & Babu */
+:root[data-palette="rausch"] {
+  --ink: #f6f4f1;
+  --ink-raised: #ffffff;
+  --primary: #e31c5f;
+  --primary-hover: #c1124d;
+  --primary-rgb: 227 28 95;
+  --on-primary: #ffffff;
+  --stone: #b0a8a0;
+  --gold: #fc642d;
+  --on-accent: #ffffff;
+  --coral: #b42318;
+  --teal: #2a9d55;
+  --violet: #00a699;
+  --text: #222222;
+  --text-dim: #6a6a6a;
+  --rule: #e3dfda;
+  --fg-rgb: 34 34 34;
+  --paper-rgb: 255 255 255;
+  --page-rgb: 246 244 241;
+  --gold-rgb: 252 100 45;
+  --teal-rgb: 42 157 85;
+  --coral-rgb: 180 35 24;
+  --violet-rgb: 0 166 153;
+  --field-bg: #ffffff;
+  --pitch-text: #222222;
+  --teal-ink: #1f7a41;
+  --coral-ink: #8e1c13;
+  --amber-ink: #767676;
+  --amber-rgb: 118 118 118;
+  --violet-ink: #007a70;
+  --gold-ink: #d44a14;
+}
+
+/* Mint Console */
+@media screen {
+  :root[data-palette="mint"] {
+    --ink: #121212;
+    --ink-raised: #1c1c1c;
+    --primary: #3ecf8e;
+    --primary-hover: #6ee7b7;
+    --primary-rgb: 62 207 142;
+    --on-primary: #052e1b;
+    --stone: #6b7280;
+    --gold: #ffc857;
+    --on-accent: #2a1d00;
+    --coral: #ff6b6b;
     --teal: #4ade80;
-    --violet: #a3e635;
-    --text: #ecf3ee;
-    --text-dim: #9db0a4;
-    --rule: #263529;
-    --fg-rgb: 236 243 238;
-    --paper-rgb: 23 35 29;
-    --page-rgb: 14 22 18;
-    --gold-rgb: 251 113 133;
+    --violet: #4cc2ff;
+    --text: #ededed;
+    --text-dim: #a1a1aa;
+    --rule: #2e2e2e;
+    --fg-rgb: 237 237 237;
+    --paper-rgb: 28 28 28;
+    --page-rgb: 18 18 18;
+    --gold-rgb: 255 200 87;
     --teal-rgb: 74 222 128;
-    --coral-rgb: 255 107 74;
-    --violet-rgb: 163 230 53;
-    --field-bg: #0b120e;
-    --pitch-text: #ecf3ee;
+    --coral-rgb: 255 107 107;
+    --violet-rgb: 76 194 255;
+    --field-bg: #0d0d0d;
+    --pitch-text: #ededed;
     --teal-ink: #86efac;
-    --coral-ink: #ffa58f;
-    --amber-ink: #c0cbb8;
-    --amber-rgb: 192 203 184;
-    --violet-ink: #c3f07a;
-    --gold-ink: #fda4af;
+    --coral-ink: #ff9d9d;
+    --amber-ink: #c4c4cc;
+    --amber-rgb: 196 196 204;
+    --violet-ink: #8fd8ff;
+    --gold-ink: #ffd98a;
     --pitch-a: #2f5a3a;
     --pitch-b: #285032;
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
     --shadow-float: 0 12px 32px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
   }
-  html[data-palette="moss"] { color-scheme: dark; }
+  html[data-palette="mint"] { color-scheme: dark; }
 }
 
-:root[data-palette="terra"] {
-  --ink: #faf3ea;
-  --ink-raised: #fffdf9;
-  --primary: #b83d0b;
-  --primary-hover: #983108;
-  --primary-rgb: 184 61 11;
-  --on-primary: #ffffff;
-  --stone: #a8957f;
-  --gold: #0b7a95;
-  --on-accent: #ffffff;
-  --coral: #a8123e;
-  --teal: #2f7d32;
-  --violet: #b83d0b;
-  --text: #2a2118;
-  --text-dim: #6b5a49;
-  --rule: #e6d8c5;
-  --fg-rgb: 42 33 24;
-  --paper-rgb: 255 253 249;
-  --page-rgb: 250 243 234;
-  --gold-rgb: 11 122 149;
-  --teal-rgb: 47 125 50;
-  --coral-rgb: 168 18 62;
-  --violet-rgb: 184 61 11;
-  --field-bg: #ffffff;
-  --pitch-text: #2a2118;
-  --teal-ink: #225e25;
-  --coral-ink: #8c0f33;
-  --amber-ink: #7d6a4f;
-  --amber-rgb: 125 106 79;
-  --violet-ink: #b83d0b;
-  --gold-ink: #0a6178;
-}
-
-:root[data-palette="sunny"] {
-  --ink: #f6f1e4;
-  --ink-raised: #fffdf7;
-  --primary: #264653;
-  --primary-hover: #1b3440;
-  --primary-rgb: 38 70 83;
-  --on-primary: #ffffff;
-  --stone: #a39c88;
-  --gold: #e76f51;
-  --on-accent: #ffffff;
-  --coral: #b3261e;
-  --teal: #2a8a6e;
-  --violet: #264653;
-  --text: #1f2d33;
-  --text-dim: #566468;
-  --rule: #ddd5bf;
-  --fg-rgb: 31 45 51;
-  --paper-rgb: 255 253 247;
-  --page-rgb: 246 241 228;
-  --gold-rgb: 231 111 81;
-  --teal-rgb: 42 138 110;
-  --coral-rgb: 179 38 30;
-  --violet-rgb: 38 70 83;
-  --field-bg: #ffffff;
-  --pitch-text: #1f2d33;
-  --teal-ink: #1d6a52;
-  --coral-ink: #8f1d17;
-  --amber-ink: #7a6d4f;
-  --amber-rgb: 122 109 79;
-  --violet-ink: #264653;
-  --gold-ink: #b8472b;
-}
-
-:root[data-palette="coastal"] {
-  --ink: #eef5f9;
+/* Neon Ledger */
+:root[data-palette="ledger"] {
+  --ink: #f4f4f1;
   --ink-raised: #ffffff;
-  --primary: #3d5a80;
-  --primary-hover: #2f4866;
-  --primary-rgb: 61 90 128;
+  --primary: #0a0a0a;
+  --primary-hover: #2b2b2b;
+  --primary-rgb: 10 10 10;
   --on-primary: #ffffff;
-  --stone: #8fa6bd;
-  --gold: #ee6c4d;
-  --on-accent: #ffffff;
-  --coral: #b3261e;
-  --teal: #2e8b57;
-  --violet: #3d5a80;
-  --text: #293241;
-  --text-dim: #4f5d70;
-  --rule: #d3dfe8;
-  --fg-rgb: 41 50 65;
+  --stone: #a3a39c;
+  --gold: #00d64f;
+  --on-accent: #03210c;
+  --coral: #e5383b;
+  --teal: #0a8f3c;
+  --violet: #6c47ff;
+  --text: #0a0a0a;
+  --text-dim: #5d5d57;
+  --rule: #dcdcd5;
+  --fg-rgb: 10 10 10;
   --paper-rgb: 255 255 255;
-  --page-rgb: 238 245 249;
-  --gold-rgb: 238 108 77;
-  --teal-rgb: 46 139 87;
-  --coral-rgb: 179 38 30;
-  --violet-rgb: 61 90 128;
+  --page-rgb: 244 244 241;
+  --gold-rgb: 0 214 79;
+  --teal-rgb: 10 143 60;
+  --coral-rgb: 229 56 59;
+  --violet-rgb: 108 71 255;
   --field-bg: #ffffff;
-  --pitch-text: #293241;
-  --teal-ink: #1f6b40;
-  --coral-ink: #8f1d17;
-  --amber-ink: #5c6b7f;
-  --amber-rgb: 92 107 127;
-  --violet-ink: #3d5a80;
-  --gold-ink: #b8431f;
+  --pitch-text: #0a0a0a;
+  --teal-ink: #076b2c;
+  --coral-ink: #b91c1f;
+  --amber-ink: #6b6b63;
+  --amber-rgb: 107 107 99;
+  --violet-ink: #5636e0;
+  --gold-ink: #0a7a35;
 }
 
-:root[data-palette="rustic"] {
-  --ink: #fffcf2;
-  --ink-raised: #ffffff;
-  --primary: #252422;
-  --primary-hover: #403d39;
-  --primary-rgb: 37 36 34;
-  --on-primary: #ffffff;
-  --stone: #ccc5b9;
-  --gold: #eb5e28;
-  --on-accent: #ffffff;
-  --coral: #b3261e;
-  --teal: #3a7d44;
-  --violet: #252422;
-  --text: #252422;
-  --text-dim: #666055;
-  --rule: #e3ddd0;
-  --fg-rgb: 37 36 34;
-  --paper-rgb: 255 255 255;
-  --page-rgb: 255 252 242;
-  --gold-rgb: 235 94 40;
-  --teal-rgb: 58 125 68;
-  --coral-rgb: 179 38 30;
-  --violet-rgb: 37 36 34;
-  --field-bg: #ffffff;
-  --pitch-text: #252422;
-  --teal-ink: #2a5e32;
-  --coral-ink: #8f1d17;
-  --amber-ink: #6b645b;
-  --amber-rgb: 107 100 91;
-  --violet-ink: #252422;
-  --gold-ink: #bf4210;
-}
-
+/* Brass & Umber */
 @media screen {
-  :root[data-palette="contrast"] {
-    --ink: #011627;
-    --ink-raised: #0b2438;
-    --primary: #2ec4b6;
-    --primary-hover: #5ad8cc;
-    --primary-rgb: 46 196 182;
-    --on-primary: #011627;
-    --stone: #5f7a8c;
-    --gold: #ff9f1c;
-    --on-accent: #1c1000;
-    --coral: #ff5c6c;
-    --teal: #6ee7a8;
-    --violet: #2ec4b6;
-    --text: #fdfffc;
-    --text-dim: #9fb3c1;
-    --rule: #1c3850;
-    --fg-rgb: 253 255 252;
-    --paper-rgb: 11 36 56;
-    --page-rgb: 1 22 39;
-    --gold-rgb: 255 159 28;
-    --teal-rgb: 110 231 168;
-    --coral-rgb: 255 92 108;
-    --violet-rgb: 46 196 182;
-    --field-bg: #00101d;
-    --pitch-text: #fdfffc;
-    --teal-ink: #9af0c4;
-    --coral-ink: #ff9aa4;
-    --amber-ink: #b9c7d1;
-    --amber-rgb: 185 199 209;
-    --violet-ink: #7ee8de;
-    --gold-ink: #ffc266;
+  :root[data-palette="umber"] {
+    --ink: #14100d;
+    --ink-raised: #1f1814;
+    --primary: #d9a066;
+    --primary-hover: #e8b985;
+    --primary-rgb: 217 160 102;
+    --on-primary: #1e1208;
+    --stone: #7a6a5a;
+    --gold: #8fb39a;
+    --on-accent: #10160f;
+    --coral: #ff5d73;
+    --teal: #5fd39a;
+    --violet: #e0623e;
+    --text: #f1e7da;
+    --text-dim: #b3a393;
+    --rule: #3a2e26;
+    --fg-rgb: 241 231 218;
+    --paper-rgb: 31 24 20;
+    --page-rgb: 20 16 13;
+    --gold-rgb: 143 179 154;
+    --teal-rgb: 95 211 154;
+    --coral-rgb: 255 93 115;
+    --violet-rgb: 224 98 62;
+    --field-bg: #100c0a;
+    --pitch-text: #f1e7da;
+    --teal-ink: #96e6bd;
+    --coral-ink: #ff93a1;
+    --amber-ink: #cdbba8;
+    --amber-rgb: 205 187 168;
+    --violet-ink: #f0906f;
+    --gold-ink: #b5d1bd;
     --pitch-a: #2f5a3a;
     --pitch-b: #285032;
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
     --shadow-float: 0 12px 32px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
   }
-  html[data-palette="contrast"] { color-scheme: dark; }
+  html[data-palette="umber"] { color-scheme: dark; }
 }
 
-:root[data-palette="breeze"] {
-  --ink: #f3eeea;
-  --ink-raised: #fffdfb;
-  --primary: #16697a;
-  --primary-hover: #0f5260;
-  --primary-rgb: 22 105 122;
+/* Monocle */
+:root[data-palette="monocle"] {
+  --ink: #f0e9d8;
+  --ink-raised: #faf6ea;
+  --primary: #0f3d3a;
+  --primary-hover: #0a2c2a;
+  --primary-rgb: 15 61 58;
   --on-primary: #ffffff;
-  --stone: #9fb5ba;
-  --gold: #ffa62b;
-  --on-accent: #2a1800;
-  --coral: #b3261e;
-  --teal: #2e7d4f;
-  --violet: #16697a;
-  --text: #1d2e33;
-  --text-dim: #5a6a6e;
-  --rule: #ddd5cf;
-  --fg-rgb: 29 46 51;
-  --paper-rgb: 255 253 251;
-  --page-rgb: 243 238 234;
-  --gold-rgb: 255 166 43;
-  --teal-rgb: 46 125 79;
-  --coral-rgb: 179 38 30;
-  --violet-rgb: 22 105 122;
-  --field-bg: #ffffff;
-  --pitch-text: #1d2e33;
-  --teal-ink: #1f6340;
-  --coral-ink: #8f1d17;
-  --amber-ink: #6f6a62;
-  --amber-rgb: 111 106 98;
-  --violet-ink: #16697a;
-  --gold-ink: #9a5a05;
+  --stone: #a89f88;
+  --gold: #c8a24a;
+  --on-accent: #1b1505;
+  --coral: #c0392b;
+  --teal: #3a7d44;
+  --violet: #b3202a;
+  --text: #1a1a17;
+  --text-dim: #5e5a4c;
+  --rule: #ddd3bb;
+  --fg-rgb: 26 26 23;
+  --paper-rgb: 250 246 234;
+  --page-rgb: 240 233 216;
+  --gold-rgb: 200 162 74;
+  --teal-rgb: 58 125 68;
+  --coral-rgb: 192 57 43;
+  --violet-rgb: 179 32 42;
+  --field-bg: #fffdf6;
+  --pitch-text: #1a1a17;
+  --teal-ink: #2a5e32;
+  --coral-ink: #8e2a20;
+  --amber-ink: #6f6650;
+  --amber-rgb: 111 102 80;
+  --violet-ink: #94161f;
+  --gold-ink: #7a5f10;
 }
 
-:root[data-palette="berry"] {
-  --ink: #fdf0e4;
-  --ink-raised: #fffaf5;
-  --primary: #a53860;
-  --primary-hover: #862b4d;
-  --primary-rgb: 165 56 96;
+/* Dusk */
+@media screen {
+  :root[data-palette="dusk"] {
+    --ink: #0d1228;
+    --ink-raised: #171d3c;
+    --primary: #8fb8ff;
+    --primary-hover: #b0cdff;
+    --primary-rgb: 143 184 255;
+    --on-primary: #0d1228;
+    --stone: #6672a0;
+    --gold: #ffb38a;
+    --on-accent: #2a1305;
+    --coral: #ff7b9c;
+    --teal: #6ee7b7;
+    --violet: #c9a7ff;
+    --text: #e8ecff;
+    --text-dim: #a1a9d6;
+    --rule: #283058;
+    --fg-rgb: 232 236 255;
+    --paper-rgb: 23 29 60;
+    --page-rgb: 13 18 40;
+    --gold-rgb: 255 179 138;
+    --teal-rgb: 110 231 183;
+    --coral-rgb: 255 123 156;
+    --violet-rgb: 201 167 255;
+    --field-bg: #0a0e1f;
+    --pitch-text: #e8ecff;
+    --teal-ink: #a0f0d0;
+    --coral-ink: #ffa5bb;
+    --amber-ink: #bcc3e8;
+    --amber-rgb: 188 195 232;
+    --violet-ink: #dcc6ff;
+    --gold-ink: #ffc9a8;
+    --pitch-a: #2f5a3a;
+    --pitch-b: #285032;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-float: 0 12px 32px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
+  }
+  html[data-palette="dusk"] { color-scheme: dark; }
+}
+
+/* Spectrum */
+:root[data-palette="spectrum"] {
+  --ink: #f5f5f7;
+  --ink-raised: #ffffff;
+  --primary: #7b3fe4;
+  --primary-hover: #6529c9;
+  --primary-rgb: 123 63 228;
   --on-primary: #ffffff;
-  --stone: #c9a89a;
-  --gold: #da627d;
+  --stone: #a9a9b5;
+  --gold: #f24e1e;
   --on-accent: #ffffff;
-  --coral: #c2410c;
-  --teal: #2e7d4f;
-  --violet: #a53860;
-  --text: #450920;
-  --text-dim: #7a5565;
-  --rule: #ecd5c3;
-  --fg-rgb: 69 9 32;
-  --paper-rgb: 255 250 245;
-  --page-rgb: 253 240 228;
-  --gold-rgb: 218 98 125;
-  --teal-rgb: 46 125 79;
-  --coral-rgb: 194 65 12;
-  --violet-rgb: 165 56 96;
+  --coral: #cf222e;
+  --teal: #0a9f68;
+  --violet: #0d99ff;
+  --text: #1e1e24;
+  --text-dim: #5f5f6b;
+  --rule: #e1e1e8;
+  --fg-rgb: 30 30 36;
+  --paper-rgb: 255 255 255;
+  --page-rgb: 245 245 247;
+  --gold-rgb: 242 78 30;
+  --teal-rgb: 10 159 104;
+  --coral-rgb: 207 34 46;
+  --violet-rgb: 13 153 255;
   --field-bg: #ffffff;
-  --pitch-text: #450920;
-  --teal-ink: #1f6340;
-  --coral-ink: #9a330a;
-  --amber-ink: #8a6a5c;
-  --amber-rgb: 138 106 92;
-  --violet-ink: #a53860;
-  --gold-ink: #b0344f;
+  --pitch-text: #1e1e24;
+  --teal-ink: #077650;
+  --coral-ink: #a40e19;
+  --amber-ink: #6d6d7a;
+  --amber-rgb: 109 109 122;
+  --violet-ink: #0a6fb8;
+  --gold-ink: #c23a12;
 }

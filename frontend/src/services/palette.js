@@ -3,34 +3,34 @@ import { revealFrom } from './viewTransition'
 
 // The colour palette. The choice lives in localStorage and is applied as [data-palette] on <html>; a tiny inline
 // script in index.html applies it before first paint so a returning visitor never sees a flash of the default.
-// The palettes themselves are token overrides in styles/palettes.css ("plum" is the default and has no attribute).
+// The palettes themselves are token overrides in styles/palettes.css ("cobalt" is the default and has no attribute).
 const STORAGE_KEY = 'quiz_palette'
 
-// swatch = [page, primary, accent], drawn on the switcher so each dot previews its own palette
+// swatch = [page, primary, accent, secondary], drawn on the switcher so each dot previews its own palette
 export const PALETTES = [
-  { id: 'plum', name: 'Plum', swatch: ['#f6f2f9', '#5b2a86', '#e8590c'], themeColor: '#f6f2f9' },
-  { id: 'moss', name: 'Moss', swatch: ['#0e1612', '#a3e635', '#fb7185'], themeColor: '#0e1612' },
-  { id: 'terra', name: 'Terracotta', swatch: ['#faf3ea', '#b83d0b', '#0b7a95'], themeColor: '#faf3ea' },
-  { id: 'sunny', name: 'Sunny Beach', swatch: ['#f6f1e4', '#264653', '#e76f51'], themeColor: '#f6f1e4' },
-  { id: 'coastal', name: 'Coastal', swatch: ['#eef5f9', '#3d5a80', '#ee6c4d'], themeColor: '#eef5f9' },
-  { id: 'rustic', name: 'Rustic', swatch: ['#fffcf2', '#252422', '#eb5e28'], themeColor: '#fffcf2' },
-  { id: 'contrast', name: 'Contrast Pop', swatch: ['#011627', '#2ec4b6', '#ff9f1c'], themeColor: '#011627' },
-  { id: 'breeze', name: 'Ocean Breeze', swatch: ['#f3eeea', '#16697a', '#ffa62b'], themeColor: '#f3eeea' },
-  { id: 'berry', name: 'Bold Berry', swatch: ['#fdf0e4', '#a53860', '#da627d'], themeColor: '#fdf0e4' },
+  { id: 'cobalt', name: 'Cream & Cobalt', swatch: ['#eeefe9', '#1d4aff', '#f54e00', '#f9bd2b'], themeColor: '#eeefe9' },
+  { id: 'blurple', name: 'Blurple', swatch: ['#14152b', '#5865f2', '#eb459e', '#fee75c'], themeColor: '#14152b' },
+  { id: 'rausch', name: 'Rausch & Babu', swatch: ['#f6f4f1', '#e31c5f', '#fc642d', '#00a699'], themeColor: '#f6f4f1' },
+  { id: 'mint', name: 'Mint Console', swatch: ['#121212', '#3ecf8e', '#ffc857', '#4cc2ff'], themeColor: '#121212' },
+  { id: 'ledger', name: 'Neon Ledger', swatch: ['#f4f4f1', '#0a0a0a', '#00d64f', '#6c47ff'], themeColor: '#f4f4f1' },
+  { id: 'umber', name: 'Brass & Umber', swatch: ['#14100d', '#d9a066', '#8fb39a', '#e0623e'], themeColor: '#14100d' },
+  { id: 'monocle', name: 'Monocle', swatch: ['#f0e9d8', '#0f3d3a', '#c8a24a', '#b3202a'], themeColor: '#f0e9d8' },
+  { id: 'dusk', name: 'Dusk', swatch: ['#0d1228', '#8fb8ff', '#ffb38a', '#c9a7ff'], themeColor: '#0d1228' },
+  { id: 'spectrum', name: 'Spectrum', swatch: ['#f5f5f7', '#7b3fe4', '#f24e1e', '#0d99ff'], themeColor: '#f5f5f7' },
 ]
 
 function readStored() {
   try {
     const v = localStorage.getItem(STORAGE_KEY)
-    return PALETTES.some(p => p.id === v) ? v : 'plum'
-  } catch (e) { return 'plum' }
+    return PALETTES.some(p => p.id === v) ? v : 'cobalt'
+  } catch (e) { return 'cobalt' }
 }
 
 export const palette = ref(readStored())
 
 function apply(id) {
   const root = document.documentElement
-  if (id === 'plum') delete root.dataset.palette
+  if (id === 'cobalt') delete root.dataset.palette
   else root.dataset.palette = id
   // keeps the browser's own chrome (mobile address bar) in step with the page
   const meta = document.querySelector('meta[name="theme-color"]')
@@ -40,7 +40,7 @@ function apply(id) {
 
 // origin = {x, y} of the control that was pressed: the new palette is revealed as a circle growing out of it
 export function setPalette(id, origin) {
-  palette.value = PALETTES.some(p => p.id === id) ? id : 'plum'
+  palette.value = PALETTES.some(p => p.id === id) ? id : 'cobalt'
   try { localStorage.setItem(STORAGE_KEY, palette.value) } catch (e) { /* private mode - works for this visit only */ }
   if (origin) revealFrom(origin.x, origin.y, () => apply(palette.value))
   else apply(palette.value)

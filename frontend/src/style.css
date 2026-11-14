@@ -76,49 +76,49 @@
 :root {
   --nav-height: 64px; /* used by sticky elements positioned just below the top nav - keep in sync with .top-nav's actual rendered height per breakpoint. Redefined for the mobile nav's shorter height in the @media (max-width: 760px) block below. */
   --bottom-nav-height: 0px; /* the fixed mobile .bottom-nav is hidden above 760px, so anything sticky to the viewport bottom can sit flush at 0 by default - redefined below for the breakpoint where that bar actually covers the bottom of the screen. */
-  /* Three palettes share these tokens (see styles/palettes.css; the default is "Plum", below). The token names
+  /* Three palettes share these tokens (see styles/palettes.css; the default is "Cream & Cobalt", below). The token names
      are from older themes (--ink is the page colour, --gold the accent, --violet the secondary accent): they
      are kept so every component follows, but each palette redefines them:
        --primary = the main action and links      --gold = emphasis, "now", progress
        --coral = errors only                      --teal = "correct" only */
-  --ink: #f6f2f9;            /* the page */
-  --ink-raised: #fdfbfe;     /* cards, modals */
-  --primary: #5b2a86;        /* sand */
-  --primary-hover: #491f6e;
-  --primary-rgb: 91 42 134;
+  --ink: #eeefe9;            /* the page */
+  --ink-raised: #fdfdf9;     /* cards, modals */
+  --primary: #1d4aff;        /* sand */
+  --primary-hover: #1438d6;
+  --primary-rgb: 29 74 255;
   --on-primary: #ffffff;
-  --stone: #a095ad;          /* grey-violet: icons, strong borders (decorative - not for small text) */
-  --gold: #e8590c;           /* orange: the accent */
+  --stone: #a7a99c;          /* grey-violet: icons, strong borders (decorative - not for small text) */
+  --gold: #f54e00;           /* orange: the accent */
   --gold-soft: rgb(var(--gold-rgb) / 0.08);
-  --coral: #be123c;          /* errors, destructive */
-  --teal: #2b8a3e;           /* success */
-  --violet: #5b2a86;         /* secondary accent = mocha green */
-  --text: #231a2e;
-  --text-dim: #62567a;       /* dark enough for body text (5:1 on the page) */
+  --coral: #d92d20;          /* errors, destructive */
+  --teal: #2f9e44;           /* success */
+  --violet: #f9bd2b;         /* secondary accent = mocha green */
+  --text: #151515;
+  --text-dim: #5b5d55;       /* dark enough for body text (5:1 on the page) */
   --border: rgb(var(--fg-rgb) / 0.14);
-  --rule: #ddd3e8;           /* the standard 1px border */
+  --rule: #d9dacf;           /* the standard 1px border */
 
   /* The same colours as space-separated channels, for translucent tints: rgb(var(--fg-rgb) / 0.2). They
      follow the tokens above, so every tint follows. */
-  --fg-rgb: 35 26 46;        /* ink */
-  --paper-rgb: 253 251 254;  /* = --ink-raised */
-  --page-rgb: 246 242 249;   /* = --ink */
-  --gold-rgb: 232 89 12;
-  --teal-rgb: 43 138 62;
-  --coral-rgb: 190 18 60;
-  --violet-rgb: 91 42 134;
+  --fg-rgb: 21 21 21;        /* ink */
+  --paper-rgb: 253 253 249;  /* = --ink-raised */
+  --page-rgb: 238 239 233;   /* = --ink */
+  --gold-rgb: 245 78 0;
+  --teal-rgb: 47 158 68;
+  --coral-rgb: 217 45 32;
+  --violet-rgb: 249 189 43;
   --field-bg: #ffffff;       /* inputs, hovered rows */
   --pitch-a: #86ad8c;        /* Starting XI pitch */
   --pitch-b: #7da585;
-  --pitch-text: #231a2e;     /* player names printed on the pitch */
+  --pitch-text: #151515;     /* player names printed on the pitch */
   /* Darker/lighter variants of the accents for TEXT (pills, banners): deep enough to read on a tinted light
      surface, light enough to read on a tinted dark one. */
-  --teal-ink: #1f6a2e;
-  --coral-ink: #9f1239;
-  --amber-ink: #7a6a8f;      /* "waiting" is a calm stone blue, not a warning colour */
-  --amber-rgb: 122 106 143;
-  --violet-ink: #5b2a86;
-  --gold-ink: #b34609;
+  --teal-ink: #236f31;
+  --coral-ink: #a8201a;
+  --amber-ink: #6b6a55;      /* "waiting" is a calm stone blue, not a warning colour */
+  --amber-rgb: 107 106 85;
+  --violet-ink: #8a5a00;
+  --gold-ink: #c23c00;
 
   --on-accent: #ffffff;      /* text on a --gold fill */
 

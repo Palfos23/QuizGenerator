@@ -164,7 +164,7 @@ onBeforeUnmount(() => cancelAnimationFrame(rafId))
 .home-hero { grid-area: hero; min-width: 0; align-self: center; }
 .home-more { grid-area: more; }
 
-.home-num { color: var(--gold); }
+.home-num { color: var(--gold-ink); }
 .home-hero h1::before { content: ''; display: block; width: 56px; height: 5px; margin-bottom: var(--space-4); border-radius: 3px; background: var(--gold); }
 .home-hero h1 { font-size: clamp(2.3rem, 5.4vw, 3.4rem); line-height: 1.04; letter-spacing: -0.025em; margin: 0 0 var(--space-5); max-width: 14ch; }
 .home-cta { margin: 0; }
