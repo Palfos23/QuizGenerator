@@ -1,23 +1,23 @@
 <template>
-  <div class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av Tension: en skjult rangert liste med ti svar, med et fellesvar rett etter slutten.')">
+  <div ref="rootEl" class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av Tension: en skjult rangert liste med ti svar, med et fellesvar rett etter slutten.')">
     <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
     <div class="tp-q">{{ $t('«Nevn en av de 10 mest søkte ingrediensene i oppskrifter»') }}</div>
 
     <div class="tp-track">
-      <div class="tp-fill"></div>
-      <div class="tp-danger">
+      <div class="tp-fill" :style="{ inset: `0 ${fillRight}% 0 0` }"></div>
+      <div class="tp-danger" :class="{ on: stage >= 3 }">
         <span>{{ $t('Tension-sone') }}</span>
       </div>
 
-      <div class="tp-pin safe" style="left: 8%;">
+      <div class="tp-pin safe" :class="{ on: stage >= 1 }" style="left: 8%;">
         <span class="tp-dot"></span>
         <span class="tp-label">Salt<b>{{ $t('plass 1 · +1') }}</b></span>
       </div>
-      <div class="tp-pin safe hi" style="left: 60%;">
+      <div class="tp-pin safe hi" :class="{ on: stage >= 2 }" style="left: 60%;">
         <span class="tp-dot"></span>
         <span class="tp-label">{{ $t('Basilikum') }}<b>{{ $t('plass 10 · +10') }}</b></span>
       </div>
-      <div class="tp-pin trap" style="left: 82%;">
+      <div class="tp-pin trap" :class="{ on: stage >= 4 }" style="left: 82%;">
         <span class="tp-dot"></span>
         <span class="tp-label">Oregano<b class="bad">{{ $t('felle · −5') }}</b></span>
       </div>
@@ -31,7 +31,27 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { computed, ref } from 'vue'
+import { usePreviewLoop } from '../../composables/usePreviewLoop'
+
+// The film: a safe answer lands early, the bar fills toward place 10, the danger zone sweeps in, and the trap drops.
+const rootEl = ref(null)
+const stage = ref(0)
+const fillRight = computed(() => [100, 92, 40, 32, 32][stage.value])
+
+usePreviewLoop(rootEl, {
+  async play(sleep) {
+    stage.value = 0; await sleep(1000)
+    stage.value = 1; await sleep(1000)
+    stage.value = 2; await sleep(1700)
+    stage.value = 3; await sleep(1000)
+    stage.value = 4; await sleep(3400)
+    stage.value = 0; await sleep(700)
+  },
+  finalFrame() { stage.value = 4 }
+})
+</script>
 
 <style scoped>
 .tp-q {
@@ -56,6 +76,7 @@
 .tp-fill {
   position: absolute;
   inset: 0 32% 0 0;
+  transition: inset 1.1s var(--ease-in-out);
   border-radius: 999px;
   background: linear-gradient(90deg, rgb(var(--teal-rgb) / 0.25), var(--teal));
 }
@@ -68,6 +89,8 @@
   border-radius: 0 999px 999px 0;
   background: repeating-linear-gradient(-45deg, rgb(var(--coral-rgb) / 0.3) 0 6px, rgb(var(--coral-rgb) / 0.12) 6px 12px);
 }
+.tp-danger { clip-path: inset(-30px 100% -30px 0); transition: clip-path 800ms var(--ease-in-out); }
+.tp-danger.on { clip-path: inset(-30px 0 -30px 0); }
 .tp-danger span {
   position: absolute;
   top: -20px;
@@ -84,7 +107,12 @@
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
+  opacity: 0;
+  scale: 0.5;
+  transition: opacity 300ms var(--ease-in), scale 300ms var(--ease-in);
 }
+.tp-pin.on { opacity: 1; scale: 1; transition: opacity 320ms var(--ease-out), scale 320ms var(--ease-out); }
+.tp-pin.trap.on .tp-dot { animation: pv-shake 520ms 260ms both; }
 .tp-dot {
   display: block;
   width: 14px;

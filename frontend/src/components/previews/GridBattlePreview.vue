@@ -1,16 +1,16 @@
 <template>
-  <div class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av Grid Battle: et grid med skjulte ruter, noen løst med spillerbilde og navn, hver med et lite hint.')">
+  <div ref="rootEl" class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av Grid Battle: et grid med skjulte ruter, noen løst med spillerbilde og navn, hver med et lite hint.')">
     <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
     <div class="gb-head">
       <span class="gb-theme">{{ $t('Grid · «Toppscorere for Spurs, 2023/24»') }}</span>
       <span class="gb-lives">
-        <span v-for="n in 5" :key="n" class="gb-heart" :class="{ lost: n > 3 }">♥</span>
+        <span v-for="n in 5" :key="n" class="gb-heart" :class="{ lost: n > lives }">♥</span>
       </span>
     </div>
 
     <div class="gb-grid">
-      <div v-for="t in tiles" :key="t.id" class="gb-tile" :class="{ solved: t.name }">
-        <template v-if="t.name">
+      <div v-for="t in tiles" :key="t.id" class="gb-tile" :class="{ solved: isSolved(t), shaking: shaking === t.id }">
+        <template v-if="isSolved(t)">
           <span class="gb-av">{{ t.initials }}</span>
           <span class="gb-name">{{ t.name }}</span>
           <span class="gb-check">✓</span>
@@ -30,6 +30,35 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { usePreviewLoop } from '../../composables/usePreviewLoop'
+
+// The film: players are named one after another, tiles flip over; two wrong guesses shake a tile and cost a life.
+const rootEl = ref(null)
+const solved = ref([])
+const lives = ref(5)
+const shaking = ref(null)
+const isSolved = (t) => !!t.name && solved.value.includes(t.id)
+
+async function wrong(id, sleep) {
+  shaking.value = id
+  lives.value--
+  await sleep(560)
+  shaking.value = null
+}
+
+usePreviewLoop(rootEl, {
+  async play(sleep) {
+    solved.value = []; lives.value = 5; await sleep(1000)
+    solved.value = [1]; await sleep(900)
+    solved.value = [1, 3]; await sleep(900)
+    await wrong(2, sleep); await sleep(500)
+    solved.value = [1, 3, 6]; await sleep(900)
+    await wrong(8, sleep); await sleep(2800)
+  },
+  finalFrame() { solved.value = [1, 3, 6]; lives.value = 3 }
+})
+
 const tiles = [
   { id: 1, name: 'Son', initials: 'SH', hint: '' },
   { id: 2, hint: 'FW · 14' },
@@ -45,6 +74,7 @@ const tiles = [
 
 <style scoped>
 .gb-head {
+  padding-top: 22px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -75,10 +105,14 @@ const tiles = [
   gap: 4px;
   overflow: hidden;
 }
+.gb-tile { transition: border-color 250ms var(--ease-out), background 250ms var(--ease-out); }
 .gb-tile.solved {
   border-color: var(--teal);
   background: rgb(var(--teal-rgb) / 0.1);
+  animation: pv-flip 520ms var(--ease-out) both;
 }
+.gb-tile.shaking { animation: pv-shake 520ms both; border-color: var(--coral); background: rgb(var(--coral-rgb) / 0.14); }
+.gb-heart { transition: color 300ms var(--ease-out); }
 .gb-av {
   width: 30px;
   height: 30px;

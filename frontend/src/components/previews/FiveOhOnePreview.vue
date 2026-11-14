@@ -1,5 +1,5 @@
 <template>
-  <div class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av 501: en poengsum som teller ned fra 501 mot et utsjekkvindu.')">
+  <div ref="rootEl" class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av 501: en poengsum som teller ned fra 501 mot et utsjekkvindu.')">
     <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
     <div class="fp-cat">{{ $t('Kategori · «Premier League-kamper»') }}</div>
 
@@ -7,37 +7,37 @@
       <div class="fp-board">
         <div class="fp-ring">
           <div class="fp-score">
-            <span class="fp-num">8</span>
+            <span class="fp-num" :class="{ flash: busted }">{{ score }}</span>
             <span class="fp-lbl">{{ $t('for å sjekke ut') }}</span>
           </div>
         </div>
       </div>
 
       <div class="fp-throws">
-        <div class="fp-throw">
+        <div class="fp-throw" :class="{ in: shown >= 1 }">
           <span class="fp-p">Start</span>
           <span class="fp-d"></span>
           <span class="fp-t">501</span>
         </div>
-        <div class="fp-throw">
+        <div class="fp-throw" :class="{ in: shown >= 2 }">
           <span class="fp-p">M. Salah <i>234</i></span>
           <span class="fp-d">−234</span>
           <span class="fp-t">267</span>
         </div>
-        <div class="fp-throw">
+        <div class="fp-throw" :class="{ in: shown >= 3 }">
           <span class="fp-p">H. Kane <i>89</i></span>
           <span class="fp-d">−89</span>
           <span class="fp-t">178</span>
         </div>
-        <div class="fp-throw bust">
+        <div class="fp-throw" :class="{ in: shown >= 4, bust: shown >= 4 }">
           <span class="fp-p">P. Foden <i>201</i></span>
           <span class="fp-d">over 180</span>
           <span class="fp-t">bust</span>
         </div>
-        <div class="fp-throw now">
+        <div class="fp-throw now" :class="{ in: shown >= 5 }">
           <span class="fp-p">{{ $t('din kasting…') }}</span>
-          <span class="fp-d"></span>
-          <span class="fp-t">8</span>
+          <span class="fp-d">{{ resolved ? '−170' : '' }}</span>
+          <span class="fp-t"><span v-if="!resolved" class="fp-dots">···</span><template v-else>8</template></span>
         </div>
       </div>
     </div>
@@ -48,7 +48,31 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref } from 'vue'
+import { tweenRef, usePreviewLoop } from '../../composables/usePreviewLoop'
+
+// The film: the score counts down from 501 throw by throw, one throw busts, and the last one checks out on 8.
+const rootEl = ref(null)
+const shown = ref(0)
+const score = ref(501)
+const busted = ref(false)
+const resolved = ref(false)
+
+usePreviewLoop(rootEl, {
+  async play(sleep) {
+    shown.value = 0; score.value = 501; busted.value = false; resolved.value = false; await sleep(900)
+    shown.value = 1; await sleep(700)
+    shown.value = 2; await tweenRef(score, 267, 800); await sleep(500)
+    shown.value = 3; await tweenRef(score, 178, 700); await sleep(500)
+    shown.value = 4; busted.value = true; await sleep(1300)
+    busted.value = false
+    shown.value = 5; await sleep(1100)
+    resolved.value = true; await tweenRef(score, 8, 1100); await sleep(3000)
+  },
+  finalFrame() { shown.value = 5; score.value = 8; resolved.value = true }
+})
+</script>
 
 <style scoped>
 .fp-cat {
@@ -108,6 +132,9 @@
   gap: 3px;
 }
 .fp-throw {
+  opacity: 0;
+  translate: 0 8px;
+  transition: opacity 320ms var(--ease-out), translate 320ms var(--ease-out), background 250ms var(--ease-out);
   display: grid;
   grid-template-columns: 1fr auto 46px;
   align-items: center;
@@ -121,6 +148,12 @@
 .fp-p i { font-style: normal; color: var(--text); font-size: 0.68rem; }
 .fp-d { font-size: 0.66rem; color: var(--text-dim); }
 .fp-t { font-weight: 700; color: var(--text); text-align: right; }
+.fp-throw.in { opacity: 1; translate: 0 0; }
+.fp-throw.bust.in { animation: pv-shake 520ms 120ms both; }
+.fp-num { transition: color 200ms var(--ease-out); font-variant-numeric: tabular-nums; }
+.fp-num.flash { color: var(--coral); }
+.fp-dots { letter-spacing: 0.1em; animation: dqp-dots 1s steps(1) infinite; }
+@keyframes dqp-dots { 50% { opacity: 0.25; } }
 .fp-throw.bust { background: rgb(var(--coral-rgb) / 0.1); }
 .fp-throw.bust .fp-d, .fp-throw.bust .fp-t { color: var(--coral); }
 .fp-throw.now { background: var(--gold-soft); }

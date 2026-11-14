@@ -1,12 +1,12 @@
 <template>
-  <div class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av et Imposter-brett: et rutenett der et par ruter er avslørt som imposters.')">
+  <div ref="rootEl" class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av et Imposter-brett: et rutenett der et par ruter er avslørt som imposters.')">
     <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
     <div class="ip-theme">{{ $t('Tema · «Toppscorere i Premier League, 2023/24»') }}</div>
     <div class="ip-grid">
-      <div v-for="t in tiles" :key="t.name" class="ip-tile" :class="t.state">
+      <div v-for="t in tiles" :key="t.name" class="ip-tile" :class="[shownState(t), { picked: picked === t.name }]">
         <span class="ip-name">{{ t.name }}</span>
-        <span v-if="t.state === 'fit'" class="ip-badge good">{{ $t('✓ passer') }}</span>
-        <span v-else-if="t.state === 'imposter'" class="ip-badge bad">✕ imposter</span>
+        <span v-if="shownState(t) === 'fit'" class="ip-badge good">{{ $t('✓ passer') }}</span>
+        <span v-else-if="shownState(t) === 'imposter'" class="ip-badge bad">✕ imposter</span>
       </div>
     </div>
     <p class="game-preview-caption">
@@ -17,6 +17,30 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { usePreviewLoop } from '../../composables/usePreviewLoop'
+
+// The film: a tile is picked (it lifts), then flips to show whether it fits the theme or is an imposter.
+const rootEl = ref(null)
+const revealed = ref([])
+const picked = ref(null)
+const shownState = (t) => (revealed.value.includes(t.name) ? t.state : 'plain')
+
+async function pick(name, sleep) {
+  picked.value = name; await sleep(650)
+  revealed.value = [...revealed.value, name]; picked.value = null
+}
+
+usePreviewLoop(rootEl, {
+  async play(sleep) {
+    revealed.value = []; picked.value = null; await sleep(1000)
+    await pick('Watkins', sleep); await sleep(1000)
+    await pick('Foden', sleep); await sleep(1000)
+    await pick('Wilson', sleep); await sleep(3000)
+  },
+  finalFrame() { revealed.value = ['Watkins', 'Foden', 'Wilson'] }
+})
+
 const tiles = [
   { name: 'Haaland', state: 'plain' },
   { name: 'Watkins', state: 'fit' },
@@ -61,13 +85,17 @@ const tiles = [
   text-overflow: ellipsis;
   max-width: 100%;
 }
+.ip-tile { transition: scale 200ms var(--ease-out), border-color 250ms var(--ease-out), background 250ms var(--ease-out), box-shadow 200ms var(--ease-out); }
+.ip-tile.picked { scale: 1.06; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(var(--gold-rgb) / 0.18); }
 .ip-tile.fit {
   border-color: var(--teal);
   background: rgb(var(--teal-rgb) / 0.12);
+  animation: pv-flip 520ms var(--ease-out) both;
 }
 .ip-tile.imposter {
   border-color: var(--coral);
   background: rgb(var(--coral-rgb) / 0.14);
+  animation: pv-flip 520ms var(--ease-out) both, pv-shake 480ms 480ms both;
 }
 .ip-tile.fit .ip-name,
 .ip-tile.imposter .ip-name {
