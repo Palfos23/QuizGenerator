@@ -11,7 +11,7 @@
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <template v-else-if="day">
       <header class="dq-hero">
@@ -51,6 +51,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'

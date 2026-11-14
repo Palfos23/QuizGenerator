@@ -57,7 +57,6 @@ const max = computed(() => Math.max(...props.items.map(i => i.count), 1))
   transition: width 0.4s ease;
 }
 .stat-barlist-value {
-  font-family: var(--font-mono);
   font-size: 0.85rem;
   color: var(--text);
   min-width: 32px;

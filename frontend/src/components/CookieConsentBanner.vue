@@ -29,7 +29,7 @@ import cookieConsent from '../services/cookieConsent'
   flex-wrap: wrap;
   padding: 16px 24px;
   background: var(--ink-raised);
-  border-top: 2px solid var(--rule);
+  border-top: 1px solid var(--rule);
   box-shadow: none;
 }
 .cookie-banner-text {

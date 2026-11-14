@@ -14,7 +14,7 @@
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
 
       <div v-else-if="!years.length" class="empty-state friendly">
         {{ $t('Ingen Flashback-år ennå. Lag ditt første her.') }}
@@ -148,6 +148,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import TranslationEditor from '../components/TranslationEditor.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref } from 'vue'

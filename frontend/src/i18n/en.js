@@ -2338,5 +2338,17 @@ export default {
  "Alt er rettet!": "Everything is graded!",
  "Hopp over": "Skip",
  "Tastatur: R eller → = riktig · F eller ← = feil · S = hopp over · Z = angre": "Keyboard: R or → = correct · F or ← = wrong · S = skip · Z = undo",
- "Kunne ikke lagre - prøv igjen.": "Couldn't save - try again."
+ "Kunne ikke lagre - prøv igjen.": "Couldn't save - try again.",
+ "15 nye spørsmål hver dag": "15 new questions every day",
+ "Svar med egne ord, se fasit med en gang og kjemp om ukens seier.": "Answer in your own words, see the answers right away and compete for the weekly win.",
+ "Spill dagens quiz§HomeViewT": "Play today's quiz",
+ "Lag egne quizer og spill sammen": "Make your own quizzes and play together",
+ "Velg kategorier og vanskelighetsgrad, bytt ut spørsmål og skriv ut quizen.": "Pick categories and difficulty, swap out questions and print the quiz.",
+ "Tension, Imposter, Bullseye og mer - på én skjerm, eller hver på sin egen telefon med en romkode.": "Tension, Imposter, Bullseye and more - on one screen, or each on your own phone with a room code.",
+ "Legg til i den felles banken - en administrator gjennomgår det, og du kan bruke det i dine egne quizer.": "Add to the shared bank - an administrator reviews it, and you can use it in your own quizzes.",
+ "15 spørsmål · skriv svarene dine": "15 questions · write your answers",
+ "3 av 15": "3 of 15",
+ "Hva heter Norges lengste elv?": "What is Norway's longest river called?",
+ "Hvilket land vant fotball-VM i 2022?": "Which country won the 2022 football World Cup?",
+ "Hvilket grunnstoff har symbolet Fe?": "Which element has the symbol Fe?"
 }

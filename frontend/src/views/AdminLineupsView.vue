@@ -13,7 +13,7 @@
       </div>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
       <div v-else-if="!lineups.length" class="empty-state friendly">
         {{ $t('Ingen Starting XI-brett ennå. Legg til noen fotballemner på siden Emner, og lag ditt første brett her.') }}
       </div>
@@ -333,6 +333,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import TranslationEditor from '../components/TranslationEditor.vue'
 import { t as _t } from '../i18n'
 import PhotoUploadButton from '../components/PhotoUploadButton.vue'

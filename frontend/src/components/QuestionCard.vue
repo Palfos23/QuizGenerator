@@ -17,7 +17,7 @@
       v-if="question.photoUrl"
       :src="question.photoUrl"
       alt=""
-      style="max-width:220px; max-height:220px; border-radius: 2px; margin:8px 0; display:block;"
+      style="max-width:220px; max-height:220px; border-radius: var(--radius-sm); margin:8px 0; display:block;"
       @error="$event.target.style.display = 'none'"
     />
 

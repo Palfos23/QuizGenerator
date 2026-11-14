@@ -12,7 +12,7 @@
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <div v-else-if="!categories.length" class="empty-state friendly">
       {{ $t('Ingen svarkategorier ennå. Legg til en (f.eks. "land") med en liste over forslagsord.') }}
@@ -78,6 +78,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'

@@ -119,7 +119,7 @@ async function deleteAccount(password) {
   flex: 1;
   min-width: 200px;
   padding: 12px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgb(var(--fg-rgb) / 0.16);
   background: rgb(var(--fg-rgb) / 0.08);
   color: var(--text);

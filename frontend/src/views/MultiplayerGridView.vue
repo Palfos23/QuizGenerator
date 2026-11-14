@@ -49,7 +49,7 @@
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>{{ $t('Usikker på hvordan det fungerer? Se et eksempel') }}</summary>
 
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgb(var(--fg-rgb) / 0.06);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: var(--radius-sm); background:rgb(var(--fg-rgb) / 0.06);">
           <p style="margin-top:0;">
             {{ $t('La oss si at gridets tema er') }} <em>{{ $t('«Toppscorere for en fotballklubb forrige sesong.»') }}</em> {{ $t('Det er et brett med skjulte ruter, der hver viser et lite hint før den er løst - som') }} <strong>{{ $t('«FW | 14»') }}</strong> {{ $t('for en spiss med 14 mål.') }}
           </p>

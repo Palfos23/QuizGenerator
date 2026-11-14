@@ -5,7 +5,7 @@
       <p class="dq-modal-sub">{{ $t('Rett opp et feil spørsmål eller svar her - det er samme spørsmål som i spørsmålsbanken.') }}</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
 
       <div v-else class="dq-qlist">
         <article v-for="(q, i) in questions" :key="q.id" class="dq-qrow">
@@ -30,6 +30,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from './LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'
 import api from '../services/api'

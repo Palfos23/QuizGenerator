@@ -8,7 +8,7 @@
       <p class="page-subtitle">{{ $t('Hver kategori er et rangert sett med navn og tall - f.eks. "Premier League-kamper".') }}</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
       <div v-else-if="!categories.length" class="empty-state friendly">{{ $t('Ingen kategorier ennå - lag den første.') }}</div>
 
       <template v-else>
@@ -131,7 +131,7 @@
         {{ $t('CSV-format: én rad per oppføring,') }} <code>name,value</code> - e.g. <code>Mohamed Salah,233</code>{{ $t('. Legger til (eller oppdaterer) det som står under, erstatter det ikke.') }}
       </p>
 
-      <div v-if="csvUnmatchedNames.length" style="background:rgb(var(--gold-rgb) / 0.1); border:1px solid rgb(var(--gold-rgb) / 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:14px;">
+      <div v-if="csvUnmatchedNames.length" style="background:rgb(var(--gold-rgb) / 0.1); border:1px solid rgb(var(--gold-rgb) / 0.3); border-radius: var(--radius-sm); padding:14px 16px; margin-bottom:14px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
           <strong style="color:var(--gold);">
             {{ csvUnmatchedNames.length }} {{ $t('navn ble ikke funnet i "') }}{{ form.sport }}"
@@ -229,6 +229,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import TranslationEditor from '../components/TranslationEditor.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'

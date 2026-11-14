@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <div v-else-if="state" class="grid-page">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;" class="no-print">
@@ -111,6 +111,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'

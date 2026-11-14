@@ -190,7 +190,7 @@ const PLAYER_MENUS = [
     key: 'games',
     label: _t('Spill§AppJ'),
     items: [
-      { to: '/julekalender', label: _t('🎄 Julekalender'), key: null },
+      { to: '/julekalender', label: _t('Julekalender'), key: null },
       { to: '/tension', label: 'Tension', key: 'tension' },
       { to: '/501', label: '501', key: 'fiveOhOne' },
       { to: '/imposter', label: 'Imposter', key: 'imposter' },

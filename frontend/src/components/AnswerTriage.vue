@@ -164,8 +164,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .tri { max-width: 720px; margin: 0 auto; }
 
 .tri-top { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; align-items: center; margin-bottom: 14px; }
-.tri-progress { grid-column: 1 / -1; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; order: 3; }
-.tri-progress span { display: block; height: 100%; background: var(--teal); border-radius: 4px; transition: width 0.3s ease; }
+.tri-progress { grid-column: 1 / -1; height: 8px; background: var(--line); border-radius: var(--radius-sm); overflow: hidden; order: 3; }
+.tri-progress span { display: block; height: 100%; background: var(--teal); border-radius: var(--radius-sm); transition: width 0.3s ease; }
 .tri-count { font-size: 0.95rem; color: var(--text-dim); }
 .tri-count strong { color: var(--text); font-family: var(--font-display); font-size: 1.2rem; }
 .tri-left { margin-left: 4px; }
@@ -174,35 +174,35 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
 .tri-card {
   background: var(--ink-raised);
-  border: 2px solid var(--rule);
-  border-radius: 3px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
   padding: 24px 26px 22px;
-  box-shadow: 6px 6px 0 var(--gold);
+  box-shadow: var(--shadow-card);
 }
-.tri-context { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+.tri-context { font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
 .tri-question { margin: 8px 0 18px; font-size: 1.35rem; line-height: 1.25; overflow-wrap: anywhere; }
 
 .tri-versus { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.tri-side { border: 1.5px solid var(--line); border-radius: 3px; padding: 12px 14px; min-width: 0; }
+.tri-side { border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: 12px 14px; min-width: 0; }
 .tri-side--right { background: rgb(var(--teal-rgb) / 0.08); }
-.tri-side--given { background: rgb(var(--gold-rgb) / 0.08); border-color: var(--gold); border-width: 2px; }
+.tri-side--given { background: rgb(var(--primary-rgb) / 0.06); border-color: rgb(var(--primary-rgb) / 0.45); }
 .tri-label { display: block; font-size: 0.7rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 4px; }
 .tri-value { display: block; font-family: var(--font-display); font-size: 1.35rem; font-weight: 600; overflow-wrap: anywhere; }
 .tri-value--given { font-size: 1.7rem; }
 
 .tri-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .tri-chip { font-size: 0.82rem; padding: 3px 10px; border: 1.5px solid var(--line); border-radius: 12px; color: var(--text-dim); }
-.tri-chip--hint { border-color: var(--gold); color: var(--text); background: rgb(var(--gold-rgb) / 0.1); font-weight: 600; }
+.tri-chip--hint { border-color: rgb(var(--primary-rgb) / 0.45); color: var(--primary); background: rgb(var(--primary-rgb) / 0.07); font-weight: 600; }
 
 .tri-siblings { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
 .tri-siblings ul { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 0; padding: 0; }
-.tri-siblings li { font-size: 0.85rem; padding: 2px 9px; border-radius: 3px; border: 1.5px solid var(--line); color: var(--text-dim); }
-.tri-siblings li small { font-family: var(--font-mono); }
+.tri-siblings li { font-size: 0.85rem; padding: 2px 9px; border-radius: var(--radius-sm); border: 1.5px solid var(--line); color: var(--text-dim); }
+.tri-siblings li small { }
 .tri-siblings li.is-correct { border-color: var(--teal); color: var(--teal-ink, var(--teal)); }
 .tri-siblings li.is-wrong { border-color: var(--coral); color: var(--coral-ink, var(--coral)); text-decoration: line-through; text-decoration-thickness: 1px; }
 .tri-siblings li.is-pending { border-style: dashed; }
 
-.tri-done { text-align: center; padding: 38px 16px; border: 2px solid var(--rule); border-radius: 3px; background: var(--ink-raised); }
+.tri-done { text-align: center; padding: 38px 16px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); }
 .tri-done-mark { width: 64px; height: 64px; margin: 0 auto 10px; display: grid; place-items: center; border-radius: 50%; background: var(--teal); color: #fff; font-size: 2rem; }
 .tri-done h2 { margin: 0 0 4px; }
 .tri-done p { margin: 0 0 16px; color: var(--text-dim); }
@@ -210,7 +210,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .tri-actions { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; margin-top: 18px; }
 .tri-btn {
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 16px 18px; border: 2px solid var(--rule); border-radius: 3px; background: var(--ink-raised); color: var(--text);
+  padding: 16px 18px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); color: var(--text);
   font-family: var(--font-body); font-size: 1.1rem; font-weight: 700; cursor: pointer;
   transition: transform 0.08s ease, background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
@@ -219,7 +219,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .tri-btn--yes:hover:not(:disabled), .tri-btn--yes:focus-visible { background: var(--teal); border-color: var(--teal); color: #fff; }
 .tri-btn--no:hover:not(:disabled), .tri-btn--no:focus-visible { background: var(--coral); border-color: var(--coral); color: #fff; }
 .tri-btn--skip { font-weight: 600; font-size: 0.95rem; color: var(--text-dim); border-style: dashed; padding-inline: 22px; }
-kbd { font-family: var(--font-mono); font-size: 0.72rem; padding: 1px 6px; border: 1.5px solid currentColor; border-radius: 3px; opacity: 0.65; font-weight: 600; }
+kbd { font-family: var(--font-mono); font-size: 0.72rem; padding: 1px 6px; border: 1.5px solid currentColor; border-radius: var(--radius-sm); opacity: 0.65; font-weight: 600; }
 
 .tri-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
 .tri-remember { display: flex; gap: 8px; align-items: center; margin: 0; text-transform: none; letter-spacing: normal; font-weight: 400; color: var(--text); font-size: 0.92rem; cursor: pointer; }
@@ -238,7 +238,7 @@ kbd { font-family: var(--font-mono); font-size: 0.72rem; padding: 1px 6px; borde
 @media (prefers-reduced-motion: reduce) { .tri-card { animation: none !important; } .tri-progress span { transition: none; } }
 
 @media (max-width: 600px) {
-  .tri-card { padding: 18px 16px; box-shadow: 4px 4px 0 var(--gold); }
+  .tri-card { padding: 18px 16px; box-shadow: var(--shadow-card); }
   .tri-versus { grid-template-columns: 1fr; }
   .tri-question { font-size: 1.15rem; }
   .tri-actions { grid-template-columns: 1fr 1fr; }

@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <div v-else-if="!clubs.length" class="empty-state friendly">
       {{ $t('Ingen klubber ennå. Legg til en her, og velg den som logohint når du lager et ukentlig grid.') }}
@@ -83,6 +83,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'

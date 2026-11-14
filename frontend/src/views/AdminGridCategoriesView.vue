@@ -17,7 +17,7 @@
       <button class="btn btn-primary" :disabled="!newName.trim() || saving" @click="createCategory">{{ $t('+ Legg til') }}</button>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim); margin-top:20px;">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
     <div v-else-if="!categories.length" class="empty-state friendly">{{ $t('Ingen kategorier ennå - legg til din første over.') }}</div>
 
     <div v-else class="saved-quiz-list" style="margin-top:20px;">
@@ -28,14 +28,14 @@
               type="text"
               v-model="editingName"
               class="saved-quiz-title"
-              style="width:100%; background:transparent; border:1px solid var(--border); border-radius: 2px; padding:4px 8px; margin-bottom:6px;"
+              style="width:100%; background:transparent; border:1px solid var(--border); border-radius: var(--radius-sm); padding:4px 8px; margin-bottom:6px;"
               @keyup.esc="editingId = null"
             />
             <input
               type="text"
               v-model="editingGroupLabel"
               :placeholder="$t('Grupperingsord, f.eks. Lag')"
-              style="width:100%; background:transparent; border:1px solid var(--border); border-radius: 2px; padding:4px 8px; font-size:0.85rem;"
+              style="width:100%; background:transparent; border:1px solid var(--border); border-radius: var(--radius-sm); padding:4px 8px; font-size:0.85rem;"
               @keyup.enter="confirmRename(c)"
               @keyup.esc="editingId = null"
             />
@@ -69,6 +69,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'
 import api from '../services/api'

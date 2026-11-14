@@ -4,7 +4,7 @@
     <p class="page-subtitle">{{ $t('Gjett alle spillerne som startet en bestemt kamp. Feil gjetninger koster deg et liv.') }}</p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
     <div v-else-if="!activeLineups.length" class="empty-state friendly">
       {{ $t('Ingen Starting XI-brett denne uken ennå - kom tilbake snart, eller be en administrator publisere ett.') }}
     </div>
@@ -84,6 +84,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'
 import api from '../services/api'

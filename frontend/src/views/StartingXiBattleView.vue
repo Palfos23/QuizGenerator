@@ -55,7 +55,7 @@
 
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>{{ $t('Usikker på hvordan det fungerer? Se et eksempel') }}</summary>
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgb(var(--fg-rgb) / 0.06);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: var(--radius-sm); background:rgb(var(--fg-rgb) / 0.06);">
           <p style="margin-top:0;">
             {{ $t('Brettet er ett lags startellever fra en virkelig kamp, f.eks.') }} <em>{{ $t('Arsenals XI i Community Shield 2014') }}</em>{{ $t('. Når det er din tur, søk etter en spiller du tror startet den kampen og send inn en gjetning.') }}
           </p>
@@ -247,7 +247,7 @@
       <h1>{{ $t('Velg') }} {{ numLineups }} {{ $t('brett§StartingXiBattleViewT') }}</h1>
       <p class="page-subtitle">{{ chosenLineups.length }} / {{ numLineups }} {{ $t('valgt§StartingXiBattleViewT') }}</p>
 
-      <div v-if="loadingLineups" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loadingLineups" />
       <div v-else-if="!availableLineups.length" class="empty-state">{{ $t('Ingen brett tilgjengelige ennå.') }}</div>
 
       <div v-else class="saved-quiz-list">
@@ -332,6 +332,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'

@@ -109,7 +109,7 @@
 .dq-card {
   background: var(--dq-card);
   border: 1px solid var(--dq-line);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--dq-shadow);
   padding: 22px;
 }
@@ -186,7 +186,7 @@
   padding: 14px 16px;
   background: var(--dq-card);
   border: 1px solid var(--dq-line);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   color: inherit;
   text-decoration: none;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
@@ -244,7 +244,7 @@ a.dq-row:hover, .dq-row--link:hover {
   padding: 12px 16px 13px;
   background: rgb(var(--page-rgb) / 0.96);
   border: 1px solid var(--dq-line);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
 }
 .dq-progress-label {
@@ -276,7 +276,7 @@ a.dq-row:hover, .dq-row--link:hover {
   padding: 20px 20px 22px;
   background: var(--dq-card);
   border: 1px solid var(--dq-line);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--dq-shadow);
   transition: border-color 0.2s ease, background 0.2s ease;
 }
@@ -310,7 +310,7 @@ a.dq-row:hover, .dq-row--link:hover {
   max-width: 100%;
   max-height: 280px;
   margin: 16px auto 4px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: #fff;
   padding: 8px;
   object-fit: contain;
@@ -323,7 +323,7 @@ a.dq-row:hover, .dq-row--link:hover {
   width: 100%;
   margin-top: 16px;
   padding: 14px 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1.5px solid var(--dq-line);
   background: rgb(var(--fg-rgb) / 0.10);
   color: var(--text);
@@ -341,7 +341,7 @@ a.dq-row:hover, .dq-row--link:hover {
 .dq-q.is-year .dq-input:focus { border-color: var(--dq-year); box-shadow: 0 0 0 4px rgb(var(--violet-rgb) / 0.25); }
 
 .dq-submit { margin: 26px 0 8px; }
-.dq-submit .btn { width: 100%; min-height: 54px; font-size: 1rem; border-radius: 2px; }
+.dq-submit .btn { width: 100%; min-height: 54px; font-size: 1rem; border-radius: var(--radius-sm); }
 .dq-save-btn { margin-top: 10px; }
 .dq-submit .btn.dq-save-btn { min-height: 48px; font-size: 0.95rem; }
 .dq-save-chip {
@@ -417,7 +417,7 @@ a.dq-row:hover, .dq-row--link:hover {
   padding: 16px 18px 16px 20px;
   background: var(--dq-card);
   border: 1px solid var(--dq-line);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 .dq-answer::before {
@@ -444,8 +444,8 @@ a.dq-row:hover, .dq-row--link:hover {
 .dq-complaint-status.is-ok { color: var(--teal-ink, var(--teal)); font-weight: 600; }
 .dq-complaint-form { display: grid; gap: 6px; }
 .dq-complaint-form label { font-size: 0.82rem; color: var(--text-dim); }
-.dq-complaint-form textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--rule); border-radius: 2px; background: var(--field-bg); color: var(--text); font: inherit; resize: vertical; }
-.dq-complaint-form textarea:focus { outline: none; box-shadow: 3px 3px 0 var(--gold); }
+.dq-complaint-form textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--rule); border-radius: var(--radius-sm); background: var(--field-bg); color: var(--text); font: inherit; resize: vertical; }
+.dq-complaint-form textarea:focus { outline: none; box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 0.18); }
 .dq-complaint-actions { display: flex; gap: 8px; }
 .dq-complaint-hint { margin: 0 0 12px; color: var(--text-dim); font-size: 0.92rem; }
 
@@ -470,7 +470,7 @@ a.dq-row:hover, .dq-row--link:hover {
   align-items: center;
   gap: 12px;
   padding: 11px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.07);
 }
 .dq-board-row.is-you {
@@ -506,7 +506,7 @@ a.dq-row:hover, .dq-row--link:hover {
   gap: 8px;
   padding: 12px;
   margin-bottom: 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.08);
 }
 .dq-stat span { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--text-dim); }
@@ -514,7 +514,7 @@ a.dq-row:hover, .dq-row--link:hover {
 
 /* ---------- Modals ---------- */
 
-.dq-modal { max-width: 460px; padding: 26px; border-radius: 2px; }
+.dq-modal { max-width: 460px; padding: 26px; border-radius: var(--radius-sm); }
 .dq-modal-title { margin: 0 0 4px; font-size: 1.35rem; letter-spacing: -0.015em; }
 .dq-modal-sub { margin: 0 0 18px; color: var(--text-dim); font-size: 0.92rem; }
 .dq-modal-icon {
@@ -536,7 +536,7 @@ a.dq-row:hover, .dq-row--link:hover {
   align-items: flex-start;
   margin-top: 14px;
   padding: 12px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   background: var(--dq-bad-bg);
   color: var(--coral-ink);
@@ -549,7 +549,7 @@ a.dq-row:hover, .dq-row--link:hover {
   gap: 12px;
   margin-top: 18px;
   padding: 12px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.07);
   font-size: 0.92rem;
   color: var(--text-dim);
@@ -590,7 +590,7 @@ a.dq-row:hover, .dq-row--link:hover {
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: linear-gradient(135deg, #d8432b, #d8432b);
   color: var(--ink-raised);
 }
@@ -612,7 +612,7 @@ a.dq-row:hover, .dq-row--link:hover {
   padding: 18px 20px;
   background: var(--dq-card);
   border: 1px solid var(--dq-line);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .dq-review.is-wait { border-color: rgb(var(--amber-rgb) / 0.6); box-shadow: 0 0 0 3px rgb(var(--amber-rgb) / 0.10); }
 .dq-review-top { display: flex; gap: 12px; align-items: flex-start; }
@@ -626,7 +626,7 @@ a.dq-row:hover, .dq-row--link:hover {
 }
 .dq-compare-cell {
   padding: 10px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.07);
   min-width: 0;
 }
@@ -681,7 +681,7 @@ a.dq-row:hover, .dq-row--link:hover {
   gap: 12px;
   align-items: flex-start;
   padding: 12px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.07);
 }
 .dq-qrow .dq-q-num { margin-top: 1px; flex-shrink: 0; }
@@ -694,7 +694,7 @@ a.dq-row:hover, .dq-row--link:hover {
 /* ---------- Small screens ---------- */
 
 @media (max-width: 640px) {
-  .dq-card { padding: 18px; border-radius: 2px; }
+  .dq-card { padding: 18px; border-radius: var(--radius-sm); }
   .dq-today { padding: 20px; }
   .dq-today-cta .btn { width: 100%; }
   .dq-q { padding: 16px 16px 18px; }

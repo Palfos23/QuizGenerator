@@ -4,31 +4,37 @@ import { t as _t } from '../i18n'
 
 export const TYPES = {
   NORMAL: {
-    emoji: '🎁',
+    icon: 'gift',
+    emoji: '🎁', // for the shareable text only
     name: _t('Vanlig luke'),
     rules: _t('Velg 4 svar. For hvert av svarene dine som matcher et av spillmesterens, får du 1 poeng (0-4 poeng).')
   },
   DOUBLE: {
+    icon: 'layers',
     emoji: '✨',
     name: _t('X2-luke'),
     rules: _t('Alle poeng dobles. Treffer du 3 av spillmesterens svar, får du 6 poeng.')
   },
   RISK_REWARD: {
+    icon: 'dice',
     emoji: '🎲',
     name: _t('Risk or Reward-luke'),
     rules: _t('Velg om du vil spille trygt eller satse før du sender inn. Trygt gir vanlige poeng. Satser du, får du 2 poeng per treff - men -1 poeng hvis du ikke treffer noen.')
   },
   WILDCARD: {
+    icon: 'star',
     emoji: '🌟',
     name: _t('Wildcard-luke'),
     rules: _t('Spillmesteren har valgt ett av sine fire svar som wildcard. Treffer du det, får du 3 ekstra poeng.')
   },
   OPPOSITE: {
+    icon: 'swap',
     emoji: '🙃',
     name: _t('Opp-ned-luke'),
     rules: _t('Her gjelder det å IKKE tenke som spillmesteren! Alle 4 svarene dine må passe kategorien, og ingen av dem må være blant spillmesterens - da får du 5 poeng. Treffer du minst ett, eller skriver noe som ikke passer, får du 0.')
   },
   ONE_OF_FOUR: {
+    icon: 'target',
     emoji: '🥇',
     name: _t('Én av fire-luke'),
     rules: _t('Spillmesteren har bare valgt ETT svar. Treffer du det med ett av dine 4 svar, får du 5 poeng.')

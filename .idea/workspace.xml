@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="" />
+    <list default="true" id="ffc5fd3a-af3f-41e6-8dcc-befc6ccdd26b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -15,23 +17,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="2.0935686274335463" />
-      <entry key="MS500" value="4.484805417168954" />
-      <entry key="S2" value="11.588880828703575" />
-      <entry key="S5" value="21.783423557005815" />
-      <entry key="S10" value="30.41680210828372" />
-      <entry key="S30" value="40.13068031520684" />
-      <entry key="S60" value="43.35516619118949" />
-      <entry key="M2" value="45.12111416332141" />
-      <entry key="M5" value="46.23435326187995" />
-      <entry key="M10" value="46.61478124693194" />
-      <entry key="M15" value="46.74265167365102" />
-      <entry key="M30" value="46.87105703950943" />
-      <entry key="H1" value="46.93546115389345" />
-      <entry key="H2" value="46.96771371461534" />
-      <entry key="H4" value="46.98385263914148" />
-      <entry key="D1" value="47.50366602804349" />
-      <entry key="W1" value="76.02749008848595" />
+      <entry key="MS100" value="2.074394013554824" />
+      <entry key="MS500" value="4.669437881834622" />
+      <entry key="S2" value="12.630750684963218" />
+      <entry key="S5" value="23.292456421916903" />
+      <entry key="S10" value="32.965937915622405" />
+      <entry key="S30" value="44.911340618861786" />
+      <entry key="S60" value="49.11486421247263" />
+      <entry key="M2" value="51.46442856912708" />
+      <entry key="M5" value="52.96236216405391" />
+      <entry key="M10" value="53.47718480076688" />
+      <entry key="M15" value="53.650561304266276" />
+      <entry key="M30" value="53.82483123092447" />
+      <entry key="H1" value="53.91230292007264" />
+      <entry key="H2" value="53.956123244839084" />
+      <entry key="H4" value="53.9783000904544" />
+      <entry key="D1" value="60.2541062011978" />
+      <entry key="W1" value="110.9125957828321" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -53,23 +55,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.9927583151993664" />
-      <entry key="MS500" value="4.4296049883911675" />
-      <entry key="S2" value="11.554231850715356" />
-      <entry key="S5" value="21.755966139440044" />
-      <entry key="S10" value="30.39647389540381" />
-      <entry key="S30" value="40.121207770202005" />
-      <entry key="S60" value="43.349962623263984" />
-      <entry key="M2" value="45.11838266117922" />
-      <entry key="M5" value="46.233227712381094" />
-      <entry key="M10" value="46.61421282189686" />
-      <entry key="M15" value="46.74227145596434" />
-      <entry key="M30" value="46.870866293796084" />
-      <entry key="H1" value="46.93536562124701" />
-      <entry key="H2" value="46.96766590827293" />
-      <entry key="H4" value="46.983828725956506" />
-      <entry key="D1" value="47.50366199501164" />
-      <entry key="W1" value="76.02748914126965" />
+      <entry key="MS100" value="1.9883706830341845" />
+      <entry key="MS500" value="4.614192783805934" />
+      <entry key="S2" value="12.59343651194271" />
+      <entry key="S5" value="23.264064307622238" />
+      <entry key="S10" value="32.94487921638881" />
+      <entry key="S30" value="44.901289538643134" />
+      <entry key="S60" value="49.10928720773662" />
+      <entry key="M2" value="51.46148435996784" />
+      <entry key="M5" value="52.96114455756407" />
+      <entry key="M10" value="53.47656911861321" />
+      <entry key="M15" value="53.65014930371539" />
+      <entry key="M30" value="53.82462445342892" />
+      <entry key="H1" value="53.9121993362038" />
+      <entry key="H2" value="53.95607140402202" />
+      <entry key="H4" value="53.97827415768746" />
+      <entry key="D1" value="60.254101346110254" />
+      <entry key="W1" value="110.91259445603085" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -81,25 +83,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/palfos/Downloads/quiz-app 4&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Applications/IntelliJ IDEA.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/palfos/Downloads/quiz-app 4",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "/Applications/IntelliJ IDEA.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-2df11533d9fe-intellij.indexing.shared.core-IU-262.11879.100" />
-        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.11879.100" />
+        <option value="bundled-jdk-30f59d01ecdd-ac68fc9d2b05-intellij.indexing.shared.core-IU-263.7307.200" />
       </set>
     </attachedChunks>
   </component>

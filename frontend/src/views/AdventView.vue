@@ -1,19 +1,19 @@
 <template>
   <div class="dq-page adv-page">
     <header class="dq-hero adv-hero">
-      <span class="dq-eyebrow">🎄 {{ $t('Julekalender') }} <template v-if="state">{{ state.year }}</template></span>
+      <span class="dq-eyebrow">{{ $t('Julekalender') }} <template v-if="state">{{ state.year }}</template></span>
       <h1 class="dq-title">{{ $t('Tenk som spillmesteren') }}</h1>
       <p class="dq-sub">{{ $t('En ny luke hver dag til jul - velg 4 svar og prøv å treffe spillmesterens skjulte svar.') }}</p>
     </header>
 
-    <p v-if="state && state.simulatedDate" class="adv-testbanner">🧪 {{ $t('Testmodus: kalenderen later som om det er {0}.', [simulatedLabel]) }}</p>
+    <p v-if="state && state.simulatedDate" class="adv-testbanner"><AppIcon name="flask" /> {{ $t('Testmodus: kalenderen later som om det er {0}.', [simulatedLabel]) }}</p>
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <template v-else-if="state">
       <!-- Before the 1st of December -->
       <section v-if="state.phase === 'BEFORE'" class="dq-card adv-soon">
-        <span class="adv-soon-emoji" aria-hidden="true">🎁</span>
+        <span class="adv-soon-emoji" aria-hidden="true"><AppIcon name="gift" /></span>
         <h2 class="adv-soon-title">{{ $t('Kommer snart') }}</h2>
         <p class="adv-soon-text">
           {{ $t('Første luke åpner {0}.', [startLabel]) }}
@@ -28,13 +28,13 @@
         <section class="adv-stats" aria-label="">
           <div class="adv-stat"><span class="adv-stat-n">{{ state.totalPoints }}</span><span class="adv-stat-l">{{ $t('poeng') }}</span></div>
           <div class="adv-stat"><span class="adv-stat-n">{{ state.rank ? '#' + state.rank : '–' }}</span><span class="adv-stat-l">{{ $t('plass') }}</span></div>
-          <div class="adv-stat"><span class="adv-stat-n">🔥 {{ state.streak }}</span><span class="adv-stat-l">{{ $t('dager på rad') }}</span></div>
-          <div class="adv-stat"><span class="adv-stat-n">🃏 {{ state.jokersLeft }}<small>/{{ state.jokersTotal }}</small></span><span class="adv-stat-l">{{ $t('jokere igjen') }}</span></div>
+          <div class="adv-stat"><span class="adv-stat-n"><AppIcon name="flame" /> {{ state.streak }}</span><span class="adv-stat-l">{{ $t('dager på rad') }}</span></div>
+          <div class="adv-stat"><span class="adv-stat-n"><AppIcon name="cards" /> {{ state.jokersLeft }}<small>/{{ state.jokersTotal }}</small></span><span class="adv-stat-l">{{ $t('jokere igjen') }}</span></div>
         </section>
 
         <!-- Wrapped, once it is all over -->
         <router-link v-if="state.wrappedAvailable" to="/julekalender/wrapped" class="dq-card adv-wrapped-cta">
-          <span class="adv-wrapped-emoji" aria-hidden="true">🎁</span>
+          <span class="adv-wrapped-emoji" aria-hidden="true"><AppIcon name="gift" /></span>
           <span>
             <strong>{{ $t('Din Julekalender-wrapped er klar!') }}</strong><br />
             {{ $t('Se hvordan det gikk - poeng, rekker og favorittøyeblikk.') }}
@@ -44,7 +44,7 @@
         <!-- Today's door -->
         <section v-else-if="todayDoor" class="dq-card adv-today">
           <span class="dq-eyebrow">{{ $t('I dag') }}</span>
-          <div class="adv-today-title">{{ $t('Luke {0}', [todayDoor.day]) }} <span v-if="todayDoor.type" aria-hidden="true">{{ typeInfo(todayDoor.type).emoji }}</span></div>
+          <div class="adv-today-title">{{ $t('Luke {0}', [todayDoor.day]) }} <AppIcon v-if="todayDoor.type" :name="typeInfo(todayDoor.type).icon" /></div>
           <p v-if="todayDoor.type" class="adv-today-type">{{ typeInfo(todayDoor.type).name }}</p>
           <div class="adv-today-cta">
             <router-link :to="`/julekalender/luke/${todayDoor.day}`" class="btn btn-primary">
@@ -71,7 +71,7 @@
             @click="openDoor(door)"
           >
             <span class="adv-door-n">{{ door.day }}</span>
-            <span class="adv-door-sub">{{ doorSub(door) }}</span>
+            <span class="adv-door-sub"><AppIcon v-if="door.status === 'LOCKED'" name="lock" /><template v-else>{{ doorSub(door) }}</template></span>
           </button>
         </div>
 
@@ -84,7 +84,7 @@
             <span class="adv-row-points">{{ p.points }}</span>
           </div>
           <div class="adv-row adv-row--gm">
-            <span class="adv-row-rank">🎩</span>
+            <span class="adv-row-rank"><AppIcon name="crown" /></span>
             <span class="adv-row-name">{{ $t('Spillmesteren') }}</span>
             <span class="adv-row-points">{{ leaderboard.gamemasterPoints }}</span>
           </div>
@@ -114,12 +114,14 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { t as _t, locale } from '../i18n'
 import api from '../services/api'
 import { typeInfo, pointsText } from '../services/advent'
 import AdventRules from '../components/AdventRules.vue'
+import AppIcon from '../components/AppIcon.vue'
 
 const router = useRouter()
 const state = ref(null)
@@ -162,7 +164,6 @@ function openDoor(door) {
 function doorSub(door) {
   if (door.status === 'OPEN') return door.entered ? '✓' : _t('I dag')
   if (door.status === 'CLOSED') return door.entered ? (door.points < 0 ? '−' + Math.abs(door.points) : '+' + door.points) : '–'
-  if (door.status === 'LOCKED') return '🔒'
   return '–'
 }
 
@@ -183,21 +184,21 @@ async function changeShowName(value) {
 
 <style scoped>
 .adv-page { max-width: 760px; }
-.adv-testbanner { margin: 0 0 14px; padding: 8px 14px; border: 2px dashed var(--gold); border-radius: 3px; background: rgb(var(--gold-rgb) / 0.08); font-size: 0.92rem; }
+.adv-testbanner { margin: 0 0 14px; padding: 8px 14px; border: 1px solid rgb(var(--gold-rgb) / 0.4); border-radius: var(--radius-md); background: rgb(var(--gold-rgb) / 0.06); font-size: 0.92rem; }
 .adv-soon { text-align: center; padding: 34px 20px; }
-.adv-soon-emoji { font-size: 3rem; display: block; }
+.adv-soon-emoji { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto var(--space-3); border-radius: var(--radius-lg); background: rgb(var(--primary-rgb) / 0.09); color: var(--primary); font-size: 2rem; }
 .adv-soon-title { margin: 6px 0; font-size: 2rem; }
 .adv-soon-text { margin: 0; color: var(--text-dim); }
 .adv-soon-text strong { display: block; color: var(--text); margin-top: 6px; font-size: 1.1rem; }
 
 .adv-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
-.adv-stat { border: 2px solid var(--rule); border-radius: 3px; background: var(--ink-raised); padding: 10px 6px; text-align: center; }
+.adv-stat { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); padding: 10px 6px; text-align: center; }
 .adv-stat-n { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.45rem; line-height: 1.1; }
 .adv-stat-n small { font-size: 0.8rem; font-weight: 500; color: var(--text-dim); }
 .adv-stat-l { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin-top: 3px; }
 
 .adv-wrapped-cta { display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit; margin-bottom: 8px; }
-.adv-wrapped-emoji { font-size: 2.2rem; }
+.adv-wrapped-emoji { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--radius-md); background: rgb(var(--primary-rgb) / 0.09); color: var(--primary); font-size: 1.5rem; flex-shrink: 0; }
 .adv-today-title { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; margin: 2px 0; }
 .adv-today-type { margin: 0 0 12px; color: var(--text-dim); }
 .adv-today-cta { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
@@ -206,11 +207,11 @@ async function changeShowName(value) {
 .adv-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
 .adv-door {
   aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  border: 2px solid var(--rule); border-radius: 4px; background: var(--ink-raised); color: var(--text);
+  border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); color: var(--text);
   font-family: var(--font-body); cursor: pointer; padding: 2px;
 }
 .adv-door-n { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; line-height: 1; }
-.adv-door-sub { font-size: 0.7rem; color: var(--text-dim); font-family: var(--font-mono); }
+.adv-door-sub { font-size: 0.7rem; color: var(--text-dim); }
 .adv-door.is-locked, .adv-door.is-empty { opacity: 0.5; cursor: default; }
 .adv-door.is-open { border-color: var(--gold); box-shadow: 0 0 0 3px rgb(var(--gold-rgb) / 0.22); background: rgb(var(--gold-rgb) / 0.08); }
 .adv-door.is-open .adv-door-sub { color: var(--gold-ink, var(--gold)); font-weight: 700; }
@@ -223,11 +224,11 @@ async function changeShowName(value) {
 .adv-row { display: flex; align-items: baseline; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
 .adv-row:first-child { border-top: none; }
 .adv-row.is-you { background: rgb(var(--gold-rgb) / 0.09); margin: 0 -14px; padding: 9px 14px; }
-.adv-row-rank { width: 28px; font-family: var(--font-mono); color: var(--text-dim); font-size: 0.9rem; }
+.adv-row-rank { width: 28px; color: var(--text-dim); font-size: 0.9rem; }
 .adv-row-name { flex: 1; min-width: 0; font-family: var(--font-display); font-weight: 600; overflow-wrap: anywhere; }
 .adv-row-name small { font-family: var(--font-body); font-weight: 400; color: var(--text-dim); }
 .adv-row-points { font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; }
-.adv-row--gm { border-top: 2px solid var(--rule); color: var(--text-dim); }
+.adv-row--gm { border-top: 1px solid var(--rule); color: var(--text-dim); }
 .adv-showname { display: flex; gap: 8px; align-items: center; margin-top: 10px; font-size: 0.92rem; text-transform: none; letter-spacing: normal; font-weight: 400; color: var(--text); }
 
 .adv-rules-card { margin-top: 8px; }

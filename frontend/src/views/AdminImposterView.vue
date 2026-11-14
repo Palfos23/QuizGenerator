@@ -10,7 +10,7 @@
       </p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
       <div v-else-if="!grids.length" class="empty-state friendly">{{ $t('Ingen brett ennå - lag ditt første over.') }}</div>
 
       <template v-else>
@@ -126,7 +126,7 @@
 
       <div v-if="!tiles.length" class="empty-state" style="padding:20px;">{{ $t('Ingen emner lagt til ennå - søk over.') }}</div>
 
-      <div v-for="(t, i) in tiles" :key="i" class="field" style="border:1px solid var(--border); border-radius: 2px; padding:12px 14px;">
+      <div v-for="(t, i) in tiles" :key="i" class="field" style="border:1px solid var(--border); border-radius: var(--radius-sm); padding:12px 14px;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
           <strong>{{ t.name }}</strong>
           <div style="display:flex; gap:6px;">
@@ -250,6 +250,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import TranslationEditor from '../components/TranslationEditor.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'

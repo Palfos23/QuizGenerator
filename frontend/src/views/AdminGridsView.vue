@@ -15,7 +15,7 @@
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
 
       <div v-else-if="!grids.length" class="empty-state friendly">
         {{ $t('Ingen grids ennå. Legg til noen emner på siden Emner, og lag ditt første grid her.') }}
@@ -344,6 +344,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import TranslationEditor from '../components/TranslationEditor.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'

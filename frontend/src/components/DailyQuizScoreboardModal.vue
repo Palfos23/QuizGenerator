@@ -4,7 +4,7 @@
       <h2 class="dq-modal-title">{{ title }}</h2>
       <p class="dq-modal-sub">{{ subtitle }}</p>
 
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
 
       <div v-else-if="!entries.length" class="dq-empty" style="padding:22px 0;">
         <strong>{{ $t('Ingen resultater ennå') }}</strong>
@@ -69,6 +69,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from './LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed } from 'vue'
 import { useEscapeKey } from '../composables/useEscapeKey'

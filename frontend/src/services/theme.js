@@ -15,7 +15,7 @@ function apply(value) {
   document.documentElement.dataset.theme = value
   // keeps the browser's own chrome (mobile address bar) in step with the page
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.setAttribute('content', value === 'dark' ? '#171510' : '#f3ede1')
+  if (meta) meta.setAttribute('content', value === 'dark' ? '#0b1220' : '#f3f6fa')
 }
 
 export function setTheme(value) {

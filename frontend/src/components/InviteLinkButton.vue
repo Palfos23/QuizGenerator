@@ -11,7 +11,7 @@
       <div class="modal" role="dialog" aria-modal="true" :aria-label="$t('QR-kode for å bli med i rommet')" style="text-align:center; max-width:280px;">
         <h2 style="margin-bottom:4px;">{{ $t('Skann for å bli med') }}</h2>
         <p class="page-subtitle" style="margin-bottom:16px;">{{ $t('Romkode') }} {{ roomCode }}</p>
-        <img v-if="qrDataUrl" :src="qrDataUrl" :alt="$t('QR-kode for å bli med i rommet')" width="220" height="220" style="border-radius: 2px; background:#fff; padding:8px;" />
+        <img v-if="qrDataUrl" :src="qrDataUrl" :alt="$t('QR-kode for å bli med i rommet')" width="220" height="220" style="border-radius: var(--radius-sm); background:#fff; padding:8px;" />
         <p v-else style="color:var(--text-dim); font-size:0.85rem;">{{ $t('Lager QR-kode…') }}</p>
         <button type="button" class="btn btn-secondary" style="margin-top:16px; width:100%;" @click="toggleQr">{{ $t('Lukk§InviteLinkButtonT') }}</button>
       </div>

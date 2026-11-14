@@ -2,7 +2,7 @@ import { loadLang, t, locale } from './i18n'
 import { initTheme } from './services/theme'
 import './style.css'
 import './styles/daily-quiz.css'
-import './styles/paper.css'
+import './styles/design.css'
 
 initTheme()
 

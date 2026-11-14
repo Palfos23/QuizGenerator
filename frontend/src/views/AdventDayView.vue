@@ -3,15 +3,15 @@
     <router-link to="/julekalender" class="adv-back">← {{ $t('Julekalenderen') }}</router-link>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <template v-else-if="detail">
       <header class="dq-hero adv-hero">
         <span class="dq-eyebrow">{{ $t('Luke {0}', [detail.day]) }} · {{ dateLabel }}</span>
         <h1 class="dq-title adv-category">{{ detail.category }}</h1>
         <div class="adv-pills">
-          <span class="dq-pill">{{ info.emoji }} {{ info.name }}</span>
-          <span v-if="detail.finale" class="dq-pill dq-pill--wait">🎄 {{ $t('Finale - tredoble poeng') }}</span>
+          <span class="dq-pill"><AppIcon :name="info.icon" /> {{ info.name }}</span>
+          <span v-if="detail.finale" class="dq-pill dq-pill--gold"><AppIcon name="tree" /> {{ $t('Finale - tredoble poeng') }}</span>
         </div>
         <p class="adv-rule">{{ info.rules }}</p>
       </header>
@@ -22,8 +22,8 @@
         <ol class="adv-sent-list">
           <li v-for="(a, i) in detail.entry.answers" :key="i">{{ a }}</li>
         </ol>
-        <p v-if="detail.entry.risky" class="adv-hint" style="margin:0 0 6px;">🎲 {{ $t('Du satset') }}</p>
-        <p v-if="detail.entry.jokerUsed" class="adv-hint" style="margin:0 0 6px;">🃏 {{ $t('Du brukte en joker på denne luka') }}</p>
+        <p v-if="detail.entry.risky" class="adv-hint" style="margin:0 0 6px;"><AppIcon name="dice" /> {{ $t('Du satset') }}</p>
+        <p v-if="detail.entry.jokerUsed" class="adv-hint" style="margin:0 0 6px;"><AppIcon name="cards" /> {{ $t('Du brukte en joker på denne luka') }}</p>
         <p class="adv-hint" style="margin:10px 0 0;">{{ $t('Svarene kan ikke endres. Luka stenger ved midnatt - i morgen får du se spillmesterens svar og poengene dine.') }}</p>
       </section>
 
@@ -33,11 +33,11 @@
         <ol class="adv-sent-list">
           <li v-for="(a, i) in cleanAnswers" :key="i">{{ a }}</li>
         </ol>
-        <p v-if="detail.type === 'RISK_REWARD'" class="adv-hint" style="margin:0 0 6px;">{{ risky ? '🎲 ' + $t('Du satser') : $t('Du spiller trygt') }}</p>
-        <p v-if="detail.jokerAllowed" class="adv-hint" style="margin:0 0 6px;">{{ useJoker ? '🃏 ' + $t('Du bruker en joker på denne luka') : $t('Du bruker ikke joker') }}</p>
+        <p v-if="detail.type === 'RISK_REWARD'" class="adv-hint" style="margin:0 0 6px;"><template v-if="risky"><AppIcon name="dice" /> {{ $t('Du satser') }}</template><template v-else>{{ $t('Du spiller trygt') }}</template></p>
+        <p v-if="detail.jokerAllowed" class="adv-hint" style="margin:0 0 6px;"><template v-if="useJoker"><AppIcon name="cards" /> {{ $t('Du bruker en joker på denne luka') }}</template><template v-else>{{ $t('Du bruker ikke joker') }}</template></p>
         <p class="adv-final">{{ $t('Når du sender inn, kan ingenting endres - verken svarene, jokeren eller valget om å satse.') }}</p>
         <div class="adv-submit">
-          <button class="btn btn-primary" :disabled="saving" @click="save">{{ saving ? $t('Sender…') : $t('Send inn for godt') }}</button>
+          <button class="btn btn-primary" :disabled="saving" :aria-busy="saving" @click="save">{{ saving ? $t('Sender…') : $t('Send inn for godt') }}</button>
           <button class="btn btn-secondary" :disabled="saving" @click="reviewing = false">{{ $t('Tilbake og endre') }}</button>
         </div>
       </section>
@@ -71,13 +71,13 @@
           <label class="adv-joker-label">
             <input type="checkbox" v-model="useJoker" :disabled="!useJoker && detail.jokersLeft === 0" />
             <span>
-              <strong>🃏 {{ $t('Bruk en joker på denne luka') }}</strong><br />
+              <strong><AppIcon name="cards" /> {{ $t('Bruk en joker på denne luka') }}</strong><br />
               <template v-if="detail.jokersLeft > 0 || useJoker">{{ $t('Poengene dine på luka dobles. Du har {0} av 3 jokere igjen. Når du har sendt inn, kan den ikke tas tilbake.', [detail.jokersLeft]) }}</template>
               <template v-else>{{ $t('Du har brukt alle 3 jokerne dine.') }}</template>
             </span>
           </label>
         </div>
-        <p v-else-if="detail.finale" class="adv-hint">🃏 {{ $t('Jokeren kan ikke brukes på finalen.') }}</p>
+        <p v-else-if="detail.finale" class="adv-hint"><AppIcon name="cards" /> {{ $t('Jokeren kan ikke brukes på finalen.') }}</p>
 
         <div class="adv-submit">
           <button class="btn btn-primary" @click="lookOver">{{ $t('Se over svarene') }}</button>
@@ -94,11 +94,11 @@
           <div class="adv-points-l">{{ $t('poeng¦poeng', [Math.abs(detail.result.points)]) }}</div>
           <ul class="adv-breakdown">
             <li>{{ $t('{0} av 4 treff', [detail.result.matches]) }}<template v-if="detail.type === 'ONE_OF_FOUR'"> ({{ detail.result.matches ? $t('du traff gullsvaret!') : $t('ingen treff på gullsvaret') }})</template></li>
-            <li v-if="detail.type === 'OPPOSITE' && detail.result.matches === 0 && detail.result.answerFits && detail.result.answerFits.includes(false)">⚠️ {{ $t('Minst ett av svarene dine passet ikke i kategorien - derfor ingen poeng.') }}</li>
-            <li v-if="detail.result.wildcardHit">🌟 {{ $t('Du traff wildcard: +3 poeng') }}</li>
-            <li v-if="detail.entry?.risky">🎲 {{ $t('Du satset') }}</li>
-            <li v-if="detail.result.jokerBonus > 0">🃏 {{ $t('Jokeren ga deg +{0} poeng', [detail.result.jokerBonus]) }}</li>
-            <li v-if="detail.finale">🎄 {{ $t('Finalen: alle poeng tredoblet') }}</li>
+            <li v-if="detail.type === 'OPPOSITE' && detail.result.matches === 0 && detail.result.answerFits && detail.result.answerFits.includes(false)">{{ $t('Minst ett av svarene dine passet ikke i kategorien - derfor ingen poeng.') }}</li>
+            <li v-if="detail.result.wildcardHit"><AppIcon name="star" /> {{ $t('Du traff wildcard: +3 poeng') }}</li>
+            <li v-if="detail.entry?.risky"><AppIcon name="dice" /> {{ $t('Du satset') }}</li>
+            <li v-if="detail.result.jokerBonus > 0"><AppIcon name="cards" /> {{ $t('Jokeren ga deg +{0} poeng', [detail.result.jokerBonus]) }}</li>
+            <li v-if="detail.finale"><AppIcon name="tree" /> {{ $t('Finalen: alle poeng tredoblet') }}</li>
           </ul>
           <button class="btn btn-secondary btn-sm" @click="share">{{ $t('Del resultatet') }}</button>
           <span v-if="shareNote" class="adv-saved" style="margin-left:10px;">{{ shareNote }}</span>
@@ -123,13 +123,13 @@
         <h2 class="dq-section-title">{{ $t('Spillmesterens svar') }}</h2>
         <div class="dq-card adv-list">
           <div v-for="(h, i) in detail.hidden" :key="i" class="adv-line">
-            <span class="adv-mark">{{ h.wildcard ? '🌟' : detail.type === 'ONE_OF_FOUR' ? '🥇' : '•' }}</span>
+            <span class="adv-mark"><AppIcon v-if="h.wildcard" name="star" /><AppIcon v-else-if="detail.type === 'ONE_OF_FOUR'" name="target" /><template v-else>•</template></span>
             <span class="adv-line-main">{{ h.text }}<small v-if="h.wildcard"> {{ $t('(wildcard)') }}</small></span>
             <span class="adv-line-side">{{ $t('{0} % traff', [h.matchedPercent]) }}</span>
           </div>
           <p class="adv-hint" style="margin:8px 0 0;">
-            <template v-if="detail.gamemasterPoints > 0">🎩 {{ $t('Spillmesteren fikk {0} poeng på denne luka.', [detail.gamemasterPoints]) }}</template>
-            <template v-else>🎩 {{ $t('Spillmesteren fikk ingen poeng på denne luka.') }}</template>
+            <template v-if="detail.gamemasterPoints > 0"><AppIcon name="crown" /> {{ $t('Spillmesteren fikk {0} poeng på denne luka.', [detail.gamemasterPoints]) }}</template>
+            <template v-else><AppIcon name="crown" /> {{ $t('Spillmesteren fikk ingen poeng på denne luka.') }}</template>
           </p>
         </div>
 
@@ -152,11 +152,13 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { t as _t, locale } from '../i18n'
 import api from '../services/api'
 import { typeInfo, shareText, shareOrCopy } from '../services/advent'
+import AppIcon from '../components/AppIcon.vue'
 
 const route = useRoute()
 const day = computed(() => Number(route.params.n))
@@ -275,12 +277,12 @@ async function share() {
 .adv-hint { color: var(--text-dim); font-size: 0.92rem; margin: 0 0 14px; }
 
 .adv-answer { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.adv-answer label { width: 22px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-dim); margin: 0; text-align: right; }
+.adv-answer label { width: 22px; font-size: 1rem; color: var(--text-dim); margin: 0; text-align: right; }
 .adv-answer input { flex: 1; min-width: 0; }
 
 .adv-choice { border: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; }
 .adv-choice legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
-.adv-option, .adv-joker-label { display: flex; gap: 10px; align-items: flex-start; border: 2px solid var(--rule); border-radius: 3px; padding: 10px 12px; cursor: pointer; text-transform: none; letter-spacing: normal; font-weight: 400; color: var(--text); font-size: 0.95rem; margin: 0; }
+.adv-option, .adv-joker-label { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 10px 12px; cursor: pointer; text-transform: none; letter-spacing: normal; font-weight: 400; color: var(--text); font-size: 0.95rem; margin: 0; }
 .adv-option.is-on { background: rgb(var(--gold-rgb) / 0.1); border-color: var(--gold); }
 .adv-joker { margin-top: 16px; }
 .adv-joker-label { border-style: dashed; }
@@ -291,7 +293,7 @@ async function share() {
 .adv-saved { color: var(--teal-ink, var(--teal)); font-weight: 600; font-size: 0.92rem; }
 .adv-sent-title { margin: 0 0 10px; font-size: 1.3rem; }
 .adv-sent-list { margin: 0 0 12px; padding-left: 24px; display: grid; gap: 6px; font-size: 1.05rem; }
-.adv-final { margin: 14px 0 0; padding: 10px 12px; border: 2px solid var(--gold); border-radius: 3px; background: rgb(var(--gold-rgb) / 0.08); font-weight: 600; font-size: 0.95rem; }
+.adv-final { margin: 14px 0 0; padding: 10px 12px; border: 2px solid var(--gold); border-radius: var(--radius-sm); background: rgb(var(--gold-rgb) / 0.08); font-weight: 600; font-size: 0.95rem; }
 
 .adv-result { text-align: center; }
 .adv-points { font-family: var(--font-display); font-weight: 700; font-size: 4rem; line-height: 1; color: var(--teal-ink, var(--teal)); }
@@ -304,15 +306,15 @@ async function share() {
 .adv-line:first-child { border-top: none; }
 .adv-line-main { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .adv-line-main small { color: var(--text-dim); margin-left: 6px; }
-.adv-prelim { margin-bottom: 14px; padding: 10px 14px; border: 2px solid var(--gold); border-radius: 3px; background: rgb(var(--gold-rgb) / 0.08); font-size: 0.92rem; }
-.adv-line-side { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-dim); white-space: nowrap; }
+.adv-prelim { margin-bottom: 14px; padding: 10px 14px; border: 2px solid var(--gold); border-radius: var(--radius-sm); background: rgb(var(--gold-rgb) / 0.08); font-size: 0.92rem; }
+.adv-line-side { font-size: 0.82rem; color: var(--text-dim); white-space: nowrap; }
 .adv-mark { width: 22px; text-align: center; font-weight: 700; }
 .adv-mark.is-ok { color: var(--teal-ink, var(--teal)); }
 .adv-mark.is-bad { color: var(--coral-ink, var(--coral)); }
 .adv-crowd { padding: 7px 0; border-top: 1px solid var(--line); }
 .adv-crowd:first-child { border-top: none; }
 .adv-crowd-top { display: flex; gap: 10px; align-items: baseline; }
-.adv-bar { height: 6px; background: var(--line); border-radius: 3px; margin-top: 5px; overflow: hidden; }
-.adv-bar span { display: block; height: 100%; background: var(--text); opacity: 0.45; border-radius: 3px; }
+.adv-bar { height: 6px; background: var(--line); border-radius: var(--radius-sm); margin-top: 5px; overflow: hidden; }
+.adv-bar span { display: block; height: 100%; background: var(--text); opacity: 0.45; border-radius: var(--radius-sm); }
 .adv-bar span.is-hit { background: var(--teal); opacity: 1; }
 </style>

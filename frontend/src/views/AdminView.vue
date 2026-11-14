@@ -90,7 +90,7 @@
       </div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <div v-else-if="!questions.length" class="empty-state friendly">
       <p style="margin-top:0;">{{ $t('Ingen spørsmål i banken ennå.') }}</p>
@@ -163,6 +163,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'

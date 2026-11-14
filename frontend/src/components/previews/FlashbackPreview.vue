@@ -63,7 +63,7 @@ const clues = [
   display: flex;
   gap: 12px;
   padding: 10px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.025);
   border: 1px solid var(--border);
 }

@@ -4,34 +4,37 @@
 
     <div class="dashboard-hero-row">
       <section class="dashboard-hero">
-        <h1>{{ $t('Lag en quiz') }}</h1>
+        <h1>{{ $t('Dagens quiz§DashboardViewJ') }}</h1>
         <p class="page-subtitle landing-lede">
-          {{ $t('Lag en egen quiz for venner, kolleger eller quizkvelden på lokalpuben.') }}
+          {{ $t('15 tilfeldige spørsmål i pubquiz-stil - fritekst, et nytt sett hver dag.') }}
         </p>
         <div class="dashboard-hero-actions">
-          <router-link to="/generate" class="btn btn-primary btn-lg">{{ $t('Lag en quiz →') }}</router-link>
+          <router-link to="/daily-quiz" class="btn btn-primary btn-lg">{{ $t('Spill dagens quiz§HomeViewT') }} →</router-link>
         </div>
       </section>
 
-      <!-- Not folded into the "Create a quiz" hero above - joining a game
-           someone else is hosting has nothing to do with making a quiz, it's
-           the entry point into the games/rooms side of the app. Still gets
-           top billing of its own instead, right beside the other hero. -->
-      <section class="dashboard-join-card">
-        <h2>{{ $t('Bli med i et spill') }}</h2>
-        <p class="page-subtitle">{{ $t('Har du fått en romkode fra en vert? Hopp rett inn.') }}</p>
-        <router-link to="/join" class="btn btn-secondary btn-lg">{{ $t('Bli med med kode →') }}</router-link>
-      </section>
+      <div class="dashboard-side">
+        <section class="dashboard-join-card">
+          <h2>{{ $t('Lag en quiz') }}</h2>
+          <p class="page-subtitle">{{ $t('Lag en egen quiz for venner, kolleger eller quizkvelden på lokalpuben.') }}</p>
+          <router-link to="/generate" class="btn btn-secondary">{{ $t('Lag en quiz →') }}</router-link>
+        </section>
+        <section class="dashboard-join-card">
+          <h2>{{ $t('Bli med i et spill') }}</h2>
+          <p class="page-subtitle">{{ $t('Har du fått en romkode fra en vert? Hopp rett inn.') }}</p>
+          <router-link to="/join" class="btn btn-secondary">{{ $t('Bli med med kode →') }}</router-link>
+        </section>
+      </div>
     </div>
 
     <!-- The advent calendar: a banner from November until the season is over (it says "coming soon" until 1 December). -->
     <router-link v-if="showAdventBanner" to="/julekalender" class="dashboard-advent">
-      <span class="dashboard-advent-emoji" aria-hidden="true">🎄</span>
+      <span class="dashboard-advent-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4M8 15h3" /></svg></span>
       <div>
         <h3>{{ $t('Julekalender') }}</h3>
         <p>{{ $t('En ny luke hver dag 1.-24. desember - tenk som spillmesteren og samle poeng.') }}</p>
       </div>
-      <span class="btn btn-primary">{{ $t('Åpne →') }}</span>
+      <span class="btn btn-secondary">{{ $t('Åpne →') }}</span>
     </router-link>
 
     <template v-for="section in dashboardSections" :key="section.title">
@@ -138,9 +141,10 @@ import api from '../services/api'
 // The advent calendar banner shows from 1 November through January (the season's wrapped is up until then).
 const showAdventBanner = [0, 10, 11].includes(new Date().getMonth())
 
-const WEEKLY_QUIZ_ACCENT = 'var(--teal)'
-const GAME_ACCENT = 'var(--violet)'
-const QUIZ_MANAGEMENT_ACCENT = 'var(--gold)'
+// one accent for every card: the sections are told apart by their headings and spacing, not by colour
+const WEEKLY_QUIZ_ACCENT = 'var(--primary)'
+const GAME_ACCENT = 'var(--primary)'
+const QUIZ_MANAGEMENT_ACCENT = 'var(--primary)'
 
 const dashboardSectionDefs = [
   {

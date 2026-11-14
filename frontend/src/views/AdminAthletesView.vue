@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <div v-else-if="!athletes.length" class="empty-state friendly">
       {{ $t('Ingen emner ennå. Legg til noen her før du lager et ukentlig grid.') }}
@@ -149,6 +149,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'

@@ -18,7 +18,7 @@
       <span v-if="pendingAttempts.length" class="dq-pill dq-pill--wait">{{ pendingAttempts.length }}</span>
     </h2>
 
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <div v-else-if="!pendingAttempts.length" class="dq-card dq-empty">
       <div class="dq-empty-icon">
@@ -49,7 +49,7 @@
       <small>{{ $t('åpne en dag for å se hvem som spilte og rette en avgjørelse - quizer fjernes når de er 7 dager gamle') }}</small>
     </h2>
 
-    <div v-if="quizzesLoading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="quizzesLoading" />
     <div v-else-if="!allQuizzes.length" class="dq-card dq-card--flat dq-empty" style="padding:22px;">{{ $t('Ingen daglige quizer ennå.') }}</div>
     <div v-else class="dq-list">
       <div v-for="q in allQuizzes" :key="q.id" class="dq-row">
@@ -82,6 +82,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'
 import api from '../services/api'

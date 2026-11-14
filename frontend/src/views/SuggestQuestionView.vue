@@ -55,7 +55,7 @@
 
     <h2 style="margin-top:40px;">{{ $t('Dine innsendinger') }}</h2>
 
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
     <div v-else-if="!submissions.length" class="empty-state">{{ $t('Du har ikke sendt inn noen spørsmål ennå.') }}</div>
 
     <div v-else class="saved-quiz-list">
@@ -79,6 +79,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { onMounted, reactive, ref } from 'vue'
 import api from '../services/api'

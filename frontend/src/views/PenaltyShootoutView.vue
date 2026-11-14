@@ -41,7 +41,7 @@
 
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>{{ $t('Usikker på hvordan det fungerer? Se et eksempel') }}</summary>
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgb(var(--fg-rgb) / 0.06);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: var(--radius-sm); background:rgb(var(--fg-rgb) / 0.06);">
           <p style="margin-top:0;">
             {{ $t('Et konkurransebrett viser hvert spark i den virkelige rekkefølgen, delt på lag - et lite merke viser allerede om hvert enkelt ble') }} <strong style="color:var(--teal);">{{ $t('scoret') }}</strong> {{ $t('eller') }}
             <strong style="color:var(--coral);">{{ $t('bommet') }}</strong>{{ $t(', men ikke hvem som tok det.') }}

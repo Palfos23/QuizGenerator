@@ -8,7 +8,7 @@
       <p class="fiveoo-rules-reminder">{{ $t('Første som kommer ut mellom 0 og -10 vinner') }}</p>
     </div>
 
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
@@ -129,6 +129,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from './LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, ref } from 'vue'
 import api from '../services/api'

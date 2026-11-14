@@ -49,7 +49,7 @@
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>{{ $t('Usikker på hvordan det fungerer? Se et eksempel') }}</summary>
 
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgb(var(--fg-rgb) / 0.06);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: var(--radius-sm); background:rgb(var(--fg-rgb) / 0.06);">
           <p style="margin-top:0;">
             {{ $t('Si at spørsmålet er') }} <em>{{ $t('«Nevn en av de 10 mest søkte matingrediensene på Google i 2023»') }}</em>
             {{ $t('(et oppdiktet eksempel, bare for å illustrere). Det finnes en rangert liste med 10 riktige svar som ingen kan se ennå:') }}

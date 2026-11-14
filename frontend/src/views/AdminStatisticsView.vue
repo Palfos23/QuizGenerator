@@ -13,7 +13,7 @@
     </header>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading && !stats" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading && !stats" />
 
     <template v-else-if="stats">
       <!-- Waiting on an admin -->
@@ -184,6 +184,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
@@ -291,14 +292,14 @@ onMounted(load)
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   text-decoration: none;
   color: var(--text);
   background: var(--ink-raised);
-  border: 2px solid var(--rule);
+  border: 1px solid var(--rule);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.stat-attn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--gold); }
+.stat-attn:hover { transform: translate(-1px, -1px); box-shadow: var(--shadow-card); }
 .stat-attn.is-clear { border-color: var(--line); }
 .stat-attn.is-clear:hover { box-shadow: none; transform: none; }
 .stat-attn-count {
@@ -307,7 +308,7 @@ onMounted(load)
   min-width: 44px;
   height: 44px;
   padding: 0 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 1.4rem;
@@ -329,8 +330,8 @@ onMounted(load)
 .stat-kpi {
   --accent: var(--gold);
   padding: 18px 20px;
-  border-radius: 2px;
-  border: 2px solid var(--rule);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--rule);
   background: var(--ink-raised);
   box-shadow: none;
 }
@@ -385,7 +386,6 @@ onMounted(load)
   cursor: default;
 }
 .stat-bar-col-value {
-  font-family: var(--font-mono);
   font-size: 0.72rem;
   color: var(--text-dim);
   margin-bottom: 4px;
@@ -428,7 +428,7 @@ onMounted(load)
 .stat-range { margin-top: 16px; }
 .stat-range-track { position: relative; height: 8px; background: rgb(var(--fg-rgb) / 0.10); border-radius: 999px; }
 .stat-range-fill { position: absolute; top: 0; bottom: 0; background: rgb(var(--teal-rgb) / 0.45); border-radius: 999px; min-width: 2px; }
-.stat-range-avg { position: absolute; top: -3px; width: 3px; height: 14px; background: var(--dq-ok); border-radius: 2px; transform: translateX(-50%); }
+.stat-range-avg { position: absolute; top: -3px; width: 3px; height: 14px; background: var(--dq-ok); border-radius: var(--radius-sm); transform: translateX(-50%); }
 .stat-range-ends { display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.7rem; color: var(--text-dim); }
 
 @media (max-width: 640px) {

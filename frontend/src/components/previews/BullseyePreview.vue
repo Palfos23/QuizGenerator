@@ -81,7 +81,7 @@ const guesses = [
   align-items: center;
   gap: 10px;
   padding: 7px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.025);
   border: 1px solid var(--border);
   font-size: 0.76rem;
@@ -89,7 +89,7 @@ const guesses = [
 .bp-who { font-weight: 700; color: var(--text); }
 .bp-pick { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bp-pick i { font-style: normal; color: var(--text-dim); font-size: 0.7rem; }
-.bp-off { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); white-space: nowrap; }
+.bp-off { font-size: 0.68rem; color: var(--text-dim); white-space: nowrap; }
 .bp-flag {
   font-size: 0.58rem;
   font-weight: 700;

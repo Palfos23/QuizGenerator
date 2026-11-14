@@ -32,7 +32,7 @@
             {{ swapping ? $t('Finner et nytt…') : $t('↻ Hatt dette før? Velg et annet spørsmål') }}
           </button>
         </div>
-        <div v-if="state.answersSoFar && state.answersSoFar.length" style="max-width:420px; margin:16px auto 0; border:1px solid var(--border); border-radius: 2px; padding:10px 14px;">
+        <div v-if="state.answersSoFar && state.answersSoFar.length" style="max-width:420px; margin:16px auto 0; border:1px solid var(--border); border-radius: var(--radius-sm); padding:10px 14px;">
           <div style="color:var(--text-dim); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
             {{ $t('Svart så langt denne runden') }}
           </div>

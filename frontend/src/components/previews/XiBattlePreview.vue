@@ -61,7 +61,7 @@ const rows = [
   max-width: 440px;
   margin: 0 auto;
   padding: 16px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background:
     repeating-linear-gradient(0deg, rgb(var(--fg-rgb) / 0.07) 0 22px, transparent 22px 44px),
     linear-gradient(180deg, var(--pitch-a), var(--pitch-b));

@@ -48,7 +48,7 @@
 
       <details class="advanced-disclosure" style="margin-top:24px;">
         <summary>{{ $t('Usikker på hvordan det fungerer? Se et eksempel') }}</summary>
-        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: 2px; background:rgb(var(--fg-rgb) / 0.06);">
+        <div style="margin-top:16px; padding:16px 20px; border:1px solid var(--border); border-radius: var(--radius-sm); background:rgb(var(--fg-rgb) / 0.06);">
           <p style="margin-top:0;">
             {{ $t('La oss si at kategorien er «Premier League-kamper». Du står på 501, og du søker etter en spiller - si en med') }} <strong>136</strong> {{ $t('kamper. Det er under 180 og ikke ett av de uoppnåelige tallene, så det gir full poengsum: du står nå på') }} <strong>365</strong>.
           </p>
@@ -68,7 +68,7 @@
       <p class="page-subtitle">{{ $t('501 spilles kun én mot én, der enheten sendes rundt mellom kastene.') }}</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
       <div v-else-if="!categories.length" class="empty-state friendly">{{ $t('Ingen kategorier ennå - be en administrator legge til en.') }}</div>
 
       <template v-else>
@@ -129,7 +129,7 @@
 
       <div class="field">
         <label>{{ $t('Kategori') }}</label>
-        <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+        <LoadingSkeleton v-if="loading" />
         <div v-else class="saved-quiz-list">
           <div v-for="c in categories" :key="c.id" class="saved-quiz-row">
             <div class="saved-quiz-info">
@@ -245,6 +245,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'

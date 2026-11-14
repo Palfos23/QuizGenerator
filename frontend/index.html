@@ -6,13 +6,13 @@
     <title>Quizzes</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta name="theme-color" content="#f3ede1" />
+    <meta name="theme-color" content="#f3f6fa" />
     <script>
       // Apply the saved light/dark choice before first paint (see src/services/theme.js).
       try {
         if (localStorage.getItem('quiz_theme') === 'dark') {
           document.documentElement.dataset.theme = 'dark';
-          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#171510');
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0b1220');
         }
       } catch (e) {}
     </script>

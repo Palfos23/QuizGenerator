@@ -128,7 +128,7 @@
 
       <div v-if="onlineBoardMode === 'manual'" class="field">
         <label>{{ $t('Velg nøyaktig') }} {{ onlineNumBoards }} {{ $t('brett§ImposterViewT') }} <span class="picker-hint">{{ onlineChosenBoards.length }}/{{ onlineNumBoards }} {{ $t('valgt§ImposterViewT') }}</span></label>
-        <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+        <LoadingSkeleton v-if="loading" />
         <div v-else class="saved-quiz-list">
           <div v-for="g in allBoards" :key="g.id" class="saved-quiz-row">
             <div class="saved-quiz-info">
@@ -233,7 +233,7 @@
       <p class="page-subtitle">{{ chosenBoards.length }} / {{ numBoards }} {{ $t('valgt§ImposterViewT') }}</p>
 
       <div v-if="error" class="banner error">{{ error }}</div>
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
       <div v-else-if="!allBoards.length" class="empty-state friendly">{{ $t('Ingen brett ennå - be en administrator legge til ett.') }}</div>
 
       <div v-else class="saved-quiz-list">
@@ -319,6 +319,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'

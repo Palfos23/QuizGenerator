@@ -14,7 +14,7 @@
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
 
       <div v-else-if="!questions.length" class="empty-state friendly">
         {{ $t('Ingen Bullseye-spørsmål ennå. Lag ditt første her.') }}
@@ -176,7 +176,7 @@
 
         <div
           v-if="showFiveOhOnePicker"
-          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:12px 14px; border:1px solid var(--border); border-radius: 2px; background:rgb(var(--fg-rgb) / 0.06);"
+          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; padding:12px 14px; border:1px solid var(--border); border-radius: var(--radius-sm); background:rgb(var(--fg-rgb) / 0.06);"
         >
           <span v-if="loadingFiveOhOneCategories" style="color:var(--text-dim);">{{ $t('Laster 501-quizer…') }}</span>
           <span v-else-if="!fiveOhOneCategories.length" style="color:var(--text-dim);">{{ $t('Ingen 501-quizer finnes ennå.') }}</span>
@@ -200,7 +200,7 @@
           <button class="btn btn-secondary btn-sm" @click="showFiveOhOnePicker = false">{{ $t('Avbryt') }}</button>
         </div>
 
-        <div v-if="csvUnmatchedNames.length" style="background:rgb(var(--gold-rgb) / 0.1); border:1px solid rgb(var(--gold-rgb) / 0.3); border-radius: 2px; padding:14px 16px; margin-bottom:10px;">
+        <div v-if="csvUnmatchedNames.length" style="background:rgb(var(--gold-rgb) / 0.1); border:1px solid rgb(var(--gold-rgb) / 0.3); border-radius: var(--radius-sm); padding:14px 16px; margin-bottom:10px;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
             <strong style="color:var(--gold);">
               {{ csvUnmatchedNames.length }} {{ $t('navn ble ikke funnet i "') }}{{ form.sport }}"
@@ -302,6 +302,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import TranslationEditor from '../components/TranslationEditor.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'

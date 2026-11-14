@@ -76,49 +76,77 @@
 :root {
   --nav-height: 64px; /* used by sticky elements positioned just below the top nav - keep in sync with .top-nav's actual rendered height per breakpoint. Redefined for the mobile nav's shorter height in the @media (max-width: 760px) block below. */
   --bottom-nav-height: 0px; /* the fixed mobile .bottom-nav is hidden above 760px, so anything sticky to the viewport bottom can sit flush at 0 by default - redefined below for the breakpoint where that bar actually covers the bottom of the screen. */
-  /* "Paper and ink": a warm cream page, black ink, one vermillion accent, hard edges. The variable names
-     are from the old dark theme (--ink was the dark page colour) - they now hold the paper palette. */
-  --ink: #f3ede1;            /* the page: paper */
-  --ink-raised: #fbf7ef;     /* cards, modals: lighter paper */
-  --gold: #d8432b;           /* the accent: vermillion (was gold) */
-  --gold-soft: rgb(var(--gold-rgb) / 0.10);
-  --coral: #b3261e;          /* errors, destructive */
-  --teal: #1f7a50;           /* success */
-  --violet: #3d4f9f;         /* secondary accent: ink blue */
-  --text: #1b1a17;           /* ink */
-  --text-dim: #5e594e;
-  --border: rgb(var(--fg-rgb) / 0.22);
-  --rule: #1b1a17;           /* the heavy rule: 2px ink borders on cards, nav and modals */
+  /* Egyptian blue, stone blue and scarlet on a cool off-white page. The token names are from older themes
+     (--ink is the page colour, --gold the accent, --violet the secondary accent): they are kept so every
+     component follows, but they now hold this palette:
+       blue    = the primary action and links  (Egyptian blue)
+       stone   = surfaces, borders, secondary text (stone blue)
+       scarlet = emphasis, "now", errors      (--gold and --coral)
+     Green stays only for "correct". */
+  --ink: #f3f6fa;            /* the page */
+  --ink-raised: #ffffff;     /* cards, modals */
+  --primary: #1034a6;        /* Egyptian blue */
+  --primary-hover: #0c2a87;
+  --primary-rgb: 16 52 166;
+  --on-primary: #ffffff;
+  --stone: #6b8299;          /* stone blue: icons, strong borders (decorative - not for small text) */
+  --gold: #e0200b;           /* scarlet: the accent */
+  --gold-soft: rgb(var(--gold-rgb) / 0.08);
+  --coral: #c71f0d;          /* errors, destructive */
+  --teal: #14795b;           /* success */
+  --violet: #1034a6;         /* secondary accent = Egyptian blue */
+  --text: #0f1b2d;
+  --text-dim: #4a5d72;       /* stone blue, dark enough for body text (6.3:1 on the page) */
+  --border: rgb(var(--fg-rgb) / 0.14);
+  --rule: #c9d3de;           /* the standard 1px border */
 
   /* The same colours as space-separated channels, for translucent tints: rgb(var(--fg-rgb) / 0.2). They
      flip with the theme along with the tokens above, so every tint follows. */
-  --fg-rgb: 27 26 23;        /* ink */
-  --paper-rgb: 251 247 239;  /* = --ink-raised */
-  --page-rgb: 243 237 225;   /* = --ink */
-  --gold-rgb: 216 67 43;
-  --teal-rgb: 31 122 80;
-  --coral-rgb: 179 38 30;
-  --violet-rgb: 61 79 159;
+  --fg-rgb: 15 27 45;        /* ink */
+  --paper-rgb: 255 255 255;  /* = --ink-raised */
+  --page-rgb: 243 246 250;   /* = --ink */
+  --gold-rgb: 224 32 11;
+  --teal-rgb: 20 121 91;
+  --coral-rgb: 199 31 13;
+  --violet-rgb: 16 52 166;
   --field-bg: #ffffff;       /* inputs, hovered rows */
   --pitch-a: #86ad8c;        /* Starting XI pitch */
   --pitch-b: #7da585;
-  --pitch-text: #1b1a17;     /* player names printed on the pitch */
+  --pitch-text: #0f1b2d;     /* player names printed on the pitch */
   /* Darker/lighter variants of the accents for TEXT (pills, banners): deep enough to read on a tinted light
      surface, light enough to read on a tinted dark one. */
-  --teal-ink: #17603e;
-  --coral-ink: #8a1c14;
-  --amber-ink: #8a5a00;
-  --amber-rgb: 154 106 0;
-  --violet-ink: #2f3f86;
-  --gold-ink: #a8321e;
+  --teal-ink: #0e5f46;
+  --coral-ink: #a3180a;
+  --amber-ink: #3a4d63;      /* "waiting" is a calm stone blue, not a warning colour */
+  --amber-rgb: 74 93 114;
+  --violet-ink: #1034a6;
+  --gold-ink: #b3190a;
 
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Instrument Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-sm: 2px;
-  --radius-md: 3px;
-  --radius-lg: 4px;
+  /* Radii: a container's inner element takes the container's radius minus the space between them, so
+     curves stay concentric (a 14px card with 8px of inset holds 6px-radius rows). */
+  --radius-sm: 6px;          /* chips, small inner elements */
+  --radius-md: 10px;         /* buttons, inputs, rows */
+  --radius-lg: 14px;         /* cards */
+  --radius-xl: 20px;         /* modals, hero surfaces */
+
+  /* Spacing scale (4px base) - group things by space instead of lines */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+
+  /* Elevation: one soft step for cards, one for floating layers */
+  --shadow-card: 0 1px 2px rgb(var(--fg-rgb) / 0.06), 0 1px 1px rgb(var(--fg-rgb) / 0.04);
+  --shadow-float: 0 12px 32px rgb(var(--fg-rgb) / 0.16), 0 2px 6px rgb(var(--fg-rgb) / 0.08);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * { box-sizing: border-box; }
@@ -128,40 +156,47 @@ html {
   color-scheme: light;
 }
 
-/* Dark mode: the same paper-and-ink palette turned over - warm near-black page, cream ink, the vermillion
-   accent a little brighter. Switched by [data-theme="dark"] on <html> (services/theme.js, set before first
-   paint by a snippet in index.html). Screen only, so printed quizzes and PDFs stay on white paper. */
+/* Dark mode: deep navy page, cool off-white text, the blue and scarlet brightened to hold up on dark. Switched by
+   [data-theme="dark"] on <html> (services/theme.js, set before first paint by a snippet in index.html). Screen only,
+   so printed quizzes and PDFs stay on white paper. */
 @media screen {
   :root[data-theme="dark"] {
-    --ink: #171510;
-    --ink-raised: #211e17;
-    --gold: #e8593f;
-    --gold-soft: rgba(232, 89, 63, 0.14);
-    --coral: #e5645a;
-    --teal: #4cb583;
-    --violet: #8d9bea;
-    --text: #efe8da;
-    --text-dim: #a9a190;
-    --border: rgba(239, 232, 218, 0.22);
-    --rule: #d4ccb9;
+    --ink: #0b1220;
+    --ink-raised: #131c2f;
+    --primary: #4a72f0;
+    --primary-hover: #6485f4;
+    --primary-rgb: 74 114 240;
+    --on-primary: #ffffff;
+    --stone: #7d93aa;
+    --gold: #ff5b45;
+    --gold-soft: rgba(255, 91, 69, 0.14);
+    --coral: #ff7b6b;
+    --teal: #5ed1a0;
+    --violet: #8aa5ff;
+    --text: #e8eef5;
+    --text-dim: #9fb0c3;
+    --border: rgba(232, 238, 245, 0.16);
+    --rule: #2a3951;
 
-    --fg-rgb: 239 232 218;
-    --paper-rgb: 33 30 23;
-    --page-rgb: 23 21 16;
-    --gold-rgb: 232 89 63;
-    --teal-rgb: 76 181 131;
-    --coral-rgb: 229 100 90;
-    --violet-rgb: 141 155 234;
-    --field-bg: #14120d;
+    --fg-rgb: 232 238 245;
+    --paper-rgb: 19 28 47;
+    --page-rgb: 11 18 32;
+    --gold-rgb: 255 91 69;
+    --teal-rgb: 94 209 160;
+    --coral-rgb: 255 123 107;
+    --violet-rgb: 138 165 255;
+    --field-bg: #0e1626;
     --pitch-a: #35603f;
     --pitch-b: #2d5536;
-    --pitch-text: #efe8da;
-    --teal-ink: #86d6ad;
-    --coral-ink: #f29a91;
-    --amber-ink: #e5b565;
-    --amber-rgb: 229 181 101;
-    --violet-ink: #b9c3f7;
-    --gold-ink: #f4917a;
+    --pitch-text: #e8eef5;
+    --teal-ink: #86e0b8;
+    --coral-ink: #ffa89c;
+    --amber-ink: #b4c3d4;
+    --amber-rgb: 159 176 195;
+    --violet-ink: #b4c6ff;
+    --gold-ink: #ff9c8c;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-float: 0 12px 32px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
   }
   html[data-theme="dark"] { color-scheme: dark; }
 }
@@ -284,7 +319,7 @@ input[type="radio"] {
   display: flex;
   align-items: center;
   padding: 8px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   text-decoration: none;
   color: var(--text-dim);
   font-weight: 500;
@@ -326,7 +361,7 @@ input[type="radio"] {
   margin-top: 6px;
   background: var(--ink-raised);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
   padding: 6px;
   display: flex;
@@ -387,7 +422,7 @@ h2 { font-size: 1.35rem; }
 .field textarea {
   width: 100%;
   padding: 11px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: rgb(var(--fg-rgb) / 0.07);
   color: var(--text);
@@ -410,8 +445,8 @@ h2 { font-size: 1.35rem; }
 
 .adv-input {
   padding: 10px 12px;
-  border: 1.5px solid var(--rule);
-  border-radius: 2px;
+  border: 1px solid rgb(var(--fg-rgb) / 0.25);
+  border-radius: var(--radius-md);
   background: var(--field-bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -420,9 +455,9 @@ h2 { font-size: 1.35rem; }
   transition: box-shadow 0.15s ease;
 }
 .adv-input::placeholder { color: rgb(var(--fg-rgb) / 0.4); }
-.adv-input:focus { outline: none; box-shadow: 3px 3px 0 var(--gold); }
+.adv-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 0.18); }
 .adv-input:disabled { opacity: 0.6; cursor: not-allowed; }
-.adv-input--lg { padding: 13px 16px; font-size: 1.1rem; border-width: 2px; }
+.adv-input--lg { padding: 13px 16px; font-size: 1.1rem; }
 select.adv-input { cursor: pointer; }
 input[type="date"].adv-input::-webkit-calendar-picker-indicator { cursor: pointer; }
 
@@ -478,7 +513,7 @@ input[type="date"].adv-input::-webkit-calendar-picker-indicator { cursor: pointe
   display: inline-flex;
   flex-wrap: wrap;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
@@ -524,7 +559,7 @@ input[type="date"].adv-input::-webkit-calendar-picker-indicator { cursor: pointe
   display: inline-flex;
   flex-wrap: wrap;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   margin-bottom: 24px;
 }
@@ -579,7 +614,6 @@ input[type="date"].adv-input::-webkit-calendar-picker-indicator { cursor: pointe
   width: 34px;
   flex-shrink: 0;
   text-align: right;
-  font-family: var(--font-mono);
   font-weight: 600;
 }
 
@@ -636,7 +670,7 @@ input[type="range"]::-moz-range-progress {
   gap: 6px;
   min-height: 40px;
   padding: 11px 20px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: none;
   font-weight: 600;
   font-size: 0.9rem;
@@ -725,7 +759,7 @@ input[type="range"]::-moz-range-progress {
   background: var(--ink-raised);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 22px 26px;
   position: relative;
   box-shadow: none;
@@ -747,7 +781,6 @@ input[type="range"]::-moz-range-progress {
 }
 
 .question-number {
-  font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--text-dim);
 }
@@ -762,7 +795,7 @@ input[type="range"]::-moz-range-progress {
   font-weight: 700;
   text-transform: uppercase;
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   letter-spacing: 0.03em;
 }
 .tag.category { background: rgb(var(--fg-rgb) / 0.08); color: var(--text); }
@@ -780,7 +813,7 @@ input[type="range"]::-moz-range-progress {
   align-items: baseline;
   gap: 10px;
   padding: 10px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--teal-rgb) / 0.1);
   border: 1px solid rgb(var(--teal-rgb) / 0.3);
   font-weight: 600;
@@ -828,7 +861,7 @@ input[type="range"]::-moz-range-progress {
 
 .empty-state {
   border: 1px dashed var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 40px;
   text-align: center;
   color: var(--text-dim);
@@ -843,7 +876,7 @@ input[type="range"]::-moz-range-progress {
   color: var(--text);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 4px 8px;
   margin: 0 0 2px -8px;
 }
@@ -882,7 +915,7 @@ input[type="range"]::-moz-range-progress {
 mark {
   background: var(--gold-soft);
   color: var(--gold);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0 2px;
 }
 
@@ -901,7 +934,7 @@ mark {
 
 .advanced-disclosure {
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 12px 16px;
   margin-bottom: 20px;
 }
@@ -946,7 +979,7 @@ mark {
   gap: 10px;
   padding: 16px 18px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.06);
 }
 .add-panel-header {
@@ -974,7 +1007,7 @@ mark {
 .add-panel input[type="text"],
 .add-panel input[type="number"] {
   padding: 10px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: rgb(var(--fg-rgb) / 0.07);
   color: var(--text);
@@ -1060,7 +1093,7 @@ mark {
   flex-wrap: wrap;
   padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .club-logo-thumb {
@@ -1075,7 +1108,7 @@ mark {
 .photo-thumb-placeholder {
   width: 28px;
   height: 28px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.08);
   display: flex;
   align-items: center;
@@ -1088,7 +1121,7 @@ mark {
   display: inline-block;
   width: 24px;
   height: 24px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
 }
 
@@ -1097,7 +1130,7 @@ mark {
   height: 64px;
   object-fit: contain;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 6px;
   background: rgb(var(--fg-rgb) / 0.07);
 }
@@ -1110,7 +1143,7 @@ mark {
 }
 .additional-photo-row input {
   padding: 10px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: rgb(var(--fg-rgb) / 0.07);
   color: var(--text);
@@ -1131,7 +1164,6 @@ mark {
 
 .grid-progress {
   font-weight: 600;
-  font-family: var(--font-mono);
 }
 
 /* Shared lives indicator for every game mode - see LivesHearts.vue. Hearts
@@ -1257,13 +1289,12 @@ mark {
   position: absolute;
   top: 8px;
   left: 8px;
-  font-family: var(--font-mono);
   font-weight: 700;
   font-size: 0.78rem;
   color: var(--ink-raised);
   background: var(--gold);
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   z-index: 2;
 }
 
@@ -1312,7 +1343,7 @@ mark {
   gap: 0;
   margin: 6px 0 0;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 .grid-tiles-recap .grid-tile { border-width: 1px; }
@@ -1368,7 +1399,7 @@ mark {
   z-index: 25;
   background: var(--ink);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
   max-width: 560px;
   margin: 0 auto 20px;
@@ -1467,7 +1498,7 @@ mark {
    always beats the shared pill-radius default, regardless of where either
    rule ends up in the file. */
 .guess-box .guess-box-row input {
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .guess-box:has(.guess-results) .guess-box-row input {
   border-radius: 2px var(--radius-sm) 0 0;
@@ -1560,7 +1591,7 @@ mark {
   gap: 10px;
   padding: 8px 4px;
   border-bottom: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition: background 0.3s ease;
 }
 .tension-standing-row:last-child { border-bottom: none; }
@@ -1568,7 +1599,6 @@ mark {
 .tension-standing-row.moved-down { background: rgb(var(--coral-rgb) / 0.08); }
 
 .tension-standing-rank {
-  font-family: var(--font-mono);
   color: var(--text-dim);
   width: 28px;
 }
@@ -1609,7 +1639,7 @@ mark {
 
 .tension-player-card {
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.07);
   padding: 10px 14px;
   display: flex;
@@ -1634,7 +1664,7 @@ mark {
 .tension-answers-panel {
   background: rgb(var(--fg-rgb) / 0.07);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 20px;
   flex: 1;
   min-width: 320px;
@@ -1679,7 +1709,7 @@ mark {
   gap: 14px;
   background: rgb(var(--fg-rgb) / 0.07);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 10px 14px;
   opacity: 0.5;
   transform: scale(0.98);
@@ -1785,7 +1815,7 @@ mark {
   gap: 14px;
   background: rgb(var(--fg-rgb) / 0.07);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 10px 14px;
   opacity: 0.5;
   transform: scale(0.98);
@@ -1898,7 +1928,7 @@ mark {
   border: 1px solid rgb(var(--gold-rgb) / 0.5);
   background: linear-gradient(135deg, rgb(var(--gold-rgb) / 0.22), rgb(var(--gold-rgb) / 0.05));
   box-shadow: none;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 14px 16px;
   margin-bottom: 16px;
 }
@@ -1961,7 +1991,7 @@ mark {
   background: linear-gradient(135deg, rgb(var(--coral-rgb) / 0.45), rgb(var(--coral-rgb) / 0.15));
   border: 1px solid rgb(var(--coral-rgb) / 0.6);
   box-shadow: none;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 12px 18px;
   margin-bottom: 16px;
   animation: bullseye-banner-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1977,7 +2007,7 @@ mark {
   border: 1px solid rgb(var(--gold-rgb) / 0.4);
   background: linear-gradient(135deg, rgb(var(--gold-rgb) / 0.18), rgb(var(--gold-rgb) / 0.04));
   box-shadow: none;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 14px 16px;
   margin-bottom: 16px;
   animation: bullseye-banner-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
@@ -2045,7 +2075,7 @@ mark {
 .tension-choice-card {
   padding: 16px 20px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.06);
   color: var(--text);
   font-size: 1rem;
@@ -2083,7 +2113,6 @@ mark {
 }
 
 .step-indicator {
-  font-family: var(--font-mono);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2170,7 +2199,6 @@ mark {
 .stepper span {
   min-width: 22px;
   text-align: center;
-  font-family: var(--font-mono);
   font-size: 0.9rem;
 }
 
@@ -2200,7 +2228,7 @@ mark {
   margin-bottom: 24px;
   padding: 16px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.06);
 }
 
@@ -2216,7 +2244,7 @@ mark {
   margin-bottom: 24px;
   padding: 16px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.06);
 }
 
@@ -2239,7 +2267,6 @@ mark {
   border-radius: 999px;
   background: rgb(var(--fg-rgb) / 0.08);
   color: var(--text-dim);
-  font-family: var(--font-mono);
   font-size: 0.8rem;
   font-weight: 600;
   vertical-align: middle;
@@ -2258,7 +2285,7 @@ mark {
 
 .mp-player-card {
   border: 2px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 10px 16px;
   min-width: 140px;
   text-align: center;
@@ -2360,7 +2387,7 @@ table.scoreboard-table {
 
 .banner {
   padding: 12px 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   margin-bottom: 20px;
 }
@@ -2413,7 +2440,7 @@ table.scoreboard-table {
 .completion-popup {
   position: relative;
   background: var(--ink-raised);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 40px 32px;
   max-width: 380px;
   width: 100%;
@@ -2456,7 +2483,7 @@ table.scoreboard-table {
   top: -10px;
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   animation-name: confetti-fall;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
@@ -2478,7 +2505,7 @@ table.scoreboard-table {
 .modal {
   background: var(--ink-raised);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 28px;
   width: 100%;
   max-width: 560px;
@@ -2498,7 +2525,7 @@ table.scoreboard-table {
   gap: 12px;
   padding: 16px 18px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.06);
   flex-wrap: wrap;
 }
@@ -2515,43 +2542,6 @@ table.scoreboard-table {
 
 /* ---------- Landing page ---------- */
 
-.landing {
-  max-width: 1040px;
-}
-
-/* What the app is + what you can play on the left, sign-in on the right -
-   named grid areas so the mobile breakpoint can just redefine the area order
-   (hero, then login, then features) instead of juggling a separate `order`
-   property per element. "login" is named in both rows of its column, which
-   is what makes it one item spanning both rows (plain CSS Grid behavior, not
-   a hack) - align-self below then centers that spanned item vertically
-   against the taller hero+features column beside it. */
-.landing-row {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  grid-template-areas:
-    "hero login"
-    "features features";
-  column-gap: 56px;
-  row-gap: 40px;
-  align-items: start;
-  padding: 40px 0;
-}
-
-/* Every grid item defaults to min-width:auto, which refuses to shrink below
-   its own content's intrinsic width - harmless at this width, but the reason
-   this whole row silently forced the page wider than the viewport (and had
-   to be scrolled horizontally to read) once the same grid collapsed to a
-   single 1fr column on a narrow phone. This is the standard, well-known fix. */
-.landing-row > * {
-  min-width: 0;
-}
-
-/* A long unbroken identifier like VITE_GOOGLE_CLIENT_ID has no natural break
-   point (no spaces/hyphens for the browser to wrap at) - on a narrow enough
-   phone that alone can force its line wider than the viewport regardless of
-   the min-width fix above, since that fix only stops the *grid track* from
-   over-growing, not an inline run of unbroken text within it. */
 .landing-login code {
   overflow-wrap: anywhere;
 }
@@ -2565,7 +2555,7 @@ table.scoreboard-table {
   font-size: 0.95rem;
   margin: 0 0 16px;
 }
-.dashboard-welcome strong { color: var(--gold); font-weight: 600; }
+.dashboard-welcome strong { color: var(--text); font-weight: 600; }
 
 .dashboard-hero-row {
   display: flex;
@@ -2573,12 +2563,16 @@ table.scoreboard-table {
   gap: 16px;
   margin-bottom: 12px;
 }
+.dashboard-side { flex: 1; min-width: 0; display: grid; gap: var(--space-4); }
 .dashboard-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   flex: 1.6;
   min-width: 0;
   padding: 40px 32px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: linear-gradient(135deg, rgb(var(--gold-rgb) / 0.08), rgb(var(--fg-rgb) / 0.06));
 }
 .dashboard-hero h1 { margin: 0 0 10px; }
@@ -2591,14 +2585,13 @@ table.scoreboard-table {
    dashboard section below, the same way the hero's gold ties to quiz
    creation/management. */
 .dashboard-join-card {
-  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 28px;
+  padding: 20px 24px;
   border: 1px solid rgb(var(--violet-rgb) / 0.3);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: linear-gradient(135deg, rgb(var(--violet-rgb) / 0.12), rgb(var(--fg-rgb) / 0.06));
 }
 .dashboard-join-card h2 { margin: 0 0 8px; }
@@ -2638,7 +2631,7 @@ table.scoreboard-table {
   padding: 20px 20px 52px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--card-accent, var(--border));
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.06);
   color: var(--text);
   text-decoration: none;
@@ -2678,7 +2671,7 @@ table.scoreboard-table {
   padding: 20px 24px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--coral);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.06);
   color: var(--text);
   text-decoration: none;
@@ -2694,15 +2687,16 @@ table.scoreboard-table {
   gap: 16px;
   margin-top: 28px;
   padding: 16px 22px;
-  border: 2px solid var(--rule);
-  border-left: 6px solid var(--gold);
-  border-radius: 2px;
-  background: rgb(var(--gold-rgb) / 0.07);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--gold);
+  border-radius: var(--radius-lg);
+  background: rgb(var(--gold-rgb) / 0.06);
   color: var(--text);
   text-decoration: none;
 }
 .dashboard-advent:hover { background: rgb(var(--gold-rgb) / 0.12); }
-.dashboard-advent-emoji { font-size: 2rem; }
+.dashboard-advent-icon { flex-shrink: 0; width: 44px; height: 44px; display: grid; place-items: center; border-radius: var(--radius-md); background: rgb(var(--gold-rgb) / 0.1); color: var(--gold-ink); }
+.dashboard-advent-icon svg { width: 24px; height: 24px; }
 .dashboard-advent > div { flex: 1; min-width: 0; }
 .dashboard-advent h3 { margin: 0 0 2px; font-size: 1.1rem; }
 .dashboard-advent p { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
@@ -2720,7 +2714,7 @@ table.scoreboard-table {
   position: relative;
   margin: 22px 0 24px;
   border: 1px solid rgb(var(--gold-rgb) / 0.3);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 22px 22px 24px;
   overflow: hidden;
   pointer-events: none;
@@ -2778,7 +2772,7 @@ table.scoreboard-table {
   padding: 18px 20px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--card-accent, var(--border));
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.06);
   color: var(--text);
   text-decoration: none; /* also used as a <router-link> now (XI Battle's Penalty
@@ -2841,59 +2835,10 @@ table.scoreboard-table {
   .game-landing-hero .mode-choice-row { flex-direction: row; flex-wrap: wrap; }
 }
 
-.landing-hero {
-  grid-area: hero;
-  position: relative;
-  align-self: center;
-}
 
 /* A soft glow behind the headline so the top of the page isn't just text on a flat field. */
-.landing-hero::before {
-  content: '';
-  position: absolute;
-  left: -90px;
-  top: -70px;
-  width: 460px;
-  height: 340px;
-  background: radial-gradient(closest-side, rgb(var(--violet-rgb) / 0.32), transparent);
-  filter: blur(8px);
-  pointer-events: none;
-  z-index: -1;
-}
 
-.landing-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px 6px 10px;
-  border-radius: 999px;
-  background: rgb(var(--fg-rgb) / 0.09);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 0.82rem;
-  font-weight: 650;
-  margin-bottom: 18px;
-}
-.landing-eyebrow-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--teal);
-  box-shadow: 0 0 0 4px rgb(var(--teal-rgb) / 0.22);
-}
 
-.landing-hero h1 {
-  font-size: 2.9rem;
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-  margin: 0 0 16px;
-}
-.landing-hero-accent {
-  background: linear-gradient(100deg, var(--gold) 10%, #ff9f6b 55%, #ff7aa8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
 
 .landing-lede {
   font-size: 1.1rem;
@@ -2902,76 +2847,18 @@ table.scoreboard-table {
   color: var(--text-dim);
 }
 
-.landing-features {
-  grid-area: features;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  align-self: start;
-}
 
 /* Each card carries one accent (set via --accent) on its icon tile and hover edge. */
-.feature-card {
-  --accent: var(--gold);
-  position: relative;
-  padding: 20px;
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 16%, rgb(var(--fg-rgb) / 0.07)), rgb(var(--fg-rgb) / 0.05));
-  box-shadow: none;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-}
-.feature-card:hover {
-  transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
-  box-shadow: none;
-}
-.feature-card--gold { --accent: var(--gold); }
-.feature-card--violet { --accent: var(--violet); }
-.feature-card--teal { --accent: var(--teal); }
-.feature-card--coral { --accent: var(--coral-ink); }
 
-.feature-card--wide {
-  grid-column: span 2;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  background:
-    radial-gradient(420px circle at 0% 0%, rgb(var(--gold-rgb) / 0.22), transparent 62%),
-    linear-gradient(160deg, rgb(var(--fg-rgb) / 0.13), rgb(var(--fg-rgb) / 0.06));
-  border-color: rgb(var(--gold-rgb) / 0.38);
-}
-.feature-card--wide .feature-icon { margin-bottom: 0; flex-shrink: 0; }
 
-.feature-icon {
-  display: inline-grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 2px;
-  margin-bottom: 14px;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-}
-.feature-icon svg { width: 22px; height: 22px; }
 
-.feature-card h3 {
-  font-size: 1.05rem;
-  margin: 0 0 6px;
-}
 
-.feature-card p {
-  color: var(--text-dim);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin: 0;
-}
 
 .landing-login {
   grid-area: login;
   padding: 30px 28px;
   border: 1px solid rgb(var(--fg-rgb) / 0.22);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background:
     radial-gradient(360px circle at 100% 0%, rgb(var(--gold-rgb) / 0.16), transparent 60%),
     linear-gradient(160deg, rgb(var(--fg-rgb) / 0.13), rgb(var(--fg-rgb) / 0.06));
@@ -3034,20 +2921,6 @@ table.scoreboard-table {
    right-hand column - stack instead, one area per row. Redefining the areas
    (rather than a separate `order` per element) keeps hero -> login -> features
    as the single source of truth for stacking order at any width. */
-@media (max-width: 900px) {
-  .landing-row {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "hero"
-      "login"
-      "features";
-    row-gap: 28px;
-    padding: 24px 0;
-  }
-  .landing-hero { align-self: start; }
-  .landing-features { grid-template-columns: repeat(2, 1fr); }
-  .feature-card--wide { grid-column: 1 / -1; }
-}
 
 /* Three fixes were tried directly on Google's own rendered button (a light frame, a
    glow behind it, a config flag to stop it re-theming itself) and none of them stuck,
@@ -3371,12 +3244,6 @@ table.scoreboard-table {
 
   .filter-bar { flex-direction: column; gap: 12px; }
 
-  .landing-hero { padding: 28px 0 4px; }
-  .landing-hero h1 { font-size: 2.1rem; }
-  .landing-features { grid-template-columns: 1fr; }
-  /* Same layout as the other cards on a phone: icon on top, text underneath. */
-  .feature-card--wide { display: block; }
-  .feature-card--wide .feature-icon { margin-bottom: 14px; }
   .landing-login { padding: 20px; }
 
   .question-card-actions { justify-content: space-between; }
@@ -3423,7 +3290,7 @@ table.scoreboard-table {
     margin-bottom: 8px;
     background: var(--ink-raised);
     border: 1px solid var(--border);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     box-shadow: none;
     padding: 6px;
     display: flex;
@@ -3439,7 +3306,7 @@ table.scoreboard-table {
     padding: 10px 14px;
     font-size: 0.85rem;
     font-weight: 600;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     color: var(--text);
   }
   /* The main action in a popup (Create a quiz): a filled gold button on top, then the plain items. */
@@ -3495,7 +3362,7 @@ table.scoreboard-table {
     padding: 10px 14px;
     font-size: 0.85rem;
     font-weight: 600;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     color: var(--coral);
     text-align: left;
   }
@@ -3546,7 +3413,6 @@ table.scoreboard-table {
   margin-top: 8px;
 }
 .fiveoo-throw-chip {
-  font-family: var(--font-mono);
   font-size: 0.72rem;
   padding: 2px 7px;
   border-radius: 999px;
@@ -3719,7 +3585,7 @@ table.scoreboard-table {
 
 .score-square {
   border: 2px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 14px 10px 12px;
   text-align: center;
   background: rgb(var(--fg-rgb) / 0.06);
@@ -3754,7 +3620,7 @@ table.scoreboard-table {
 .imposter-reveal-entry {
   background: rgb(var(--coral-rgb) / 0.06);
   border: 1px solid rgb(var(--coral-rgb) / 0.2);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 10px 14px;
   margin-bottom: 8px;
   display: flex;
@@ -3855,7 +3721,7 @@ table.scoreboard-table {
   margin: 0 auto 6px;
   padding: 8px 14px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .podium-rest-row + .podium-rest-row { margin-top: 6px; }
 
@@ -3951,7 +3817,7 @@ table.scoreboard-table {
   padding: 14px 22px;
   background: var(--ink-raised);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   flex-wrap: wrap;
 }
 .pitch-scoreline-team {
@@ -3979,18 +3845,16 @@ table.scoreboard-table {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-mono);
   font-weight: 700;
   font-size: 1.15rem;
   background: rgb(var(--fg-rgb) / 0.06);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 7px 16px;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .pitch-scoreline-score .dash { color: var(--text-dim); font-weight: 400; }
 .pitch-scoreline-vs {
-  font-family: var(--font-mono);
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-dim);
@@ -4027,7 +3891,7 @@ table.scoreboard-table {
   min-width: 190px;
   padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--page-rgb) / 0.96);
   transition: border-color 0.25s ease, background 0.25s ease;
 }
@@ -4057,7 +3921,6 @@ table.scoreboard-table {
   border-radius: 50%;
   background: rgb(var(--fg-rgb) / 0.06);
   color: var(--text-dim);
-  font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 700;
   flex-shrink: 0;
@@ -4097,7 +3960,7 @@ table.scoreboard-table {
   max-width: 560px; /* keeps the pitch portrait-shaped instead of stretching full-width and flat */
   margin: 0 auto;
   padding: 74px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   background:
     repeating-linear-gradient(
@@ -4108,7 +3971,7 @@ table.scoreboard-table {
       transparent 68px
     ),
     linear-gradient(180deg, var(--pitch-a) 0%, var(--pitch-b) 50%, var(--pitch-a) 100%);
-  border: 2px solid var(--rule);
+  border: 1px solid var(--rule);
 }
 /* Full-pitch markings (rendered by the PitchMarkings.vue component) - purely
    decorative, so none of it needs to line up with any particular row of a
@@ -4128,7 +3991,7 @@ table.scoreboard-table {
   position: absolute;
   inset: 4%;
   border: 2px solid rgba(251, 247, 239, 0.8);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 .pitch-halfway-line {
   position: absolute;
@@ -4523,7 +4386,7 @@ table.scoreboard-table {
    pages, everywhere they're used (question bank, subjects, and the other admin lists).
    ===================================================================== */
 
-.btn { border-radius: 2px; }
+.btn { border-radius: var(--radius-sm); }
 
 /* Page header for admin lists: eyebrow + title + blurb on the left, actions on the right. */
 .admin-head {
@@ -4552,7 +4415,7 @@ table.scoreboard-table {
 .field select,
 .field textarea {
   padding: 12px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.08);
   border-color: rgb(var(--fg-rgb) / 0.16);
 }
@@ -4567,7 +4430,7 @@ table.scoreboard-table {
 /* Filter bar / stats panel: one soft glass card */
 .filter-bar,
 .stats-panel {
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border-color: rgb(var(--fg-rgb) / 0.16);
   background: linear-gradient(160deg, rgb(var(--fg-rgb) / 0.10), rgb(var(--fg-rgb) / 0.05));
   box-shadow: none;
@@ -4578,7 +4441,7 @@ table.scoreboard-table {
 /* Tables live in a rounded card; the header is a quiet band, rows breathe */
 .table-scroll {
   border: 1px solid rgb(var(--fg-rgb) / 0.16);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: linear-gradient(160deg, rgb(var(--fg-rgb) / 0.09), rgb(var(--fg-rgb) / 0.04));
   box-shadow: none;
 }
@@ -4645,13 +4508,13 @@ table.scoreboard-table {
 .team-chip { background: rgb(var(--fg-rgb) / 0.06); border-color: rgb(var(--fg-rgb) / 0.16); }
 
 /* Empty / banner polish */
-.empty-state { border-radius: 2px; border-color: rgb(var(--fg-rgb) / 0.2); background: rgb(var(--fg-rgb) / 0.04); }
-.banner { border-radius: 2px; }
+.empty-state { border-radius: var(--radius-sm); border-color: rgb(var(--fg-rgb) / 0.2); background: rgb(var(--fg-rgb) / 0.04); }
+.banner { border-radius: var(--radius-sm); }
 
 /* Modals: rounder, roomier, with a clear title */
 .modal {
   padding: 30px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border-color: rgb(var(--fg-rgb) / 0.18);
 }
 .modal > h2:first-child {
@@ -4664,7 +4527,7 @@ table.scoreboard-table {
   .filter-bar { align-items: stretch; }
 }
 @media (max-width: 640px) {
-  .modal { padding: 22px 18px; border-radius: 2px; }
+  .modal { padding: 22px 18px; border-radius: var(--radius-sm); }
   .modal-backdrop { padding: 20px 12px; }
 }
 
@@ -4687,7 +4550,7 @@ table.scoreboard-table {
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgb(var(--fg-rgb) / 0.14);
   background: rgb(var(--fg-rgb) / 0.06);
 }
@@ -4732,7 +4595,7 @@ table.scoreboard-table {
 /* Every "checkbox + title (+ description)" toggle reads as the same option card. */
 .field:has(> label > input[type="checkbox"]) {
   padding: 14px 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgb(var(--fg-rgb) / 0.14);
   background: rgb(var(--fg-rgb) / 0.06);
 }

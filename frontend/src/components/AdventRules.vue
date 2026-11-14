@@ -12,13 +12,13 @@
     <p class="adv-rules-note">{{ $t('Underveis dukker det opp luker med egne regler. Du ser hvilken type det er når luka åpnes.') }}</p>
     <ul class="adv-types">
       <li v-for="(info, key) in TYPES" :key="key" v-show="key !== 'NORMAL'">
-        <span class="adv-type-emoji" aria-hidden="true">{{ info.emoji }}</span>
+        <span class="adv-type-emoji" aria-hidden="true"><AppIcon :name="info.icon" /></span>
         <div><strong>{{ info.name }}</strong><br />{{ info.rules }}</div>
       </li>
     </ul>
 
     <div class="adv-callout adv-callout--joker">
-      <span class="adv-callout-emoji" aria-hidden="true">🃏</span>
+      <span class="adv-callout-emoji" aria-hidden="true"><AppIcon name="cards" /></span>
       <div>
         <strong>{{ $t('Jokeren') }}</strong>
         <p>{{ $t('Du har 3 jokere i hele julekalenderen. Bruker du en på en luke, får du dobbelt så mange poeng på den luka. Huk av for jokeren før du sender inn svarene.') }}</p>
@@ -27,7 +27,7 @@
     </div>
 
     <div class="adv-callout adv-callout--finale">
-      <span class="adv-callout-emoji" aria-hidden="true">🎄</span>
+      <span class="adv-callout-emoji" aria-hidden="true"><AppIcon name="tree" /></span>
       <div>
         <strong>{{ $t('Finalen 24. desember') }}</strong>
         <p>{{ $t('På julaften teller alle poeng tredoblet - så det er fortsatt mulig å ta igjen mye på siste luke.') }}</p>
@@ -38,6 +38,7 @@
 
 <script setup>
 import { TYPES } from '../services/advent'
+import AppIcon from './AppIcon.vue'
 </script>
 
 <style scoped>
@@ -46,10 +47,10 @@ import { TYPES } from '../services/advent'
 .adv-rules-note { margin: 0 0 10px; color: var(--text-dim); font-size: 0.92rem; }
 .adv-types { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 10px; }
 .adv-types li { display: flex; gap: 12px; align-items: flex-start; }
-.adv-type-emoji { font-size: 1.5rem; line-height: 1.2; flex-shrink: 0; }
-.adv-callout { display: flex; gap: 12px; align-items: flex-start; border: 2px solid var(--rule); border-radius: 3px; padding: 12px 14px; margin-top: 10px; }
+.adv-type-emoji { font-size: 1.35rem; line-height: 1; flex-shrink: 0; width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--radius-md); background: rgb(var(--primary-rgb) / 0.09); color: var(--primary); }
+.adv-callout { display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 10px; }
 .adv-callout p { margin: 4px 0 0; }
-.adv-callout-emoji { font-size: 1.6rem; line-height: 1.2; flex-shrink: 0; }
+.adv-callout-emoji { font-size: 1.5rem; line-height: 1; flex-shrink: 0; color: var(--primary); }
 .adv-callout--joker { background: rgb(var(--gold-rgb) / 0.08); }
 .adv-callout--finale { background: rgb(var(--teal-rgb) / 0.09); }
 </style>

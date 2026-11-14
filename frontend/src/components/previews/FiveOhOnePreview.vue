@@ -113,14 +113,14 @@
   align-items: center;
   gap: 10px;
   padding: 5px 10px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: rgb(var(--fg-rgb) / 0.06);
   font-size: 0.74rem;
 }
 .fp-p { color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fp-p i { font-style: normal; color: var(--text); font-family: var(--font-mono); font-size: 0.68rem; }
-.fp-d { font-family: var(--font-mono); font-size: 0.66rem; color: var(--text-dim); }
-.fp-t { font-family: var(--font-mono); font-weight: 700; color: var(--text); text-align: right; }
+.fp-p i { font-style: normal; color: var(--text); font-size: 0.68rem; }
+.fp-d { font-size: 0.66rem; color: var(--text-dim); }
+.fp-t { font-weight: 700; color: var(--text); text-align: right; }
 .fp-throw.bust { background: rgb(var(--coral-rgb) / 0.1); }
 .fp-throw.bust .fp-d, .fp-throw.bust .fp-t { color: var(--coral); }
 .fp-throw.now { background: var(--gold-soft); }

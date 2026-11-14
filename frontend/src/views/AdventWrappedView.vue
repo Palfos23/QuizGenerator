@@ -3,11 +3,11 @@
     <router-link to="/julekalender" class="adv-back">← {{ $t('Julekalenderen') }}</router-link>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <template v-else-if="w">
       <header class="dq-hero adv-hero">
-        <span class="dq-eyebrow">🎁 {{ $t('Julekalender-wrapped') }} {{ w.year }}</span>
+        <span class="dq-eyebrow">{{ $t('Julekalender-wrapped') }} {{ w.year }}</span>
         <h1 class="dq-title">{{ $t('Slik gikk det for deg') }}</h1>
       </header>
 
@@ -19,22 +19,22 @@
 
       <div class="adv-w-grid">
         <div class="dq-card adv-w-card">
-          <span class="adv-w-emoji">📅</span>
+          <span class="adv-w-emoji"><AppIcon name="calendar" /></span>
           <strong>{{ w.daysPlayed }} / {{ w.daysTotal }}</strong>
           <span>{{ $t('luker du var med på') }}</span>
         </div>
         <div class="dq-card adv-w-card">
-          <span class="adv-w-emoji">🔥</span>
+          <span class="adv-w-emoji"><AppIcon name="flame" /></span>
           <strong>{{ w.bestStreak }}</strong>
           <span>{{ $t('dager på rad - din lengste rekke') }}</span>
         </div>
         <div v-if="w.bestDay" class="dq-card adv-w-card">
-          <span class="adv-w-emoji">🏅</span>
+          <span class="adv-w-emoji"><AppIcon name="medal" /></span>
           <strong>{{ $t('Luke {0}', [w.bestDay.day]) }}: +{{ w.bestDay.points }}</strong>
           <span>{{ $t('din beste dag') }} - {{ w.bestDay.category }}</span>
         </div>
         <div class="dq-card adv-w-card">
-          <span class="adv-w-emoji">🧠</span>
+          <span class="adv-w-emoji"><AppIcon name="target" /></span>
           <strong>{{ w.syncPercent }} %</strong>
           <span>{{ $t('av spillmesterens svar traff du - så likt tenkte dere') }}</span>
         </div>
@@ -44,17 +44,17 @@
           <span>{{ $t('ekstra poeng fra jokerne dine') }}</span>
         </div>
         <div v-if="w.risksTaken" class="dq-card adv-w-card">
-          <span class="adv-w-emoji">🎲</span>
+          <span class="adv-w-emoji"><AppIcon name="dice" /></span>
           <strong>{{ w.risksWon }} / {{ w.risksTaken }}</strong>
           <span>{{ $t('ganger du satset og traff') }}</span>
         </div>
         <div v-if="w.wildcardHits" class="dq-card adv-w-card">
-          <span class="adv-w-emoji">🌟</span>
+          <span class="adv-w-emoji"><AppIcon name="star" /></span>
           <strong>{{ w.wildcardHits }}</strong>
           <span>{{ $t('wildcard-treff') }}</span>
         </div>
         <div v-if="w.perfectDays" class="dq-card adv-w-card">
-          <span class="adv-w-emoji">🎯</span>
+          <span class="adv-w-emoji"><AppIcon name="target" /></span>
           <strong>{{ w.perfectDays }}</strong>
           <span>{{ $t('luker med alle 4 riktige') }}</span>
         </div>
@@ -69,7 +69,7 @@
             <span class="adv-row-points">{{ p.points }}</span>
           </div>
           <div class="adv-row adv-row--gm">
-            <span class="adv-row-rank">🎩</span>
+            <span class="adv-row-rank"><AppIcon name="crown" /></span>
             <span class="adv-row-name">{{ $t('Spillmesteren') }}</span>
             <span class="adv-row-points">{{ w.gamemasterPoints }}</span>
           </div>
@@ -85,10 +85,12 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { onMounted, ref } from 'vue'
 import { t as _t } from '../i18n'
 import api from '../services/api'
 import { pointsText, shareOrCopy } from '../services/advent'
+import AppIcon from '../components/AppIcon.vue'
 
 const w = ref(null)
 const loading = ref(true)
@@ -106,7 +108,7 @@ onMounted(async () => {
 })
 
 function medal(rank) {
-  return rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank
+  return rank
 }
 
 async function share() {
@@ -136,13 +138,13 @@ async function share() {
 .adv-w-card { display: flex; flex-direction: column; gap: 4px; text-align: center; padding: 16px 12px; }
 .adv-w-card strong { font-family: var(--font-display); font-size: 1.5rem; }
 .adv-w-card span:last-child { color: var(--text-dim); font-size: 0.88rem; }
-.adv-w-emoji { font-size: 1.8rem; }
+.adv-w-emoji { display: grid; place-items: center; width: 44px; height: 44px; margin: 0 auto var(--space-1); border-radius: var(--radius-md); background: rgb(var(--primary-rgb) / 0.09); color: var(--primary); font-size: 1.4rem; }
 .adv-board { padding: 6px 14px 12px; }
 .adv-row { display: flex; align-items: baseline; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
 .adv-row:first-child { border-top: none; }
 .adv-row.is-you { background: rgb(var(--gold-rgb) / 0.09); margin: 0 -14px; padding: 9px 14px; }
-.adv-row-rank { width: 28px; font-family: var(--font-mono); color: var(--text-dim); font-size: 0.95rem; }
+.adv-row-rank { width: 28px; color: var(--text-dim); font-size: 0.95rem; }
 .adv-row-name { flex: 1; min-width: 0; font-family: var(--font-display); font-weight: 600; overflow-wrap: anywhere; }
 .adv-row-points { font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; }
-.adv-row--gm { border-top: 2px solid var(--rule); color: var(--text-dim); }
+.adv-row--gm { border-top: 1px solid var(--rule); color: var(--text-dim); }
 </style>

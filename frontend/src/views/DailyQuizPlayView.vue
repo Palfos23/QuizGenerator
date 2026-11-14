@@ -75,7 +75,7 @@
         </div>
 
         <div class="dq-submit">
-          <button type="submit" class="btn btn-primary" :disabled="submitting">
+          <button type="submit" class="btn btn-primary" :disabled="submitting" :aria-busy="submitting">
             {{ submitting ? $t('Sender inn…') : $t('Send inn svar') }}
           </button>
           <button type="button" class="btn btn-secondary dq-save-btn" :disabled="saving || submitting || !dirty" @click="saveDraft">
@@ -215,7 +215,7 @@
           <button class="btn btn-secondary" :disabled="submitting" @click="showSubmitConfirm = false">
             {{ blankCount ? $t('Fortsett å svare') : $t('Gå tilbake') }}
           </button>
-          <button class="btn btn-primary" :disabled="submitting" @click="submit">
+          <button class="btn btn-primary" :disabled="submitting" :aria-busy="submitting" @click="submit">
             {{ submitting ? $t('Sender inn…') : $t('Send inn') }}
           </button>
         </div>

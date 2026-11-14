@@ -16,7 +16,7 @@
     </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <template v-else-if="attempt">
       <header class="dq-attempt-head">
@@ -108,6 +108,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'

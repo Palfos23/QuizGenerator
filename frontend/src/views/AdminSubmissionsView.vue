@@ -4,7 +4,7 @@
     <p class="page-subtitle">{{ $t('Gå gjennom spørsmål foreslått av brukere. Godkjente blir en del av den felles spørsmålsbanken.') }}</p>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <div v-else-if="!submissions.length" class="empty-state friendly">{{ $t('Ingen innsendinger ennå.') }}</div>
 
@@ -47,6 +47,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'
 import api from '../services/api'

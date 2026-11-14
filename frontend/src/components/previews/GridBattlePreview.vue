@@ -65,7 +65,7 @@ const tiles = [
 .gb-tile {
   position: relative;
   aspect-ratio: 1 / 1;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: rgb(var(--fg-rgb) / 0.07);
   display: flex;
@@ -101,13 +101,12 @@ const tiles = [
   font-weight: 800;
 }
 .gb-hint {
-  font-family: var(--font-mono);
   font-size: 0.6rem;
   font-weight: 700;
   color: var(--ink-raised);
   background: var(--gold);
   padding: 1px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .gb-q { font-size: 1rem; color: var(--text-dim); font-weight: 700; }
 

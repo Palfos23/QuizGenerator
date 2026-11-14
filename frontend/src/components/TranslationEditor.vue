@@ -5,7 +5,7 @@
       {{ $t('Valgfritt - la et felt stå tomt for å bruke teksten over. Spillerne ser versjonen som passer språket de har valgt.') }}
     </p>
 
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
     <div v-else-if="error" class="banner error">{{ error }}</div>
 
     <template v-else>
@@ -31,6 +31,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from './LoadingSkeleton.vue'
 import { ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
@@ -105,7 +106,7 @@ watch(() => props.entityId, () => { loaded = false; fields.value = [] })
   margin: 22px 0 6px;
   padding: 14px 16px;
   border: 1.5px solid var(--rule);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--ink-raised);
 }
 .translation-editor > summary {

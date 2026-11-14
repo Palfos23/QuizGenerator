@@ -1,7 +1,15 @@
 <template>
-  <div class="landing">
-    <div class="landing-row">
-    <section class="landing-login">
+  <div class="home">
+    <section class="home-hero">
+      <h1><span class="home-num">{{ $t('15 nye spørsmål hver dag').split(' ')[0] }}</span> {{ $t('15 nye spørsmål hver dag').split(' ').slice(1).join(' ') }}</h1>
+      <p class="home-lede">{{ $t('Svar med egne ord, se fasit med en gang og kjemp om ukens seier.') }}</p>
+      <div class="home-cta">
+        <button type="button" class="btn btn-primary btn-lg" @click="goToLogin">{{ $t('Spill dagens quiz§HomeViewT') }}</button>
+      </div>
+      <DailyQuizPreview class="home-preview" />
+    </section>
+
+    <section id="login" class="landing-login home-login" ref="loginEl">
       <div v-if="error" class="banner error">{{ error }}</div>
 
       <div v-if="loggingIn" class="login-progress">
@@ -16,7 +24,7 @@
 
       <template v-if="!loggingIn">
         <div class="landing-login-head">
-          <h2>{{ $t('Velkommen') }}</h2>
+          <h2>{{ $t('Logg inn') }}</h2>
           <p>{{ $t('Logg inn for å lagre poengene og quizene dine.') }}</p>
         </div>
         <div v-if="loadingScript" style="color:var(--text-dim); font-size:0.9rem; text-align:center;">{{ $t('Laster innlogging…') }}</div>
@@ -31,7 +39,7 @@
              every click still goes through Google's real, working auth flow underneath. -->
         <div
           v-show="clientIdConfigured && cookieConsent.state.status !== 'accepted'"
-          style="text-align:center; padding:14px; border:1px solid var(--border); border-radius: 2px; color:var(--text-dim); font-size:0.85rem;"
+          style="text-align:center; padding:14px; border:1px solid var(--border); border-radius: var(--radius-sm); color:var(--text-dim); font-size:0.85rem;"
         >
           {{ $t('Innlogging med Google krever at den valgfrie cookie-innstillingen er slått på.') }}
           <div style="margin-top:8px;">
@@ -86,7 +94,7 @@
               <div class="field">
                 <label>{{ $t('Passord') }}<input type="password" v-model="loginPassword" autocomplete="current-password" :placeholder="$t('Passordet ditt')" /></label>
               </div>
-              <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="passwordBusy">
+              <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="passwordBusy" :aria-busy="passwordBusy">
                 {{ passwordBusy ? $t('Logger inn…') : $t('Logg inn') }}
               </button>
             </form>
@@ -115,7 +123,7 @@
                 <div class="field">
                   <label>{{ $t('Passord') }}<input type="password" v-model="registerPassword" autocomplete="new-password" :placeholder="$t('Minst 8 tegn')" /></label>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="passwordBusy">
+                <button type="submit" class="btn btn-primary" style="width:100%;" :disabled="passwordBusy" :aria-busy="passwordBusy">
                   {{ passwordBusy ? $t('Oppretter konto…') : $t('Opprett konto') }}
                 </button>
               </form>
@@ -154,57 +162,47 @@
       </template>
     </section>
 
-    <section class="landing-hero">
-      <span class="landing-eyebrow">
-        <span class="landing-eyebrow-dot"></span>
-        {{ $t('En ny daglig quiz, hver dag') }}
-      </span>
-      <h1><span class="landing-hero-accent">Quizzes</span></h1>
-      <p class="page-subtitle landing-lede">
-        {{ $t('Ta den daglige quizen, lag din egen fra en felles spørsmålsbank, eller send telefonen rundt for et selskapsspill - på én skjerm eller hver på sin egen.') }}
-      </p>
+    <section class="home-more">
+      <h2>{{ $t('Lag egne quizer og spill sammen') }}</h2>
+      <ul class="home-more-list">
+        <li>
+          <span class="home-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7" /><path d="M17 15l2 2 3-4" /></svg>
+          </span>
+          <div>
+            <h3>{{ $t('Lag en quiz') }}</h3>
+            <p>{{ $t('Velg kategorier og vanskelighetsgrad, bytt ut spørsmål og skriv ut quizen.') }}</p>
+          </div>
+        </li>
+        <li>
+          <span class="home-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+          </span>
+          <div>
+            <h3>{{ $t('Ukens grid§HomeViewT') }}</h3>
+            <p>{{ $t('Gjett alle svarene som passer ukens tema før du går tom for forsøk.') }}</p>
+          </div>
+        </li>
+        <li>
+          <span class="home-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><circle cx="17.5" cy="9.5" r="2.5" /><path d="M16.5 14.2c2.7.2 4.5 2.3 4.5 5" /></svg>
+          </span>
+          <div>
+            <h3>{{ $t('Selskapsspill') }}</h3>
+            <p>{{ $t('Tension, Imposter, Bullseye og mer - på én skjerm, eller hver på sin egen telefon med en romkode.') }}</p>
+          </div>
+        </li>
+        <li>
+          <span class="home-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+          </span>
+          <div>
+            <h3>{{ $t('Foreslå et spørsmål') }}</h3>
+            <p>{{ $t('Legg til i den felles banken - en administrator gjennomgår det, og du kan bruke det i dine egne quizer.') }}</p>
+          </div>
+        </li>
+      </ul>
     </section>
-
-    <section class="landing-features">
-      <article class="feature-card feature-card--wide feature-card--gold">
-        <span class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4M8 15h3" /></svg>
-        </span>
-        <div>
-          <h3>{{ $t('Dagens quiz§HomeViewT') }}</h3>
-          <p>{{ $t('15 pubquiz-spørsmål, nye hver dag. Skriv svarene dine, se hvordan det gikk, og kjemp om ukens seier.') }}</p>
-        </div>
-      </article>
-      <article class="feature-card feature-card--violet">
-        <span class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7" /><path d="M17 15l2 2 3-4" /></svg>
-        </span>
-        <h3>{{ $t('Lag en quiz') }}</h3>
-        <p>{{ $t('Bland kategorier, velg vanskelighetsgrad, og endre rekkefølge eller bytt ut spørsmål før du skriver ut.') }}</p>
-      </article>
-      <article class="feature-card feature-card--teal">
-        <span class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
-        </span>
-        <h3>{{ $t('Ukens grid§HomeViewT') }}</h3>
-        <p>{{ $t('Gjett alle svarene som passer ukens tema før du går tom for forsøk.') }}</p>
-      </article>
-      <article class="feature-card feature-card--coral">
-        <span class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><circle cx="17.5" cy="9.5" r="2.5" /><path d="M16.5 14.2c2.7.2 4.5 2.3 4.5 5" /></svg>
-        </span>
-        <h3>{{ $t('Selskapsspill') }}</h3>
-        <p>{{ $t('Tension, Imposter, Bullseye og mer - send enheten rundt, eller spill sammen på nett med en romkode.') }}</p>
-      </article>
-      <article class="feature-card feature-card--gold">
-        <span class="feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
-        </span>
-        <h3>{{ $t('Foreslå et spørsmål') }}</h3>
-        <p>{{ $t('Legg til i den felles banken selv - gjennomgås av en administrator, og kan uansett brukes i dine egne quizer.') }}</p>
-      </article>
-    </section>
-    </div>
   </div>
 </template>
 
@@ -213,6 +211,7 @@ import { t as _t } from '../i18n'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '../services/api'
+import DailyQuizPreview from '../components/previews/DailyQuizPreview.vue'
 import auth from '../services/auth'
 import cookieConsent from '../services/cookieConsent'
 import { loadScript } from '../services/loadScript'
@@ -223,6 +222,16 @@ const GIS_SCRIPT_URL = 'https://accounts.google.com/gsi/client'
 const route = useRoute()
 const router = useRouter()
 const buttonEl = ref(null)
+const loginEl = ref(null)
+
+// "Spill dagens quiz" needs an account (or a guest code), so it takes you to the sign-in card and puts you on its first button
+function goToLogin() {
+  const el = loginEl.value
+  if (!el) return
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  const first = el.querySelector('button:not([tabindex="-1"]), a.btn, input')
+  if (first) setTimeout(() => first.focus({ preventScroll: true }), 350)
+}
 const error = ref('')
 const loadingScript = ref(false)
 const loggingIn = ref(false)
@@ -416,3 +425,50 @@ async function submitForgotPassword() {
   }
 }
 </script>
+
+<style scoped>
+/* A two-column page: the product and its one call to action on the left, the sign-in card on the right (sticky).
+   On a phone the card moves under the preview, so "Spill dagens quiz" scrolls you to it. */
+.home {
+  max-width: 1040px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-areas:
+    "hero login"
+    "more more";
+  column-gap: var(--space-7);
+  row-gap: var(--space-8);
+  align-items: start;
+  padding: var(--space-6) 0 var(--space-7);
+}
+.home-hero { grid-area: hero; min-width: 0; }
+.home-login { grid-area: login; position: sticky; top: calc(var(--nav-height) + var(--space-4)); align-self: start; }
+.home-more { grid-area: more; }
+
+.home-num { color: var(--gold); }
+.home-hero h1::before { content: ''; display: block; width: 56px; height: 5px; margin-bottom: var(--space-4); border-radius: 3px; background: var(--gold); }
+.home-hero h1 { font-size: clamp(2.3rem, 5.4vw, 3.4rem); line-height: 1.04; letter-spacing: -0.025em; margin: 0 0 var(--space-3); max-width: 14ch; }
+.home-lede { font-size: 1.15rem; line-height: 1.5; color: var(--text-dim); margin: 0 0 var(--space-5); max-width: 34ch; }
+.home-cta { margin-bottom: var(--space-6); }
+.home-cta .btn-lg { padding-inline: var(--space-6); min-height: 52px; font-size: 1.05rem; }
+.home-preview { max-width: 560px; }
+
+.home-more h2 { font-size: 1.5rem; margin: 0 0 var(--space-5); max-width: 24ch; }
+.home-more-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-7); }
+.home-more-list li { display: flex; gap: var(--space-4); align-items: flex-start; }
+.home-icon { flex-shrink: 0; width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--radius-md); background: rgb(var(--primary-rgb) / 0.09); color: var(--primary); }
+.home-icon svg { width: 22px; height: 22px; }
+.home-more-list h3 { margin: 0 0 var(--space-1); font-family: var(--font-body); font-size: 1.05rem; font-weight: 650; letter-spacing: 0; }
+.home-more-list p { margin: 0; color: var(--text-dim); font-size: 0.95rem; line-height: 1.5; max-width: 38ch; }
+
+@media (max-width: 900px) {
+  .home { grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "login" "more"; row-gap: var(--space-7); padding-top: var(--space-4); }
+  .home-login { position: static; }
+  .home-preview { max-width: none; }
+}
+@media (max-width: 560px) {
+  .home-more-list { grid-template-columns: 1fr; gap: var(--space-5); }
+  .home-cta .btn-lg { width: 100%; }
+}
+</style>

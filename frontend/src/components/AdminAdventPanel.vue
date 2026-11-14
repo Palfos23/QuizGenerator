@@ -7,12 +7,12 @@
     </header>
 
     <div v-if="error" class="banner error">{{ error }}</div>
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <template v-else-if="season">
       <!-- try it out before December -->
       <section class="dq-card adm-test">
-        <h2 class="adm-h">🧪 {{ $t('Testmodus') }}</h2>
+        <h2 class="adm-h"><AppIcon name="flask" /> {{ $t('Testmodus') }}</h2>
         <p class="picker-hint" style="margin:0 0 10px;">
           {{ $t('Late som om det er en annen dato, så du kan prøve julekalenderen før 1. desember. Gjelder alle som åpner siden, og slår seg av av seg selv etter 3 timer. Du må være logget inn som en vanlig spiller (ikke admin) for å spille lukene.') }}
         </p>
@@ -67,7 +67,7 @@
         <div class="field">
           <label>{{ $t('Type luke') }}</label>
           <select v-model="form.type" :disabled="day.locked" @change="typeChanged">
-            <option v-for="(info, key) in TYPES" :key="key" :value="key">{{ info.emoji }} {{ info.name }}</option>
+            <option v-for="(info, key) in TYPES" :key="key" :value="key">{{ info.name }}</option>
           </select>
           <p class="picker-hint" style="margin:6px 0 0;">{{ typeInfo(form.type).rules }}</p>
         </div>
@@ -77,7 +77,7 @@
           <div v-for="(_, i) in form.answers" :key="i" class="adm-answer">
             <input type="text" v-model="form.answers[i]" maxlength="100" :disabled="day.locked" :placeholder="$t('Svar {0}', [i + 1])" />
             <label v-if="form.type === 'WILDCARD'" class="adm-wild" :class="{ 'is-on': form.wildcardIndex === i }">
-              <input type="radio" :value="i" v-model="form.wildcardIndex" :disabled="day.locked" /> 🌟 {{ $t('Wildcard') }}
+              <input type="radio" :value="i" v-model="form.wildcardIndex" :disabled="day.locked" /> <AppIcon name="star" /> {{ $t('Wildcard') }}
             </label>
           </div>
           <p v-if="day.locked" class="picker-hint" style="margin:6px 0 0;">{{ $t('{0} spillere har allerede svart - type og svar kan ikke endres lenger. Bruk gjennomgangen under for å rette hvordan svar leses.', [day.entries]) }}</p>
@@ -97,12 +97,12 @@
       <!-- going through what the players wrote -->
       <section v-if="day && day.entries > 0" class="dq-card adm-review">
         <h2 class="adm-h">{{ $t('Gjennomgang') }} <small>{{ $t('{0} spillere har svart', [day.entries]) }}</small></h2>
-        <div v-if="reviewLoading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+        <LoadingSkeleton v-if="reviewLoading" />
         <template v-else-if="review">
           <p class="picker-hint" style="margin-top:0;">
             {{ $t('Svar som er skrevet likt som ditt, teller automatisk (stor/liten bokstav, aksenter og tegnsetting spiller ingen rolle). Rett opp resten her - valget gjelder alle som skrev det samme.') }}
           </p>
-          <p class="adm-gm">🎩 {{ $t('Spillmesteren har {0} poeng på denne luka akkurat nå.', [review.gamemasterPoints]) }}</p>
+          <p class="adm-gm"><AppIcon name="crown" /> {{ $t('Spillmesteren har {0} poeng på denne luka akkurat nå.', [review.gamemasterPoints]) }}</p>
 
           <div class="adm-table">
             <div v-for="a in sortedAnswers" :key="a.normalized" class="adm-row" :class="{ 'is-miss': review.type === 'OPPOSITE' ? !a.fits : a.matchedIndex < 0 }">
@@ -132,10 +132,12 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from './LoadingSkeleton.vue'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { t as _t, locale } from '../i18n'
 import api from '../services/api'
 import { TYPES, typeInfo } from '../services/advent'
+import AppIcon from './AppIcon.vue'
 import ConfirmModal from './ConfirmModal.vue'
 
 const season = ref(null)
@@ -333,14 +335,14 @@ async function approve(approved) {
 .adm-test-status { margin: 10px 0 0; font-size: 0.9rem; color: var(--teal-ink, var(--teal)); }
 .adm-test-status--off { color: var(--text-dim); }
 .adm-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
-.adm-door { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; background: var(--ink-raised); border: 2px solid var(--rule); border-radius: 3px; color: var(--text); font-family: var(--font-body); cursor: pointer; }
+.adm-door { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; background: var(--ink-raised); border: 1px solid var(--rule); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font-body); cursor: pointer; }
 .adm-door-n { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
-.adm-door-sub { font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-dim); }
+.adm-door-sub { font-size: 0.72rem; color: var(--text-dim); }
 .adm-door.is-ready { background: rgb(var(--teal-rgb) / 0.1); }
 .adm-door.is-review { border-color: var(--gold); background: rgb(var(--gold-rgb) / 0.12); }
 .adm-door.is-selected { outline: 3px solid var(--text); outline-offset: 1px; }
 .adm-legend { font-size: 0.8rem; color: var(--text-dim); margin: 8px 0 18px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.adm-dot { display: inline-block; width: 12px; height: 12px; border-radius: 2px; border: 2px solid var(--rule); margin-left: 8px; }
+.adm-dot { display: inline-block; width: 12px; height: 12px; border-radius: var(--radius-sm); border: 1px solid var(--rule); margin-left: 8px; }
 .adm-dot.is-ready { background: rgb(var(--teal-rgb) / 0.3); }
 .adm-dot.is-review { border-color: var(--gold); background: rgb(var(--gold-rgb) / 0.3); }
 .adm-editor, .adm-review { margin-top: 14px; }
@@ -359,7 +361,7 @@ async function approve(approved) {
 .adm-row:first-child { border-top: none; }
 .adm-row.is-miss .adm-row-text strong { color: var(--coral-ink, var(--coral)); }
 .adm-row-text { flex: 1; min-width: 160px; overflow-wrap: anywhere; }
-.adm-count { margin-left: 8px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim); }
+.adm-count { margin-left: 8px; font-size: 0.8rem; color: var(--text-dim); }
 .adm-row select { max-width: 300px; flex: 1 1 220px; }
 .adm-approve { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
 @media (max-width: 560px) { .adm-grid { grid-template-columns: repeat(6, 1fr); } }

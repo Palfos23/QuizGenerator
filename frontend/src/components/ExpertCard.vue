@@ -58,9 +58,9 @@ const detail = computed(() => {
   gap: 10px;
   margin: 0 0 14px;
   padding: 12px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: var(--ink-raised);
-  border: 2px solid var(--rule);
+  border: 1px solid var(--rule);
   text-align: left;
 }
 .expert-card.is-ahead { border-color: var(--teal); background: rgb(var(--teal-rgb) / 0.08); }

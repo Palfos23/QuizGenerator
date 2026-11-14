@@ -33,7 +33,7 @@
       <template v-else>
         <p class="page-subtitle" style="margin-top:0;">{{ $t('Quizer du har lagret selv. Å lage en quiz lagrer den ikke automatisk.') }}</p>
 
-        <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+        <LoadingSkeleton v-if="loading" />
 
         <div v-else-if="!quizzes.length" class="empty-state friendly">
           {{ $t('Ingen lagrede quizer ennå. Lag en på siden') }} <router-link to="/generate">{{ $t('Lag en quiz') }}</router-link> {{ $t(', og trykk deretter «Lagre i Mine quizer»') }}<template v-if="showTemplatesTab">{{ $t(', eller kopier en') }} <a href="#" @click.prevent="activeTab = 'templates'">{{ $t('quizmal') }}</a> {{ $t('for å komme i gang') }}</template>.
@@ -156,6 +156,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'

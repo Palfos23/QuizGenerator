@@ -30,7 +30,7 @@
     </div>
 
     <div v-if="review.error.value" class="banner error">{{ review.error.value }}</div>
-    <div v-if="review.loading.value" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="review.loading.value" />
 
     <!-- ================================================================ answers -->
     <template v-else-if="tab === 'answers'">
@@ -182,6 +182,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { t as _t, locale } from '../i18n'
@@ -370,18 +371,19 @@ function decidedLabel(source) {
 .rq-head .dq-title { margin: 2px 0 0; }
 .rq-save { font-size: 0.85rem; padding: 6px 12px; border-radius: 14px; border: 1.5px solid var(--line); color: var(--text-dim); display: inline-flex; gap: 10px; align-items: center; }
 .rq-save.is-saved { color: var(--teal-ink, var(--teal)); border-color: rgb(var(--teal-rgb) / 0.4); }
-.rq-save.is-waiting, .rq-save.is-saving { color: var(--text); border-color: var(--gold); }
+.rq-save.is-waiting, .rq-save.is-saving { color: var(--text); border-color: var(--primary); }
 .rq-save.is-failed { color: var(--coral-ink, var(--coral)); border-color: var(--coral); }
 .rq-save button { background: none; border: none; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; color: inherit; padding: 0; }
 
 .rq-tabs { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0 0 18px; }
-.rq-tabs button { display: inline-flex; gap: 8px; align-items: center; padding: 9px 18px; background: transparent; color: var(--text); border: 2px solid var(--rule); border-radius: 2px; font-family: var(--font-body); font-weight: 600; cursor: pointer; }
-.rq-tabs button.is-on { background: var(--text); color: var(--ink-raised); }
-.rq-badge { font-family: var(--font-mono); font-size: 0.75rem; min-width: 22px; text-align: center; padding: 1px 6px; border-radius: 10px; background: var(--gold); color: #fff; }
+.rq-tabs button { display: inline-flex; gap: 8px; align-items: center; padding: 9px 18px; background: transparent; color: var(--text); border: 1px solid var(--rule); border-radius: var(--radius-sm); font-family: var(--font-body); font-weight: 600; cursor: pointer; }
+.rq-tabs button.is-on { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.rq-badge { font-size: 0.75rem; min-width: 22px; text-align: center; padding: 1px 6px; border-radius: 10px; background: var(--primary); color: var(--on-primary); }
+.rq-tabs button.is-on .rq-badge { background: var(--on-primary); color: var(--primary); }
 .rq-old { margin-left: auto; color: var(--text-dim); font-size: 0.9rem; }
 
 /* ---------- overview hero ---------- */
-.rq-hero { border: 2px solid var(--rule); border-radius: 3px; background: var(--ink-raised); padding: 20px 22px; margin-bottom: 16px; box-shadow: 5px 5px 0 var(--gold); }
+.rq-hero { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); padding: 20px 22px; margin-bottom: 16px; box-shadow: var(--shadow-card); }
 .rq-stats { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 16px; }
 .rq-stats div { display: flex; flex-direction: column; }
 .rq-stats strong { font-family: var(--font-display); font-size: 2.1rem; line-height: 1; }
@@ -395,21 +397,21 @@ function decidedLabel(source) {
 .rq-switch small { color: var(--text-dim); font-size: 0.85rem; }
 .rq-switch--small { font-size: 0.85rem; }
 
-.rq-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding: 44px 16px; border: 2px dashed var(--line); border-radius: 3px; color: var(--text-dim); margin-top: 14px; }
+.rq-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding: 44px 16px; border: 2px dashed var(--line); border-radius: var(--radius-sm); color: var(--text-dim); margin-top: 14px; }
 .rq-empty strong { color: var(--text); font-size: 1.15rem; }
 .rq-empty-mark { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: var(--teal); color: #fff; font-size: 1.6rem; margin-bottom: 6px; }
 
 /* ---------- the list ---------- */
 .rq-day { margin: 26px 0 10px; font-size: 1.25rem; }
 .rq-day::first-letter { text-transform: uppercase; }
-.rq-q { border: 2px solid var(--rule); border-radius: 3px; background: var(--ink-raised); margin-bottom: 14px; overflow: hidden; }
+.rq-q { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); margin-bottom: 14px; overflow: hidden; }
 .rq-q-head { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; padding: 13px 16px; border-bottom: 1px solid var(--line); background: rgb(var(--fg-rgb) / 0.03); }
 .rq-q-text { font-weight: 650; overflow-wrap: anywhere; }
-.rq-q-num { display: inline-block; min-width: 1.7em; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim); }
+.rq-q-num { display: inline-block; min-width: 1.7em; font-size: 0.8rem; color: var(--text-dim); }
 .rq-q-right { font-size: 0.88rem; color: var(--text-dim); margin-top: 2px; padding-left: 1.7em; }
 .rq-q-right strong { color: var(--teal-ink, var(--teal)); }
 .rq-q-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-.rq-link { background: none; border: 1.5px solid var(--line); border-radius: 3px; padding: 4px 10px; font: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--text); white-space: nowrap; }
+.rq-link { background: none; border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: 4px 10px; font: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--text); white-space: nowrap; }
 .rq-link--yes:hover { border-color: var(--teal); color: var(--teal-ink, var(--teal)); }
 .rq-link--no:hover { border-color: var(--coral); color: var(--coral-ink, var(--coral)); }
 
@@ -417,23 +419,23 @@ function decidedLabel(source) {
 .rq-check input { width: 18px; height: 18px; cursor: pointer; }
 
 .rq-rows { list-style: none; margin: 0; padding: 0; }
-.rq-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 12px; align-items: center; padding: 9px 16px; border-top: 1px solid var(--line); border-left: 4px solid var(--gold); transition: background 0.15s ease, border-color 0.15s ease, opacity 0.2s ease; }
+.rq-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 12px; align-items: center; padding: 9px 16px; border-top: 1px solid var(--line); border-left: 4px solid var(--stone); transition: background 0.15s ease, border-color 0.15s ease, opacity 0.2s ease; }
 .rq-row:first-child { border-top: none; }
 .rq-row.is-correct { border-left-color: var(--teal); background: rgb(var(--teal-rgb) / 0.06); }
 .rq-row.is-wrong { border-left-color: var(--coral); background: rgb(var(--coral-rgb) / 0.05); }
 .rq-row.is-correct .rq-text, .rq-row.is-wrong .rq-text { opacity: 0.75; }
 .rq-row.is-mixed { border-left-color: var(--line); }
-.rq-row.is-selected { background: rgb(var(--gold-rgb) / 0.1); }
+.rq-row.is-selected { background: rgb(var(--primary-rgb) / 0.08); }
 .rq-row-main { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; min-width: 0; }
 .rq-text { font-weight: 650; font-size: 1.02rem; overflow-wrap: anywhere; }
-.rq-count { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim); }
+.rq-count { font-size: 0.8rem; color: var(--text-dim); }
 .rq-chip { font-size: 0.74rem; padding: 1px 8px; border: 1.5px solid var(--line); border-radius: 10px; color: var(--text-dim); white-space: nowrap; }
-.rq-chip--hint { border-color: var(--gold); color: var(--text); background: rgb(var(--gold-rgb) / 0.1); font-weight: 600; }
+.rq-chip--hint { border-color: rgb(var(--primary-rgb) / 0.45); color: var(--primary); background: rgb(var(--primary-rgb) / 0.07); font-weight: 600; }
 .rq-state { font-size: 0.8rem; font-weight: 600; color: var(--text-dim); min-width: 3.5em; text-align: right; }
 .rq-row.is-correct .rq-state { color: var(--teal-ink, var(--teal)); }
 .rq-row.is-wrong .rq-state { color: var(--coral-ink, var(--coral)); }
 .rq-btns { display: flex; gap: 6px; }
-.rq-btn { width: 40px; height: 36px; display: grid; place-items: center; border: 2px solid var(--rule); border-radius: 3px; background: var(--ink-raised); color: var(--text); font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: background 0.1s ease, color 0.1s ease, transform 0.08s ease; }
+.rq-btn { width: 40px; height: 36px; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); color: var(--text); font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: background 0.1s ease, color 0.1s ease, transform 0.08s ease; }
 .rq-btn:active { transform: scale(0.93); }
 .rq-btn--yes:hover, .rq-btn--yes.is-on { background: var(--teal); border-color: var(--teal); color: #fff; }
 .rq-btn--no:hover, .rq-btn--no.is-on { background: var(--coral); border-color: var(--coral); color: #fff; }
@@ -441,10 +443,10 @@ function decidedLabel(source) {
 /* ---------- floating bar ---------- */
 .rq-dock { position: fixed; left: 0; right: 0; bottom: 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; z-index: 40; padding: 0 12px; }
 .rq-dock > * { pointer-events: auto; }
-.rq-snack { display: flex; gap: 16px; align-items: center; background: var(--text); color: var(--ink-raised); padding: 10px 16px; border-radius: 3px; font-size: 0.92rem; box-shadow: 0 6px 22px rgb(0 0 0 / 0.25); max-width: 100%; }
+.rq-snack { display: flex; gap: 16px; align-items: center; background: var(--text); color: var(--ink-raised); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 0.92rem; box-shadow: 0 6px 22px rgb(0 0 0 / 0.25); max-width: 100%; }
 .rq-snack button { background: none; border: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; white-space: nowrap; }
-.rq-selbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; background: var(--ink-raised); border: 2px solid var(--rule); border-radius: 3px; padding: 10px 14px; box-shadow: 5px 5px 0 var(--gold); }
-.rq-selbar button { padding: 7px 16px; border: 2px solid var(--rule); border-radius: 3px; background: var(--ink-raised); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
+.rq-selbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; background: var(--ink-raised); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 10px 14px; box-shadow: var(--shadow-card); }
+.rq-selbar button { padding: 7px 16px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
 .rq-sel-yes:hover { background: var(--teal); border-color: var(--teal); color: #fff; }
 .rq-sel-no:hover { background: var(--coral); border-color: var(--coral); color: #fff; }
 .rq-selbar .rq-sel-clear { border: none; background: none; color: var(--text-dim); font-weight: 500; text-decoration: underline; }
@@ -452,16 +454,16 @@ function decidedLabel(source) {
 .rq-pop-enter-from, .rq-pop-leave-to { transform: translateY(14px); opacity: 0; }
 
 /* ---------- complaints ---------- */
-.rq-complaint { border: 2px solid var(--rule); border-radius: 3px; background: var(--ink-raised); padding: 16px 18px; margin-bottom: 12px; }
+.rq-complaint { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); padding: 16px 18px; margin-bottom: 12px; }
 .rq-c-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
 .rq-c-q { font-weight: 600; overflow-wrap: anywhere; margin-bottom: 10px; }
 .rq-c-versus { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.rq-c-box { border: 1.5px solid var(--line); border-radius: 3px; padding: 9px 12px; min-width: 0; }
+.rq-c-box { border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: 9px 12px; min-width: 0; }
 .rq-c-box span { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-dim); font-weight: 700; }
 .rq-c-box strong { font-family: var(--font-display); font-size: 1.15rem; overflow-wrap: anywhere; }
 .rq-c-box--right { background: rgb(var(--teal-rgb) / 0.07); }
-.rq-c-box--given { background: rgb(var(--gold-rgb) / 0.08); border-color: var(--gold); }
-.rq-c-comment { margin: 10px 0 0; padding: 9px 14px; border-left: 3px solid var(--gold); background: rgb(var(--gold-rgb) / 0.06); font-style: italic; overflow-wrap: anywhere; }
+.rq-c-box--given { background: rgb(var(--primary-rgb) / 0.06); border-color: rgb(var(--primary-rgb) / 0.4); }
+.rq-c-comment { margin: 10px 0 0; padding: 9px 14px; border-left: 3px solid var(--primary); background: rgb(var(--primary-rgb) / 0.05); font-style: italic; overflow-wrap: anywhere; }
 .rq-c-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
 .rq-c-reject { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
 .rq-c-reject input { flex: 1; min-width: 0; }

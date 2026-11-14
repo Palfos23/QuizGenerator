@@ -1,22 +1,19 @@
 <template>
   <div class="dq-page">
     <header class="dq-hero">
-      <span class="dq-eyebrow">{{ $t('En ny hver dag') }}</span>
       <h1 class="dq-title">{{ $t('Dagens quiz§DailyQuizListViewT') }}</h1>
       <p class="dq-sub">{{ $t('15 spørsmål i pubquiz-stil - skriv svarene dine, ingen flervalg.') }}</p>
     </header>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
-    <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+    <LoadingSkeleton v-if="loading" />
 
     <!-- Today -->
     <section v-else-if="today" class="dq-card dq-today">
       <span class="dq-eyebrow">{{ $t('I dag') }}</span>
       <div class="dq-today-date">{{ formatLong(today.quizDate) }}</div>
-      <div class="dq-today-meta">
-        <span class="dq-pill">{{ today.questionCount }} {{ $t('spørsmål§DailyQuizListViewT') }}</span>
-        <span class="dq-pill">{{ today.maxScore }} {{ $t('poeng§DailyQuizListViewT') }}</span>
+      <div v-if="today.status !== 'GRADED'" class="dq-today-meta">
         <span class="dq-pill" :class="statusPill(today).cls">{{ statusPill(today).label }}</span>
       </div>
       <div class="dq-today-cta">
@@ -46,7 +43,6 @@
         <router-link v-for="q in archiveQuizzes" :key="q.id" :to="`/daily-quiz/${q.id}`" class="dq-row">
           <div class="dq-row-main">
             <div class="dq-row-title">{{ formatLong(q.quizDate) }}</div>
-            <div class="dq-row-meta">{{ q.questionCount }} {{ $t('spørsmål ·') }} {{ q.maxScore }} {{ $t('poeng§DailyQuizListViewT') }}</div>
           </div>
           <div class="dq-row-end">
             <span class="dq-pill dq-keep-on-mobile" :class="statusPill(q).cls">{{ statusPill(q).label }}</span>
@@ -59,6 +55,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'

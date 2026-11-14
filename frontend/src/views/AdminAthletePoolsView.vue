@@ -19,7 +19,7 @@
         style="margin-bottom:16px;"
       />
 
-      <div v-if="loading" style="color:var(--text-dim);">{{ $t('Laster…') }}</div>
+      <LoadingSkeleton v-if="loading" />
       <div v-else-if="!filteredPools.length" class="empty-state friendly">
         {{ poolSearchTerm ? $t('Ingen utvalg samsvarer med «{0}».', [poolSearchTerm]) : $t('Ingen utvalg ennå - lag ditt første.') }}
       </div>
@@ -119,6 +119,7 @@
 </template>
 
 <script setup>
+import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
