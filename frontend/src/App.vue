@@ -19,6 +19,7 @@
             >
               {{ menu.label }} ▾
             </button>
+            <Transition name="pop" @enter="popFromTrigger" @leave="popFromTrigger">
             <div v-if="openPlayerMenu === menu.key" class="top-nav-dropdown-popup" role="menu">
               <router-link
                 v-for="item in menu.items"
@@ -29,6 +30,7 @@
                 @click="closePlayerMenuItem(item.to, item.key)"
               >{{ item.label }}</router-link>
             </div>
+            </Transition>
           </div>
         </template>
         <template v-if="auth.isAdmin.value">
@@ -43,6 +45,7 @@
             >
               {{ menu.label }} ▾
             </button>
+            <Transition name="pop" @enter="popFromTrigger" @leave="popFromTrigger">
             <div v-if="openAdminMenu === menu.label" class="top-nav-dropdown-popup" role="menu">
               <router-link
                 v-for="item in menu.items"
@@ -53,6 +56,7 @@
                 @click="closeAdminMenu"
               >{{ item.label }}</router-link>
             </div>
+            </Transition>
           </div>
         </template>
 
@@ -64,6 +68,7 @@
       <template v-else>
         <div class="top-nav-spacer"></div>
       </template>
+      <PaletteSwitcher />
       <LanguageToggle />
     </nav>
 
@@ -88,6 +93,7 @@
             @click="togglePlayerMenu(menu.key)"
             :class="{ active: playerMenuActive(menu) }"
           >{{ menu.label }} ▾</button>
+          <Transition name="pop" @enter="popFromTrigger" @leave="popFromTrigger">
           <div v-if="openPlayerMenu === menu.key" class="games-popup" :class="{ 'popup-left': menu.key === 'quizzes', 'popup-right': menu.key === 'account' }" role="menu">
             <template v-for="item in menu.items" :key="item.to || item.action">
               <button v-if="item.action === 'logout'" type="button" role="menuitem" class="popup-action" @click="closePlayerMenu(); logout()">{{ item.label }}</button>
@@ -100,6 +106,7 @@
               >{{ item.label }}</router-link>
             </template>
           </div>
+          </Transition>
         </div>
       </template>
       <template v-if="auth.isAdmin.value">
@@ -110,6 +117,7 @@
             :class="{ active: adminMenuActive(menu) }"
             @click="toggleAdminMenu(menu.label)"
           >{{ menu.label }} ▾</button>
+          <Transition name="pop" @enter="popFromTrigger" @leave="popFromTrigger">
           <div v-if="openAdminMenu === menu.label" class="games-popup admin-menu-popup" role="menu">
             <router-link
               v-for="item in menu.items"
@@ -119,6 +127,7 @@
               @click="closeAdminMenu"
             >{{ item.label }}</router-link>
           </div>
+          </Transition>
         </div>
       </template>
       <button v-if="auth.isAdmin.value || auth.isGuest.value" @click="logout">{{ auth.isGuest.value ? $t('Forlat') : $t('Logg ut') }}</button>
@@ -158,6 +167,8 @@ import navTrigger from './services/navTrigger'
 import cookieConsent from './services/cookieConsent'
 import ToastHost from './components/ToastHost.vue'
 import LanguageToggle from './components/LanguageToggle.vue'
+import PaletteSwitcher from './components/PaletteSwitcher.vue'
+import { popFromTrigger } from './composables/popFromTrigger'
 import CookieConsentBanner from './components/CookieConsentBanner.vue'
 import { useEscapeKey } from './composables/useEscapeKey'
 

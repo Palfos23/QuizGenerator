@@ -14,6 +14,7 @@
     <template v-else-if="name === 'crown'"><path d="M3.5 18.5h17M4 17l-1-9 5 4 4-7 4 7 5-4-1 9H4z" /></template>
     <template v-else-if="name === 'lock'"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></template>
     <template v-else-if="name === 'flask'"><path d="M9 3h6M10 3v6l-5.5 9.5A1.5 1.5 0 005.8 21h12.4a1.5 1.5 0 001.3-2.5L14 9V3" /><path d="M7.5 15h9" /></template>
+    <template v-else-if="name === 'copy'"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 012-2h9" /></template>
     <template v-else-if="name === 'check'"><path d="M5 12.5l4.5 4.5L19 7.5" /></template>
   </svg>
 </template>

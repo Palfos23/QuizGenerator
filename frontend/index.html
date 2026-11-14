@@ -6,7 +6,17 @@
     <title>Quizzes</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta name="theme-color" content="#f3ebdb" />
+    <meta name="theme-color" content="#f1efe8" />
+    <script>
+      // Apply the saved colour palette before first paint (see src/services/palette.js).
+      try {
+        var p = localStorage.getItem('quiz_palette');
+        if (p === 'mono' || p === 'ember') {
+          document.documentElement.dataset.palette = p;
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', p === 'ember' ? '#111114' : '#fafafa');
+        }
+      } catch (e) {}
+    </script>
     <!-- Google Identity Services (the sign-in button) is deliberately NOT loaded
          here - it's injected on demand, only after cookie consent is accepted,
          by services/loadScript.js (see HomeView.vue). Loading it unconditionally

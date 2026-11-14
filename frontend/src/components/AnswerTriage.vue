@@ -229,12 +229,13 @@ kbd { font-family: var(--font-mono); font-size: 0.72rem; padding: 1px 6px; borde
 .tri-keys { margin: 12px 0 0; text-align: center; font-size: 0.78rem; color: var(--text-dim); }
 
 /* each new card slides up from the side of the choice that brought it (plain CSS, so it can never get stuck mid-way) */
-@keyframes tri-in-yes { from { transform: translate(-28px, 10px) rotate(-1deg); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes tri-in-no { from { transform: translate(28px, 10px) rotate(1deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes tri-x-yes { from { translate: -28px 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+@keyframes tri-x-no { from { translate: 28px 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+@keyframes tri-y { from { transform: translateY(10px); } to { transform: none; } }
 @keyframes tri-in-up { from { transform: translateY(18px); opacity: 0; } to { transform: none; opacity: 1; } }
-.tri-card.is-yes { animation: tri-in-yes 0.2s ease-out; }
-.tri-card.is-no { animation: tri-in-no 0.2s ease-out; }
-.tri-card.is-skip, .tri-card.is-undo { animation: tri-in-up 0.2s ease-out; }
+.tri-card.is-yes { animation: tri-x-yes 0.24s var(--ease-out), tri-y 0.24s var(--ease-in-out); }
+.tri-card.is-no { animation: tri-x-no 0.24s var(--ease-out), tri-y 0.24s var(--ease-in-out); }
+.tri-card.is-skip, .tri-card.is-undo { animation: tri-in-up 0.24s var(--ease-out); }
 @media (prefers-reduced-motion: reduce) { .tri-card { animation: none !important; } .tri-progress span { transition: none; } }
 
 @media (max-width: 600px) {

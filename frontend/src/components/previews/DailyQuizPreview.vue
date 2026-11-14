@@ -58,7 +58,7 @@
 .dqp-q { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-3); align-items: start; padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: rgb(var(--fg-rgb) / 0.035); }
 .dqp-q.is-ok { background: rgb(var(--teal-rgb) / 0.08); }
 .dqp-q.is-bad { background: rgb(var(--coral-rgb) / 0.07); }
-.dqp-q.is-typing .dqp-n { background: var(--gold); color: #fff; }
+.dqp-q.is-typing .dqp-n { background: var(--gold); color: var(--on-accent); }
 .dqp-n { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: rgb(var(--fg-rgb) / 0.08); color: var(--text-dim); font-size: 0.78rem; font-weight: 700; }
 .dqp-main p { margin: 0 0 6px; font-weight: 600; font-size: 0.98rem; line-height: 1.3; }
 .dqp-a { font-size: 1.05rem; font-weight: 650; }

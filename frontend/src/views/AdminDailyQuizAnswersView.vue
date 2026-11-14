@@ -450,7 +450,8 @@ function decidedLabel(source) {
 .rq-sel-yes:hover { background: var(--teal); border-color: var(--teal); color: #fff; }
 .rq-sel-no:hover { background: var(--coral); border-color: var(--coral); color: #fff; }
 .rq-selbar .rq-sel-clear { border: none; background: none; color: var(--text-dim); font-weight: 500; text-decoration: underline; }
-.rq-pop-enter-active, .rq-pop-leave-active { transition: transform 0.18s ease, opacity 0.18s ease; }
+.rq-pop-enter-active { transition: transform 0.22s var(--ease-out), opacity 0.22s var(--ease-out); }
+.rq-pop-leave-active { transition: transform 0.176s var(--ease-in), opacity 0.176s var(--ease-in); }
 .rq-pop-enter-from, .rq-pop-leave-to { transform: translateY(14px); opacity: 0; }
 
 /* ---------- complaints ---------- */

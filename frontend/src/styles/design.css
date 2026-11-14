@@ -93,7 +93,7 @@ a { text-underline-offset: 3px; }
 }
 
 /* ---------- Buttons ---------- */
-.btn { border-radius: var(--radius-md); font-weight: 600; letter-spacing: 0; transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s var(--ease-out), box-shadow 0.15s ease; }
+.btn { border-radius: var(--radius-md); font-weight: 600; letter-spacing: 0; transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease; }
 .btn-primary {
   background: var(--primary);
   color: var(--on-primary);
@@ -101,7 +101,7 @@ a { text-underline-offset: 3px; }
   box-shadow: 0 1px 2px rgb(var(--primary-rgb) / 0.3);
 }
 .btn-primary:hover { background: var(--primary-hover); filter: none; box-shadow: 0 3px 10px rgb(var(--primary-rgb) / 0.28); }
-.btn-primary:active { transform: translateY(1px) scale(0.985); box-shadow: 0 1px 2px rgb(var(--primary-rgb) / 0.3); }
+.btn-primary:active { box-shadow: 0 1px 2px rgb(var(--primary-rgb) / 0.3); }
 .btn-primary:disabled { box-shadow: none; background: rgb(var(--primary-rgb) / 0.35); }
 .btn-secondary { background: var(--ink-raised); border: 1px solid rgb(var(--fg-rgb) / 0.22); color: var(--text); }
 .btn-secondary:hover { background: rgb(var(--primary-rgb) / 0.06); border-color: rgb(var(--primary-rgb) / 0.5); color: var(--primary); }
@@ -188,7 +188,7 @@ a { text-underline-offset: 3px; }
 /* Avatars, ranks and bars: solid colour, no gradients */
 .dq-avatar { background: var(--primary); color: var(--on-primary); border-radius: 50%; }
 .dq-rank { background: transparent; border: 1.5px solid rgb(var(--fg-rgb) / 0.35); color: var(--text); border-radius: 50%; }
-.dq-rank--1 { background: var(--gold); border-color: var(--gold); color: #fff; }
+.dq-rank--1 { background: var(--gold); border-color: var(--gold); color: var(--on-accent); }
 .dq-rank--2 { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
 .dq-rank--3 { background: transparent; border-color: var(--primary); color: var(--primary); }
 .dq-weekly-icon { background: var(--primary); color: var(--on-primary); border-radius: var(--radius-md); }
@@ -247,10 +247,6 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 .banner.error { background: rgb(var(--coral-rgb) / 0.07); color: var(--coral-ink); border-color: rgb(var(--coral-rgb) / 0.4); }
 .banner.success { background: rgb(var(--teal-rgb) / 0.09); color: var(--teal-ink); border-color: rgb(var(--teal-rgb) / 0.4); }
 .toast { border-radius: var(--radius-md); box-shadow: var(--shadow-float); }
-.toast-fade-enter-active { transition: opacity 0.2s ease, transform 0.25s var(--ease-out); }
-.toast-fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
-.toast-fade-enter-from { opacity: 0; transform: translateY(10px) scale(0.98); }
-.toast-fade-leave-to { opacity: 0; transform: translateY(6px); }
 
 /* ---------- Loading ---------- */
 .skeleton, .skeleton-line {
@@ -536,3 +532,29 @@ h1.page-title::before, .dashboard-hero h1::before {
 }
 .dashboard-hero { border-left: 4px solid var(--gold); }
 .home-login { box-shadow: inset 0 3px 0 var(--gold), var(--shadow-card); }
+
+/* ---- Palette switcher (top nav) ---- */
+.palette-switch { position: relative; display: inline-flex; align-items: center; gap: var(--space-1); margin-left: var(--space-3); flex-shrink: 0; }
+.palette-dot {
+  width: var(--dot, 26px); height: var(--dot, 26px); padding: 0; border-radius: 50%; cursor: pointer;
+  border: 1px solid rgb(var(--fg-rgb) / 0.25);
+  /* page colour / primary / accent, as three slices */
+  background: conic-gradient(var(--sw-page) 0 33%, var(--sw-primary) 0 66%, var(--sw-accent) 0);
+  }
+.palette-dot:hover { scale: 1.08; }
+
+/* The palette switcher makes the logged-in nav wider: between the mobile and full-width layouts, tighten it */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .top-nav { padding-inline: 16px; gap: 2px; }
+  .top-nav-user { display: none; }
+  .top-nav .nav-link { padding-inline: 6px; font-size: 0.86rem; }
+  .palette-switch, .lang-toggle { margin-left: 4px; }
+  .palette-switch { --dot: 22px; --step: 26px; }
+}
+@media (min-width: 761px) and (max-width: 900px) {
+  .top-nav { padding-inline: 12px; }
+  .nav-brand { font-size: 1.25rem; }
+  .top-nav .nav-link { padding-inline: 4px; font-size: 0.82rem; }
+  .top-nav .btn-sm { padding-inline: 10px; }
+  .lang-toggle-btn { padding-inline: 8px; }
+}

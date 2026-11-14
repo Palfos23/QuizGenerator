@@ -1,6 +1,7 @@
 <template>
   <div style="display:inline-flex; gap:8px; flex-wrap:wrap;">
-    <button type="button" class="btn btn-secondary" @click="share">
+    <button type="button" class="btn btn-secondary" :class="{ 'pulse-ok': copied }" @click="share">
+      <SwapIcon a="copy" b="check" :on="copied" />
       {{ copied ? $t('Kopiert!') : $t('Inviter venner') }}
     </button>
     <button type="button" class="btn btn-secondary" @click="toggleQr">
@@ -23,6 +24,7 @@
 import { t as _t } from '../i18n'
 import { ref, watch } from 'vue'
 import QRCode from 'qrcode'
+import SwapIcon from './SwapIcon.vue'
 import { useEscapeKey } from '../composables/useEscapeKey'
 
 // /join/:code already exists (see JoinGuestView.vue / router/index.js) as a

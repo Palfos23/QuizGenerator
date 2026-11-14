@@ -2,6 +2,12 @@ import { loadLang, t, locale } from './i18n'
 import './style.css'
 import './styles/daily-quiz.css'
 import './styles/design.css'
+import './styles/palettes.css'
+import './styles/motion.css'
+import { initPalette } from './services/palette'
+import { installPageTransitions } from './services/viewTransition'
+
+initPalette()
 
 
 // The English catalog (if that's the chosen language) has to be loaded before any app module runs: some
@@ -13,6 +19,7 @@ loadLang().then(async () => {
     import('./App.vue'),
     import('./router')
   ])
+  installPageTransitions(router)
   const app = createApp(App).use(router)
   app.config.globalProperties.$t = t
   app.config.globalProperties.$locale = locale
