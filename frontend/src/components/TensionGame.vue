@@ -95,7 +95,7 @@
       </div>
     </div>
 
-    <div style="text-align:center; margin-top:24px;">
+    <div class="tension-actions" style="text-align:center;">
       <div v-if="countdown !== null && !revealed" style="font-size:1.4rem; font-weight:700;">
         {{ $t('Svar om') }} {{ countdown }}…
       </div>

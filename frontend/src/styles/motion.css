@@ -20,7 +20,7 @@
 .btn,
 .nav-link, .palette-dot, .lang-toggle-btn, .popup-action, .bottom-nav button, .bottom-nav a,
 .dashboard-feature-card, .dashboard-advent, .mode-choice-card, .dq-row, .adv-door {
-  transition-property: scale, color, background, background-color, border-color, box-shadow, opacity, filter;
+  transition-property: scale, transform, color, background, background-color, border-color, box-shadow, opacity, filter;
   transition-duration: var(--dur-press);
   transition-timing-function: var(--ease-out);
 }
@@ -46,7 +46,7 @@
 /* ---------- Stagger: list rows arrive 30ms apart ---------- */
 @keyframes row-in { from { opacity: 0; translate: 0 8px; } }
 :is(.dq-list, .dq-result-list, .dq-board, .dq-qlist, .dq-ledger, .saved-quiz-list, .dqp-list,
-    .dashboard-features, .dashboard-side, .adv-grid) > * {
+    .dashboard-hero, .dashboard-side, .adv-grid) > * {
   animation: row-in var(--dur-enter) var(--ease-out) backwards;
   animation-delay: calc(var(--i, 0) * var(--stagger));
 }
@@ -61,7 +61,7 @@
   animation-delay: calc(80ms + var(--i, 0) * var(--stagger));
 }
 :is(.dq-list, .dq-result-list, .dq-board, .dq-qlist, .dq-ledger, .saved-quiz-list, .dqp-list,
-    .dashboard-features, .dashboard-side, .adv-grid,
+    .dashboard-hero, .dashboard-side, .adv-grid,
     .top-nav-dropdown-popup, .games-popup, .modal) {
   & > :nth-child(1) { --i: 0; }
   & > :nth-child(2) { --i: 1; }
@@ -88,6 +88,11 @@
 .dialog-leave-active .modal { transition: scale var(--dur-exit) var(--ease-in), translate var(--dur-exit) var(--ease-in); }
 .dialog-leave-to { opacity: 0; }
 .dialog-leave-to .modal { scale: 0.97; translate: 0 6px; }
+
+/* ---------- Scroll reveals (directives/reveal.js): hidden until scrolled into view, then rise into place ---------- */
+@keyframes reveal-up { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
+.reveal { opacity: 0; }
+.reveal.in { animation: reveal-up 560ms var(--ease-out) var(--d, 0ms) both; }
 
 /* ---------- Page changes: the new page eases in; navigation itself never waits on an animation ---------- */
 @keyframes page-in { from { opacity: 0; translate: 0 6px; } }
@@ -161,7 +166,7 @@ input[type="range"]:active::-moz-range-thumb { scale: 1.12 1; transition: none; 
 
 @media (prefers-reduced-motion: reduce) {
   :is(.dq-list, .dq-result-list, .dq-board, .dq-qlist, .dq-ledger, .saved-quiz-list, .dqp-list, .home-more-list,
-      .dashboard-features, .dashboard-side, .adv-grid, .top-nav-dropdown-popup, .games-popup, .modal) > *,
+      .dashboard-hero, .dashboard-side, .adv-grid, .top-nav-dropdown-popup, .games-popup, .modal) > *,
   .modal, .modal-backdrop, .palette-ring.is-moving { animation: none; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   .main-content > * { animation: none; }

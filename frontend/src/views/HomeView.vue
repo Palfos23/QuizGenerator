@@ -66,6 +66,7 @@ import { useRoute, useRouter } from 'vue-router'
 import DailyQuizPreview from '../components/previews/DailyQuizPreview.vue'
 import auth from '../services/auth'
 import loginDialog from '../services/loginDialog'
+import reveal from '../directives/reveal'
 import { safeRedirectTarget } from '../router'
 
 const route = useRoute()
@@ -105,32 +106,7 @@ function untilt(e) {
   e.currentTarget.style.setProperty('--tilt-y', '0deg')
 }
 
-// ---- v-reveal: fades up when scrolled into view; icons inside draw their lines ----
-const vReveal = {
-  mounted(el, binding) {
-    if (prefersReducedMotion() || typeof IntersectionObserver === 'undefined') return
-    el.classList.add('reveal')
-    el.style.setProperty('--d', `${binding.value || 0}ms`)
-    const shapes = [...el.querySelectorAll('.home-icon svg path, .home-icon svg rect, .home-icon svg circle')]
-    shapes.forEach(shape => {
-      try {
-        const len = Math.ceil(shape.getTotalLength())
-        shape.style.strokeDasharray = len
-        shape.style.strokeDashoffset = len
-      } catch (e) { /* shape cannot be measured: it just stays drawn */ }
-    })
-    const io = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return
-      io.disconnect()
-      el.classList.add('in')
-      shapes.forEach(shape => {
-        shape.style.transition = `stroke-dashoffset 800ms var(--ease-in-out) ${(binding.value || 0) + 200}ms`
-        shape.style.strokeDashoffset = 0
-      })
-    }, { threshold: 0.3 })
-    io.observe(el)
-  }
-}
+const vReveal = reveal // fades up on scroll; icons inside draw their lines (see directives/reveal.js)
 
 onMounted(() => {
   if (!prefersReducedMotion()) countUp()
@@ -187,9 +163,6 @@ onBeforeUnmount(() => cancelAnimationFrame(rafId))
 }
 @keyframes shine { 0%, 40% { left: -60%; } 70%, 100% { left: 130%; } }
 
-/* sections fade up as they scroll into view */
-.reveal { opacity: 0; translate: 0 14px; transition: opacity 560ms var(--ease-out) var(--d, 0ms), translate 560ms var(--ease-out) var(--d, 0ms); }
-.reveal.in { opacity: 1; translate: 0 0; }
 @media (prefers-reduced-motion: reduce) { .home-w > span, .home-cta .btn::after { animation: none; } }
 
 .home-more h2 { font-size: 1.5rem; margin: 0 0 var(--space-5); max-width: 24ch; }
