@@ -61,16 +61,23 @@
         </template>
 
         <div class="top-nav-spacer"></div>
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/account" class="nav-link" @click="onNavClick('/account', 'account')">{{ $t('Konto') }}</router-link>
-        <span class="top-nav-user">{{ auth.state.displayName }}<template v-if="auth.isGuest.value"> {{ $t('(gjest)') }}</template></span>
-        <button class="btn btn-secondary btn-sm" @click="logout">{{ auth.isGuest.value ? $t('Forlat') : $t('Logg ut') }}</button>
+        <!-- Your initial instead of "Konto" plus the name: it opens the account page (the full name is its tooltip) -->
+        <router-link
+          v-if="!auth.isAdmin.value && !auth.isGuest.value"
+          to="/account"
+          class="user-avatar"
+          :aria-label="$t('Konto')"
+          :title="auth.state.displayName"
+          @click="onNavClick('/account', 'account')"
+        >{{ userInitial }}</router-link>
+        <span v-else class="user-avatar user-avatar--static" :title="auth.state.displayName">{{ userInitial }}</span>
       </template>
       <template v-else>
         <div class="top-nav-spacer"></div>
         <button type="button" class="btn btn-primary btn-sm nav-login" @click="loginDialog.open()">{{ $t('Logg inn') }}</button>
       </template>
-      <PaletteSwitcher />
       <LanguageToggle />
+      <button v-if="auth.isAuthenticated.value" type="button" class="btn btn-secondary btn-sm nav-logout" @click="logout">{{ auth.isGuest.value ? $t('Forlat') : $t('Logg ut') }}</button>
     </nav>
 
     <main class="main-content">
@@ -169,7 +176,6 @@ import navTrigger from './services/navTrigger'
 import cookieConsent from './services/cookieConsent'
 import ToastHost from './components/ToastHost.vue'
 import LanguageToggle from './components/LanguageToggle.vue'
-import PaletteSwitcher from './components/PaletteSwitcher.vue'
 import LoginDialog from './components/LoginDialog.vue'
 import loginDialog from './services/loginDialog'
 import { popFromTrigger } from './composables/popFromTrigger'
@@ -249,6 +255,7 @@ function playerMenuActive(menu) {
 // Single "which player dropdown is open" ref (null | 'weekly' | 'games') - one at a
 // time, same pattern as openAdminMenu below.
 const openPlayerMenu = ref(null)
+const userInitial = computed(() => (auth.state.displayName || '?').trim().charAt(0).toUpperCase() || '?')
 function togglePlayerMenu(key) {
   openPlayerMenu.value = openPlayerMenu.value === key ? null : key
 }

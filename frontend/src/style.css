@@ -290,12 +290,6 @@ input[type="radio"] {
 
 .top-nav-spacer { flex: 1; }
 
-.top-nav-user {
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  margin-right: 12px;
-  white-space: nowrap;
-}
 
 /* Desktop "Weekly quiz" dropdown - groups Grid + Starting XI under one
    top-nav item, same idea as the mobile bottom-nav's Games popup. */
@@ -3072,7 +3066,7 @@ table.scoreboard-table {
   .app-shell { flex-direction: column; }
 
   .top-nav { padding: 12px 16px; }
-  .top-nav .nav-link, .top-nav-user, .top-nav .btn, .top-nav-dropdown { display: none; }
+  .top-nav .nav-link, .top-nav .btn, .top-nav-dropdown { display: none; }
 
   /* Was position:static (scrolled away with the page) - now stays pinned
      below the nav on mobile too, same as desktop, so the search box (and,

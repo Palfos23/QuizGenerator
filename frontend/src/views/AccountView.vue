@@ -19,6 +19,14 @@
     </form>
 
     <div class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
+      <label>{{ $t('Fargetema') }}</label>
+      <div class="palette-row">
+        <PaletteSwitcher class="palette-switch--lg" />
+        <span class="palette-name">{{ currentPaletteName }}</span>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
       <label>{{ $t('Last ned dataene mine') }}</label>
       <p class="page-subtitle" style="margin-top:-6px;">
         {{ $t('En kopi av alt som er knyttet til kontoen din - profil, lagrede quizer, innsendte spørsmål, rapporter og spillhistorikk - som en JSON-fil.') }}
@@ -54,8 +62,11 @@ import api from '../services/api'
 import auth from '../services/auth'
 import toast from '../services/toast'
 import DeleteAccountModal from '../components/DeleteAccountModal.vue'
+import PaletteSwitcher from '../components/PaletteSwitcher.vue'
+import { PALETTES, palette } from '../services/palette'
 
 const router = useRouter()
+const currentPaletteName = computed(() => PALETTES.find(p => p.id === palette.value)?.name || '')
 const error = ref('')
 const exporting = ref(false)
 
@@ -114,6 +125,8 @@ async function deleteAccount(password) {
 </script>
 
 <style scoped>
+.palette-row { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-2) var(--space-1); }
+.palette-name { font-weight: 600; }
 .display-name-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .display-name-row input {
   flex: 1;

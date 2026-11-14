@@ -60,7 +60,6 @@ a { text-underline-offset: 3px; }
   background: rgb(var(--primary-rgb) / 0.08);
   box-shadow: inset 0 -2px 0 var(--gold); /* scarlet marks where you are */
 }
-.top-nav-user { color: var(--text-dim); }
 .top-nav-dropdown-popup,
 .bottom-nav .games-popup {
   background: var(--ink-raised);
@@ -546,10 +545,8 @@ h1.page-title::before, .dashboard-hero h1::before {
 /* The palette switcher makes the logged-in nav wider: between the mobile and full-width layouts, tighten it */
 @media (min-width: 761px) and (max-width: 1100px) {
   .top-nav { padding-inline: 16px; gap: 2px; }
-  .top-nav-user { display: none; }
   .top-nav .nav-link { padding-inline: 6px; font-size: 0.86rem; }
-  .palette-switch, .lang-toggle { margin-left: 4px; }
-  .palette-switch { --dot: 22px; --step: 26px; }
+  .lang-toggle { margin-left: 4px; }
 }
 @media (min-width: 761px) and (max-width: 900px) {
   .top-nav { padding-inline: 12px; }
@@ -564,7 +561,27 @@ h1.page-title::before, .dashboard-hero h1::before {
 @media (max-width: 760px) {
   .top-nav { padding-inline: 12px; gap: 4px; }
   .top-nav .btn.nav-login { margin-left: auto; }
-  .palette-switch { --dot: 22px; --step: 26px; margin-left: 6px; }
   .lang-toggle { margin-left: 6px; }
   .lang-toggle-btn { padding-inline: 8px; }
 }
+
+/* On the Account page the switcher is bigger and sits on its own row */
+.palette-switch--lg { --dot: 40px; --step: 52px; gap: 12px; margin-left: 0; }
+
+/* Account button: your initial in a circle that opens the account page */
+.user-avatar {
+  width: 34px; height: 34px; padding: 0; margin-left: var(--space-3); flex-shrink: 0;
+  display: grid; place-items: center; border-radius: 50%; cursor: pointer; text-decoration: none;
+  border: 1px solid rgb(var(--primary-rgb) / 0.35);
+  background: rgb(var(--primary-rgb) / 0.1); color: var(--primary);
+  font: 700 0.9rem var(--font-body);
+  transition-property: scale, background, border-color, color;
+  transition-duration: var(--dur-press);
+  transition-timing-function: var(--ease-out);
+}
+a.user-avatar:hover, a.user-avatar.router-link-exact-active { background: rgb(var(--primary-rgb) / 0.18); border-color: var(--primary); }
+a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
+.user-avatar--static { cursor: default; }
+/* "Logg ut" is the last thing in the header, after the language toggle */
+.nav-logout { margin-left: var(--space-3); flex-shrink: 0; }
+@media (min-width: 761px) and (max-width: 900px) { .nav-logout { margin-left: 4px; } }
