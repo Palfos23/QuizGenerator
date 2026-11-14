@@ -303,3 +303,40 @@
   --violet-ink: #0a6fb8;
   --gold-ink: #c23a12;
 }
+
+/* Rosa: pink and nothing else. Page, surfaces, text, lines, both accents and even the pitch are pinks; the status
+   colours stay in the family too, told apart by depth - "correct" is the bright pink, "wrong" the dark wine rose. */
+:root[data-palette="rosa"] {
+  --ink: #ffeaf3;
+  --ink-raised: #fff7fb;
+  --primary: #d6187f;
+  --primary-hover: #b80f6b;
+  --primary-rgb: 214 24 127;
+  --on-primary: #ffffff;
+  --stone: #d9a3bd;
+  --gold: #ff5fa8;
+  --on-accent: #4a0f2c;
+  --coral: #8a1245;
+  --teal: #ff2d95;
+  --violet: #c77dae;
+  --text: #4a0f2c;
+  --text-dim: #8f5a73;
+  --rule: #f6c6dc;
+  --fg-rgb: 74 15 44;
+  --paper-rgb: 255 247 251;
+  --page-rgb: 255 234 243;
+  --gold-rgb: 255 95 168;
+  --teal-rgb: 255 45 149;
+  --coral-rgb: 138 18 69;
+  --violet-rgb: 199 125 174;
+  --field-bg: #fffafc;
+  --pitch-text: #4a0f2c;
+  --teal-ink: #c2137a;
+  --coral-ink: #7a1040;
+  --amber-ink: #a0738a;
+  --amber-rgb: 160 115 138;
+  --violet-ink: #9c4f83;
+  --gold-ink: #c91f7a;
+  --pitch-a: #f7b9d5;
+  --pitch-b: #f3a8ca;
+}

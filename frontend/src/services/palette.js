@@ -19,6 +19,7 @@ export const PALETTES = [
   { id: 'monocle', name: 'Monocle', swatch: ['#f0e9d8', '#0f3d3a', '#c8a24a', '#b3202a'], themeColor: '#f0e9d8' },
   { id: 'dusk', name: 'Dusk', swatch: ['#0d1228', '#8fb8ff', '#ffb38a', '#c9a7ff'], themeColor: '#0d1228' },
   { id: 'spectrum', name: 'Spectrum', swatch: ['#f5f5f7', '#7b3fe4', '#f24e1e', '#0d99ff'], themeColor: '#f5f5f7' },
+  { id: 'rosa', name: 'Rosa', swatch: ['#ffeaf3', '#d6187f', '#ff5fa8', '#c77dae'], themeColor: '#ffeaf3' },
 ]
 
 function readStored() {
