@@ -395,7 +395,6 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   padding: 1px 6px;
   border-radius: 999px;
 }
-.dq-led--expert .dq-led-name i { font-weight: 500; }
 .dq-led-pill {
   font-family: var(--font-body);
   font-size: 0.66rem;
@@ -718,3 +717,21 @@ a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
 @media (prefers-reduced-motion: reduce) {
   .dashboard-hero::before, .dashboard-hero::after, .dashboard-hero-actions .btn::after, .dashboard-advent::after, .dashboard-advent-icon svg { animation: none; }
 }
+
+/* The expert in a leaderboard: not a row but a line across the list, with a small label on it. The line fades out
+   to both sides; everyone above it beat the expert, everyone below did not. */
+.dq-expert-line { display: flex; align-items: center; gap: 12px; margin: 8px 0; color: var(--gold-ink); }
+.dq-expert-line::before, .dq-expert-line::after { content: ''; flex: 1; height: 1px; }
+.dq-expert-line::before { background: linear-gradient(90deg, transparent, rgb(var(--gold-rgb) / 0.75)); transform-origin: right; animation: expert-line 700ms var(--ease-in-out) 200ms backwards; }
+.dq-expert-line::after { background: linear-gradient(270deg, transparent, rgb(var(--gold-rgb) / 0.75)); transform-origin: left; animation: expert-line 700ms var(--ease-in-out) 200ms backwards; }
+@keyframes expert-line { from { scale: 0 1; } }
+.dq-expert-tag {
+  display: inline-flex; align-items: center; gap: 8px; padding: 3px 12px 3px 10px;
+  border: 1px solid rgb(var(--gold-rgb) / 0.4); border-radius: 999px; background: rgb(var(--gold-rgb) / 0.09);
+  font-size: 0.78rem; animation: pv-pop 360ms var(--ease-out) 120ms backwards;
+}
+.dq-expert-tag svg { width: 9px; height: 9px; fill: var(--gold); flex-shrink: 0; }
+.dq-expert-tag b { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.01em; }
+.dq-expert-score { font-weight: 700; font-variant-numeric: tabular-nums; }
+.dq-expert-score small { font-weight: 500; opacity: 0.75; margin-left: 2px; }
+.dq-expert-line + .dq-led { border-top: none; }

@@ -20,12 +20,13 @@
         <!-- A results ledger: rank, name, a dotted leader, the score. The winner's row is inverted. -->
         <div class="dq-ledger">
           <template v-for="row in rows" :key="row.kind === 'expert' ? 'expert' : row.entry.userName + row.rank">
-            <!-- The expert sits in the list at their real score, but isn't ranked: a dash instead of a number. -->
-            <div v-if="row.kind === 'expert'" class="dq-led dq-led--expert">
-              <span class="dq-led-rank">&ndash;</span>
-              <span class="dq-led-name"><i>{{ $t('Eksperten') }}</i><span class="dq-led-pill">{{ $t('Ikke rangert') }}</span></span>
-              <span class="dq-led-dots"></span>
-              <span class="dq-led-score">{{ row.score }}<small>/{{ row.maxScore }}</small></span>
+            <!-- The expert is not a player: a line across the list at their real score. Everyone above it beat them. -->
+            <div v-if="row.kind === 'expert'" class="dq-expert-line" role="separator" :aria-label="$t('Eksperten') + ' ' + row.score + '/' + row.maxScore">
+              <span class="dq-expert-tag">
+                <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1l5 5-5 5-5-5z" /></svg>
+                <b>{{ $t('Eksperten') }}</b>
+                <span class="dq-expert-score">{{ row.score }}<small>/{{ row.maxScore }}</small></span>
+              </span>
             </div>
 
             <div v-else class="dq-led" :class="{ 'is-winner': row.rank === 1, 'is-you': row.entry.isYou }">

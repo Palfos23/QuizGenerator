@@ -16,15 +16,13 @@
       <div v-if="!standings.length" class="dq-row-meta" style="padding:6px 0 2px;">{{ $t('Ingen resultater denne uken ennå - vær den første.') }}</div>
       <div v-else class="dq-ledger">
         <template v-for="row in rows" :key="row.kind === 'expert' ? 'expert' : row.entry.playerName + row.rank">
-          <!-- The expert is in the list at their real total, but not ranked: a dash instead of a number. -->
-          <div v-if="row.kind === 'expert'" class="dq-led dq-led--expert">
-            <span class="dq-led-rank">&ndash;</span>
-            <span class="dq-led-name">
-              <i>{{ $t('Eksperten') }}</i><span class="dq-led-pill">{{ $t('Ikke rangert') }}</span>
-              <small class="dq-led-meta">{{ daysNote(row.daysPlayed) }}</small>
+          <!-- The expert is not a player: a line across the list at their real total. Everyone above it beat them. -->
+          <div v-if="row.kind === 'expert'" class="dq-expert-line" role="separator" :title="daysNote(row.daysPlayed)" :aria-label="$t('Eksperten') + ' ' + row.total">
+            <span class="dq-expert-tag">
+              <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1l5 5-5 5-5-5z" /></svg>
+              <b>{{ $t('Eksperten') }}</b>
+              <span class="dq-expert-score">{{ row.total }}<small>{{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></span>
             </span>
-            <span class="dq-led-dots"></span>
-            <span class="dq-led-score">{{ row.total }}<small>{{ $t('poeng§DailyQuizWeeklyPanelPts') }}</small></span>
           </div>
 
           <div v-else class="dq-led" :class="{ 'is-winner': row.rank === 1, 'is-you': row.entry.isYou }">
