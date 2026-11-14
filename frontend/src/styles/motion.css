@@ -46,7 +46,7 @@
 /* ---------- Stagger: list rows arrive 30ms apart ---------- */
 @keyframes row-in { from { opacity: 0; translate: 0 8px; } }
 :is(.dq-list, .dq-result-list, .dq-board, .dq-qlist, .dq-ledger, .saved-quiz-list, .dqp-list,
-    .home-more-list, .dashboard-features, .dashboard-side, .adv-grid) > * {
+    .dashboard-features, .dashboard-side, .adv-grid) > * {
   animation: row-in var(--dur-enter) var(--ease-out) backwards;
   animation-delay: calc(var(--i, 0) * var(--stagger));
 }
@@ -61,7 +61,7 @@
   animation-delay: calc(80ms + var(--i, 0) * var(--stagger));
 }
 :is(.dq-list, .dq-result-list, .dq-board, .dq-qlist, .dq-ledger, .saved-quiz-list, .dqp-list,
-    .home-more-list, .dashboard-features, .dashboard-side, .adv-grid,
+    .dashboard-features, .dashboard-side, .adv-grid,
     .top-nav-dropdown-popup, .games-popup, .modal) {
   & > :nth-child(1) { --i: 0; }
   & > :nth-child(2) { --i: 1; }
@@ -110,11 +110,10 @@ html.vt-reveal::view-transition-new(root) { z-index: 2; }
 /* ---------- Knob: the one ring that moves between palette dots (see PaletteSwitcher.vue) ----------
    It stretches 12% along its travel and lifts slightly mid-move, so the path is an arc rather than a straight slide. */
 .palette-ring {
-  position: absolute; left: -4px; top: 50%; width: calc(var(--dot, 26px) + 8px); height: calc(var(--dot, 26px) + 8px); margin-top: calc((var(--dot, 26px) + 8px) / -2);
+  position: absolute; left: 0; top: 0; width: calc(var(--dot, 26px) + 8px); height: calc(var(--dot, 26px) + 8px);
   border: 2px solid var(--primary); border-radius: 50%; pointer-events: none;
-  translate: calc(var(--i, 0) * var(--step, 30px)) 0;
-  transition: translate var(--dur-move) var(--ease-in-out), border-color 200ms var(--ease-out);
 }
+.palette-ring.is-placed { transition: translate var(--dur-move) var(--ease-in-out), border-color 200ms var(--ease-out); }
 .palette-ring.is-moving { animation: knob-move var(--dur-move) linear; }
 @keyframes knob-move {
   0% { scale: 1 1; transform: translateY(0); animation-timing-function: var(--ease-out); }

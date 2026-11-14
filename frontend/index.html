@@ -10,7 +10,7 @@
     <script>
       // Apply the saved colour palette before first paint (see src/services/palette.js).
       try {
-        var colours = { moss: '#0e1612', terra: '#faf3ea' };
+        var colours = { moss: '#0e1612', terra: '#faf3ea', sunny: '#f6f1e4', coastal: '#eef5f9', rustic: '#fffcf2', contrast: '#011627', breeze: '#f3eeea', berry: '#fdf0e4' };
         var p = localStorage.getItem('quiz_palette');
         if (colours[p]) {
           document.documentElement.dataset.palette = p;

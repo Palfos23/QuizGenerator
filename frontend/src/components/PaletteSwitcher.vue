@@ -1,7 +1,7 @@
 <template>
-  <div class="palette-switch" role="group" :aria-label="$t('Fargetema')" :style="{ '--i': activeIndex }">
+  <div ref="rootEl" class="palette-switch" role="group" :aria-label="$t('Fargetema')">
     <!-- one ring, reused: it travels to whichever dot is chosen instead of one ring vanishing and another appearing -->
-    <span class="palette-ring" :class="{ 'is-moving': moving }" aria-hidden="true" @animationend="moving = false" />
+    <span class="palette-ring" :class="{ 'is-moving': moving, 'is-placed': placed }" :style="ringStyle" aria-hidden="true" @animationend="moving = false" />
     <button
       v-for="p in PALETTES"
       :key="p.id"
@@ -17,11 +17,21 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { PALETTES, palette, setPalette } from '../services/palette'
 
+const rootEl = ref(null)
 const moving = ref(false)
-const activeIndex = computed(() => Math.max(0, PALETTES.findIndex(p => p.id === palette.value)))
+const ringStyle = ref({})
+const placed = ref(false) // no slide on first paint: the ring only travels after it has been put on the chosen dot
+
+// The ring sits over the chosen dot. Its position is measured rather than computed, so the dots can wrap onto several rows.
+function placeRing() {
+  const dot = rootEl.value?.querySelector('.palette-dot[aria-pressed="true"]')
+  if (!dot) return
+  ringStyle.value = { translate: `${dot.offsetLeft - 4}px ${dot.offsetTop - 4}px` }
+  if (!placed.value) requestAnimationFrame(() => requestAnimationFrame(() => { placed.value = true }))
+}
 
 function choose(id, event) {
   if (id === palette.value) return
@@ -30,4 +40,15 @@ function choose(id, event) {
   requestAnimationFrame(() => { moving.value = true })
   setPalette(id, { x: r.left + r.width / 2, y: r.top + r.height / 2 })
 }
+
+let observer = null
+onMounted(() => {
+  placeRing()
+  if (typeof ResizeObserver !== 'undefined') {
+    observer = new ResizeObserver(() => placeRing())
+    observer.observe(rootEl.value)
+  }
+})
+onUnmounted(() => observer?.disconnect())
+watch(palette, () => nextTick(placeRing))
 </script>

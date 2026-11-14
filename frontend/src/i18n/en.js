@@ -248,6 +248,8 @@ export default {
  "Bytt på å nevne noen nær målet. Hver runde blir den": "Take turns naming someone close to the target. Each round the",
  "Bytt på å nevne spillere som passer.": "Take turns naming players that fit.",
  "Fargetema": "Colour theme",
+ "{0} av 15": "{0} of 15",
+ "+1 poeng§DailyQuizPreviewT": "+1 point",
  "Frankrike§DailyQuizPreviewT": "France",
  "Jern§DailyQuizPreviewT": "Iron",
  "Lukk§LoginDialogT": "Close",

@@ -1,18 +1,24 @@
 <template>
   <div class="home">
     <section class="home-hero">
-      <h1><span class="home-num">{{ $t('15 nye spørsmål hver dag').split(' ')[0] }}</span> {{ $t('15 nye spørsmål hver dag').split(' ').slice(1).join(' ') }}</h1>
+      <!-- the number counts up, the words rise out of a mask one after another -->
+      <h1 :aria-label="title">
+        <span class="home-num" aria-hidden="true">{{ shownNumber }}</span>
+        <template v-for="(w, i) in restWords" :key="i"> <span class="home-w" aria-hidden="true"><span :style="{ animationDelay: (260 + i * 80) + 'ms' }">{{ w }}</span></span></template>
+      </h1>
       <div class="home-cta">
         <button type="button" class="btn btn-primary btn-lg" @click="loginDialog.open()">{{ $t('Spill dagens quiz§HomeViewT') }}</button>
       </div>
     </section>
 
-    <DailyQuizPreview class="home-preview" />
+    <div class="home-stage" @pointermove="tilt" @pointerleave="untilt">
+      <DailyQuizPreview />
+    </div>
 
     <section class="home-more">
-      <h2>{{ $t('Lag egne quizer og spill sammen') }}</h2>
+      <h2 v-reveal>{{ $t('Lag egne quizer og spill sammen') }}</h2>
       <ul class="home-more-list">
-        <li>
+        <li v-reveal="0">
           <span class="home-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7" /><path d="M17 15l2 2 3-4" /></svg>
           </span>
@@ -21,7 +27,7 @@
             <p>{{ $t('Velg kategorier og vanskelighetsgrad, bytt ut spørsmål og skriv ut quizen.') }}</p>
           </div>
         </li>
-        <li>
+        <li v-reveal="90">
           <span class="home-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
           </span>
@@ -30,7 +36,7 @@
             <p>{{ $t('Gjett alle svarene som passer ukens tema før du går tom for forsøk.') }}</p>
           </div>
         </li>
-        <li>
+        <li v-reveal="180">
           <span class="home-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><circle cx="17.5" cy="9.5" r="2.5" /><path d="M16.5 14.2c2.7.2 4.5 2.3 4.5 5" /></svg>
           </span>
@@ -39,7 +45,7 @@
             <p>{{ $t('Tension, Imposter, Bullseye og mer - på én skjerm, eller hver på sin egen telefon med en romkode.') }}</p>
           </div>
         </li>
-        <li>
+        <li v-reveal="270">
           <span class="home-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
           </span>
@@ -54,7 +60,8 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { t as _t } from '../i18n'
 import { useRoute, useRouter } from 'vue-router'
 import DailyQuizPreview from '../components/previews/DailyQuizPreview.vue'
 import auth from '../services/auth'
@@ -64,7 +71,69 @@ import { safeRedirectTarget } from '../router'
 const route = useRoute()
 const router = useRouter()
 
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+// ---- headline: "15" counts up from 0 while the rest of the words rise into place ----
+const title = _t('15 nye spørsmål hver dag')
+const words = title.split(' ')
+const targetNumber = parseInt(words[0], 10) || 0
+const restWords = words.slice(1)
+const shownNumber = ref(prefersReducedMotion() ? targetNumber : 0)
+let rafId = 0
+function countUp() {
+  const start = performance.now() + 120
+  const duration = 900
+  const tick = (now) => {
+    const k = Math.min(1, Math.max(0, (now - start) / duration))
+    shownNumber.value = Math.round(targetNumber * (1 - Math.pow(1 - k, 3))) // ease out
+    if (k < 1) rafId = requestAnimationFrame(tick)
+  }
+  rafId = requestAnimationFrame(tick)
+}
+
+// ---- the preview card tilts a little toward the pointer (mouse only) ----
+function tilt(e) {
+  if (e.pointerType !== 'mouse' || prefersReducedMotion()) return
+  const box = e.currentTarget.getBoundingClientRect()
+  const x = (e.clientX - box.left) / box.width - 0.5
+  const y = (e.clientY - box.top) / box.height - 0.5
+  e.currentTarget.style.setProperty('--tilt-y', `${(x * 7).toFixed(2)}deg`)
+  e.currentTarget.style.setProperty('--tilt-x', `${(-y * 7).toFixed(2)}deg`)
+}
+function untilt(e) {
+  e.currentTarget.style.setProperty('--tilt-x', '0deg')
+  e.currentTarget.style.setProperty('--tilt-y', '0deg')
+}
+
+// ---- v-reveal: fades up when scrolled into view; icons inside draw their lines ----
+const vReveal = {
+  mounted(el, binding) {
+    if (prefersReducedMotion() || typeof IntersectionObserver === 'undefined') return
+    el.classList.add('reveal')
+    el.style.setProperty('--d', `${binding.value || 0}ms`)
+    const shapes = [...el.querySelectorAll('.home-icon svg path, .home-icon svg rect, .home-icon svg circle')]
+    shapes.forEach(shape => {
+      try {
+        const len = Math.ceil(shape.getTotalLength())
+        shape.style.strokeDasharray = len
+        shape.style.strokeDashoffset = len
+      } catch (e) { /* shape cannot be measured: it just stays drawn */ }
+    })
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return
+      io.disconnect()
+      el.classList.add('in')
+      shapes.forEach(shape => {
+        shape.style.transition = `stroke-dashoffset 800ms var(--ease-in-out) ${(binding.value || 0) + 200}ms`
+        shape.style.strokeDashoffset = 0
+      })
+    }, { threshold: 0.3 })
+    io.observe(el)
+  }
+}
+
 onMounted(() => {
+  if (!prefersReducedMotion()) countUp()
   if (auth.isAuthenticated.value) {
     router.push(auth.isAdmin.value ? '/admin/questions' : safeRedirectTarget(route, '/dashboard'))
   } else if (route.query.redirect) {
@@ -72,6 +141,8 @@ onMounted(() => {
     loginDialog.open()
   }
 })
+
+onBeforeUnmount(() => cancelAnimationFrame(rafId))
 </script>
 
 <style scoped>
@@ -98,7 +169,28 @@ onMounted(() => {
 .home-hero h1 { font-size: clamp(2.3rem, 5.4vw, 3.4rem); line-height: 1.04; letter-spacing: -0.025em; margin: 0 0 var(--space-5); max-width: 14ch; }
 .home-cta { margin: 0; }
 .home-cta .btn-lg { padding-inline: var(--space-6); min-height: 52px; font-size: 1.05rem; }
-.home-preview { grid-area: preview; width: 100%; }
+.home-stage { grid-area: preview; width: 100%; }
+
+/* headline words rise out of a mask */
+.home-num { display: inline-block; min-width: 1.05em; margin-right: 0.26em; font-variant-numeric: tabular-nums; }
+.home-w { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.1em; margin-bottom: -0.1em; margin-right: 0.26em; }
+.home-w > span { display: inline-block; animation: word-up 620ms var(--ease-out) backwards; }
+@keyframes word-up { from { translate: 0 110%; } }
+
+/* the main button gets a light sweep every few seconds */
+.home-cta .btn { position: relative; overflow: hidden; }
+.home-cta .btn::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.28), transparent);
+  transform: skewX(-18deg); pointer-events: none;
+  animation: shine 5.5s var(--ease-in-out) 2.4s infinite;
+}
+@keyframes shine { 0%, 40% { left: -60%; } 70%, 100% { left: 130%; } }
+
+/* sections fade up as they scroll into view */
+.reveal { opacity: 0; translate: 0 14px; transition: opacity 560ms var(--ease-out) var(--d, 0ms), translate 560ms var(--ease-out) var(--d, 0ms); }
+.reveal.in { opacity: 1; translate: 0 0; }
+@media (prefers-reduced-motion: reduce) { .home-w > span, .home-cta .btn::after { animation: none; } }
 
 .home-more h2 { font-size: 1.5rem; margin: 0 0 var(--space-5); max-width: 24ch; }
 .home-more-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-7); }

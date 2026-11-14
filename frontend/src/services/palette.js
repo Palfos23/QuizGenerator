@@ -11,6 +11,12 @@ export const PALETTES = [
   { id: 'plum', name: 'Plum', swatch: ['#f6f2f9', '#5b2a86', '#e8590c'], themeColor: '#f6f2f9' },
   { id: 'moss', name: 'Moss', swatch: ['#0e1612', '#a3e635', '#fb7185'], themeColor: '#0e1612' },
   { id: 'terra', name: 'Terracotta', swatch: ['#faf3ea', '#b83d0b', '#0b7a95'], themeColor: '#faf3ea' },
+  { id: 'sunny', name: 'Sunny Beach', swatch: ['#f6f1e4', '#264653', '#e76f51'], themeColor: '#f6f1e4' },
+  { id: 'coastal', name: 'Coastal', swatch: ['#eef5f9', '#3d5a80', '#ee6c4d'], themeColor: '#eef5f9' },
+  { id: 'rustic', name: 'Rustic', swatch: ['#fffcf2', '#252422', '#eb5e28'], themeColor: '#fffcf2' },
+  { id: 'contrast', name: 'Contrast Pop', swatch: ['#011627', '#2ec4b6', '#ff9f1c'], themeColor: '#011627' },
+  { id: 'breeze', name: 'Ocean Breeze', swatch: ['#f3eeea', '#16697a', '#ffa62b'], themeColor: '#f3eeea' },
+  { id: 'berry', name: 'Bold Berry', swatch: ['#fdf0e4', '#a53860', '#da627d'], themeColor: '#fdf0e4' },
 ]
 
 function readStored() {
