@@ -1,11 +1,11 @@
 <template>
   <div class="dq-page">
     <div class="dq-topbar">
-      <router-link to="/daily-quiz" class="dq-back">
+      <router-link :to="visitor ? '/' : '/daily-quiz'" class="dq-back">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-        {{ $t('Alle daglige quizer') }}
+        {{ visitor ? $t('Tilbake§DailyQuizPlayViewV') : $t('Alle daglige quizer') }}
       </router-link>
-      <div v-if="state" class="dq-topbar-actions">
+      <div v-if="state && !visitor" class="dq-topbar-actions">
         <button class="dq-chip-btn" @click="openScoreboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
           {{ $t('Toppliste') }}
@@ -19,17 +19,22 @@
       <p class="dq-sub">{{ subtitle }}</p>
     </header>
 
+    <!-- Playing before signing in: said up front, so needing an account to hand the answers in is no surprise. -->
+    <p v-if="visitor && state && !loading" class="dq-visitor-note">
+      {{ $t('Du spiller uten konto. Svarene dine lagres i denne nettleseren - logg inn når du er ferdig for å levere dem og se poengsummen.') }}
+    </p>
+
     <div v-if="error" class="banner error">{{ error }}</div>
     <LoadingState v-if="loading" full :message="$t('Laster denne quizen…')" />
 
     <template v-else-if="state">
       <!-- ---------- Answering ---------- -->
-      <form v-if="state.attemptStatus === 'IN_PROGRESS'" @submit.prevent="showSubmitConfirm = true">
+      <form v-if="state.attemptStatus === 'IN_PROGRESS'" @submit.prevent="onSubmitClick">
         <div class="dq-progress">
           <div class="dq-progress-label">
             <span><strong>{{ answeredCount }}</strong> {{ $t('av') }} {{ state.questions.length }} {{ $t('besvart') }}</span>
             <span v-if="answeredCount === state.questions.length">{{ $t('Alt ferdig - klar til å sendes inn') }}</span>
-            <button type="button" class="dq-save-chip" :class="{ 'is-saved': !dirty && savedAt }" :disabled="saving || submitting || !dirty" @click="saveDraft">
+            <button v-if="!visitor" type="button" class="dq-save-chip" :class="{ 'is-saved': !dirty && savedAt }" :disabled="saving || submitting || !dirty" @click="saveDraft()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" v-if="!dirty && savedAt" /><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2zM17 21v-8H7v8M7 3v5h8" v-else /></svg>
               {{ saving ? $t('Lagrer…') : (!dirty && savedAt ? $t('Lagret') : $t('Lagre')) }}
             </button>
@@ -76,12 +81,15 @@
 
         <div class="dq-submit">
           <button type="submit" class="btn btn-primary" :disabled="submitting" :aria-busy="submitting">
-            {{ submitting ? $t('Sender inn…') : $t('Send inn svar') }}
+            {{ submitting ? $t('Sender inn…') : (visitor ? $t('Logg inn og send inn svar') : $t('Send inn svar')) }}
           </button>
-          <button type="button" class="btn btn-secondary dq-save-btn" :disabled="saving || submitting || !dirty" @click="saveDraft">
+          <button v-if="!visitor" type="button" class="btn btn-secondary dq-save-btn" :disabled="saving || submitting || !dirty" @click="saveDraft()">
             {{ saving ? $t('Lagrer…') : (!dirty && savedAt ? $t('Fremgang lagret') : $t('Lagre til senere')) }}
           </button>
-          <p class="dq-submit-note">
+          <p v-if="visitor" class="dq-submit-note">
+            {{ $t('Svarene dine blir med når du logger inn eller oppretter en gratis konto - poengsummen får du etterpå.') }}
+          </p>
+          <p v-else class="dq-submit-note">
             {{ $t('Ikke klar til å levere? Lagre svarene dine og fortsett senere - på hvilken som helst enhet.') }}<br />
             {{ $t('Du kan ikke endre svarene dine etter at de er sendt inn.') }}
           </p>
@@ -237,9 +245,11 @@
 
 <script setup>
 import { t as _t } from '../i18n'
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
-import { onBeforeRouteLeave, useRoute } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import api from '../services/api'
+import auth from '../services/auth'
+import loginDialog from '../services/loginDialog'
 import toast from '../services/toast'
 import LoadingState from '../components/LoadingState.vue'
 import DailyQuizScoreboardModal from '../components/DailyQuizScoreboardModal.vue'
@@ -248,7 +258,66 @@ import ExpertCard from '../components/ExpertCard.vue'
 import { useEscapeKey } from '../composables/useEscapeKey'
 
 const route = useRoute()
-const quizId = route.params.id
+const router = useRouter()
+// Not fixed for the life of the page: /daily-quiz/today has no id until today's quiz has been looked up.
+let quizId = route.params.id
+
+// ---- playing before signing in (/daily-quiz/today) ----
+// A visitor gets the questions only. What they type is kept in this browser (nothing is sent anywhere),
+// and handed in through the normal submit once they have signed in - see adoptVisitorDraft().
+const visitor = computed(() => !auth.isAuthenticated.value || auth.isGuest.value)
+const VISITOR_DRAFT_KEY = 'dq_visitor_draft'
+
+function readVisitorDraft() {
+  try { return JSON.parse(localStorage.getItem(VISITOR_DRAFT_KEY)) } catch (e) { return null }
+}
+function writeVisitorDraft(wantsToSubmit = false) {
+  try {
+    localStorage.setItem(VISITOR_DRAFT_KEY, JSON.stringify({ setId: quizId, answers: currentAnswers(), submit: wantsToSubmit }))
+  } catch (e) { /* private window etc. - the answers then only last as long as the page */ }
+}
+function clearVisitorDraft() {
+  try { localStorage.removeItem(VISITOR_DRAFT_KEY) } catch (e) { /* nothing to clear */ }
+}
+
+function onSubmitClick() {
+  if (!visitor.value) {
+    showSubmitConfirm.value = true
+    return
+  }
+  writeVisitorDraft(true)
+  loginDialog.open({
+    redirect: `/daily-quiz/${quizId}`,
+    reason: _t('Logg inn eller opprett en gratis konto for å levere svarene dine og se poengsummen. Det du har skrevet blir med.')
+  })
+}
+
+// Just signed in after playing as a visitor: bring the answers typed before along, save them on the
+// account, and pick up where they left off (they had already pressed "send in").
+async function adoptVisitorDraft() {
+  const local = readVisitorDraft()
+  if (!local || String(local.setId) !== String(quizId)) return
+  if (state.value.attemptStatus !== 'IN_PROGRESS') {
+    clearVisitorDraft()
+    toast.show(_t('Du har allerede levert dagens quiz med denne kontoen.'))
+    return
+  }
+  let carried = 0
+  for (const q of state.value.questions) {
+    const text = String(local.answers?.[q.questionId] || '').trim()
+    if (text && !isFilled(q)) {
+      answers[q.questionId] = text
+      carried++
+    }
+  }
+  if (!carried) {
+    clearVisitorDraft()
+    return
+  }
+  if (await saveDraft(true)) clearVisitorDraft()
+  toast.show(_t('Svarene du skrev før du logget inn er hentet inn.'))
+  if (local.submit) showSubmitConfirm.value = true
+}
 
 const state = ref(null)
 const loading = ref(true)
@@ -317,9 +386,10 @@ function currentAnswers() {
   }
   return out
 }
-const dirty = computed(() => state.value?.attemptStatus === 'IN_PROGRESS' && JSON.stringify(currentAnswers()) !== savedSnapshot.value)
+// A visitor's answers are written to the browser as they type, so there is never anything unsaved to warn about.
+const dirty = computed(() => !visitor.value && state.value?.attemptStatus === 'IN_PROGRESS' && JSON.stringify(currentAnswers()) !== savedSnapshot.value)
 
-async function saveDraft() {
+async function saveDraft(quiet = false) {
   saving.value = true
   try {
     const snapshot = JSON.stringify(currentAnswers())
@@ -327,9 +397,11 @@ async function saveDraft() {
     await api.saveDailyQuizDraft(quizId, payload)
     savedSnapshot.value = snapshot
     savedAt.value = Date.now()
-    toast.show(_t('Lagret - du kan fortsette senere.'))
+    if (!quiet) toast.show(_t('Lagret - du kan fortsette senere.'))
+    return true
   } catch (e) {
-    toast.show(e.response?.data?.message || _t('Kunne ikke lagre svarene dine. Prøv igjen.'))
+    if (!quiet) toast.show(e.response?.data?.message || _t('Kunne ikke lagre svarene dine. Prøv igjen.'))
+    return false
   } finally {
     saving.value = false
   }
@@ -352,16 +424,54 @@ onBeforeRouteLeave(() => {
 
 onMounted(load)
 
+// The same page serves /daily-quiz/today and /daily-quiz/:id, so moving between them (signing in from
+// the visitor page, above all) can keep this component alive - load again for the new address.
+let ownRedirect = false
+watch(() => [route.name, route.params.id], () => {
+  if (ownRedirect) {
+    ownRedirect = false
+    return
+  }
+  if (route.name !== 'daily-quiz-today' && route.name !== 'daily-quiz-play') return
+  quizId = route.params.id
+  load()
+})
+
+watch(answers, () => {
+  if (visitor.value && state.value?.attemptStatus === 'IN_PROGRESS' && !loading.value) writeVisitorDraft()
+})
+
 async function load() {
   loading.value = true
   error.value = ''
+  state.value = null
+  savedAt.value = null
+  savedSnapshot.value = '{}'
+  for (const key of Object.keys(answers)) delete answers[key]
   try {
+    if (visitor.value) {
+      const today = await api.getDailyQuizToday()
+      quizId = today.setId
+      const local = readVisitorDraft()
+      if (local && String(local.setId) === String(quizId)) Object.assign(answers, local.answers || {})
+      state.value = today
+      return
+    }
+    if (!quizId) {
+      // signed in, but came in through the visitor address: carry on at today's real page
+      const [active] = await api.getActiveDailyQuizzes()
+      quizId = active.id
+      ownRedirect = true
+      router.replace(`/daily-quiz/${quizId}`)
+    }
     state.value = await api.getDailyQuizPlayState(quizId)
     if (state.value.attemptStatus === 'IN_PROGRESS' && state.value.draftAnswers) {
       for (const [questionId, text] of Object.entries(state.value.draftAnswers)) answers[questionId] = text
       savedSnapshot.value = JSON.stringify(currentAnswers())
       if (Object.keys(state.value.draftAnswers).length) savedAt.value = Date.now()
     }
+    loading.value = false
+    await adoptVisitorDraft()
   } catch (e) {
     error.value = _t('Kunne ikke laste denne quizen.')
   } finally {
@@ -375,6 +485,7 @@ async function submit() {
   try {
     const payload = state.value.questions.map(q => ({ questionId: q.questionId, answerText: answers[q.questionId] || '' }))
     state.value = await api.submitDailyQuizAnswers(quizId, payload)
+    clearVisitorDraft()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (e) {
     error.value = e.response?.data?.message || _t('Kunne ikke sende inn svarene dine.')

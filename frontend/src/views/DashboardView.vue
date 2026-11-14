@@ -5,11 +5,12 @@
     <div class="dashboard-hero-row">
       <section class="dashboard-hero">
         <h1>{{ $t('Dagens quiz§DashboardViewJ') }}</h1>
-        <p class="page-subtitle landing-lede">
-          {{ $t('15 tilfeldige spørsmål i pubquiz-stil - fritekst, et nytt sett hver dag.') }}
-        </p>
+        <!-- Says where you stand with today's quiz (it used to be a pop-up on arrival, plus a second card further down) -->
+        <p class="page-subtitle landing-lede">{{ hero.lede }}</p>
         <div class="dashboard-hero-actions">
-          <router-link to="/daily-quiz" class="btn btn-primary btn-lg">{{ $t('Spill dagens quiz§HomeViewT') }} →</router-link>
+          <router-link :to="hero.to" class="btn btn-lg" :class="hero.done ? 'btn-secondary' : 'btn-primary'">{{ hero.button }} →</router-link>
+          <span v-if="hero.score" class="dashboard-hero-score"><strong>{{ hero.score }}</strong> {{ $t('poeng i dag') }}</span>
+          <router-link v-if="hero.done" to="/daily-quiz" class="dashboard-hero-link">{{ $t('Tidligere quizer og ukestilling') }}</router-link>
         </div>
       </section>
 
@@ -79,7 +80,7 @@
 
     <!-- "Your quiz has been reviewed": an admin has finished checking answers the player had waiting, so
          their score is final. Shown until they've dismissed it or opened the quiz (that's tracked on
-         the server, so it follows them across devices) - and instead of the nudge below, never both. -->
+         the server, so it follows them across devices). -->
     <div v-if="reviewNotifications.length" class="modal-backdrop" @click.self="dismissReviewNotifications">
       <div class="modal dq-modal" style="max-width:400px; text-align:center;" role="dialog" aria-modal="true" :aria-label="$t('Dagens quiz er gjennomgått')">
         <div class="dq-empty-icon" style="margin:0 auto 14px;">
@@ -106,26 +107,6 @@
           </router-link>
         </div>
         <button class="btn btn-secondary" style="width:100%;" @click="dismissReviewNotifications">{{ $t('Lukk§DashboardViewT') }}</button>
-      </div>
-    </div>
-
-    <!-- One nudge per day, per browser (see dismissDailyQuizNudge) - not on
-         every dashboard visit, just the first one that finds today's quiz
-         still un-submitted. Guests/admins never trigger the check that would
-         show this at all (see the onMounted guard below). -->
-    <div v-if="showDailyQuizNudge" class="modal-backdrop" @click.self="dismissDailyQuizNudge">
-      <div class="modal" style="max-width:380px; text-align:center;">
-        <h2 style="margin-top:0;">{{ $t('Dagens quiz venter på deg') }}</h2>
-        <p class="page-subtitle">
-          {{ dailyQuizNudge.questionCount }} {{ $t('spørsmål i pubquiz-stil -') }}
-          {{ dailyQuizNudge.status === 'IN_PROGRESS' ? $t('fortsett der du slapp.') : $t('tar bare noen minutter.') }}
-        </p>
-        <div style="display:flex; gap:8px; margin-top:16px;">
-          <button class="btn btn-secondary" style="flex:1;" @click="dismissDailyQuizNudge">{{ $t('Kanskje senere') }}</button>
-          <router-link :to="`/daily-quiz/${dailyQuizNudge.id}`" class="btn btn-primary" style="flex:1;" @click="dismissDailyQuizNudge">
-            {{ dailyQuizNudge.status === 'IN_PROGRESS' ? $t('Fortsett§DashboardViewM') : $t('Spill nå') }}
-          </router-link>
-        </div>
       </div>
     </div>
   </div>
@@ -156,10 +137,10 @@ const QUIZ_MANAGEMENT_ACCENT = ['var(--gold)', 'var(--gold-ink)']
 
 const dashboardSectionDefs = [
   {
-    title: _t('Daglige og ukentlige quizer'),
+    title: _t('Ukentlige quizer'),
     accent: WEEKLY_QUIZ_ACCENT[0],
     cards: [
-      { to: '/daily-quiz', icon: 'calendar', title: _t('Dagens quiz§DashboardViewJ'), description: _t('15 tilfeldige spørsmål i pubquiz-stil - fritekst, et nytt sett hver dag.'), accent: WEEKLY_QUIZ_ACCENT[0], ink: WEEKLY_QUIZ_ACCENT[1] },
+      // Dagens quiz is the hero at the top of the page - not repeated as a card here.
       { to: '/weekly-grid', icon: 'layers', title: _t('Ukens grid§DashboardViewJ'), description: _t('Gjett alle svarene som passer ukens tema før du går tom for liv.'), accent: WEEKLY_QUIZ_ACCENT[0], ink: WEEKLY_QUIZ_ACCENT[1] },
       { to: '/starting-xi', icon: 'star', title: 'Starting XI', description: _t('Gjett en hel startellever, posisjon for posisjon, før ukens brett går tom for liv.'), accent: WEEKLY_QUIZ_ACCENT[0], ink: WEEKLY_QUIZ_ACCENT[1] }
     ]
@@ -211,19 +192,27 @@ const dashboardSections = computed(() =>
   dashboardSectionDefs.map(section => ({ title: section.title, accent: section.accent, columns: toColumns(section.cards) }))
 )
 
-// --- Daily Quiz nudge - once per day, per browser, for a real (non-guest,
-// non-admin) user who hasn't finished today's quiz yet. Reuses the same
-// /daily-quiz/active endpoint the Daily Quiz list page itself calls (it
-// lazily creates today's set if it doesn't exist yet, and reports this
-// user's own attempt status against it) rather than adding a new endpoint
-// just for this check.
-const dailyQuizNudge = ref(null)
-const showDailyQuizNudge = ref(false)
-const DAILY_QUIZ_NUDGE_KEY = 'daily_quiz_nudge_dismissed_date'
+// --- Today's quiz, as the hero shows it: not started, under way, handed in, or scored. Reuses the same
+// /daily-quiz/active endpoint the Daily Quiz list page itself calls (it lazily creates today's set if it
+// doesn't exist yet, and reports this user's own attempt status against it). Until that answer is in -
+// and for an admin or a guest, who never ask - the hero is the plain invitation to play.
+const todayQuiz = ref(null)
+const hero = computed(() => {
+  const q = todayQuiz.value
+  const to = q ? `/daily-quiz/${q.id}` : '/daily-quiz'
+  if (q?.status === 'IN_PROGRESS') {
+    return { to, lede: _t('Du er i gang med dagens quiz - svarene du har lagret venter på deg.'), button: _t('Fortsett der du slapp') }
+  }
+  if (q?.status === 'SUBMITTED') {
+    return { to, done: true, lede: _t('Svarene dine er sendt inn. En administrator sjekker noen av dem - poengsummen kommer når alt er sjekket.'), button: _t('Se svarene dine§DashboardViewT') }
+  }
+  if (q?.status === 'GRADED') {
+    return { to, done: true, score: `${q.score} / ${q.maxScore}`, lede: _t('Dagens quiz er levert. Et nytt sett med spørsmål kommer i morgen.'), button: _t('Se resultatet') }
+  }
+  return { to, lede: _t('15 tilfeldige spørsmål i pubquiz-stil - fritekst, et nytt sett hver dag.'), button: _t('Spill dagens quiz§HomeViewT') }
+})
 
 // --- "Your quiz has been reviewed" - results an admin finished checking since the player last looked.
-// Takes priority over the nudge: no point asking someone to play today's quiz in the same breath as
-// telling them yesterday's score is in.
 const reviewNotifications = ref([])
 
 function formatQuizDate(iso) {
@@ -240,33 +229,14 @@ onMounted(async () => {
   if (auth.isAdmin.value || auth.isGuest.value) return
   try {
     reviewNotifications.value = await api.getDailyQuizReviewNotifications()
-    if (reviewNotifications.value.length) return
   } catch (e) {
-    // a nice-to-have - carry on to the regular nudge
+    // a nice-to-have - the page works without it
   }
   try {
     const [active] = await api.getActiveDailyQuizzes()
-    if (!active || (active.status !== 'NOT_STARTED' && active.status !== 'IN_PROGRESS')) return
-
-    // Keyed on the quiz's own date (a server-assigned string), not the
-    // browser's local date - sidesteps any client/server timezone mismatch
-    // and doubles as "one nudge per quiz day" regardless of how that lines
-    // up with the visitor's own clock.
-    let dismissedDate = null
-    try { dismissedDate = localStorage.getItem(DAILY_QUIZ_NUDGE_KEY) } catch (e) { /* private window etc. - just always show it */ }
-    if (dismissedDate === active.quizDate) return
-
-    dailyQuizNudge.value = active
-    showDailyQuizNudge.value = true
+    todayQuiz.value = active || null
   } catch (e) {
-    // the nudge is a nice-to-have, not core dashboard functionality - fail quietly
+    // a nice-to-have - the hero then just invites you to play
   }
 })
-
-function dismissDailyQuizNudge() {
-  showDailyQuizNudge.value = false
-  try {
-    if (dailyQuizNudge.value) localStorage.setItem(DAILY_QUIZ_NUDGE_KEY, dailyQuizNudge.value.quizDate)
-  } catch (e) { /* ignore - worst case the nudge reappears next visit */ }
-}
 </script>

@@ -85,6 +85,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/grids/**").hasAnyRole("USER", "ADMIN")
                         // browsing/playing Starting XI boards: any logged-in user (USER or ADMIN)
                         .requestMatchers("/api/lineups/**").hasAnyRole("USER", "ADMIN")
+                        // today's daily quiz questions (never the answers) can be read without an account, so a
+                        // visitor can try the quiz first; matched before the account-only rule just below
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/daily-quiz/today").permitAll()
                         // playing the daily free-text quiz: any logged-in user (USER or ADMIN)
                         .requestMatchers("/api/daily-quiz/**").hasAnyRole("USER", "ADMIN")
                         // fetching tension questions/autocomplete: any logged-in user (USER or ADMIN)

@@ -77,6 +77,9 @@ const routes = [
   { path: '/my-quizzes', name: 'my-quizzes', component: MyQuizzesView, meta: { requiresAuth: true } },
   { path: '/weekly-grid', name: 'weekly-grid', component: WeeklyGridListView, meta: { requiresAuth: true } },
   { path: '/daily-quiz', name: 'daily-quiz', component: DailyQuizListView, meta: { requiresAuth: true } },
+  // Today's quiz for a visitor without an account (the landing page's main button). Answers stay in the
+  // browser until they sign in to hand them in; someone already signed in is sent on to the real page.
+  { path: '/daily-quiz/today', name: 'daily-quiz-today', component: DailyQuizPlayView },
   { path: '/daily-quiz/:id', name: 'daily-quiz-play', component: DailyQuizPlayView, meta: { requiresAuth: true } },
   { path: '/julekalender', name: 'advent', component: AdventView, meta: { requiresAuth: true } },
   { path: '/julekalender/luke/:n(\\d+)', name: 'advent-day', component: AdventDayView, meta: { requiresAuth: true } },

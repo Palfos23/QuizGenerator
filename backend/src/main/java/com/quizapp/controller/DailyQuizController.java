@@ -37,6 +37,13 @@ public class DailyQuizController {
         return complaintService.complain(id, answerId, authentication.getName(), request.comment());
     }
 
+    // Open to everyone (see SecurityConfig): a visitor can read and answer today's questions before
+    // signing in. Handing the answers in - and so seeing a score - still needs an account.
+    @GetMapping("/today")
+    public DailyQuizPlayStateDto today() {
+        return dailyQuizService.getTodayForVisitor();
+    }
+
     @GetMapping("/active")
     public List<DailyQuizSetSummaryDto> active(Authentication authentication) {
         return dailyQuizService.findActive(authentication.getName());

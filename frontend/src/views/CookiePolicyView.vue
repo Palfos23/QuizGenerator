@@ -32,7 +32,7 @@
     <h2>{{ $t('Google-innlogging') }}</h2>
     <p>
       {{ $t('Hvis du velger «Fortsett med Google» og godtar forespørselen, laster vi Googles eget innloggingsskript. Fra da av kan Google sette informasjonskapsler på sitt eget domene (accounts.google.com) som en del av innloggingen - dette er Googles informasjonskapsel, ikke vår, og styres av') }}
-      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">{{ $t('Googles egen personvernerklæring') }}</a>{{ $t('. Hvis du avslår, lastes aldri skriptet, og du kan fortsatt logge inn med «Fortsett med e-post» i stedet.') }}
+      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">{{ $t('Googles egen personvernerklæring') }}</a>{{ $t('. Hvis du avslår, lastes aldri skriptet, og du kan fortsatt logge inn med e-post og passord i stedet.') }}
     </p>
 
     <h2>{{ $t('Skrifttyper') }}</h2>

@@ -1,7 +1,7 @@
 <template>
   <div v-if="cookieConsent.isUnknown.value" class="cookie-banner" role="dialog" :aria-label="$t('Cookie-innstillinger§CookieConsentBannerA')">
     <p class="cookie-banner-text">
-      {{ $t('Dette nettstedet setter ingen egne informasjonskapsler. Innlogging med Google laster Googles eget innloggingsskript, som kan sette informasjonskapsler på Googles domene - det lastes først etter at du godtar nedenfor. Hvis du avslår, bruker du i stedet «Fortsett med e-post». Se våre') }}
+      {{ $t('Dette nettstedet setter ingen egne informasjonskapsler. Innlogging med Google laster Googles eget innloggingsskript, som kan sette informasjonskapsler på Googles domene - det lastes først etter at du godtar nedenfor. Hvis du avslår, logger du i stedet inn med e-post og passord. Se våre') }}
       <router-link to="/cookies">{{ $t('retningslinjer for informasjonskapsler') }}</router-link>.
     </p>
     <div class="cookie-banner-actions">

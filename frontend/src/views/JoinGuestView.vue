@@ -10,22 +10,35 @@
     <div class="field">
       <label>{{ $t('Romkode') }}
       <input
+        ref="codeInput"
         type="text"
         v-model="code"
         :placeholder="$t('f.eks. ABCDE')"
         style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.2rem; text-align:center;"
         maxlength="5"
+        autocomplete="off"
+        autocapitalize="characters"
+        autocorrect="off"
+        spellcheck="false"
+        enterkeyhint="next"
+        :aria-invalid="missing === 'code'"
+        @input="onCodeInput"
         @keyup.enter="join"
       /></label>
     </div>
 
     <div v-if="needsName" class="field">
-      <label>{{ $t('Navnet ditt') }} <span class="picker-hint">{{ $t('vises for andre spillere') }}</span><input type="text" v-model="displayName" :placeholder="$t('Navnet ditt')" @keyup.enter="join" /></label>
+      <label>{{ $t('Navnet ditt') }} <span class="picker-hint">{{ $t('vises for andre spillere') }}</span><input ref="nameInput" type="text" v-model="displayName" :placeholder="$t('Navnet ditt')" autocomplete="nickname" maxlength="30" enterkeyhint="go" :aria-invalid="missing === 'name'" @keyup.enter="join" /></label>
     </div>
 
-    <button class="btn btn-primary" style="width:100%;" :disabled="!canSubmit || joining" @click="join">
+    <!-- Never greyed out for a missing field (a dim button says nothing about why): pressing it early
+         points at what's missing instead. -->
+    <button class="btn btn-primary btn-lg" style="width:100%;" :disabled="joining" :aria-busy="joining" @click="join">
       {{ joining ? $t('Blir med…') : $t('Bli med') }}
     </button>
+    <p v-if="missing" class="join-hint" role="alert">
+      {{ missing === 'code' ? $t('Skriv inn romkoden du har fått av verten.') : $t('Skriv inn et navn, så de andre ser hvem du er.') }}
+    </p>
 
     <p v-if="needsName" style="margin-top:20px; text-align:center;">
       <router-link :to="{ path: '/', query: { redirect: signInRedirect } }">{{ $t('Har du en konto? Logg inn i stedet') }}</router-link>
@@ -35,7 +48,7 @@
 
 <script setup>
 import { t as _t } from '../i18n'
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '../services/api'
 import auth from '../services/auth'
@@ -47,6 +60,11 @@ const code = ref((route.params.code || '').toUpperCase())
 const displayName = ref('')
 const error = ref('')
 const joining = ref(false)
+const codeInput = ref(null)
+const nameInput = ref(null)
+// Which field the visitor still has to fill in, once they've pressed "Bli med" without it ('code' | 'name' | null)
+const missing = ref(null)
+const CODE_LENGTH = 5
 
 // An already-signed-in visitor (real account or a still-valid guest session
 // from an earlier room) doesn't need to type a name again - reuse what's
@@ -77,16 +95,37 @@ const ROUTE_BY_GAME_TYPE = {
   FLASHBACK: '/flashback'
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (route.params.code) {
     // Coming from a shared link (e.g. /join/ABCDE) - jump straight to typing
     // a name (or submitting, if already signed in) instead of retyping the code.
     code.value = String(route.params.code).toUpperCase()
   }
+  // Ready to type straight away: the code, or the name when the link already carried the code
+  await nextTick()
+  const first = code.value.trim() ? nameInput.value : codeInput.value
+  first?.focus({ preventScroll: true })
+})
+
+// A full code moves you on to the name, so it's code - name - enter without reaching for the next box
+function onCodeInput() {
+  if (code.value.trim().length >= CODE_LENGTH && needsName.value && !displayName.value.trim()) nameInput.value?.focus()
+}
+
+// The "what's missing" hint goes away as soon as it's been dealt with
+watch([code, displayName], () => {
+  if ((missing.value === 'code' && code.value.trim()) || (missing.value === 'name' && displayName.value.trim())) missing.value = null
 })
 
 async function join() {
-  if (!canSubmit.value) return
+  if (joining.value) return
+  if (!canSubmit.value) {
+    missing.value = code.value.trim() ? 'name' : 'code'
+    const field = missing.value === 'code' ? codeInput.value : nameInput.value
+    field?.focus()
+    return
+  }
+  missing.value = null
   error.value = ''
   joining.value = true
   const roomCode = code.value.trim().toUpperCase()
@@ -109,3 +148,7 @@ async function join() {
   }
 }
 </script>
+
+<style scoped>
+.join-hint { margin: 10px 0 0; text-align: center; color: var(--coral-ink); font-size: 0.92rem; }
+</style>

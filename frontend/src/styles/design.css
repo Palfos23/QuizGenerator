@@ -190,7 +190,7 @@ a { text-underline-offset: 3px; }
 .dq-rank--1 { background: var(--gold); border-color: var(--gold); color: var(--on-accent); }
 .dq-rank--2 { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
 .dq-rank--3 { background: transparent; border-color: var(--primary); color: var(--primary); }
-.dq-weekly-icon { background: var(--primary); color: var(--on-primary); border-radius: var(--radius-md); }
+.dq-weekly-icon { background: var(--primary); color: var(--on-primary); border-radius: var(--radius-icon); }
 .dq-board-bar, .dq-progress-track, .dq-easy-track { background: rgb(var(--fg-rgb) / 0.09); border-radius: 999px; }
 .dq-progress-fill { background: var(--gold); border-radius: 999px; transition: width 0.4s var(--ease-out); }
 .dq-board-bar i { background: var(--primary); border-radius: 999px; transition: width 0.4s var(--ease-out); }
@@ -275,7 +275,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 /* leaderboard window bits */
 .dq-stat, .dq-switch, .dq-note { background: transparent; border: 1px solid var(--rule); border-radius: var(--radius-md); }
 .dq-switch-track { border-radius: 999px; }
-.dq-modal-icon, .dq-empty-icon { border-radius: var(--radius-md); }
+.dq-modal-icon, .dq-empty-icon { border-radius: var(--radius-icon); }
 
 .field:has(> label > input[type="checkbox"]), .option-card {
   background: var(--ink-raised);
@@ -688,7 +688,7 @@ a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
 }
 
 .dash-icon {
-  width: 40px; height: 40px; margin-bottom: 14px; display: grid; place-items: center; border-radius: var(--radius-md);
+  width: 40px; height: 40px; margin-bottom: 14px; display: grid; place-items: center; border-radius: var(--radius-icon);
   background: color-mix(in srgb, var(--card-accent, var(--primary)) 14%, transparent);
   color: var(--card-ink, var(--primary));
   transition: background 250ms var(--ease-out), rotate 250ms var(--ease-out), scale 250ms var(--ease-out);
@@ -735,3 +735,71 @@ a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
 .dq-expert-score { font-weight: 700; font-variant-numeric: tabular-nums; }
 .dq-expert-score small { font-weight: 500; opacity: 0.75; margin-left: 2px; }
 .dq-expert-line + .dq-led { border-top: none; }
+
+/* ---------- Phones: the bottom bar is icon-over-label tabs, its menus are sheets ---------- */
+.nav-sheet-backdrop, .lang-toggle--footer { display: none; }
+@media (max-width: 760px) {
+  /* the bar's real height (58px of tab + the safe-area inset): everything docked above it reads this */
+  :root { --bottom-nav-height: calc(58px + env(safe-area-inset-bottom)); }
+
+  .bottom-nav { padding: 0 4px env(safe-area-inset-bottom); }
+  .bottom-nav .bottom-nav-tab,
+  .bottom-nav > button {
+    position: relative;
+    min-height: 58px;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 2px;
+    font-size: 0.68rem;
+    line-height: 1.1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .bottom-nav-tab .app-icon { width: 23px; height: 23px; }
+  .bottom-nav-tab span { white-space: nowrap; }
+  /* where you are: lit icon and label, and a short bar along the top edge */
+  .bottom-nav-tab.active, .bottom-nav-tab.router-link-active { color: var(--gold); }
+  .bottom-nav-tab.active::before, .bottom-nav-tab.router-link-active::before {
+    content: ''; position: absolute; top: 0; left: 50%; width: 28px; height: 3px; translate: -50% 0;
+    border-radius: 0 0 3px 3px; background: var(--gold);
+  }
+
+  /* a menu opens as a sheet across the screen, just above the bar - big rows, easy to hit */
+  .bottom-nav .games-popup.nav-sheet {
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: calc(var(--bottom-nav-height) + 8px);
+    transform: none;
+    min-width: 0;
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+    padding: 10px;
+    gap: 2px;
+    border-radius: var(--radius-lg);
+  }
+  .nav-sheet-title { padding: 4px 8px 8px; color: var(--text-dim); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .bottom-nav .games-popup.nav-sheet a,
+  .bottom-nav .games-popup.nav-sheet .popup-action {
+    min-height: 48px;
+    padding: 12px 14px;
+    font-size: 1rem;
+    border-radius: var(--radius-md);
+  }
+  .bottom-nav .games-popup.nav-sheet a.popup-primary { justify-content: center; margin-bottom: 6px; }
+  /* the long games list: two columns instead of a tall scroll */
+  .bottom-nav .games-popup.nav-sheet--grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .nav-sheet--grid .nav-sheet-title { grid-column: 1 / -1; }
+  .nav-sheet-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 6px 14px; color: var(--text); font-size: 1rem; font-weight: 600; }
+  .nav-sheet-row .lang-toggle { display: inline-flex; margin: 0; }
+  .bottom-nav .nav-sheet-row .lang-toggle-btn { flex: none; flex-direction: row; min-height: 34px; padding: 0 12px; font-size: 0.8rem; color: var(--text-dim); }
+  .bottom-nav .nav-sheet-row .lang-toggle-btn.is-on { color: var(--on-primary); }
+
+  .nav-sheet-backdrop { display: block; position: fixed; inset: 0; z-index: 39; background: rgb(11 18 32 / 0.45); }
+
+  /* the language switch moves out of the top bar: to the footer, and into the Account sheet */
+  .top-nav .lang-toggle { display: none; }
+  .app-footer .lang-toggle--footer { display: inline-flex; margin: 0; }
+  /* the footer is the last thing on the page - keep it clear of the fixed bar */
+  .app-shell:has(.bottom-nav) .app-footer { padding-bottom: calc(var(--bottom-nav-height) + 20px); }
+}

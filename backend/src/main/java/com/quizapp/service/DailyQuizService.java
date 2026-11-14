@@ -341,16 +341,7 @@ public class DailyQuizService {
         dto.setAttemptStatus(attempt.getStatus().name());
 
         if (attempt.getStatus() == DailyQuizAttemptStatus.IN_PROGRESS) {
-            List<Question> questions = questionRepository.findAllById(set.getQuestionIds());
-            Map<Long, Question> byId = questions.stream().collect(Collectors.toMap(Question::getId, q -> q));
-            List<DailyQuizPlayStateDto.QuestionDto> questionDtos = new ArrayList<>();
-            for (int i = 0; i < set.getQuestionIds().size(); i++) {
-                Question q = byId.get(set.getQuestionIds().get(i));
-                if (q != null) {
-                    questionDtos.add(new DailyQuizPlayStateDto.QuestionDto(i + 1, q.getId(), q.getQuestionText(), q.getPhotoUrl(), DailyQuizScoring.isScoredAsYear(q)));
-                }
-            }
-            dto.setQuestions(questionDtos);
+            dto.setQuestions(questionDtos(set));
             dto.setDraftAnswers(readDraft(attempt));
         } else {
             // SUBMITTED or GRADED - your own answers are always visible, even
@@ -358,6 +349,37 @@ public class DailyQuizService {
             // until nothing is left pending - see buildAnswersView).
             dto.setResult(buildAnswersView(attempt));
         }
+        return dto;
+    }
+
+    // The questions of a set, in order, as a player sees them - never with the answer.
+    private List<DailyQuizPlayStateDto.QuestionDto> questionDtos(DailyQuizSet set) {
+        List<Question> questions = questionRepository.findAllById(set.getQuestionIds());
+        Map<Long, Question> byId = questions.stream().collect(Collectors.toMap(Question::getId, q -> q));
+        List<DailyQuizPlayStateDto.QuestionDto> questionDtos = new ArrayList<>();
+        for (int i = 0; i < set.getQuestionIds().size(); i++) {
+            Question q = byId.get(set.getQuestionIds().get(i));
+            if (q != null) {
+                questionDtos.add(new DailyQuizPlayStateDto.QuestionDto(i + 1, q.getId(), q.getQuestionText(), q.getPhotoUrl(), DailyQuizScoring.isScoredAsYear(q)));
+            }
+        }
+        return questionDtos;
+    }
+
+    /**
+     * Today's questions for a visitor who hasn't signed in: the questions and nothing else. No attempt is
+     * created and nothing is graded - answers are only ever checked through submitAnswers, which needs an
+     * account, so the correct answers stay as protected as they are for a signed-in player.
+     */
+    @Transactional
+    public DailyQuizPlayStateDto getTodayForVisitor() {
+        DailyQuizSet set = getOrCreateCurrentSet();
+        DailyQuizPlayStateDto dto = new DailyQuizPlayStateDto();
+        dto.setSetId(set.getId());
+        dto.setQuizDate(set.getQuizDate());
+        dto.setAttemptStatus(DailyQuizAttemptStatus.IN_PROGRESS.name());
+        dto.setQuestions(questionDtos(set));
+        dto.setDraftAnswers(Map.of());
         return dto;
     }
 

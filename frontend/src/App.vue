@@ -4,8 +4,10 @@
       <router-link to="/" class="nav-brand">Quizzes</router-link>
 
       <template v-if="auth.isAuthenticated.value">
+        <!-- A spacer on each side of the links: the wordmark sits left, the account right, and the links in the middle between them -->
+        <div class="top-nav-spacer"></div>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">{{ $t('Lag en quiz') }}</router-link>
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">{{ $t('Mine quizzer') }}</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">{{ $t('Mine quizer') }}</router-link>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">{{ $t('Dagens quiz§AppT') }}</router-link>
         <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
           <div v-for="menu in PLAYER_MENUS" :key="menu.key" class="top-nav-dropdown">
@@ -88,21 +90,38 @@
       <router-link to="/privacy">{{ $t('Personvernerklæring') }}</router-link>
       <router-link to="/cookies">{{ $t('Retningslinjer for informasjonskapsler') }}</router-link>
       <button type="button" class="app-footer-link-btn" @click="cookieConsent.reset()">{{ $t('Cookie-innstillinger§AppT') }}</button>
+      <!-- Phones only: the language switch lives here (and in the Account sheet) instead of crowding the top bar -->
+      <LanguageToggle class="lang-toggle--footer" />
     </footer>
+
+    <!-- Phones only: dims the page behind an open bottom-bar sheet; pressing it closes the sheet (closeMenusOnOutsidePress) -->
+    <Transition name="dialog">
+      <div v-if="auth.isAuthenticated.value && (openPlayerMenu || openAdminMenu)" class="nav-sheet-backdrop" aria-hidden="true"></div>
+    </Transition>
 
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
-      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz">{{ $t('Dagens quiz§AppT') }}</router-link>
+      <!-- Every tab is an icon over a short label, a full thumb tall; the menus open as a sheet across the screen -->
+      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="bottom-nav-tab" :class="{ active: dailyQuizActive }">
+        <AppIcon name="calendar" /><span>{{ $t('Dagens quiz§AppT') }}</span>
+      </router-link>
       <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
         <div v-for="menu in [QUIZZES_MENU, ...PLAYER_MENUS, ACCOUNT_MENU]" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
           <button
+            type="button"
+            class="bottom-nav-tab"
             aria-haspopup="true"
             :aria-expanded="openPlayerMenu === menu.key"
             @click="togglePlayerMenu(menu.key)"
-            :class="{ active: playerMenuActive(menu) }"
-          >{{ menu.label }} ▾</button>
+            :class="{ active: playerMenuActive(menu) || openPlayerMenu === menu.key }"
+          ><AppIcon :name="menu.icon" /><span>{{ menu.label }}</span></button>
           <Transition name="pop" @enter="popFromTrigger" @leave="popFromTrigger">
-          <div v-if="openPlayerMenu === menu.key" class="games-popup" :class="{ 'popup-left': menu.key === 'quizzes', 'popup-right': menu.key === 'account' }" role="menu">
+          <div v-if="openPlayerMenu === menu.key" class="games-popup nav-sheet" :class="{ 'nav-sheet--grid': menu.items.length > 4 }" role="menu" :aria-label="menu.label">
+            <div class="nav-sheet-title">{{ menu.label }}</div>
+            <div v-if="menu.key === 'account'" class="nav-sheet-row">
+              <span>{{ $t('Språk') }}</span>
+              <LanguageToggle />
+            </div>
             <template v-for="item in menu.items" :key="item.to || item.action">
               <button v-if="item.action === 'logout'" type="button" role="menuitem" class="popup-action" @click="closePlayerMenu(); logout()">{{ item.label }}</button>
               <router-link
@@ -176,6 +195,7 @@ import navTrigger from './services/navTrigger'
 import cookieConsent from './services/cookieConsent'
 import ToastHost from './components/ToastHost.vue'
 import LanguageToggle from './components/LanguageToggle.vue'
+import AppIcon from './components/AppIcon.vue'
 import LoginDialog from './components/LoginDialog.vue'
 import loginDialog from './services/loginDialog'
 import { popFromTrigger } from './composables/popFromTrigger'
@@ -199,6 +219,7 @@ const router = useRouter()
 const PLAYER_MENUS = [
   {
     key: 'weekly',
+    icon: 'grid',
     label: _t('Ukentlig'),
     items: [
       { to: '/weekly-grid', label: 'Grid', key: null },
@@ -207,6 +228,7 @@ const PLAYER_MENUS = [
   },
   {
     key: 'games',
+    icon: 'dice',
     label: _t('Spill§AppJ'),
     items: [
       { to: '/julekalender', label: _t('Julekalender'), key: null },
@@ -220,16 +242,17 @@ const PLAYER_MENUS = [
     ]
   }
 ]
-// Mobile bottom bar only: 'Lag en quiz' and 'Mine quizzer' share one dropdown there (six tabs side by
+// Mobile bottom bar only: 'Lag en quiz' and 'Mine quizer' share one dropdown there (six tabs side by
 // side were cramped), with Create first and highlighted since it's the main action. On desktop the top
 // nav has room, so they stay as two separate links. Opened/closed through the same openPlayerMenu as the
 // others ('quizzes' is one more key).
 const QUIZZES_MENU = {
   key: 'quizzes',
-  label: _t('Quizzer'),
+  icon: 'layers',
+  label: _t('Quizer'),
   items: [
     { to: '/generate', label: _t('Lag en quiz'), key: 'generate', primary: true },
-    { to: '/my-quizzes', label: _t('Mine quizzer'), key: 'myQuizzes' }
+    { to: '/my-quizzes', label: _t('Mine quizer'), key: 'myQuizzes' }
   ]
 }
 
@@ -238,6 +261,7 @@ const QUIZZES_MENU = {
 // together with Log out.
 const ACCOUNT_MENU = {
   key: 'account',
+  icon: 'user',
   label: _t('Konto'),
   items: [
     { to: '/account', label: _t('Min konto og navn'), key: 'account' },
@@ -251,6 +275,9 @@ function playerMenuActive(menu) {
   const path = router.currentRoute.value.path
   return menu.items.some(item => path === item.to || path.startsWith(item.to + '/'))
 }
+
+// The Dagens quiz tab stays lit on a quiz's own page too (/daily-quiz/:id), not only on the list.
+const dailyQuizActive = computed(() => router.currentRoute.value.path.startsWith('/daily-quiz'))
 
 // Single "which player dropdown is open" ref (null | 'weekly' | 'games') - one at a
 // time, same pattern as openAdminMenu below.

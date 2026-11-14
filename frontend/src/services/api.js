@@ -592,6 +592,10 @@ export default {
   },
 
   // --- Daily quiz: user-facing ---
+  // Today's questions without an account (see DailyQuizController#today) - nothing is saved or graded.
+  getDailyQuizToday() {
+    return client.get('/daily-quiz/today').then(r => r.data)
+  },
   getActiveDailyQuizzes() {
     return client.get('/daily-quiz/active').then(r => r.data)
   },
