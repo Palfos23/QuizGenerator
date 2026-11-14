@@ -319,24 +319,6 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 .lang-toggle-btn.is-on { background: var(--primary); color: var(--on-primary); }
 .lang-toggle-btn:not(.is-on):hover { background: rgb(var(--primary-rgb) / 0.08); color: var(--primary); }
 
-/* Light / dark toggle in the top nav, next to the language switch */
-.theme-toggle {
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 30px;
-  margin-left: 10px;
-  padding: 0;
-  flex-shrink: 0;
-  background: transparent;
-  color: var(--text-dim);
-  border: 1px solid rgb(var(--fg-rgb) / 0.22);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-.theme-toggle svg { width: 16px; height: 16px; }
-.theme-toggle:hover { color: var(--primary); background: rgb(var(--primary-rgb) / 0.08); }
-
 /* ---------- Results ledger: the daily and weekly leaderboards ----------
    Rank, name, a dotted leader, the score - like a newspaper results table. The winner's row is
    inverted (ink fill), "you" gets a small tag, the expert is italic and unranked. */

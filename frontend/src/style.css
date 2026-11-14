@@ -76,51 +76,51 @@
 :root {
   --nav-height: 64px; /* used by sticky elements positioned just below the top nav - keep in sync with .top-nav's actual rendered height per breakpoint. Redefined for the mobile nav's shorter height in the @media (max-width: 760px) block below. */
   --bottom-nav-height: 0px; /* the fixed mobile .bottom-nav is hidden above 760px, so anything sticky to the viewport bottom can sit flush at 0 by default - redefined below for the breakpoint where that bar actually covers the bottom of the screen. */
-  /* Egyptian blue, stone blue and scarlet on a cool off-white page. The token names are from older themes
-     (--ink is the page colour, --gold the accent, --violet the secondary accent): they are kept so every
-     component follows, but they now hold this palette:
-       blue    = the primary action and links  (Egyptian blue)
-       stone   = surfaces, borders, secondary text (stone blue)
-       scarlet = emphasis, "now", errors      (--gold and --coral)
-     Green stays only for "correct". */
-  --ink: #f3f6fa;            /* the page */
-  --ink-raised: #ffffff;     /* cards, modals */
-  --primary: #1034a6;        /* Egyptian blue */
-  --primary-hover: #0c2a87;
-  --primary-rgb: 16 52 166;
+  /* Soft sand, mocha green and watermelon pink. The token names are from older themes (--ink is the page
+     colour, --gold the accent, --violet the secondary accent): they are kept so every component follows,
+     but they now hold this palette:
+       sand       = the page and surfaces
+       mocha green = the primary action and links
+       watermelon  = emphasis, "now", progress  (--gold)
+     Brick red (--coral) is reserved for errors and green (--teal) for "correct". One light theme only. */
+  --ink: #f3ebdb;            /* the page */
+  --ink-raised: #fbf7ee;     /* cards, modals */
+  --primary: #52633f;        /* sand */
+  --primary-hover: #435233;
+  --primary-rgb: 82 99 63;
   --on-primary: #ffffff;
-  --stone: #6b8299;          /* stone blue: icons, strong borders (decorative - not for small text) */
-  --gold: #e0200b;           /* scarlet: the accent */
+  --stone: #a89877;          /* sand-dark: icons, strong borders (decorative - not for small text) */
+  --gold: #e6476f;           /* watermelon: the accent */
   --gold-soft: rgb(var(--gold-rgb) / 0.08);
-  --coral: #c71f0d;          /* errors, destructive */
-  --teal: #14795b;           /* success */
-  --violet: #1034a6;         /* secondary accent = Egyptian blue */
-  --text: #0f1b2d;
-  --text-dim: #4a5d72;       /* stone blue, dark enough for body text (6.3:1 on the page) */
+  --coral: #c2392f;          /* errors, destructive */
+  --teal: #2f7d4f;           /* success */
+  --violet: #52633f;         /* secondary accent = mocha green */
+  --text: #2b2a21;
+  --text-dim: #6a604b;       /* dark enough for body text (5:1 on the page) */
   --border: rgb(var(--fg-rgb) / 0.14);
-  --rule: #c9d3de;           /* the standard 1px border */
+  --rule: #dccfb3;           /* the standard 1px border */
 
   /* The same colours as space-separated channels, for translucent tints: rgb(var(--fg-rgb) / 0.2). They
-     flip with the theme along with the tokens above, so every tint follows. */
-  --fg-rgb: 15 27 45;        /* ink */
-  --paper-rgb: 255 255 255;  /* = --ink-raised */
-  --page-rgb: 243 246 250;   /* = --ink */
-  --gold-rgb: 224 32 11;
-  --teal-rgb: 20 121 91;
-  --coral-rgb: 199 31 13;
-  --violet-rgb: 16 52 166;
-  --field-bg: #ffffff;       /* inputs, hovered rows */
+     follow the tokens above, so every tint follows. */
+  --fg-rgb: 43 42 33;        /* ink */
+  --paper-rgb: 251 247 238;  /* = --ink-raised */
+  --page-rgb: 243 235 219;   /* = --ink */
+  --gold-rgb: 230 71 111;
+  --teal-rgb: 47 125 79;
+  --coral-rgb: 194 57 47;
+  --violet-rgb: 82 99 63;
+  --field-bg: #fffdf8;       /* inputs, hovered rows */
   --pitch-a: #86ad8c;        /* Starting XI pitch */
   --pitch-b: #7da585;
-  --pitch-text: #0f1b2d;     /* player names printed on the pitch */
+  --pitch-text: #2b2a21;     /* player names printed on the pitch */
   /* Darker/lighter variants of the accents for TEXT (pills, banners): deep enough to read on a tinted light
      surface, light enough to read on a tinted dark one. */
-  --teal-ink: #0e5f46;
-  --coral-ink: #a3180a;
-  --amber-ink: #3a4d63;      /* "waiting" is a calm stone blue, not a warning colour */
-  --amber-rgb: 74 93 114;
-  --violet-ink: #1034a6;
-  --gold-ink: #b3190a;
+  --teal-ink: #1f5e3a;
+  --coral-ink: #9c2a21;
+  --amber-ink: #7a6a45;      /* "waiting" is a calm stone blue, not a warning colour */
+  --amber-rgb: 122 106 69;
+  --violet-ink: #52633f;
+  --gold-ink: #b82a55;
 
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Instrument Sans', system-ui, sans-serif;
@@ -154,51 +154,6 @@
 html {
   /* Native controls (select popups, date pickers, scrollbars) should match the page. */
   color-scheme: light;
-}
-
-/* Dark mode: deep navy page, cool off-white text, the blue and scarlet brightened to hold up on dark. Switched by
-   [data-theme="dark"] on <html> (services/theme.js, set before first paint by a snippet in index.html). Screen only,
-   so printed quizzes and PDFs stay on white paper. */
-@media screen {
-  :root[data-theme="dark"] {
-    --ink: #0b1220;
-    --ink-raised: #131c2f;
-    --primary: #4a72f0;
-    --primary-hover: #6485f4;
-    --primary-rgb: 74 114 240;
-    --on-primary: #ffffff;
-    --stone: #7d93aa;
-    --gold: #ff5b45;
-    --gold-soft: rgba(255, 91, 69, 0.14);
-    --coral: #ff7b6b;
-    --teal: #5ed1a0;
-    --violet: #8aa5ff;
-    --text: #e8eef5;
-    --text-dim: #9fb0c3;
-    --border: rgba(232, 238, 245, 0.16);
-    --rule: #2a3951;
-
-    --fg-rgb: 232 238 245;
-    --paper-rgb: 19 28 47;
-    --page-rgb: 11 18 32;
-    --gold-rgb: 255 91 69;
-    --teal-rgb: 94 209 160;
-    --coral-rgb: 255 123 107;
-    --violet-rgb: 138 165 255;
-    --field-bg: #0e1626;
-    --pitch-a: #35603f;
-    --pitch-b: #2d5536;
-    --pitch-text: #e8eef5;
-    --teal-ink: #86e0b8;
-    --coral-ink: #ffa89c;
-    --amber-ink: #b4c3d4;
-    --amber-rgb: 159 176 195;
-    --violet-ink: #b4c6ff;
-    --gold-ink: #ff9c8c;
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
-    --shadow-float: 0 12px 32px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
-  }
-  html[data-theme="dark"] { color-scheme: dark; }
 }
 
 html, body {

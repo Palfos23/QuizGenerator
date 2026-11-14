@@ -65,7 +65,6 @@
         <div class="top-nav-spacer"></div>
       </template>
       <LanguageToggle />
-      <ThemeToggle />
     </nav>
 
     <main class="main-content">
@@ -159,7 +158,6 @@ import navTrigger from './services/navTrigger'
 import cookieConsent from './services/cookieConsent'
 import ToastHost from './components/ToastHost.vue'
 import LanguageToggle from './components/LanguageToggle.vue'
-import ThemeToggle from './components/ThemeToggle.vue'
 import CookieConsentBanner from './components/CookieConsentBanner.vue'
 import { useEscapeKey } from './composables/useEscapeKey'
 
