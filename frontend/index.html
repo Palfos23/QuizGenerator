@@ -6,14 +6,15 @@
     <title>Quizzes</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta name="theme-color" content="#f1efe8" />
+    <meta name="theme-color" content="#f6f2f9" />
     <script>
       // Apply the saved colour palette before first paint (see src/services/palette.js).
       try {
+        var colours = { moss: '#0e1612', terra: '#faf3ea' };
         var p = localStorage.getItem('quiz_palette');
-        if (p === 'mono' || p === 'ember') {
+        if (colours[p]) {
           document.documentElement.dataset.palette = p;
-          document.querySelector('meta[name="theme-color"]').setAttribute('content', p === 'ember' ? '#111114' : '#fafafa');
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', colours[p]);
         }
       } catch (e) {}
     </script>

@@ -1,79 +1,79 @@
-/* Colour palettes. "Land" is the default and lives in :root (style.css); the others override the same tokens when
+/* Colour palettes. "Plum" is the default and lives in :root (style.css); the others override the same tokens when
    <html data-palette="..."> is set (services/palette.js, applied before first paint by a snippet in index.html).
    Every component reads the tokens, so nothing else changes. */
 
-/* Mono: near-white page, black actions, one electric violet accent. */
-:root[data-palette="mono"] {
-  --ink: #fafafa;
-  --ink-raised: #ffffff;
-  --primary: #151515;
-  --primary-hover: #3a3a3a;
-  --primary-rgb: 21 21 21;
-  --on-primary: #ffffff;
-  --stone: #8a8a8a;
-  --gold: #5b4bff;
-  --on-accent: #ffffff;
-  --coral: #d92d20;
-  --teal: #12805c;
-  --violet: #5b4bff;
-  --text: #111111;
-  --text-dim: #5c5c5c;
-  --rule: #e4e4e4;
-  --fg-rgb: 17 17 17;
-  --paper-rgb: 255 255 255;
-  --page-rgb: 250 250 250;
-  --gold-rgb: 91 75 255;
-  --teal-rgb: 18 128 92;
-  --coral-rgb: 217 45 32;
-  --violet-rgb: 91 75 255;
-  --field-bg: #ffffff;
-  --pitch-text: #111111;
-  --teal-ink: #0b6648;
-  --coral-ink: #b42318;
-  --amber-ink: #666666;
-  --amber-rgb: 102 102 102;
-  --violet-ink: #4536d6;
-  --gold-ink: #4536d6;
-}
-
-/* Ember: a dark page with a coral-red primary and an amber accent. Screen only, so printed quizzes stay on white paper. */
+/* Moss: a deep green-black page with a lime primary and a rose accent. Screen only, so printed quizzes stay on white paper. */
 @media screen {
-  :root[data-palette="ember"] {
-    --ink: #111114;
-    --ink-raised: #1b1b20;
-    --primary: #f0624f;
-    --primary-hover: #ff7a68;
-    --primary-rgb: 240 98 79;
-    --on-primary: #16090a;
-    --stone: #77747e;
-    --gold: #f5b942;
-    --on-accent: #16120a;
-    --coral: #ff7a90;
-    --teal: #4fd08a;
-    --violet: #f0624f;
-    --text: #f2f0ec;
-    --text-dim: #a3a0a8;
-    --rule: #2b2b33;
-    --border: rgb(242 240 236 / 0.14);
-    --fg-rgb: 242 240 236;
-    --paper-rgb: 27 27 32;
-    --page-rgb: 17 17 20;
-    --gold-rgb: 245 185 66;
-    --teal-rgb: 79 208 138;
-    --coral-rgb: 255 122 144;
-    --violet-rgb: 240 98 79;
-    --field-bg: #141418;
+  :root[data-palette="moss"] {
+    --ink: #0e1612;
+    --ink-raised: #17231d;
+    --primary: #a3e635;
+    --primary-hover: #bef264;
+    --primary-rgb: 163 230 53;
+    --on-primary: #12200a;
+    --stone: #6f8478;
+    --gold: #fb7185;
+    --on-accent: #2a0a10;
+    --coral: #ff6b4a;
+    --teal: #4ade80;
+    --violet: #a3e635;
+    --text: #ecf3ee;
+    --text-dim: #9db0a4;
+    --rule: #263529;
+    --border: rgb(236 243 238 / 0.14);
+    --fg-rgb: 236 243 238;
+    --paper-rgb: 23 35 29;
+    --page-rgb: 14 22 18;
+    --gold-rgb: 251 113 133;
+    --teal-rgb: 74 222 128;
+    --coral-rgb: 255 107 74;
+    --violet-rgb: 163 230 53;
+    --field-bg: #0b120e;
     --pitch-a: #2f5a3a;
     --pitch-b: #285032;
-    --pitch-text: #f2f0ec;
-    --teal-ink: #8be3b4;
-    --coral-ink: #ffa3b1;
-    --amber-ink: #beb8a8;
-    --amber-rgb: 190 184 168;
-    --violet-ink: #ff9d8f;
-    --gold-ink: #f8cf75;
+    --pitch-text: #ecf3ee;
+    --teal-ink: #86efac;
+    --coral-ink: #ffa58f;
+    --amber-ink: #c0cbb8;
+    --amber-rgb: 192 203 184;
+    --violet-ink: #c3f07a;
+    --gold-ink: #fda4af;
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
     --shadow-float: 0 12px 32px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
   }
-  html[data-palette="ember"] { color-scheme: dark; }
+  html[data-palette="moss"] { color-scheme: dark; }
+}
+
+/* Terracotta: a warm cream page with a burnt-orange primary and a deep cyan accent. */
+:root[data-palette="terra"] {
+  --ink: #faf3ea;
+  --ink-raised: #fffdf9;
+  --primary: #b83d0b;
+  --primary-hover: #983108;
+  --primary-rgb: 184 61 11;
+  --on-primary: #ffffff;
+  --stone: #a8957f;
+  --gold: #0b7a95;
+  --on-accent: #ffffff;
+  --coral: #a8123e;
+  --teal: #2f7d32;
+  --violet: #b83d0b;
+  --text: #2a2118;
+  --text-dim: #6b5a49;
+  --rule: #e6d8c5;
+  --fg-rgb: 42 33 24;
+  --paper-rgb: 255 253 249;
+  --page-rgb: 250 243 234;
+  --gold-rgb: 11 122 149;
+  --teal-rgb: 47 125 50;
+  --coral-rgb: 168 18 62;
+  --violet-rgb: 184 61 11;
+  --field-bg: #ffffff;
+  --pitch-text: #2a2118;
+  --teal-ink: #225e25;
+  --coral-ink: #8c0f33;
+  --amber-ink: #7d6a4f;
+  --amber-rgb: 125 106 79;
+  --violet-ink: #b83d0b;
+  --gold-ink: #0a6178;
 }

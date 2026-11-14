@@ -89,19 +89,9 @@
 .dialog-leave-to { opacity: 0; }
 .dialog-leave-to .modal { scale: 0.97; translate: 0 6px; }
 
-/* ---------- Page changes: old and new pages overlap (View Transitions API, see services/viewTransition.js) ---------- */
-@keyframes vt-out { to { opacity: 0; } }
-@keyframes vt-in { from { opacity: 0; } }
-::view-transition-old(root) { animation: vt-out var(--dur-exit) var(--ease-in) both; }
-::view-transition-new(root) { animation: vt-in var(--dur-enter) var(--ease-out) both; }
-/* The active nav item is one shared element: it glides to the next item instead of vanishing and reappearing. */
-@media (min-width: 761px) {
-  .top-nav .nav-link.router-link-exact-active { view-transition-name: nav-active; }
-}
-@media (max-width: 760px) {
-  .bottom-nav a.router-link-exact-active, .bottom-nav button.active { view-transition-name: nav-active; }
-}
-::view-transition-group(nav-active) { animation-duration: var(--dur-move); animation-timing-function: var(--ease-in-out); }
+/* ---------- Page changes: the new page eases in; navigation itself never waits on an animation ---------- */
+@keyframes page-in { from { opacity: 0; translate: 0 6px; } }
+.main-content > * { animation: page-in var(--dur-enter) var(--ease-out) backwards; }
 
 /* A palette change is a circular mask that grows out of the dot you pressed (see services/palette.js) */
 html.vt-reveal::view-transition-old(root),
@@ -168,4 +158,5 @@ input[type="range"]:active::-moz-range-thumb { scale: 1.12 1; transition: none; 
       .dashboard-features, .dashboard-side, .adv-grid, .top-nav-dropdown-popup, .games-popup, .modal) > *,
   .modal, .modal-backdrop, .palette-ring.is-moving { animation: none; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  .main-content > * { animation: none; }
 }

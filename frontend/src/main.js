@@ -5,7 +5,6 @@ import './styles/design.css'
 import './styles/palettes.css'
 import './styles/motion.css'
 import { initPalette } from './services/palette'
-import { installPageTransitions } from './services/viewTransition'
 
 initPalette()
 
@@ -19,7 +18,6 @@ loadLang().then(async () => {
     import('./App.vue'),
     import('./router')
   ])
-  installPageTransitions(router)
   const app = createApp(App).use(router)
   app.config.globalProperties.$t = t
   app.config.globalProperties.$locale = locale

@@ -2,7 +2,6 @@
   <div class="home">
     <section class="home-hero">
       <h1><span class="home-num">{{ $t('15 nye spørsmål hver dag').split(' ')[0] }}</span> {{ $t('15 nye spørsmål hver dag').split(' ').slice(1).join(' ') }}</h1>
-      <p class="home-lede">{{ $t('Svar med egne ord, se fasit med en gang og kjemp om ukens seier.') }}</p>
       <div class="home-cta">
         <button type="button" class="btn btn-primary btn-lg" @click="loginDialog.open()">{{ $t('Spill dagens quiz§HomeViewT') }}</button>
       </div>
@@ -96,8 +95,7 @@ onMounted(() => {
 
 .home-num { color: var(--gold); }
 .home-hero h1::before { content: ''; display: block; width: 56px; height: 5px; margin-bottom: var(--space-4); border-radius: 3px; background: var(--gold); }
-.home-hero h1 { font-size: clamp(2.3rem, 5.4vw, 3.4rem); line-height: 1.04; letter-spacing: -0.025em; margin: 0 0 var(--space-3); max-width: 14ch; }
-.home-lede { font-size: 1.15rem; line-height: 1.5; color: var(--text-dim); margin: 0 0 var(--space-5); max-width: 34ch; }
+.home-hero h1 { font-size: clamp(2.3rem, 5.4vw, 3.4rem); line-height: 1.04; letter-spacing: -0.025em; margin: 0 0 var(--space-5); max-width: 14ch; }
 .home-cta { margin: 0; }
 .home-cta .btn-lg { padding-inline: var(--space-6); min-height: 52px; font-size: 1.05rem; }
 .home-preview { grid-area: preview; width: 100%; }

@@ -2340,7 +2340,6 @@ export default {
  "Tastatur: R eller → = riktig · F eller ← = feil · S = hopp over · Z = angre": "Keyboard: R or → = correct · F or ← = wrong · S = skip · Z = undo",
  "Kunne ikke lagre - prøv igjen.": "Couldn't save - try again.",
  "15 nye spørsmål hver dag": "15 new questions every day",
- "Svar med egne ord, se fasit med en gang og kjemp om ukens seier.": "Answer in your own words, see the answers right away and compete for the weekly win.",
  "Spill dagens quiz§HomeViewT": "Play today's quiz",
  "Lag egne quizer og spill sammen": "Make your own quizzes and play together",
  "Velg kategorier og vanskelighetsgrad, bytt ut spørsmål og skriv ut quizen.": "Pick categories and difficulty, swap out questions and print the quiz.",
