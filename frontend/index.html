@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html lang="nb">
+<html lang="nb" data-palette="umber">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quizzes</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta name="theme-color" content="#eeefe9" />
+    <meta name="theme-color" content="#14100d" />
     <script>
-      // Apply the saved colour palette before first paint (see src/services/palette.js).
+      // Apply the saved colour palette before first paint (see src/services/palette.js). The page starts as "umber"
+      // (the default, set on <html> above); "cobalt" is the light base palette and has no attribute.
       try {
-        var colours = { blurple: '#14152b', rausch: '#f6f4f1', mint: '#121212', ledger: '#f4f4f1', umber: '#14100d', monocle: '#f0e9d8', dusk: '#0d1228', spectrum: '#f5f5f7' };
+        var colours = { cobalt: '#eeefe9', blurple: '#14152b', rausch: '#f6f4f1', mint: '#121212', ledger: '#f4f4f1', umber: '#14100d', monocle: '#f0e9d8', dusk: '#0d1228', spectrum: '#f5f5f7' };
         var p = localStorage.getItem('quiz_palette');
         if (colours[p]) {
-          document.documentElement.dataset.palette = p;
+          if (p === 'cobalt') document.documentElement.removeAttribute('data-palette');
+          else document.documentElement.dataset.palette = p;
           document.querySelector('meta[name="theme-color"]').setAttribute('content', colours[p]);
         }
       } catch (e) {}

@@ -28,7 +28,7 @@
       <div style="color:var(--text-dim); font-size:0.85rem;">{{ $t('Tension-svar:') }} {{ question.tensionAnswers.length }}</div>
     </div>
 
-    <h1 style="text-align:center; margin:6px 0 4px;">{{ question.title }}</h1>
+    <h1 class="tension-title">{{ question.title }}</h1>
     <p v-if="question.source" style="text-align:center; margin:0 0 4px; color:var(--text-dim); font-size:0.8rem;">
       {{ $t('Tilleggsinformasjon:') }} {{ question.source }}
     </p>
@@ -63,8 +63,8 @@
       </div>
 
       <div class="tension-answers-panel">
-        <h3 style="text-align:center; margin-top:0;">{{ $t('Svar§TensionGameT') }}</h3>
-        <div class="tension-reveal-list">
+        <h3 class="tension-answers-title">{{ $t('Svar§TensionGameT') }}</h3>
+        <div class="tension-reveal-list" :style="{ '--tension-rows': Math.ceil(allAnswersList.length / 2) }">
           <div
             v-for="(ans, idx) in allAnswersList"
             :key="ans.text"
