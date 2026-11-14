@@ -25,7 +25,7 @@
         <span class="dqp-n">2</span>
         <div class="dqp-main">
           <p>{{ $t('Hvilket land vant fotball-VM i 2022?') }}</p>
-          <div class="dqp-a">Frankrike</div>
+          <div class="dqp-a">{{ $t('Frankrike§DailyQuizPreviewT') }}</div>
           <div class="dqp-fix">{{ $t('Riktig svar§DailyQuizPlayViewT') }}: <strong>Argentina</strong></div>
         </div>
         <span class="dq-pill dq-pill--bad">{{ $t('Feil§DailyQuizPlayViewM') }}</span>
@@ -35,7 +35,7 @@
         <span class="dqp-n">3</span>
         <div class="dqp-main">
           <p>{{ $t('Hvilket grunnstoff har symbolet Fe?') }}</p>
-          <div class="dqp-input"><span>Jern</span><i class="dqp-caret"></i></div>
+          <div class="dqp-input"><span>{{ $t('Jern§DailyQuizPreviewT') }}</span><i class="dqp-caret"></i></div>
         </div>
       </article>
     </div>
