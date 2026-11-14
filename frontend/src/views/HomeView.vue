@@ -190,8 +190,9 @@ onBeforeUnmount(() => cancelAnimationFrame(rafId))
 .home-more-item > div { flex: 1; min-width: 0; }
 .home-more-arrow { align-self: center; color: var(--text-dim); transition: translate 150ms var(--ease-out), color 150ms var(--ease-out); }
 .home-more-item:hover .home-more-arrow { translate: 3px 0; color: var(--primary); }
-.home-icon { flex-shrink: 0; width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--radius-icon); background: rgb(var(--primary-rgb) / 0.09); color: var(--primary); }
-.home-icon svg { width: 22px; height: 22px; }
+/* a bare line icon in the accent colour - no tile behind it */
+.home-icon { flex-shrink: 0; display: grid; place-items: center; margin-top: 1px; color: var(--primary); }
+.home-icon svg { width: 26px; height: 26px; }
 .home-more-list h3 { margin: 0 0 var(--space-1); font-family: var(--font-body); font-size: 1.05rem; font-weight: 650; letter-spacing: 0; }
 .home-more-list p { margin: 0; color: var(--text-dim); font-size: 0.95rem; line-height: 1.5; max-width: 38ch; }
 

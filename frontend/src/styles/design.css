@@ -585,7 +585,7 @@ a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
 @media (min-width: 761px) and (max-width: 900px) { .nav-logout { margin-left: 4px; } }
 
 /* The secondary colour of each palette shows up where there are two of a kind */
-.home-more-list li:nth-child(even) .home-icon { background: rgb(var(--violet-rgb) / 0.13); color: var(--violet-ink); }
+.home-more-list li:nth-child(even) .home-icon { color: var(--violet-ink); }
 .dashboard-side > :nth-child(2) { border-left: 4px solid var(--violet); }
 
 /* ---------- Tension: the answer table fits on one screen ----------
@@ -776,3 +776,10 @@ a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
 
 /* Loading placeholders breathe in one flat colour (no moving sheen) */
 @keyframes skeleton-pulse { to { opacity: 0.45; } }
+
+/* ---------- Icons stand on their own: no tile (square, rounded or otherwise) behind them ---------- */
+.dash-icon,
+.dashboard-feature-card:hover .dash-icon, .dashboard-join-card:hover .dash-icon,
+.dashboard-advent-icon { width: auto; height: auto; background: none; border-radius: 0; }
+.dash-icon { justify-content: start; margin-bottom: 12px; }
+.dash-icon .app-icon, .dashboard-advent-icon svg { width: 28px; height: 28px; }

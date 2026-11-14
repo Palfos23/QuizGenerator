@@ -129,10 +129,10 @@
   /* Radii: a container's inner element takes the container's radius minus the space between them, so
      curves stay concentric (a 14px card with 8px of inset holds 6px-radius rows). */
   --radius-icon: 3px;        /* the square tile behind an icon - one place to change its corners */
-  --radius-sm: 6px;          /* chips, small inner elements */
-  --radius-md: 10px;         /* buttons, inputs, rows */
-  --radius-lg: 14px;         /* cards */
-  --radius-xl: 20px;         /* modals, hero surfaces */
+  --radius-sm: 2px;          /* chips, small inner elements */
+  --radius-md: 2px;          /* buttons, inputs, rows */
+  --radius-lg: 3px;          /* cards */
+  --radius-xl: 4px;          /* modals, hero surfaces */
 
   /* Spacing scale (4px base) - group things by space instead of lines */
   --space-1: 4px;
