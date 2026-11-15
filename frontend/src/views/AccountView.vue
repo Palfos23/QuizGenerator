@@ -125,7 +125,7 @@ async function deleteAccount(password) {
 </script>
 
 <style scoped>
-.palette-row { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-2) var(--space-1); }
+.palette-row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-4); padding: var(--space-2) var(--space-1); min-width: 0; }
 .palette-name { font-weight: 600; }
 .display-name-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .display-name-row input {
