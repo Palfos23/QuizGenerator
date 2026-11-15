@@ -9,8 +9,9 @@
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">{{ $t('Lag en quiz') }}</router-link>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">{{ $t('Mine quizer') }}</router-link>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">{{ $t('Dagens quiz§AppT') }}</router-link>
-        <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
-          <div v-for="menu in PLAYER_MENUS" :key="menu.key" class="top-nav-dropdown">
+        <!-- The same dropdowns for players and admins: only the menus differ -->
+        <template v-if="!auth.isGuest.value">
+          <div v-for="menu in topMenus" :key="menu.key" class="top-nav-dropdown">
             <button
               type="button"
               class="nav-link top-nav-dropdown-toggle"
@@ -30,32 +31,6 @@
                 class="nav-link"
                 role="menuitem"
                 @click="closePlayerMenuItem(item.to, item.key)"
-              >{{ item.label }}</router-link>
-            </div>
-            </Transition>
-          </div>
-        </template>
-        <template v-if="auth.isAdmin.value">
-          <div v-for="menu in ADMIN_MENUS" :key="menu.label" class="top-nav-dropdown">
-            <button
-              type="button"
-              class="nav-link top-nav-dropdown-toggle"
-              :class="{ 'router-link-exact-active': adminMenuActive(menu) }"
-              aria-haspopup="true"
-              :aria-expanded="openAdminMenu === menu.label"
-              @click="toggleAdminMenu(menu.label)"
-            >
-              {{ menu.label }} ▾
-            </button>
-            <Transition name="pop" @enter="popFromTrigger" @leave="popFromTrigger">
-            <div v-if="openAdminMenu === menu.label" class="top-nav-dropdown-popup" role="menu">
-              <router-link
-                v-for="item in menu.items"
-                :key="item.to"
-                :to="item.to"
-                class="nav-link"
-                role="menuitem"
-                @click="closeAdminMenu"
               >{{ item.label }}</router-link>
             </div>
             </Transition>
@@ -96,7 +71,7 @@
 
     <!-- Phones only: dims the page behind an open bottom-bar sheet; pressing it closes the sheet (closeMenusOnOutsidePress) -->
     <Transition name="dialog">
-      <div v-if="auth.isAuthenticated.value && (openPlayerMenu || openAdminMenu)" class="nav-sheet-backdrop" aria-hidden="true"></div>
+      <div v-if="auth.isAuthenticated.value && openPlayerMenu" class="nav-sheet-backdrop" aria-hidden="true"></div>
     </Transition>
 
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
@@ -105,8 +80,8 @@
       <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="bottom-nav-tab" :class="{ active: dailyQuizActive }">
         <AppIcon name="calendar" /><span>{{ $t('Dagens quiz§AppT') }}</span>
       </router-link>
-      <template v-if="!auth.isAdmin.value && !auth.isGuest.value">
-        <div v-for="menu in [QUIZZES_MENU, ...PLAYER_MENUS, ACCOUNT_MENU]" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
+      <template v-if="!auth.isGuest.value">
+        <div v-for="menu in bottomMenus" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
           <button
             type="button"
             class="bottom-nav-tab"
@@ -136,28 +111,7 @@
           </Transition>
         </div>
       </template>
-      <template v-if="auth.isAdmin.value">
-        <div v-for="menu in ADMIN_MENUS" :key="menu.label" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
-          <button
-            aria-haspopup="true"
-            :aria-expanded="openAdminMenu === menu.label"
-            :class="{ active: adminMenuActive(menu) }"
-            @click="toggleAdminMenu(menu.label)"
-          >{{ menu.label }} ▾</button>
-          <Transition name="pop" @enter="popFromTrigger" @leave="popFromTrigger">
-          <div v-if="openAdminMenu === menu.label" class="games-popup admin-menu-popup" role="menu">
-            <router-link
-              v-for="item in menu.items"
-              :key="item.to"
-              :to="item.to"
-              role="menuitem"
-              @click="closeAdminMenu"
-            >{{ item.label }}</router-link>
-          </div>
-          </Transition>
-        </div>
-      </template>
-      <button v-if="auth.isAdmin.value || auth.isGuest.value" @click="logout">{{ auth.isGuest.value ? $t('Forlat') : $t('Logg ut') }}</button>
+      <button v-if="auth.isGuest.value" @click="logout">{{ auth.isGuest.value ? $t('Forlat') : $t('Logg ut') }}</button>
     </nav>
 
     <LoginDialog />
@@ -204,7 +158,7 @@ import { useEscapeKey } from './composables/useEscapeKey'
 
 const router = useRouter()
 
-// Player dropdowns, config-driven like ADMIN_MENUS below and used for both the
+// Player dropdowns, config-driven like ADMIN_MENUS and used for both the
 // desktop top nav and the mobile bottom-nav popup. Daily Quiz is deliberately not
 // in either - it has its own standalone nav button, next to Create a quiz/My quizzes.
 //
@@ -259,6 +213,12 @@ const QUIZZES_MENU = {
 // Mobile bottom bar only: the account page (where the display name is changed) had no way in from a phone -
 // the top bar's 'Konto' link doesn't exist there - so the last tab is now an Account menu holding it
 // together with Log out.
+const ADMIN_ACCOUNT_MENU = {
+  key: 'account',
+  icon: 'user',
+  label: _t('Konto'),
+  items: [{ action: 'logout', label: _t('Logg ut') }]
+}
 const ACCOUNT_MENU = {
   key: 'account',
   icon: 'user',
@@ -273,14 +233,17 @@ const ACCOUNT_MENU = {
 // beyond their own list page.
 function playerMenuActive(menu) {
   const path = router.currentRoute.value.path
-  return menu.items.some(item => path === item.to || path.startsWith(item.to + '/'))
+  return menu.items.some(item => [item.to, ...(item.also || [])].some(p => path === p || path.startsWith(p + '/')))
 }
 
+// Players and admins get the same navigation, just different menus
+const topMenus = computed(() => auth.isAdmin.value ? ADMIN_MENUS : PLAYER_MENUS)
+const bottomMenus = computed(() => auth.isAdmin.value ? [...ADMIN_MENUS, ADMIN_ACCOUNT_MENU] : [QUIZZES_MENU, ...PLAYER_MENUS, ACCOUNT_MENU])
 // The Dagens quiz tab stays lit on a quiz's own page too (/daily-quiz/:id), not only on the list.
 const dailyQuizActive = computed(() => router.currentRoute.value.path.startsWith('/daily-quiz'))
 
 // Single "which player dropdown is open" ref (null | 'weekly' | 'games') - one at a
-// time, same pattern as openAdminMenu below.
+// time, one menu open at a time.
 const openPlayerMenu = ref(null)
 const userInitial = computed(() => (auth.state.displayName || '?').trim().charAt(0).toUpperCase() || '?')
 function togglePlayerMenu(key) {
@@ -298,9 +261,11 @@ function closePlayerMenuItem(path, key) {
 // The admin nav used to be ~14 flat links crammed side by side (unusable as a
 // mobile bottom bar). It's now four labelled dropdowns, driven by this config
 // on both desktop (top-nav) and mobile (bottom-nav popup) - same markup, same
-// single `openAdminMenu` (one menu open at a time), mirroring the Games popup.
+// single `openPlayerMenu` (one menu open at a time), the same as the player menus.
 const ADMIN_MENUS = [
   {
+    key: 'admin-questions',
+    icon: 'cards',
     label: _t('Spørsmål§AppJ'),
     items: [
       { to: '/admin/questions', label: _t('Spørsmålsbank') },
@@ -310,6 +275,8 @@ const ADMIN_MENUS = [
     ]
   },
   {
+    key: 'admin-content',
+    icon: 'layers',
     label: _t('Innhold'),
     items: [
       { to: '/admin/athletes', label: _t('Emner') },
@@ -320,10 +287,12 @@ const ADMIN_MENUS = [
     ]
   },
   {
+    key: 'admin-games',
+    icon: 'dice',
     label: _t('Spill§AppJ'),
     items: [
-      { to: '/admin/daily-quiz-answers', label: _t('Rett svar per svar') },
-      { to: '/admin/daily-quiz-review', label: _t('Gjennomgang av dagens quiz') },
+      // One entry for correcting the daily quiz: the per-player review is a link inside that page ("also" keeps this menu lit there)
+      { to: '/admin/daily-quiz-answers', label: _t('Rett svar per svar'), also: ['/admin/daily-quiz-review'] },
       { to: '/admin/advent', label: _t('Julekalender') },
       { to: '/admin/grids', label: _t('Ukentlige grids') },
       { to: '/admin/lineups', label: 'Starting XI' },
@@ -336,6 +305,8 @@ const ADMIN_MENUS = [
     ]
   },
   {
+    key: 'admin-insight',
+    icon: 'target',
     label: _t('Innsikt'),
     items: [
       { to: '/admin/statistics', label: _t('Statistikk') },
@@ -345,33 +316,18 @@ const ADMIN_MENUS = [
     ]
   }
 ]
-const openAdminMenu = ref(null)
-function toggleAdminMenu(label) {
-  openAdminMenu.value = openAdminMenu.value === label ? null : label
-}
-function closeAdminMenu() {
-  openAdminMenu.value = null
-}
-// Highlights the toggle whenever the current route lives under one of its items.
-function adminMenuActive(menu) {
-  const path = router.currentRoute.value.path
-  return menu.items.some(item => path === item.to || path.startsWith(item.to + '/'))
-}
-
 // Belt-and-suspenders close for both popups on any navigation - covers the
 // case where a click lands on a different nav item entirely (not one of
 // this popup's own links, which already close it themselves) while a
 // dropdown happens to be open.
 watch(() => router.currentRoute.value.path, () => {
   closePlayerMenu()
-  openAdminMenu.value = null
 })
 
 // A keyboard user can open either dropdown, but until now had no way to
 // close it again without tabbing all the way through its links.
 useEscapeKey(() => {
   closePlayerMenu()
-  openAdminMenu.value = null
 })
 
 // Clicking anywhere outside an open dropdown closes it. (A full-screen backdrop used to do this, but
@@ -379,10 +335,9 @@ useEscapeKey(() => {
 // click on the page below never reached it.) Taps on a menu's own toggle or popup are left alone -
 // they handle themselves, including switching straight from one menu to another.
 function closeMenusOnOutsidePress(e) {
-  if (openPlayerMenu.value === null && openAdminMenu.value === null) return
+  if (openPlayerMenu.value === null) return
   if (e.target instanceof Element && e.target.closest('.top-nav-dropdown, .bottom-nav-menu')) return
   closePlayerMenu()
-  openAdminMenu.value = null
 }
 
 function onNavClick(path, key) {

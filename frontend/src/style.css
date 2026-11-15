@@ -3317,14 +3317,6 @@ table.scoreboard-table {
     text-align: left;
   }
   .bottom-nav .games-popup .popup-action:hover { background: rgb(var(--coral-rgb) / 0.12); }
-  .bottom-nav .games-popup.admin-menu-popup {
-    position: fixed;
-    left: 8px;
-    right: 8px;
-    bottom: calc(var(--bottom-nav-height) + 8px);
-    transform: none;
-    min-width: 0;
-  }
 }
 
 @media print {
