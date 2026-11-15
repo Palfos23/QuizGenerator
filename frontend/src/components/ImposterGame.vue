@@ -47,7 +47,7 @@
         </div>
       </div>
 
-      <p style="text-align:center; margin:0 0 12px; color:var(--gold); font-weight:600;">{{ currentPlayer }}{{ $t('sin tur - velg en rute') }}</p>
+      <p style="text-align:center; margin:0 0 12px; color:var(--gold); font-weight:600;">{{ $t('{0} sin tur - velg en rute', [currentPlayer]) }}</p>
 
       <div class="grid-tiles">
         <div

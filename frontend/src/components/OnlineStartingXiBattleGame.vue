@@ -110,7 +110,7 @@
       />
 
       <div v-if="!state.lineupComplete && !isYourTurn" class="banner" style="text-align:center; background:rgb(var(--fg-rgb) / 0.07);">
-        {{ $t('Venter på') }} {{ currentTurnName }}{{ $t('sin tur…') }}
+        {{ $t('Venter på {0} sin tur…', [currentTurnName]) }}
       </div>
 
       <div v-if="state.lineupComplete" class="modal-backdrop">

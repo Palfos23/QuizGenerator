@@ -30,7 +30,7 @@
       <div v-if="!revealed" class="guess-box-wrap no-print">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <div class="guess-box-header">
-            <p style="margin:0; color:var(--gold); font-weight:600;">{{ currentTurnPlayerName }}{{ $t('sin tur') }}</p>
+            <p style="margin:0; color:var(--gold); font-weight:600;">{{ $t('{0} sin tur', [currentTurnPlayerName]) }}</p>
           </div>
           <form @submit.prevent="submitCurrentGuess">
             <input

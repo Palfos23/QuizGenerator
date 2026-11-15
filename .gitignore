@@ -3,3 +3,22 @@ node_modules/
 # Build output - the GitHub Pages workflow builds its own copy; the backend is built by Maven
 frontend/dist/
 backend/target/
+
+# Only code, config and the assets the app itself ships belong in the repo. Everything below is not that.
+# Editor and OS files
+.DS_Store
+.idea/
+*.iml
+.vscode/
+
+# Generated videos and the tools that make them (promo/launch videos, their audio and renders)
+brag-output/
+promo-video/
+
+# AI-assistant working files, screenshots and scratch
+.claude/
+*.log
+
+# Local environment (frontend/.env.example is the committed template)
+.env
+.env.local

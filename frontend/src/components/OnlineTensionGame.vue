@@ -110,7 +110,7 @@
               </form>
             </template>
             <div v-else style="text-align:center; color:var(--text-dim);">
-              {{ $t('Venter på') }} {{ currentTurnName }}{{ $t('sin tur…') }}
+              {{ $t('Venter på {0} sin tur…', [currentTurnName]) }}
             </div>
           </template>
 

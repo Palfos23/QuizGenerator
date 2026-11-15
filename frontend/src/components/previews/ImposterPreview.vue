@@ -5,7 +5,7 @@
     <div class="ip-grid">
       <div v-for="t in tiles" :key="t.name" class="ip-tile" :class="[shownState(t), { picked: picked === t.name }]">
         <span class="ip-name">{{ t.name }}</span>
-        <span v-if="shownState(t) === 'fit'" class="ip-badge good">{{ $t('✓ passer') }}</span>
+        <span v-if="shownState(t) === 'fit'" class="ip-badge good">{{ $t('✓ Riktig§ImposterPreviewT') }}</span>
         <span v-else-if="shownState(t) === 'imposter'" class="ip-badge bad">✕ imposter</span>
       </div>
     </div>

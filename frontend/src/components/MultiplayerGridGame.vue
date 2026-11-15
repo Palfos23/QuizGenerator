@@ -43,7 +43,7 @@
       </div>
 
       <div v-if="!gridComplete" class="guess-box-wrap no-print">
-        <p class="guess-box-turn-label">{{ currentPlayerName }}{{ $t('sin tur') }}</p>
+        <p class="guess-box-turn-label">{{ $t('{0} sin tur', [currentPlayerName]) }}</p>
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
           <div class="guess-box-row">
             <input

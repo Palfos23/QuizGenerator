@@ -43,7 +43,7 @@
         </div>
 
         <p v-if="!isYourTurn" style="text-align:center; color:var(--text-dim); margin-top:16px;">
-          {{ $t('Venter på') }} {{ currentTurnName }}{{ $t('sin tur…') }}
+          {{ $t('Venter på {0} sin tur…', [currentTurnName]) }}
         </p>
       </template>
 

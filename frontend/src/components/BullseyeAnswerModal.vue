@@ -3,7 +3,7 @@
     <div class="modal">
       <div style="text-align:center;">
         <div style="color:var(--gold); font-weight:700; font-size:1.1rem; margin-bottom:6px;">
-          {{ currentPlayer }}{{ $t('sin tur') }}
+          {{ $t('{0} sin tur', [currentPlayer]) }}
         </div>
         <p style="font-size:1.4rem; font-weight:700; margin:0 0 20px;">{{ groupDigits ? formatNumber(targetValue) : targetValue }} {{ statLabel }}</p>
 

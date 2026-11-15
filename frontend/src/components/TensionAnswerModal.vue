@@ -3,7 +3,7 @@
     <div class="modal">
       <div style="text-align:center;">
         <div style="color:var(--gold); font-weight:700; font-size:1.1rem; margin-bottom:6px;">
-          {{ currentPlayer }}{{ $t('sin tur') }}
+          {{ $t('{0} sin tur', [currentPlayer]) }}
         </div>
         <p style="font-style:italic; font-size:1.15rem; margin:0 0 6px;">{{ questionTitle }}</p>
         <p style="color:var(--text-dim); font-size:0.8rem; margin-bottom:20px;">

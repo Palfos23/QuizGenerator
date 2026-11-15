@@ -78,7 +78,7 @@
         </div>
       </div>
       <div v-else class="banner" style="text-align:center; background:rgb(var(--fg-rgb) / 0.07);">
-        {{ $t('Venter på') }} {{ currentTurnName }}{{ $t('sin tur…') }}
+        {{ $t('Venter på {0} sin tur…', [currentTurnName]) }}
       </div>
 
       <div v-if="lastThrow" style="text-align:center; margin-top:16px; color:var(--text-dim); font-size:0.9rem;">

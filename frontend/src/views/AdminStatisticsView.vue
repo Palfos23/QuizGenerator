@@ -4,7 +4,6 @@
       <div>
         <span class="dq-eyebrow">Admin</span>
         <h1 class="dq-title">{{ $t('Statistikk') }}</h1>
-        <p class="dq-sub">{{ $t('Et skrivebeskyttet øyeblikksbilde av spillere, innhold og hva som skjer denne uken.') }}</p>
       </div>
       <button class="dq-chip-btn" :disabled="loading" @click="load">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-2.3 5.7M20 5v6h-6" /></svg>

@@ -54,7 +54,7 @@
           {{ $t('Alle har svart! Avslører om') }} {{ countdown }}…
         </div>
         <p v-else style="color:var(--gold); font-weight:600;">
-          {{ currentTurnPlayerName }}{{ $t('sin tur - velg et navn') }}
+          {{ $t('{0} sin tur - velg et navn', [currentTurnPlayerName]) }}
         </p>
       </div>
 
