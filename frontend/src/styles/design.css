@@ -601,24 +601,24 @@ a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
   .tension-player-card { flex: 1 1 150px; max-width: 260px; padding: 6px 12px; }
   .tension-answers-panel { width: 100%; min-width: 0; max-width: none; padding: 10px 12px; }
   .tension-answers-title { margin: 0 0 8px; font-size: 1rem; }
-  .tension-reveal-list {
+  .tension-answers-panel .tension-reveal-list {
     display: grid;
     grid-auto-flow: column;
     grid-template-rows: repeat(var(--tension-rows, 6), auto);
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px 10px;
   }
-  .tension-reveal-row { padding: 5px 10px; gap: 10px; min-width: 0; }
-  .tension-reveal-rank { width: 26px; height: 26px; font-size: 0.75rem; }
-  .tension-reveal-main { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .tension-reveal-answer { font-size: 0.92rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tension-reveal-tag { margin-top: 0; font-size: 0.6rem; padding: 0 6px; flex-shrink: 0; }
-  .tension-reveal-guessers { flex-direction: row; flex-wrap: wrap; justify-content: flex-end; max-width: 55%; gap: 4px; }
-  .tension-reveal-chip { padding: 0 8px; font-size: 0.74rem; }
+  .tension-answers-panel .tension-reveal-row { padding: 5px 10px; gap: 10px; min-width: 0; }
+  .tension-answers-panel .tension-reveal-rank { width: 26px; height: 26px; font-size: 0.75rem; }
+  .tension-answers-panel .tension-reveal-main { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tension-answers-panel .tension-reveal-answer { font-size: 0.92rem; min-width: 0; overflow-wrap: anywhere; }
+  .tension-answers-panel .tension-reveal-tag { margin-top: 0; font-size: 0.6rem; padding: 0 6px; flex-shrink: 0; }
+  .tension-answers-panel .tension-reveal-guessers { flex-direction: row; flex-wrap: wrap; justify-content: flex-end; max-width: 55%; gap: 4px; }
+  .tension-answers-panel .tension-reveal-chip { padding: 0 8px; font-size: 0.74rem; }
 }
 @media (min-width: 760px) and (max-height: 720px) {
-  .tension-reveal-row { padding: 3px 10px; }
-  .tension-reveal-list { gap: 4px 10px; }
+  .tension-answers-panel .tension-reveal-row { padding: 3px 10px; }
+  .tension-answers-panel .tension-reveal-list { gap: 4px 10px; }
 }
 
 /* On a phone the same table is one narrow column of one-line rows: no repeated "trygt svar" tags (the row colour already says
@@ -632,16 +632,16 @@ a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
   .tension-player-answer { font-size: 0.78rem; }
   .tension-answers-panel { padding: 8px; }
   .tension-answers-title { display: none; }
-  .tension-reveal-list { gap: 4px; }
-  .tension-reveal-row { flex-wrap: nowrap; row-gap: 0; padding: 3px 8px; gap: 8px; }
-  .tension-reveal-rank { width: 22px; height: 22px; font-size: 0.68rem; }
-  .tension-reveal-main { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; }
-  .tension-reveal-answer { font-size: 0.85rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tension-reveal-tag { margin-top: 0; font-size: 0.55rem; padding: 0 5px; flex-shrink: 0; }
-  .tension-reveal-tag.safe { display: none; }
-  .tension-reveal-nobody { display: none; }
-  .tension-reveal-guessers { width: auto; max-width: 50%; padding-left: 0; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
-  .tension-reveal-chip { font-size: 0.7rem; padding: 0 6px; }
+  .tension-answers-panel .tension-reveal-list { gap: 4px; }
+  .tension-answers-panel .tension-reveal-row { flex-wrap: nowrap; row-gap: 0; padding: 3px 8px; gap: 8px; }
+  .tension-answers-panel .tension-reveal-rank { width: 22px; height: 22px; font-size: 0.68rem; }
+  .tension-answers-panel .tension-reveal-main { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; }
+  .tension-answers-panel .tension-reveal-answer { font-size: 0.85rem; min-width: 0; overflow-wrap: anywhere; line-height: 1.2; }
+  .tension-answers-panel .tension-reveal-tag { margin-top: 0; font-size: 0.55rem; padding: 0 5px; flex-shrink: 0; }
+  .tension-answers-panel .tension-reveal-tag.safe { display: none; }
+  .tension-answers-panel .tension-reveal-nobody { display: none; }
+  .tension-answers-panel .tension-reveal-guessers { width: auto; max-width: 50%; padding-left: 0; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+  .tension-answers-panel .tension-reveal-chip { font-size: 0.7rem; padding: 0 6px; }
   .tension-actions { margin-top: 10px; }
 }
 
