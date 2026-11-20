@@ -125,7 +125,7 @@
         >{{ $t('+ Legg til hint') }}</button>
       </div>
 
-      <TranslationEditor v-if="editingYearId" type="FLASHBACK" :entity-id="editingYearId" />
+      <TranslationEditor ref="translationEditor" type="FLASHBACK" :entity-id="editingYearId" :keys="form.hints.map((_, i) => 'hints#' + i)" :bases="Object.fromEntries(form.hints.map((h, i) => ['hints#' + i, h]))" />
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button v-if="editingYearId" class="btn btn-secondary" @click="duplicateAsNewVersion">
@@ -179,6 +179,7 @@ const error = ref('')
 const saving = ref(false)
 const pendingDelete = ref(null)
 const editingYearId = ref(null)
+const translationEditor = ref(null)
 
 const form = reactive({
   title: '',
@@ -285,11 +286,13 @@ async function saveYear() {
 
   saving.value = true
   try {
+    let savedId = editingYearId.value
     if (editingYearId.value) {
       await api.adminUpdateFlashbackYear(editingYearId.value, payload)
     } else {
-      await api.adminCreateFlashbackYear(payload)
+      savedId = (await api.adminCreateFlashbackYear(payload)).id
     }
+    await translationEditor.value?.flush(savedId)
     toast.show(_t('Året er lagret.'))
     view.value = 'list'
     loadYears()

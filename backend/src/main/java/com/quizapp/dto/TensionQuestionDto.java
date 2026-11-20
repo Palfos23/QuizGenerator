@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotEmpty;
 import java.time.Instant;
 import java.util.List;
 
-@Translated(type = ContentTranslation.TYPE_TENSION, fields = {"title", "source", "tiebreaker"})
+@Translated(type = ContentTranslation.TYPE_TENSION, fields = {"title", "mainCategory", "answersCategory", "source", "tiebreaker"})
 public class TensionQuestionDto {
 
     private Long id;

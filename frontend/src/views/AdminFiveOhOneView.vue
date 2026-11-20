@@ -209,7 +209,7 @@
         </div>
       </div>
 
-      <TranslationEditor v-if="editingId" type="FIVEOHONE" :entity-id="editingId" />
+      <TranslationEditor ref="translationEditor" type="FIVEOHONE" :entity-id="editingId" />
 
       <button class="btn btn-primary" :disabled="saving" @click="saveCategory" style="margin-top:20px;">
         {{ saving ? $t('Lagrer…') : $t('Lagre kategori') }}
@@ -263,6 +263,7 @@ const {
 const error = ref('')
 const saving = ref(false)
 const editingId = ref(null)
+const translationEditor = ref(null)
 const openingId = ref(null)
 const deleting = ref(false)
 const pendingDelete = ref(null)
@@ -548,13 +549,15 @@ async function saveCategory() {
       entireCategoryPool: !!(form.sport && form.entireCategoryPool),
       entries: cleanEntries
     }
+    let savedId = editingId.value
     if (editingId.value) {
       await api.adminUpdateFiveOhOneCategory(editingId.value, payload)
       toast.show(_t('Kategorien er oppdatert.'))
     } else {
-      await api.adminCreateFiveOhOneCategory(payload)
+      savedId = (await api.adminCreateFiveOhOneCategory(payload)).id
       toast.show(_t('Kategorien er opprettet.'))
     }
+    await translationEditor.value?.flush(savedId)
     view.value = 'list'
     loadCategories()
   } catch (e) {

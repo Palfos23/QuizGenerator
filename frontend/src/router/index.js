@@ -42,6 +42,7 @@ import ReportProblemView from '../views/ReportProblemView.vue'
 import AdminReportsView from '../views/AdminReportsView.vue'
 import AdminStatisticsView from '../views/AdminStatisticsView.vue'
 import AdminExpiringContentView from '../views/AdminExpiringContentView.vue'
+import AdminTranslationsView from '../views/AdminTranslationsView.vue'
 import AdminDuplicateSubjectsView from '../views/AdminDuplicateSubjectsView.vue'
 import BullseyeView from '../views/BullseyeView.vue'
 import AdminBullseyeView from '../views/AdminBullseyeView.vue'
@@ -126,6 +127,7 @@ const routes = [
   { path: '/report-problem', name: 'report-problem', component: ReportProblemView, meta: { requiresAuth: true } },
   { path: '/admin/reports', name: 'admin-reports', component: AdminReportsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/statistics', name: 'admin-statistics', component: AdminStatisticsView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/translations', name: 'admin-translations', component: AdminTranslationsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/expiring-content', name: 'admin-expiring-content', component: AdminExpiringContentView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/duplicate-subjects', name: 'admin-duplicate-subjects', component: AdminDuplicateSubjectsView, meta: { requiresAuth: true, requiresAdmin: true } },
 ]

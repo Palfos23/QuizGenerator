@@ -17,6 +17,20 @@ public class AdminTranslationController {
         this.service = service;
     }
 
+    /** Every board's text plus existing versions, as JSON to translate outside the app. */
+    @GetMapping("/export")
+    public List<ContentTranslationService.ExportItem> export(@RequestParam(defaultValue = "true") boolean onlyMissing) {
+        return service.exportAll(onlyMissing);
+    }
+
+    /** Body: the (translated) export. Existing versions are kept unless overwrite=true. */
+    @PostMapping("/import")
+    public ContentTranslationService.ImportResult importTranslations(
+            @RequestBody List<ContentTranslationService.ImportItem> items,
+            @RequestParam(defaultValue = "false") boolean overwrite) {
+        return service.importAll(items, overwrite);
+    }
+
     @GetMapping("/{type}/{id}")
     public List<ContentTranslationService.FieldView> get(@PathVariable String type, @PathVariable Long id) {
         return service.getEditor(type.toUpperCase(), id);

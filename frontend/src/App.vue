@@ -312,7 +312,8 @@ const ADMIN_MENUS = [
       { to: '/admin/statistics', label: _t('Statistikk') },
       { to: '/admin/reports', label: _t('Rapporter') },
       { to: '/admin/expiring-content', label: _t('Kan utløpe') },
-      { to: '/admin/duplicate-subjects', label: _t('Dupliserte emner') }
+      { to: '/admin/duplicate-subjects', label: _t('Dupliserte emner') },
+      { to: '/admin/translations', label: _t('Oversettelser') }
     ]
   }
 ]

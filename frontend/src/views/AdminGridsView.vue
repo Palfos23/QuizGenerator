@@ -275,7 +275,7 @@
         </div>
       </div>
 
-      <TranslationEditor v-if="editingGridId" type="GRID" :entity-id="editingGridId" />
+      <TranslationEditor ref="translationEditor" type="GRID" :entity-id="editingGridId" />
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" :disabled="!correctCandidates.length" @click="showPreview = true">
@@ -382,6 +382,7 @@ const {
 })
 
 const editingGridId = ref(null)
+const translationEditor = ref(null)
 
 // The date picker itself can't show which weeks are taken - the browser owns
 // that popup entirely - so this flags a collision as soon as one is picked
@@ -824,11 +825,13 @@ async function saveGrid() {
 
   saving.value = true
   try {
+    let savedId = editingGridId.value
     if (editingGridId.value) {
       await api.adminUpdateGrid(editingGridId.value, payload)
     } else {
-      await api.adminCreateGrid(payload)
+      savedId = (await api.adminCreateGrid(payload)).id
     }
+    await translationEditor.value?.flush(savedId)
     toast.show(_t('Gridet er lagret.'))
     view.value = 'list'
     loadGrids()

@@ -279,7 +279,7 @@
         </div>
       </div>
 
-      <TranslationEditor v-if="editingQuestionId" type="BULLSEYE" :entity-id="editingQuestionId" />
+      <TranslationEditor ref="translationEditor" type="BULLSEYE" :entity-id="editingQuestionId" />
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button v-if="editingQuestionId" class="btn btn-secondary" @click="duplicateAsNewVersion">
@@ -341,6 +341,7 @@ const saving = ref(false)
 const pendingDelete = ref(null)
 
 const editingQuestionId = ref(null)
+const translationEditor = ref(null)
 const form = reactive({
   title: '',
   sport: gridCategories.categories.value[0] || '',
@@ -724,11 +725,13 @@ async function saveQuestion() {
 
   saving.value = true
   try {
+    let savedId = editingQuestionId.value
     if (editingQuestionId.value) {
       await api.adminUpdateBullseyeQuestion(editingQuestionId.value, payload)
     } else {
-      await api.adminCreateBullseyeQuestion(payload)
+      savedId = (await api.adminCreateBullseyeQuestion(payload)).id
     }
+    await translationEditor.value?.flush(savedId)
     toast.show(_t('Spørsmålet er lagret.'))
     view.value = 'list'
     loadQuestions()

@@ -148,7 +148,7 @@
         </div>
       </div>
 
-      <TranslationEditor v-if="editingShootoutId" type="SHOOTOUT" :entity-id="editingShootoutId" />
+      <TranslationEditor ref="translationEditor" type="SHOOTOUT" :entity-id="editingShootoutId" />
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" :disabled="!kicks.length" @click="showPreview = true">
@@ -227,6 +227,7 @@ const error = ref('')
 const saving = ref(false)
 const pendingDelete = ref(null)
 const editingShootoutId = ref(null)
+const translationEditor = ref(null)
 const showPreview = ref(false)
 
 const form = reactive({
@@ -406,11 +407,13 @@ async function saveShootout() {
 
   saving.value = true
   try {
+    let savedId = editingShootoutId.value
     if (editingShootoutId.value) {
       await api.adminUpdatePenaltyShootout(editingShootoutId.value, payload)
     } else {
-      await api.adminCreatePenaltyShootout(payload)
+      savedId = (await api.adminCreatePenaltyShootout(payload)).id
     }
+    await translationEditor.value?.flush(savedId)
     toast.show(_t('Straffekonkurransen er lagret.'))
     view.value = 'list'
     loadShootouts()

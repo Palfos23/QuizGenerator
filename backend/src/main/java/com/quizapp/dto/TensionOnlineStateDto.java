@@ -8,7 +8,7 @@ import com.quizapp.model.RoomStatus;
 import java.time.Instant;
 import java.util.List;
 
-@Translated(type = ContentTranslation.TYPE_TENSION, id = "questionId", fields = {"questionTitle:title", "source", "tiebreaker"})
+@Translated(type = ContentTranslation.TYPE_TENSION, id = "questionId", fields = {"questionTitle:title", "answersCategory", "source", "tiebreaker"})
 public class TensionOnlineStateDto {
     // Lets the translation overlay find this board's admin-written versions (see config/Translated).
     private Long questionId;

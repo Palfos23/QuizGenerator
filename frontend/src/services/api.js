@@ -45,6 +45,12 @@ export default {
   adminGetTranslations(type, id) {
     return client.get(`/admin/translations/${type}/${id}`).then(r => r.data)
   },
+  adminExportTranslations(onlyMissing) {
+    return client.get('/admin/translations/export', { params: { onlyMissing } }).then(r => r.data)
+  },
+  adminImportTranslations(items, overwrite) {
+    return client.post('/admin/translations/import', items, { params: { overwrite } }).then(r => r.data)
+  },
   adminSaveTranslations(type, id, values) {
     return client.put(`/admin/translations/${type}/${id}`, values).then(r => r.data)
   },

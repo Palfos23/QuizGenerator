@@ -219,7 +219,7 @@
         </div>
       </div>
 
-      <TranslationEditor v-if="editingId" type="IMPOSTER" :entity-id="editingId" />
+      <TranslationEditor ref="translationEditor" type="IMPOSTER" :entity-id="editingId" />
 
       <div style="margin-top:20px; display:flex; align-items:center; gap:16px;">
         <button v-if="editingId" class="btn btn-secondary" @click="duplicateAsNewVersion">
@@ -286,6 +286,7 @@ const saving = ref(false)
 const pendingDelete = ref(null)
 const editingAthleteForModal = ref(null)
 const editingId = ref(null)
+const translationEditor = ref(null)
 
 const form = ref({ title: '', description: '', sport: '', displayMode: 'NAME_AND_PHOTO', fitImages: false, canExpire: false })
 const tiles = ref([]) // [{ athleteId, name, imposter, replacedAthleteId, replacedAthleteName, replacedSearchTerm, replacedSearchResults, clubId }]
@@ -510,11 +511,13 @@ async function save() {
     }))
   }
   try {
+    let savedId = editingId.value
     if (editingId.value) {
       await api.adminUpdateImposterGrid(editingId.value, payload)
     } else {
-      await api.adminCreateImposterGrid(payload)
+      savedId = (await api.adminCreateImposterGrid(payload)).id
     }
+    await translationEditor.value?.flush(savedId)
     await loadList()
     view.value = 'list'
   } catch (e) {

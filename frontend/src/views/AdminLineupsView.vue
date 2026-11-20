@@ -259,7 +259,7 @@
         </div>
       </div>
 
-      <TranslationEditor v-if="editingLineupId" type="LINEUP" :entity-id="editingLineupId" />
+      <TranslationEditor ref="translationEditor" type="LINEUP" :entity-id="editingLineupId" />
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" :disabled="filledSlotCount === 0" @click="showPreview = true">
@@ -376,6 +376,7 @@ const saving = ref(false)
 const pendingDelete = ref(null)
 const editingAthleteForModal = ref(null)
 const editingLineupId = ref(null)
+const translationEditor = ref(null)
 
 // Same reasoning as AdminGridsView's weekConflict - the native date picker
 // can't show which weeks are already spoken for, so this flags a collision
@@ -770,11 +771,13 @@ async function saveLineup() {
 
   saving.value = true
   try {
+    let savedId = editingLineupId.value
     if (editingLineupId.value) {
       await api.adminUpdateLineup(editingLineupId.value, payload)
     } else {
-      await api.adminCreateLineup(payload)
+      savedId = (await api.adminCreateLineup(payload)).id
     }
+    await translationEditor.value?.flush(savedId)
     toast.show(_t('Starting XI-brettet er lagret.'))
     view.value = 'list'
     loadLineups()

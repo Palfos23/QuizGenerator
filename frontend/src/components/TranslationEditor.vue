@@ -1,8 +1,8 @@
 <template>
-  <details class="translation-editor" @toggle="onToggle">
+  <details class="translation-editor" open @toggle="onToggle">
     <summary>{{ $t('Oversettelser (norsk / engelsk)') }}</summary>
     <p class="picker-hint" style="margin:8px 0 14px;">
-      {{ $t('Valgfritt - la et felt stå tomt for å bruke teksten over. Spillerne ser versjonen som passer språket de har valgt.') }}
+      {{ $t('Skriv teksten på begge språk. Spillerne ser versjonen som passer språket de har valgt - et tomt felt bruker grunnteksten.') }}
     </p>
 
     <LoadingSkeleton v-if="loading" />
@@ -11,7 +11,7 @@
     <template v-else>
       <div v-for="f in fields" :key="f.key" class="translation-row">
         <div class="translation-label">{{ labelFor(f.key) }}</div>
-        <div class="translation-base"><span>{{ $t('Grunntekst§tr') }}:</span> {{ f.base || '-' }}</div>
+        <div v-if="f.base !== undefined" class="translation-base"><span>{{ $t('Grunntekst§tr') }}:</span> {{ f.base || '-' }}</div>
         <div class="translation-inputs">
           <label>
             {{ $t('Norsk§tr') }}
@@ -23,7 +23,7 @@
           </label>
         </div>
       </div>
-      <button v-if="fields.length" class="btn btn-secondary btn-sm" :disabled="saving" @click="save">
+      <button v-if="fields.length && entityId" class="btn btn-secondary btn-sm" :disabled="saving" @click="save">
         {{ saving ? $t('Lagrer…') : $t('Lagre oversettelser') }}
       </button>
     </template>
@@ -32,18 +32,34 @@
 
 <script setup>
 import LoadingSkeleton from './LoadingSkeleton.vue'
-import { ref, watch } from 'vue'
+import { ref, reactive, watch, computed, onMounted } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import { t as _t } from '../i18n'
 
-// Norwegian / English versions of a game board's text, saved separately from the board itself (the board's own
-// fields stay the fallback). The board must already exist - it's addressed by (type, id) - so the parent shows
-// this only while editing a saved board. Loaded the first time the panel is opened.
+// Norwegian / English versions of a board's text, saved separately from the board itself (the board's own
+// fields stay the fallback). Two modes: with an entityId it edits a saved board (loaded straight away), without
+// one it is a blank draft for a board that doesn't exist yet - the parent then calls flush(newId) once the board
+// has been created. The parent also calls flush(id) after saving an existing board, so the board's own Save button
+// saves the translations with it.
 const props = defineProps({
   type: { type: String, required: true },
-  entityId: { type: [Number, String], required: true }
+  entityId: { type: [Number, String], default: null },
+  // Draft mode only: the fields to show (default: the type's usual ones) and their base text, if the parent has it.
+  keys: { type: Array, default: null },
+  bases: { type: Object, default: () => ({}) }
 })
+
+const DRAFT_KEYS = {
+  GRID: ['title', 'theme'],
+  LINEUP: ['title', 'competition'],
+  IMPOSTER: ['title', 'description'],
+  BULLSEYE: ['title', 'statLabel'],
+  TENSION: ['title', 'mainCategory', 'answersCategory', 'source', 'tiebreaker'],
+  FIVEOHONE: ['title', 'description'],
+  FLASHBACK: [],
+  SHOOTOUT: ['title', 'competition']
+}
 
 const fields = ref([])
 const loading = ref(false)
@@ -58,6 +74,8 @@ const LABELS = {
   description: 'Beskrivelse§tr',
   statLabel: 'Resten av oppgaven§tr',
   source: 'Tilleggsinformasjon§tr',
+  mainCategory: 'Hovedkategori§tr',
+  answersCategory: 'Svarkategori§tr',
   tiebreaker: 'Avgjørende spørsmål§tr'
 }
 
@@ -66,7 +84,16 @@ function labelFor(key) {
   return _t(LABELS[key] || key)
 }
 
+// Draft mode: a blank row per field, keeping anything already typed when the field list changes (hints added).
+let draftRows = {}
+const draftRow = key => draftRows[key] || (draftRows[key] = reactive({ no: '', en: '' }))
+const draftFields = computed(() =>
+  (props.keys || DRAFT_KEYS[props.type] || []).map(key => ({ key, base: props.bases[key], values: draftRow(key) }))
+)
+watch(draftFields, rows => { if (!props.entityId) fields.value = rows }, { immediate: true })
+
 async function load() {
+  if (!props.entityId || loading.value) return
   loading.value = true
   error.value = ''
   try {
@@ -83,6 +110,32 @@ function onToggle(event) {
   if (event.target.open && !loaded) load()
 }
 
+onMounted(() => { if (props.entityId && !loaded) load() })
+
+// Saves the texts for board `id` (a new board's id, or the one being edited). Only fields the board really has
+// are sent - a hint removed in the same save no longer exists. A draft sends only what was written.
+async function flush(id = props.entityId) {
+  if (!id) return
+  const draftMode = !props.entityId
+  if (!draftMode && !loaded) return
+  try {
+    const allowed = new Set((await api.adminGetTranslations(props.type, id)).map(f => f.key))
+    const values = {}
+    for (const f of fields.value) {
+      if (!allowed.has(f.key)) continue
+      const no = (f.values.no || '').trim()
+      const en = (f.values.en || '').trim()
+      if (draftMode && !no && !en) continue
+      values[f.key] = { no, en }
+    }
+    if (Object.keys(values).length) await api.adminSaveTranslations(props.type, id, values)
+  } catch (e) {
+    toast.show(e.response?.data?.message || _t('Kunne ikke lagre oversettelsene.'), 'error')
+  }
+}
+
+defineExpose({ flush })
+
 async function save() {
   saving.value = true
   try {
@@ -98,7 +151,12 @@ async function save() {
 }
 
 // Switching to another board (e.g. via "duplicate as new version") must not keep showing the old one's texts.
-watch(() => props.entityId, () => { loaded = false; fields.value = [] })
+watch(() => props.entityId, id => {
+  loaded = false
+  if (!id) draftRows = {}
+  fields.value = id ? [] : draftFields.value
+  if (id) load()
+})
 </script>
 
 <style scoped>

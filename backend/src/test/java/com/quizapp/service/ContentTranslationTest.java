@@ -117,4 +117,43 @@ class ContentTranslationTest {
 
         assertThat(admin.getHints()).containsExactly("Hardest clue", "Easier clue");
     }
+
+    @Test
+    void exportListsBoardsWithWhatIsStillMissing() {
+        Long id = newYear();
+        translations.save(ContentTranslation.TYPE_FLASHBACK, id, Map.of("hints#0", Map.of("en", "Hardest (EN)", "no", "Vanskeligst")));
+
+        ContentTranslationService.ExportItem item = translations.exportAll(true).stream()
+                .filter(i -> i.type().equals(ContentTranslation.TYPE_FLASHBACK) && i.id().equals(id)).findFirst().orElseThrow();
+        // hints#0 is done in both languages, so only the second hint is still to do
+        assertThat(item.fields()).extracting(ContentTranslationService.ExportField::key).containsExactly("hints#1");
+
+        ContentTranslationService.ExportItem all = translations.exportAll(false).stream()
+                .filter(i -> i.type().equals(ContentTranslation.TYPE_FLASHBACK) && i.id().equals(id)).findFirst().orElseThrow();
+        assertThat(all.fields()).extracting(ContentTranslationService.ExportField::key).containsExactly("hints#0", "hints#1");
+    }
+
+    @Test
+    void importSavesNewVersionsAndKeepsExistingOnesUnlessOverwriting() {
+        Long id = newYear();
+        translations.save(ContentTranslation.TYPE_FLASHBACK, id, Map.of("hints#0", Map.of("no", "Mitt eget")));
+
+        var item = new ContentTranslationService.ImportItem(ContentTranslation.TYPE_FLASHBACK, id, Map.of(
+                "hints#0", new ContentTranslationService.ImportField("Fra fil", "From file"),
+                "hints#1", new ContentTranslationService.ImportField("", "Easier (EN)"),
+                "nonsense", new ContentTranslationService.ImportField("x", "x")));
+        var missing = new ContentTranslationService.ImportItem(ContentTranslation.TYPE_FLASHBACK, -5L, Map.of());
+
+        var result = translations.importAll(List.of(item, missing), false);
+
+        assertThat(result.saved()).isEqualTo(2);          // hints#0 en + hints#1 en
+        assertThat(result.skippedExisting()).isEqualTo(1); // hints#0 no already written by hand
+        assertThat(result.unknownFields()).isEqualTo(1);
+        assertThat(result.unknownBoards()).isEqualTo(1);
+        var editor = translations.getEditor(ContentTranslation.TYPE_FLASHBACK, id);
+        assertThat(editor.get(0).getValues()).containsEntry("no", "Mitt eget").containsEntry("en", "From file");
+
+        translations.importAll(List.of(item), true);
+        assertThat(translations.getEditor(ContentTranslation.TYPE_FLASHBACK, id).get(0).getValues()).containsEntry("no", "Fra fil");
+    }
 }

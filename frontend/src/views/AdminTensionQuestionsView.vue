@@ -154,7 +154,7 @@
         <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="addTensionAnswer">{{ $t('+ Legg til Tension-svar') }}</button>
       </div>
 
-      <TranslationEditor v-if="editingId" type="TENSION" :entity-id="editingId" />
+      <TranslationEditor ref="translationEditor" type="TENSION" :entity-id="editingId" />
 
       <button class="btn btn-primary" :disabled="saving" @click="save">{{ saving ? $t('Lagrer…') : $t('Lagre spørsmål') }}</button>
     </template>
@@ -205,6 +205,7 @@ const loading = ref(true)
 const error = ref('')
 const saving = ref(false)
 const editingId = ref(null)
+const translationEditor = ref(null)
 const pendingDelete = ref(null)
 
 const form = reactive({
@@ -357,11 +358,13 @@ async function save() {
 
   saving.value = true
   try {
+    let savedId = editingId.value
     if (editingId.value) {
       await api.adminUpdateTensionQuestion(editingId.value, form)
     } else {
-      await api.adminCreateTensionQuestion(form)
+      savedId = (await api.adminCreateTensionQuestion(form)).id
     }
+    await translationEditor.value?.flush(savedId)
     toast.show(_t('Spørsmålet er lagret.'))
     view.value = 'list'
     loadQuestions()

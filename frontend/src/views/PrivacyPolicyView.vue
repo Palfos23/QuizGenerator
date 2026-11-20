@@ -9,7 +9,7 @@
 
     <h2>{{ $t('Hvem vi er') }}</h2>
     <p>
-      {{ $t('Quizzes (quizzes.no) drives av en privatperson, ikke et selskap. For spørsmål om personvern, eller for å utøve rettighetene nedenfor, kontakt') }} <strong>pal.fossnes@gmail.com</strong>.
+      {{ $t('Quizzes (quizzes.no) drives av en privatperson, ikke et selskap. For spørsmål om personvern, eller for å utøve rettighetene nedenfor, kontakt') }} <strong>palfossnes@gmail.com</strong>.
     </p>
 
     <h2>{{ $t('Hva vi samler inn') }}</h2>
