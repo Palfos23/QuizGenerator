@@ -55,7 +55,7 @@ const DRAFT_KEYS = {
   LINEUP: ['title', 'competition'],
   IMPOSTER: ['title', 'description'],
   BULLSEYE: ['title', 'statLabel'],
-  TENSION: ['title', 'mainCategory', 'answersCategory', 'source', 'tiebreaker'],
+  TENSION: ['title', 'source', 'tiebreaker'],
   FIVEOHONE: ['title', 'description'],
   FLASHBACK: [],
   SHOOTOUT: ['title', 'competition']
@@ -74,8 +74,6 @@ const LABELS = {
   description: 'Beskrivelse§tr',
   statLabel: 'Resten av oppgaven§tr',
   source: 'Tilleggsinformasjon§tr',
-  mainCategory: 'Hovedkategori§tr',
-  answersCategory: 'Svarkategori§tr',
   tiebreaker: 'Avgjørende spørsmål§tr'
 }
 

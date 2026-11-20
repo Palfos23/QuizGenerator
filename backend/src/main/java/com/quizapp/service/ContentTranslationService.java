@@ -165,8 +165,6 @@ public class ContentTranslationService {
             case ContentTranslation.TYPE_TENSION -> {
                 TensionQuestion q = (TensionQuestion) board;
                 f.put("title", q.getTitle());
-                f.put("mainCategory", q.getMainCategory());
-                f.put("answersCategory", q.getAnswersCategory());
                 f.put("source", q.getSource());
                 f.put("tiebreaker", q.getTiebreaker());
             }
@@ -215,7 +213,7 @@ public class ContentTranslationService {
             ContentTranslation.TYPE_LINEUP, List.of("title", "competition"),
             ContentTranslation.TYPE_IMPOSTER, List.of("title", "description"),
             ContentTranslation.TYPE_BULLSEYE, List.of("title", "statLabel"),
-            ContentTranslation.TYPE_TENSION, List.of("title", "mainCategory", "answersCategory", "source", "tiebreaker"),
+            ContentTranslation.TYPE_TENSION, List.of("title", "source", "tiebreaker"),
             ContentTranslation.TYPE_FIVEOHONE, List.of("title", "description"),
             ContentTranslation.TYPE_SHOOTOUT, List.of("title", "competition"));
 

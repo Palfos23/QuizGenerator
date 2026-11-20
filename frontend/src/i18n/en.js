@@ -276,8 +276,6 @@ export default {
  "Bytt på å nevne spillere som passer.": "Take turns naming players that fit.",
  "Fargetema": "Colour theme",
  "Skriv teksten på begge språk. Spillerne ser versjonen som passer språket de har valgt - et tomt felt bruker grunnteksten.": "Write the text in both languages. Players see the version that matches the language they picked - a blank field uses the base text.",
- "Hovedkategori§tr": "Main category",
- "Svarkategori§tr": "Answer category",
  "Oversettelser": "Translations",
  "Eksporter all spilltekst (titler, temaer, hint ...) som en fil, få den oversatt til norsk og engelsk utenfor appen, og importer den tilbake. Eksisterende oversettelser beholdes.": "Export all game text (titles, themes, hints ...) as a file, get it translated into Norwegian and English outside the app, and import it back. Existing translations are kept.",
  "1. Eksporter": "1. Export",
