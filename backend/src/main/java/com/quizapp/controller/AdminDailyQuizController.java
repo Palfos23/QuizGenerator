@@ -5,7 +5,9 @@ import com.quizapp.dto.DailyQuizDayAttemptsDto;
 import com.quizapp.dto.DailyQuizPendingAttemptDto;
 import com.quizapp.dto.DailyQuizResolveRequest;
 import com.quizapp.dto.DailyQuizReviewDto;
+import com.quizapp.dto.DailyQuizPreviewDto;
 import com.quizapp.service.DailyQuizComplaintService;
+import com.quizapp.service.DailyQuizPreviewService;
 import com.quizapp.service.DailyQuizReviewService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +20,45 @@ public class AdminDailyQuizController {
 
     private final DailyQuizReviewService dailyQuizReviewService;
     private final DailyQuizComplaintService complaintService;
+    private final DailyQuizPreviewService previewService;
 
-    public AdminDailyQuizController(DailyQuizReviewService dailyQuizReviewService, DailyQuizComplaintService complaintService) {
+    public AdminDailyQuizController(DailyQuizReviewService dailyQuizReviewService, DailyQuizComplaintService complaintService,
+                                    DailyQuizPreviewService previewService) {
         this.dailyQuizReviewService = dailyQuizReviewService;
         this.complaintService = complaintService;
+        this.previewService = previewService;
+    }
+
+    // ---- tomorrow's quiz, before it goes live: look it over, swap questions, rule out a type for the day ----
+
+    @GetMapping("/preview")
+    public DailyQuizPreviewDto preview() {
+        return previewService.get();
+    }
+
+    @PostMapping("/preview/replace")
+    public DailyQuizPreviewDto replace(@RequestBody DailyQuizPreviewDto.ReplaceRequest request) {
+        return previewService.replace(request.questionId());
+    }
+
+    @PostMapping("/preview/choose")
+    public DailyQuizPreviewDto choose(@RequestBody DailyQuizPreviewDto.ChooseRequest request) {
+        return previewService.choose(request.questionId(), request.newQuestionId());
+    }
+
+    @GetMapping("/preview/candidates")
+    public List<DailyQuizPreviewDto.Candidate> candidates(@RequestParam Long forQuestionId, @RequestParam(defaultValue = "") String term) {
+        return previewService.candidates(forQuestionId, term);
+    }
+
+    @PostMapping("/preview/exclusions")
+    public DailyQuizPreviewDto addExclusion(@RequestBody DailyQuizPreviewDto.ExclusionRequest request) {
+        return previewService.addExclusion(request.kind(), request.value());
+    }
+
+    @PostMapping("/preview/exclusions/remove")
+    public DailyQuizPreviewDto removeExclusion(@RequestBody DailyQuizPreviewDto.ExclusionRequest request) {
+        return previewService.removeExclusion(request.kind(), request.value());
     }
 
     // ---- per-answer review: each distinct answer once, decided for everybody who wrote it ----

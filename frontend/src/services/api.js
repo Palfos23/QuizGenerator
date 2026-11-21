@@ -45,6 +45,25 @@ export default {
   adminGetTranslations(type, id) {
     return client.get(`/admin/translations/${type}/${id}`).then(r => r.data)
   },
+  // --- Admin: tomorrow's daily quiz, before it goes live ---
+  adminDailyQuizPreview() {
+    return client.get('/admin/daily-quiz/preview').then(r => r.data)
+  },
+  adminDailyQuizReplace(questionId) {
+    return client.post('/admin/daily-quiz/preview/replace', { questionId }).then(r => r.data)
+  },
+  adminDailyQuizChoose(questionId, newQuestionId) {
+    return client.post('/admin/daily-quiz/preview/choose', { questionId, newQuestionId }).then(r => r.data)
+  },
+  adminDailyQuizCandidates(forQuestionId, term) {
+    return client.get('/admin/daily-quiz/preview/candidates', { params: { forQuestionId, term } }).then(r => r.data)
+  },
+  adminDailyQuizAddExclusion(kind, value) {
+    return client.post('/admin/daily-quiz/preview/exclusions', { kind, value }).then(r => r.data)
+  },
+  adminDailyQuizRemoveExclusion(kind, value) {
+    return client.post('/admin/daily-quiz/preview/exclusions/remove', { kind, value }).then(r => r.data)
+  },
   adminExportTranslations(onlyMissing) {
     return client.get('/admin/translations/export', { params: { onlyMissing } }).then(r => r.data)
   },

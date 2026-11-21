@@ -293,6 +293,7 @@ const ADMIN_MENUS = [
     items: [
       // One entry for correcting the daily quiz: the per-player review is a link inside that page ("also" keeps this menu lit there)
       { to: '/admin/daily-quiz-answers', label: _t('Rett svar per svar'), also: ['/admin/daily-quiz-review'] },
+      { to: '/admin/daily-quiz-preview', label: _t('Morgendagens quiz') },
       { to: '/admin/advent', label: _t('Julekalender') },
       { to: '/admin/grids', label: _t('Ukentlige grids') },
       { to: '/admin/lineups', label: 'Starting XI' },

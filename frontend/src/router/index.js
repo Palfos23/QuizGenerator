@@ -43,6 +43,7 @@ import AdminReportsView from '../views/AdminReportsView.vue'
 import AdminStatisticsView from '../views/AdminStatisticsView.vue'
 import AdminExpiringContentView from '../views/AdminExpiringContentView.vue'
 import AdminTranslationsView from '../views/AdminTranslationsView.vue'
+import AdminDailyQuizPreviewView from '../views/AdminDailyQuizPreviewView.vue'
 import AdminDuplicateSubjectsView from '../views/AdminDuplicateSubjectsView.vue'
 import BullseyeView from '../views/BullseyeView.vue'
 import AdminBullseyeView from '../views/AdminBullseyeView.vue'
@@ -120,6 +121,7 @@ const routes = [
   { path: '/suggest-question', name: 'suggest-question', component: SuggestQuestionView, meta: { requiresAuth: true } },
   { path: '/admin/question-submissions', name: 'admin-question-submissions', component: AdminSubmissionsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/daily-quiz-answers', name: 'admin-daily-quiz-answers', component: AdminDailyQuizAnswersView, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/daily-quiz-preview', name: 'admin-daily-quiz-preview', component: AdminDailyQuizPreviewView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/daily-quiz-review', name: 'admin-daily-quiz-review', component: AdminDailyQuizReviewView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/daily-quiz-day/:id', name: 'admin-daily-quiz-day', component: AdminDailyQuizDayView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/daily-quiz-review/:id', name: 'admin-daily-quiz-attempt', component: AdminDailyQuizAttemptView, meta: { requiresAuth: true, requiresAdmin: true } },

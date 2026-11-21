@@ -13,6 +13,7 @@ import com.quizapp.repository.AppUserRepository;
 import com.quizapp.repository.DailyQuizAnswerRepository;
 import com.quizapp.repository.DailyQuizAnswerRuleRepository;
 import com.quizapp.repository.DailyQuizComplaintRepository;
+import com.quizapp.repository.DailyQuizExclusionRepository;
 import com.quizapp.repository.DailyQuizAttemptRepository;
 import com.quizapp.repository.DailyQuizQuestionUseRepository;
 import com.quizapp.repository.DailyQuizSetRepository;
@@ -51,7 +52,7 @@ import java.util.stream.Collectors;
 @Service
 public class DailyQuizService {
 
-    private static final int QUESTIONS_PER_DAY = 15;
+    static final int QUESTIONS_PER_DAY = 15;
     private static final String LOGO_CATEGORY = "Logo";
     // 0-based, so index 9 is the 10th question.
     private static final int YEAR_QUESTION_INDEX = 9;
@@ -82,6 +83,7 @@ public class DailyQuizService {
     private final DailyQuizQuestionUseRepository questionUseRepository;
     private final DailyQuizAnswerRuleRepository answerRuleRepository;
     private final DailyQuizComplaintRepository complaintRepository;
+    private final DailyQuizExclusionRepository exclusionRepository;
 
     public DailyQuizService(DailyQuizSetRepository setRepository,
                              DailyQuizAttemptRepository attemptRepository,
@@ -93,7 +95,8 @@ public class DailyQuizService {
                              ExpertConfig expertConfig,
                              DailyQuizQuestionUseRepository questionUseRepository,
                              DailyQuizAnswerRuleRepository answerRuleRepository,
-                             DailyQuizComplaintRepository complaintRepository) {
+                             DailyQuizComplaintRepository complaintRepository,
+                             DailyQuizExclusionRepository exclusionRepository) {
         this.setRepository = setRepository;
         this.attemptRepository = attemptRepository;
         this.answerRepository = answerRepository;
@@ -105,6 +108,7 @@ public class DailyQuizService {
         this.questionUseRepository = questionUseRepository;
         this.answerRuleRepository = answerRuleRepository;
         this.complaintRepository = complaintRepository;
+        this.exclusionRepository = exclusionRepository;
     }
 
     @Transactional
@@ -123,16 +127,15 @@ public class DailyQuizService {
     DailyQuizSet generateSet(LocalDate quizDate) {
         // Norwegian-only for now - revisit if a multi-language daily quiz is
         // ever wanted.
-        List<Question> candidates = new ArrayList<>(questionRepository.findByLanguage(Language.NO));
+        // An admin can have ruled out some types for this day (see DailyQuizPreviewService) - those questions
+        // are not candidates at all.
+        List<DailyQuizExclusion> exclusions = exclusionRepository.findByQuizDate(quizDate);
+        List<Question> candidates = new ArrayList<>(exclusions.isEmpty()
+                ? questionRepository.findByLanguage(Language.NO)
+                : questionRepository.findByLanguageWithLabels(Language.NO));
+        candidates.removeIf(q -> exclusions.stream().anyMatch(e -> e.matches(q)));
 
-        // When each question last appeared: from the durable log (covers the whole no-repeat window) plus the
-        // quizzes still in storage (which also covers days from before the log existed).
-        Map<Long, LocalDate> lastUsed = new HashMap<>();
-        LocalDate windowStart = quizDate.minusDays(NO_REPEAT_DAYS);
-        questionUseRepository.findByQuizDateAfterAndQuizDateLessThanEqual(windowStart, quizDate)
-                .forEach(u -> lastUsed.merge(u.getQuestionId(), u.getQuizDate(), (a, b) -> a.isAfter(b) ? a : b));
-        setRepository.findByQuizDateAfter(quizDate.minusDays(MAX_AGE_DAYS))
-                .forEach(st -> st.getQuestionIds().forEach(id -> lastUsed.merge(id, st.getQuizDate(), (a, b) -> a.isAfter(b) ? a : b)));
+        Map<Long, LocalDate> lastUsed = lastUsedBefore(quizDate, null);
         Set<Long> recentlyUsed = lastUsed.keySet();
 
         // The quiz has two fixed "feature" slots, each filled by exactly ONE question from its own
@@ -179,6 +182,21 @@ public class DailyQuizService {
         return saved;
     }
 
+    // When each question last appeared: from the durable log (covers the whole no-repeat window) plus the
+    // quizzes still in storage (which also covers days from before the log existed). `ignoreSetDate` leaves
+    // out one day's own quiz - used when re-drawing questions for a day that already has a quiz.
+    Map<Long, LocalDate> lastUsedBefore(LocalDate quizDate, LocalDate ignoreSetDate) {
+        Map<Long, LocalDate> lastUsed = new HashMap<>();
+        LocalDate windowStart = quizDate.minusDays(NO_REPEAT_DAYS);
+        questionUseRepository.findByQuizDateAfterAndQuizDateLessThanEqual(windowStart, quizDate).stream()
+                .filter(u -> !u.getQuizDate().equals(ignoreSetDate))
+                .forEach(u -> lastUsed.merge(u.getQuestionId(), u.getQuizDate(), (a, b) -> a.isAfter(b) ? a : b));
+        setRepository.findByQuizDateAfter(quizDate.minusDays(MAX_AGE_DAYS)).stream()
+                .filter(st -> !st.getQuizDate().equals(ignoreSetDate))
+                .forEach(st -> st.getQuestionIds().forEach(id -> lastUsed.merge(id, st.getQuizDate(), (a, b) -> a.isAfter(b) ? a : b)));
+        return lastUsed;
+    }
+
     // A random question matching `eligible` that hasn't been used within the no-repeat window. If every
     // eligible one HAS been used (the logo/year pools are small), the one used longest ago is taken - a
     // repeat beats a quiz with that slot missing. Null only if nothing eligible exists at all.
@@ -194,21 +212,31 @@ public class DailyQuizService {
 
     // A Year question needs a stored answer that actually contains a year - otherwise it couldn't be
     // scored, so it's not eligible to be the daily one (it's still kept out of the ordinary slots).
-    private static boolean isYearQuestionWithYearAnswer(Question q) {
+    static boolean isYearQuestionWithYearAnswer(Question q) {
         return DailyQuizScoring.isYearQuestion(q) && DailyQuizScoring.parseYear(q.getAnswer()) != null;
     }
 
-    private static boolean isLogoCategory(Question q) {
+    static boolean isLogoCategory(Question q) {
         return q.getCategory() != null && LOGO_CATEGORY.equalsIgnoreCase(q.getCategory().trim());
     }
 
-    private static boolean isLogoQuestionWithPhoto(Question q) {
+    static boolean isLogoQuestionWithPhoto(Question q) {
         return isLogoCategory(q) && q.getPhotoUrl() != null && !q.getPhotoUrl().isBlank();
     }
 
     /** The newest quiz date that's already too old to keep: a quiz from this day (or earlier) is expired. */
     static LocalDate expiryCutoff() {
         return LocalDate.now().minusDays(MAX_AGE_DAYS);
+    }
+
+    // How far ahead a quiz can exist before its day: only an admin previewing tomorrow's creates one early, so
+    // a week is generous. (Anything further out isn't something the app makes - it's only ever test data.)
+    private static final int EARLY_QUIZ_HORIZON_DAYS = 7;
+
+    /** True for a quiz that has been created ahead of its day (see DailyQuizPreviewService) and so can't be opened yet. */
+    public static boolean isNotYetOpen(LocalDate quizDate) {
+        LocalDate today = LocalDate.now();
+        return quizDate.isAfter(today) && !quizDate.isAfter(today.plusDays(EARLY_QUIZ_HORIZON_DAYS));
     }
 
     /** True once a quiz is MAX_AGE_DAYS old - it's hidden from everyone from that moment, even before the cleanup job below gets round to deleting it. */
@@ -225,6 +253,7 @@ public class DailyQuizService {
     public void deleteOldSets() {
         resultService.pruneOld(LocalDate.now());
         questionUseRepository.deleteByQuizDateBefore(LocalDate.now().minusDays(QUESTION_USE_RETENTION_DAYS));
+        exclusionRepository.deleteByQuizDateBefore(LocalDate.now().minusDays(1));
 
         List<DailyQuizSet> stale = setRepository.findByQuizDateLessThanEqual(expiryCutoff());
         if (stale.isEmpty()) {
@@ -331,6 +360,7 @@ public class DailyQuizService {
     private DailyQuizSet requireSet(Long setId) {
         return setRepository.findById(setId)
                 .filter(set -> !isExpired(set.getQuizDate())) // expired = gone, even if the cleanup job hasn't deleted it yet
+                .filter(set -> !isNotYetOpen(set.getQuizDate())) // tomorrow's quiz may exist already (admin preview) - but isn't playable, or even visible, until its day
                 .orElseThrow(() -> new ResourceNotFoundException("Fant ikke daglig quiz med id " + setId));
     }
 
