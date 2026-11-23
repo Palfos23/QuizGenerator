@@ -215,6 +215,91 @@ a { text-underline-offset: 3px; }
 }
 .field input::placeholder, .field textarea::placeholder, .dq-input::placeholder { color: rgb(var(--fg-rgb) / 0.5); }
 .field label { color: var(--text-dim); }
+/* Every dropdown and text field, wherever it sits - not only inside a .field wrapper. The defaults below use
+   :where() (zero specificity), so anything that styles its own control (.field, .guess-box, .adv-input ...) still
+   wins, but a bare control never falls back to the browser's grey default look. */
+:where(input:not([type]), input[type="text"], input[type="number"], input[type="email"], input[type="password"],
+       input[type="date"], input[type="url"], input[type="search"], input[type="tel"], select, textarea) {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 10px 12px;
+  background-color: var(--field-bg);
+  border: 1px solid rgb(var(--fg-rgb) / 0.25);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-family: inherit;
+  font-size: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+:where(input:not([type]), input[type="text"], input[type="number"], input[type="email"], input[type="password"],
+       input[type="date"], input[type="url"], input[type="search"], input[type="tel"], select, textarea):hover {
+  border-color: rgb(var(--fg-rgb) / 0.4);
+}
+:where(input:not([type]), input[type="text"], input[type="number"], input[type="email"], input[type="password"],
+       input[type="date"], input[type="url"], input[type="search"], input[type="tel"], select, textarea):focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 0.18);
+}
+:where(input, textarea)::placeholder { color: rgb(var(--fg-rgb) / 0.5); }
+:where(input, select, textarea):disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Dropdowns: our own chevron instead of the browser's (the native one is a tiny grey box that ignores the
+   palette). Higher specificity than ".field select" on purpose, so its "background" shorthand can't remove it. */
+select:not([multiple]):not([size]) {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 38px;
+  cursor: pointer;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-dim) 50%),
+    linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 52%, calc(100% - 14px) 52%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  text-overflow: ellipsis;
+}
+select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
+/* the open list, where the browser lets us colour it (Windows/Linux; macOS draws its own) */
+select option, select optgroup { background-color: var(--ink-raised); color: var(--text); }
+
+/* The date picker's calendar icon follows the palette on its own (color-scheme); the old fixed inversion made it
+   hard to see on the light palettes. */
+.field input[type="date"]::-webkit-calendar-picker-indicator, input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+/* File pickers: the button matches our secondary buttons */
+input[type="file"] { max-width: 100%; color: var(--text-dim); font: inherit; font-size: 0.9rem; }
+input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 14px;
+  border: 1px solid rgb(var(--fg-rgb) / 0.25);
+  border-radius: var(--radius-md);
+  background: var(--ink-raised);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+input[type="file"]::file-selector-button:hover { border-color: var(--primary); background: rgb(var(--primary-rgb) / 0.08); }
+
+/* Colour pickers */
+input[type="color"] {
+  width: 44px;
+  height: 36px;
+  padding: 2px;
+  background: var(--field-bg);
+  border: 1px solid rgb(var(--fg-rgb) / 0.25);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+input[type="color"]::-webkit-color-swatch { border: 0; border-radius: calc(var(--radius-md) - 2px); }
+
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;

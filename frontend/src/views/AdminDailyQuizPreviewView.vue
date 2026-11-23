@@ -243,7 +243,7 @@ function shortDay(iso) {
 .pv-chip button { border: 0; background: transparent; color: inherit; cursor: pointer; font-size: 0.85rem; padding: 2px 6px; border-radius: 50%; }
 .pv-chip button:hover { background: rgb(var(--fg-rgb) / 0.15); }
 .pv-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.pv-add select { min-width: 0; max-width: 100%; }
+.pv-add select { flex: 1 1 150px; min-width: 0; }
 
 .pv-table-wrap { overflow-x: hidden; }
 .pv-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }

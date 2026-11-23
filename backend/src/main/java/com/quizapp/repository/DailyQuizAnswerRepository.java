@@ -1,13 +1,16 @@
 package com.quizapp.repository;
 
+import com.quizapp.dto.DailyQuizReviewRow;
 import com.quizapp.model.DailyQuizAnswer;
 import com.quizapp.model.DailyQuizAnswerVerdict;
+import com.quizapp.model.DailyQuizAttemptStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface DailyQuizAnswerRepository extends JpaRepository<DailyQuizAnswer, Long> {
@@ -20,8 +23,16 @@ public interface DailyQuizAnswerRepository extends JpaRepository<DailyQuizAnswer
 
     List<DailyQuizAnswer> findByVerdict(DailyQuizAnswerVerdict verdict);
 
-    // Every answer ever given to one question (admin review across days).
-    List<DailyQuizAnswer> findByQuestion_Id(Long questionId);
+    // Every answer ever given to one question (admin review across days). Its attempt and quiz come with it:
+    // deciding an answer looks at both, and one query per answer is what made a popular question slow to settle.
+    @Query("SELECT a FROM DailyQuizAnswer a JOIN FETCH a.attempt t JOIN FETCH t.set WHERE a.question.id = :questionId")
+    List<DailyQuizAnswer> findByQuestion_Id(@Param("questionId") Long questionId);
+
+    // Everything the answer-review page lists, as plain rows in one query: every answer on the given quizzes from
+    // players who have handed in (not those still playing), oldest first.
+    @Query("SELECT new com.quizapp.dto.DailyQuizReviewRow(a.attempt.set.id, a.question.id, a.answerText, a.verdict) "
+            + "FROM DailyQuizAnswer a WHERE a.attempt.set.id IN :setIds AND a.attempt.status <> :excluded ORDER BY a.id")
+    List<DailyQuizReviewRow> findReviewRows(@Param("setIds") Collection<Long> setIds, @Param("excluded") DailyQuizAttemptStatus excluded);
 
     long countByAttempt_IdAndVerdict(Long attemptId, DailyQuizAnswerVerdict verdict);
 

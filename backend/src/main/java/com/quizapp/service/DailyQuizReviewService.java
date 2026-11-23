@@ -16,6 +16,7 @@ import com.quizapp.model.DailyQuizComplaint;
 import com.quizapp.model.DailyQuizDecisionSource;
 import com.quizapp.model.DailyQuizSet;
 import com.quizapp.dto.DailyQuizReviewDto;
+import com.quizapp.dto.DailyQuizReviewRow;
 import com.quizapp.repository.DailyQuizAnswerRepository;
 import com.quizapp.repository.DailyQuizAnswerRuleRepository;
 import com.quizapp.repository.DailyQuizComplaintRepository;
@@ -181,10 +182,13 @@ public class DailyQuizReviewService {
      * decided - can be changed, so a mis-click is fixable.
      */
     static boolean isReviewable(DailyQuizAnswer answer) {
-        String given = answer.getAnswerText();
+        return isReviewable(answer.getAnswerText(), answer.getQuestion());
+    }
+
+    static boolean isReviewable(String given, Question question) {
         if (given == null || given.isBlank()) return false;
-        if (DailyQuizScoring.isScoredAsYear(answer.getQuestion())) return false;
-        return !given.trim().equalsIgnoreCase(answer.getQuestion().getAnswer().trim());
+        if (DailyQuizScoring.isScoredAsYear(question)) return false;
+        return !given.trim().equalsIgnoreCase(question.getAnswer().trim());
     }
 
     /**
@@ -258,42 +262,49 @@ public class DailyQuizReviewService {
     }
 
     private DailyQuizReviewDto.AnswerGroups buildGroups() {
-        List<DailyQuizSet> sets = setRepository.findAll().stream()
-                .filter(set -> !DailyQuizService.isExpired(set.getQuizDate()))
+        // Few queries for the whole page, however many answers there are: the quizzes, then every answer as a plain
+        // row, then the questions and remembered rules - not one query per quiz, question or player.
+        List<DailyQuizSet> sets = setRepository.findByQuizDateAfter(DailyQuizService.expiryCutoff()).stream()
                 .sorted(Comparator.comparing(DailyQuizSet::getQuizDate).reversed())
                 .collect(Collectors.toList());
+        if (sets.isEmpty()) return new DailyQuizReviewDto.AnswerGroups(new ArrayList<>(), 0, 0);
+        List<DailyQuizReviewRow> allRows = answerRepository.findReviewRows(
+                sets.stream().map(DailyQuizSet::getId).collect(Collectors.toList()), DailyQuizAttemptStatus.IN_PROGRESS);
+        Map<Long, Question> questionsById = questionRepository.findAllById(
+                allRows.stream().map(DailyQuizReviewRow::questionId).collect(Collectors.toSet())).stream()
+                .collect(Collectors.toMap(Question::getId, q -> q));
+        // Only answers that need a decision (a blank one, an exact match, or a Year question grades itself).
+        Map<Long, Map<Long, List<DailyQuizReviewRow>>> bySetAndQuestion = allRows.stream()
+                .filter(r -> questionsById.containsKey(r.questionId()) && isReviewable(r.answerText(), questionsById.get(r.questionId())))
+                .collect(Collectors.groupingBy(DailyQuizReviewRow::setId, Collectors.groupingBy(DailyQuizReviewRow::questionId)));
+        Map<Long, Map<String, Boolean>> rules = new HashMap<>();
+        if (!bySetAndQuestion.isEmpty()) {
+            ruleRepository.findByQuestionIdIn(questionsById.keySet()).forEach(r ->
+                    rules.computeIfAbsent(r.getQuestionId(), k -> new HashMap<>()).put(r.getNormalizedText(), r.isCorrect()));
+        }
+
         List<DailyQuizReviewDto.Day> days = new ArrayList<>();
         int pendingTotal = 0;
         int typoTotal = 0;
         for (DailyQuizSet set : sets) {
-            List<Long> attemptIds = attemptRepository.findBySet_Id(set.getId()).stream()
-                    .filter(a -> a.getStatus() != DailyQuizAttemptStatus.IN_PROGRESS)
-                    .map(DailyQuizAttempt::getId).collect(Collectors.toList());
-            if (attemptIds.isEmpty()) continue;
-            Map<Long, List<DailyQuizAnswer>> byQuestion = answerRepository.findByAttempt_IdIn(attemptIds).stream()
-                    .filter(DailyQuizReviewService::isReviewable)
-                    .collect(Collectors.groupingBy(a -> a.getQuestion().getId()));
-            if (byQuestion.isEmpty()) continue;
-            Map<Long, Map<String, Boolean>> rules = new HashMap<>();
-            ruleRepository.findByQuestionIdIn(byQuestion.keySet()).forEach(r ->
-                    rules.computeIfAbsent(r.getQuestionId(), k -> new HashMap<>()).put(r.getNormalizedText(), r.isCorrect()));
-
+            Map<Long, List<DailyQuizReviewRow>> byQuestion = bySetAndQuestion.get(set.getId());
+            if (byQuestion == null || byQuestion.isEmpty()) continue;
             List<DailyQuizReviewDto.QuestionGroups> questions = new ArrayList<>();
             int dayPending = 0;
             for (int i = 0; i < set.getQuestionIds().size(); i++) {
                 Long questionId = set.getQuestionIds().get(i);
-                List<DailyQuizAnswer> answers = byQuestion.get(questionId);
+                List<DailyQuizReviewRow> answers = byQuestion.get(questionId);
                 if (answers == null) continue;
-                Question question = answers.get(0).getQuestion();
-                Map<String, List<DailyQuizAnswer>> grouped = answers.stream()
-                        .collect(Collectors.groupingBy(a -> AnswerText.key(a.getAnswerText()), LinkedHashMap::new, Collectors.toList()));
+                Question question = questionsById.get(questionId);
+                Map<String, List<DailyQuizReviewRow>> grouped = answers.stream()
+                        .collect(Collectors.groupingBy(a -> AnswerText.key(a.answerText()), LinkedHashMap::new, Collectors.toList()));
                 List<DailyQuizReviewDto.Group> groups = new ArrayList<>();
-                for (Map.Entry<String, List<DailyQuizAnswer>> g : grouped.entrySet()) {
-                    List<DailyQuizAnswer> list = g.getValue();
-                    int pending = (int) list.stream().filter(a -> a.getVerdict() == DailyQuizAnswerVerdict.PENDING).count();
-                    int correct = (int) list.stream().filter(a -> a.getVerdict() == DailyQuizAnswerVerdict.CORRECT).count();
+                for (Map.Entry<String, List<DailyQuizReviewRow>> g : grouped.entrySet()) {
+                    List<DailyQuizReviewRow> list = g.getValue();
+                    int pending = (int) list.stream().filter(a -> a.verdict() == DailyQuizAnswerVerdict.PENDING).count();
+                    int correct = (int) list.stream().filter(a -> a.verdict() == DailyQuizAnswerVerdict.CORRECT).count();
                     groups.add(new DailyQuizReviewDto.Group(mostCommonSpelling(list), g.getKey(), list.size(), pending, correct,
-                            list.size() - pending - correct, AnswerText.likelyTypo(list.get(0).getAnswerText(), question.getAnswer()),
+                            list.size() - pending - correct, AnswerText.likelyTypo(list.get(0).answerText(), question.getAnswer()),
                             rules.getOrDefault(questionId, Map.of()).get(g.getKey())));
                 }
                 groups.sort(Comparator.comparing((DailyQuizReviewDto.Group x) -> x.pendingCount() == 0)
@@ -310,8 +321,8 @@ public class DailyQuizReviewService {
         return new DailyQuizReviewDto.AnswerGroups(days, pendingTotal, typoTotal);
     }
 
-    private static String mostCommonSpelling(List<DailyQuizAnswer> list) {
-        return list.stream().collect(Collectors.groupingBy(a -> a.getAnswerText().trim(), Collectors.counting()))
+    private static String mostCommonSpelling(List<DailyQuizReviewRow> list) {
+        return list.stream().collect(Collectors.groupingBy(a -> a.answerText().trim(), Collectors.counting()))
                 .entrySet().stream()
                 .max(Map.Entry.<String, Long>comparingByValue().thenComparing(Map.Entry.comparingByKey()))
                 .orElseThrow().getKey();
