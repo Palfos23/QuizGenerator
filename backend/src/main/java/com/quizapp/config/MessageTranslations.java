@@ -240,6 +240,10 @@ public final class MessageTranslations {
         FRAGMENTS.put("Ingen andre \"", "No other \"");
         FRAGMENTS.put("Uten kategori", "Uncategorized");
         FRAGMENTS.put("Feil passord.", "Incorrect password.");
+        FRAGMENTS.put("Kontoen din bruker Google-innlogging og har ikke noe passord å endre.", "Your account signs in with Google and has no password to change.");
+        FRAGMENTS.put("Feil nåværende passord.", "Your current password is incorrect.");
+        FRAGMENTS.put("Det nye passordet må være forskjellig fra det gamle.", "The new password must be different from the old one.");
+        FRAGMENTS.put("Passordet kan høyst være 72 tegn.", "The password can be at most 72 characters.");
         FRAGMENTS.put("forespurte \"", "requested \"");
         FRAGMENTS.put("minutt(er).", "minute(s).");
         FRAGMENTS.put("Plassindeks", "Slot index");

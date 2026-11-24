@@ -6,6 +6,7 @@
       <p class="page-subtitle">
         {{ $t('Gjett hvem som tok hvert straffespark, i riktig rekkefølge - gjetter du riktig, avsløres sparket (og du får ett poeng), gjetter du feil, mister du et liv. Spill alene, eller send enheten rundt og bytt på.') }}
       </p>
+      <TipsModal id="penalty" :tips="getTips('penalty')" />
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -135,6 +136,8 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'

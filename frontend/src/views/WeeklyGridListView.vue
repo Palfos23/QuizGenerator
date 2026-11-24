@@ -2,6 +2,7 @@
   <div>
     <h1>{{ $t('Ukens grid§WeeklyGridListViewT') }}</h1>
     <p class="page-subtitle">{{ $t('Gjett alle svarene som passer ukens tema. Feil gjetninger koster deg et liv.') }}</p>
+    <TipsModal id="weeklyGrid" :tips="getTips('weeklyGrid')" />
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -84,6 +85,8 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'

@@ -10,6 +10,7 @@
       <p class="page-subtitle">
         {{ $t('Start på 501, trekk fra verdien av kastet ditt, første som sjekker ut mellom 0 og -10 vinner. Dartregler gjelder - alt over 180, eller ett av de ni uoppnåelige utsjekktallene, gir null.') }}
       </p>
+      <TipsModal id="fiveoone" :tips="getTips('fiveoone')" />
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -245,6 +246,8 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'

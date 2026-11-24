@@ -1050,6 +1050,12 @@ export default {
   updateMyDisplayName(name) {
     return client.put('/account/display-name', { name }).then(r => r.data)
   },
+  getMyPasswordStatus() {
+    return client.get('/account/password-status').then(r => r.data)
+  },
+  changeMyPassword(currentPassword, newPassword) {
+    return client.put('/account/password', { currentPassword, newPassword })
+  },
   exportMyData() {
     return client.get('/account/export').then(r => r.data)
   },

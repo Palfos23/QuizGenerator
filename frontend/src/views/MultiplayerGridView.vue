@@ -10,6 +10,7 @@
       <p class="page-subtitle">
         {{ $t('Bytt på å gjette - gjetter du riktig, avsløres ruten (og du får ett poeng), gjetter du feil, mister du et liv. Spillet fortsetter til et grid er helt løst eller alle er tomme for liv.') }}
       </p>
+      <TipsModal id="gridBattle" :tips="getTips('gridBattle')" />
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -342,6 +343,8 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'

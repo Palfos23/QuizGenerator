@@ -2,6 +2,7 @@
   <div style="max-width:640px; margin:0 auto;">
     <h1 style="margin:0 0 4px;">{{ $t('Konto') }}</h1>
     <p class="page-subtitle">{{ $t('Administrer dataene dine, eller last ned eller slett kontoen din.') }}</p>
+    <TipsModal id="account" :tips="getTips('account')" />
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -18,12 +19,49 @@
       </div>
     </form>
 
+    <!-- password: only for accounts that have one (a Google-only account has nothing to change) -->
+    <form v-if="hasPassword" class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);" @submit.prevent="savePassword">
+      <label for="current-password">{{ $t('Bytt passord') }}</label>
+      <p class="page-subtitle" style="margin-top:-6px;">
+        {{ $t('Skriv inn passordet du bruker nå, og velg et nytt på minst 8 tegn. Husker du ikke det nåværende? Logg ut og bruk «Glemt passord?» på innloggingen.') }}
+      </p>
+      <div v-if="passwordError" class="banner error">{{ passwordError }}</div>
+      <div class="password-grid">
+        <label class="password-label">{{ $t('Nåværende passord') }}
+          <input id="current-password" type="password" v-model="currentPassword" autocomplete="current-password" />
+        </label>
+        <label class="password-label">{{ $t('Nytt passord') }}
+          <input type="password" v-model="newPassword" autocomplete="new-password" minlength="8" />
+        </label>
+        <label class="password-label">{{ $t('Gjenta nytt passord') }}
+          <input type="password" v-model="repeatPassword" autocomplete="new-password" />
+        </label>
+      </div>
+      <button type="submit" class="btn btn-primary" :disabled="savingPassword || !passwordReady">
+        {{ savingPassword ? $t('Lagrer…') : $t('Bytt passord') }}
+      </button>
+    </form>
+    <div v-else-if="hasPassword === false" class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
+      <label>{{ $t('Passord') }}</label>
+      <p class="page-subtitle" style="margin-top:-6px;">
+        {{ $t('Du logger inn med Google, så det er ikke noe passord å bytte. Vil du også kunne logge inn med e-post og passord, kan du bruke «Glemt passord?» på innloggingen med e-postadressen din.') }}
+      </p>
+    </div>
+
     <div class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
       <label>{{ $t('Fargetema') }}</label>
       <div class="palette-row">
         <PaletteSwitcher class="palette-switch--lg" />
         <span class="palette-name">{{ currentPaletteName }}</span>
       </div>
+    </div>
+
+    <div class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
+      <label>{{ $t('Tips og triks') }}</label>
+      <p class="page-subtitle" style="margin-top:-6px;">
+        {{ tipsState.off ? $t('Tipsene åpner ikke av seg selv akkurat nå. Du kan alltid åpne dem med «Tips»-knappen på hver side.') : $t('Tipsene åpner av seg selv første gang du besøker en side, og aldri igjen etter det. Du kan alltid åpne dem med «Tips»-knappen på siden.') }}
+      </p>
+      <button class="btn btn-secondary" @click="showTipsAgain">{{ $t('Vis tipsene på nytt') }}</button>
     </div>
 
     <div class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
@@ -55,14 +93,17 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import { t as _t } from '../i18n'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 import auth from '../services/auth'
 import toast from '../services/toast'
 import DeleteAccountModal from '../components/DeleteAccountModal.vue'
 import PaletteSwitcher from '../components/PaletteSwitcher.vue'
+import tipsService from '../services/tips'
 import { PALETTES, palette } from '../services/palette'
 
 const router = useRouter()
@@ -89,6 +130,48 @@ async function saveName() {
     savingName.value = false
   }
 }
+// --- password ---
+const hasPassword = ref(null) // null until we know; false for a Google-only account
+const currentPassword = ref('')
+const newPassword = ref('')
+const repeatPassword = ref('')
+const savingPassword = ref(false)
+const passwordError = ref('')
+const passwordReady = computed(() => currentPassword.value && newPassword.value.length >= 8 && repeatPassword.value)
+
+onMounted(async () => {
+  try {
+    hasPassword.value = (await api.getMyPasswordStatus()).hasPassword
+  } catch (e) {
+    hasPassword.value = null // unknown: show nothing rather than something wrong
+  }
+})
+
+async function savePassword() {
+  passwordError.value = ''
+  if (newPassword.value !== repeatPassword.value) {
+    passwordError.value = _t('De to nye passordene er ikke like.')
+    return
+  }
+  savingPassword.value = true
+  try {
+    await api.changeMyPassword(currentPassword.value, newPassword.value)
+    currentPassword.value = newPassword.value = repeatPassword.value = ''
+    toast.show(_t('Passordet er endret.'))
+  } catch (e) {
+    passwordError.value = e.response?.data?.message || _t('Kunne ikke bytte passordet.')
+  } finally {
+    savingPassword.value = false
+  }
+}
+
+// --- tips ---
+const tipsState = tipsService.state
+function showTipsAgain() {
+  tipsService.resetAll()
+  toast.show(_t('Tipsene åpner igjen første gang du besøker hver side.'))
+}
+
 const showDeleteModal = ref(false)
 const deleteModal = ref(null)
 
@@ -128,6 +211,9 @@ async function deleteAccount(password) {
 .palette-row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-4); padding: var(--space-2) var(--space-1); min-width: 0; }
 .palette-name { font-weight: 600; }
 .display-name-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.password-grid { display: grid; gap: 14px; margin-bottom: 16px; }
+.password-label { display: grid; gap: 6px; font-size: 0.85rem; color: var(--text-dim); }
+.password-label input { width: 100%; }
 .display-name-row input {
   flex: 1;
   min-width: 200px;

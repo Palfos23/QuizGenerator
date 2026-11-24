@@ -2,6 +2,7 @@
   <div>
     <h1>Starting XI</h1>
     <p class="page-subtitle">{{ $t('Gjett alle spillerne som startet en bestemt kamp. Feil gjetninger koster deg et liv.') }}</p>
+    <TipsModal id="startingXi" :tips="getTips('startingXi')" />
 
     <div v-if="error" class="banner error">{{ error }}</div>
     <LoadingSkeleton v-if="loading" />
@@ -84,6 +85,8 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { onMounted, ref } from 'vue'

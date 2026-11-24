@@ -10,6 +10,7 @@
       <p class="page-subtitle">
         {{ $t('Gjett så nær posisjon 10 på listen som du tør - går du for langt inn i «tension»-sonen, koster det deg.') }}
       </p>
+      <TipsModal id="tension" :tips="getTips('tension')" />
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -321,6 +322,8 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'

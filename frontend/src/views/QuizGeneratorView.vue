@@ -8,6 +8,7 @@
     <p class="page-subtitle">
       {{ $t('Velg språk, vanskelighetsgrad og hvor mange spørsmål du vil ha fra hver kategori.') }}
     </p>
+    <TipsModal id="quizGenerator" :tips="getTips('quizGenerator')" />
 
     <div v-if="error" class="banner error">{{ error }}</div>
     <div v-if="quiz && quiz.warnings && quiz.warnings.length" class="banner error">
@@ -173,6 +174,8 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import { t as _t } from '../i18n'
 import { onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'

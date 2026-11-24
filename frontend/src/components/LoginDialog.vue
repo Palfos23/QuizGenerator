@@ -267,6 +267,8 @@ useEscapeKey(() => { if (loginDialog.state.open && !loggingIn.value) close() })
 watch(() => loginDialog.state.open, async (open) => {
   if (!open) return
   error.value = ''
+  loggingIn.value = false // a successful sign-in closes the dialog without clearing this - it must not carry over to the next opening
+  slowLogin.value = false
   askGoogleConsent.value = false
   googleNudge.value = false
   passwordStage.value = loginDialog.state.tab === 'register' ? 'register' : 'signin'
@@ -337,6 +339,7 @@ async function submitPasswordLogin() {
   passwordBusy.value = true
   try {
     const result = await api.loginWithPassword(loginEmail.value.trim(), loginPassword.value)
+    loginPassword.value = '' // don't keep it around in memory for the next person at this device
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
     const target = afterLoginTarget()
     loginDialog.close()

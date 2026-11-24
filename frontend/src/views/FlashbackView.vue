@@ -10,6 +10,7 @@
       <p class="page-subtitle">
         {{ $t('Gjett det nøyaktige året ut fra et hint - det er vanskelig først, og blir lettere for hver runde ingen treffer.') }}
       </p>
+      <TipsModal id="flashback" :tips="getTips('flashback')" />
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -260,6 +261,8 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import { t as _t } from '../i18n'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'

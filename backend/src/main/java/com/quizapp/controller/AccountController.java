@@ -27,6 +27,19 @@ public class AccountController {
         return accountService.updateDisplayName(authentication.getName(), request.getName());
     }
 
+    /** Whether this account has a password (a Google-only account has none), so the profile page knows what to offer. */
+    @GetMapping("/password-status")
+    public java.util.Map<String, Boolean> passwordStatus(Authentication authentication) {
+        return java.util.Map.of("hasPassword", accountService.hasPassword(authentication.getName()));
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<Void> changePassword(@RequestBody com.quizapp.dto.ChangePasswordRequest request,
+                                               Authentication authentication) {
+        accountService.changePassword(authentication.getName(), request.getCurrentPassword(), request.getNewPassword());
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/export")
     public AccountExportDto export(Authentication authentication) {
         return accountService.exportData(authentication.getName());

@@ -10,6 +10,7 @@
       <p class="page-subtitle">
         {{ $t('De fleste rutene passer faktisk til temaet - noen få er bevisste imposters. Snu ruter sammen og prøv å unngå dem. Færrest imposter-treff vinner.') }}
       </p>
+      <TipsModal id="imposter" :tips="getTips('imposter')" />
 
       <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -319,6 +320,8 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref, watch } from 'vue'

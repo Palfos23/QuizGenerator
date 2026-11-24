@@ -1,6 +1,7 @@
 <template>
   <div class="dashboard">
     <p class="dashboard-welcome">{{ $t('Velkommen tilbake,') }} <strong>{{ auth.state.displayName }}</strong></p>
+    <TipsModal id="dashboard" :tips="getTips('dashboard')" />
 
     <div class="dashboard-hero-row">
       <section class="dashboard-hero">
@@ -113,6 +114,8 @@
 </template>
 
 <script setup>
+import TipsModal from '../components/TipsModal.vue'
+import { getTips } from '../content/tips'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref } from 'vue'
 import auth from '../services/auth'

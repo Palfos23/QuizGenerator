@@ -22,6 +22,7 @@ import com.quizapp.repository.LineupAttemptRepository;
 import com.quizapp.repository.ReportRepository;
 import com.quizapp.repository.SavedQuizRepository;
 import com.quizapp.repository.SubmittedQuestionRepository;
+import com.quizapp.security.LoginRateLimiter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,7 @@ public class AccountService {
     private final AdventEntryRepository adventEntryRepository;
     private final AdventProfileRepository adventProfileRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LoginRateLimiter loginRateLimiter;
     private final JwtService jwtService;
 
     public AccountService(AppUserRepository appUserRepository,
@@ -68,6 +70,7 @@ public class AccountService {
                            AdventEntryRepository adventEntryRepository,
                            AdventProfileRepository adventProfileRepository,
                            PasswordEncoder passwordEncoder,
+                           LoginRateLimiter loginRateLimiter,
                            JwtService jwtService) {
         this.jwtService = jwtService;
         this.appUserRepository = appUserRepository;
@@ -84,6 +87,49 @@ public class AccountService {
         this.adventEntryRepository = adventEntryRepository;
         this.adventProfileRepository = adventProfileRepository;
         this.passwordEncoder = passwordEncoder;
+        this.loginRateLimiter = loginRateLimiter;
+    }
+
+    static final int MIN_PASSWORD_LENGTH = 8; // same as registering and resetting
+    static final int MAX_PASSWORD_LENGTH = 72; // what bcrypt can use - anything longer would be silently cut off
+
+    /** Whether this account has a password at all - an account that only ever signed in with Google doesn't. */
+    @Transactional(readOnly = true)
+    public boolean hasPassword(String email) {
+        return requireUser(email).getPasswordHash() != null;
+    }
+
+    /**
+     * Lets a signed-in user choose a new password. The current one must be given, so someone who finds a
+     * phone left logged in can't lock the owner out; wrong guesses count against the same limit as logging in.
+     */
+    @Transactional
+    public void changePassword(String email, String currentPassword, String newPassword) {
+        String limitKey = "change-password:" + email;
+        loginRateLimiter.checkAllowed(limitKey);
+        AppUser user = requireUser(email);
+        if (user.getPasswordHash() == null) {
+            throw new IllegalArgumentException("Kontoen din bruker Google-innlogging og har ikke noe passord å endre.");
+        }
+        if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            loginRateLimiter.recordFailure(limitKey);
+            throw new IllegalArgumentException("Feil nåværende passord.");
+        }
+        if (newPassword == null || newPassword.length() < MIN_PASSWORD_LENGTH) {
+            throw new IllegalArgumentException("Passordet må være minst " + MIN_PASSWORD_LENGTH + " tegn.");
+        }
+        if (newPassword.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > MAX_PASSWORD_LENGTH) {
+            throw new IllegalArgumentException("Passordet kan høyst være " + MAX_PASSWORD_LENGTH + " tegn.");
+        }
+        if (newPassword.equals(currentPassword)) {
+            throw new IllegalArgumentException("Det nye passordet må være forskjellig fra det gamle.");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        // A reset link that was requested earlier shouldn't keep working now that the password was just chosen.
+        user.setResetTokenHash(null);
+        user.setResetTokenExpiresAt(null);
+        appUserRepository.save(user);
+        loginRateLimiter.recordSuccess(limitKey);
     }
 
     static final int MIN_NAME_LENGTH = 2;
