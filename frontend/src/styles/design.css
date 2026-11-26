@@ -869,3 +869,11 @@ a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
 .dashboard-advent-icon { width: auto; height: auto; background: none; border-radius: 0; }
 .dash-icon { justify-content: start; margin-bottom: 12px; }
 .dash-icon .app-icon, .dashboard-advent-icon svg { width: 28px; height: 28px; }
+
+/* Phones: while a text field has focus (keyboard up) the bottom bar is hidden, and everything docked above it
+   drops to the bottom edge. The class is set in App.vue (updateTypingState). */
+@media (max-width: 760px) {
+  html.is-typing { --bottom-nav-height: 0px; }
+  html.is-typing .bottom-nav,
+  html.is-typing .nav-sheet-backdrop { display: none; }
+}

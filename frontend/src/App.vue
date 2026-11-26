@@ -499,7 +499,27 @@ function checkTokenOnResume() {
   }
 }
 
+// ---- Phones: the bottom bar steps aside while the keyboard is up ----
+// With the on-screen keyboard open the fixed bar sits right on top of the field being typed in (it rides up with
+// the keyboard), so it is hidden for as long as a text field has focus. Keyed on focus rather than on measuring
+// the keyboard, which browsers report differently. Touch screens only: a narrow desktop window keeps its bar.
+const TYPING_SELECTOR = 'textarea, [contenteditable=""], [contenteditable="true"], input:not([type]), ' +
+  'input[type="text"], input[type="email"], input[type="password"], input[type="search"], ' +
+  'input[type="tel"], input[type="url"], input[type="number"]'
+const touchScreen = window.matchMedia('(pointer: coarse)')
+function updateTypingState() {
+  const el = document.activeElement
+  const typing = touchScreen.matches && !!el && el.matches(TYPING_SELECTOR) && !el.readOnly && !el.disabled
+  document.documentElement.classList.toggle('is-typing', typing)
+  if (typing) openPlayerMenu.value = null
+}
+// focusout runs before focus lands on the next field, so wait a tick and look at where it ended up -
+// moving from one answer box to the next never flashes the bar back in between.
+function onFocusChange() { setTimeout(updateTypingState, 0) }
+
 onMounted(() => {
+  document.addEventListener('focusin', onFocusChange)
+  document.addEventListener('focusout', onFocusChange)
   activityEvents.forEach(evt => window.addEventListener(evt, resetActivity, { passive: true }))
   inactivityTimer = setInterval(checkSessionTimers, 1000)
   document.addEventListener('visibilitychange', checkTokenOnResume)
@@ -508,6 +528,9 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  document.removeEventListener('focusin', onFocusChange)
+  document.removeEventListener('focusout', onFocusChange)
+  document.documentElement.classList.remove('is-typing')
   activityEvents.forEach(evt => window.removeEventListener(evt, resetActivity))
   clearInterval(inactivityTimer)
   document.removeEventListener('visibilitychange', checkTokenOnResume)
