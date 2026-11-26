@@ -78,9 +78,6 @@
     <!-- Mobile-only bottom tab bar - the top nav collapses to just the brand below 760px -->
     <nav class="bottom-nav" v-if="auth.isAuthenticated.value">
       <!-- Every tab is an icon over a short label, a full thumb tall; the menus open as a sheet across the screen -->
-      <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="bottom-nav-tab" :class="{ active: dailyQuizActive }">
-        <AppIcon name="calendar" /><span>{{ $t('Dagens quiz§AppT') }}</span>
-      </router-link>
       <template v-if="!auth.isGuest.value">
         <div v-for="menu in bottomMenus" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
           <button
@@ -207,8 +204,19 @@ const QUIZZES_MENU = {
   label: _t('Quizer'),
   items: [
     { to: '/generate', label: _t('Lag en quiz'), key: 'generate', primary: true },
-    { to: '/my-quizzes', label: _t('Mine quizer'), key: 'myQuizzes' },
-    { to: '/ligaer', label: _t('Ligaer'), key: null, also: ['/ligaer/ny', '/liga'] }
+    { to: '/my-quizzes', label: _t('Mine quizer'), key: 'myQuizzes' }
+  ]
+}
+
+// Mobile bottom bar only: the first tab holds the daily quiz and the leagues played on it. The tab stays lit on a
+// quiz's own page (/daily-quiz/:id), any league page and an invite link (/liga/KODE).
+const DAILY_MENU = {
+  key: 'daily',
+  icon: 'calendar',
+  label: _t('Dagens quiz§AppT'),
+  items: [
+    { to: '/daily-quiz', label: _t('Dagens quiz§AppT'), key: null, primary: true },
+    { to: '/ligaer', label: _t('Ligaer'), key: null, also: ['/liga'] }
   ]
 }
 
@@ -240,9 +248,7 @@ function playerMenuActive(menu) {
 
 // Players and admins get the same navigation, just different menus
 const topMenus = computed(() => auth.isAdmin.value ? ADMIN_MENUS : PLAYER_MENUS)
-const bottomMenus = computed(() => auth.isAdmin.value ? [...ADMIN_MENUS, ADMIN_ACCOUNT_MENU] : [QUIZZES_MENU, ...PLAYER_MENUS, ACCOUNT_MENU])
-// The Dagens quiz tab stays lit on a quiz's own page too (/daily-quiz/:id), not only on the list.
-const dailyQuizActive = computed(() => router.currentRoute.value.path.startsWith('/daily-quiz'))
+const bottomMenus = computed(() => auth.isAdmin.value ? [...ADMIN_MENUS, ADMIN_ACCOUNT_MENU] : [DAILY_MENU, QUIZZES_MENU, ...PLAYER_MENUS, ACCOUNT_MENU])
 // The Ligaer link stays lit on a league's own page and on an invite link
 const leaguesActive = computed(() => /^\/liga(er)?(\/|$)/.test(router.currentRoute.value.path))
 
