@@ -35,7 +35,21 @@
         <div class="lg-segmented" role="radiogroup">
           <button type="button" role="radio" :aria-checked="start === 'TODAY'" :class="{ 'is-on': start === 'TODAY' }" @click="start = 'TODAY'">{{ $t('I dag') }}</button>
           <button type="button" role="radio" :aria-checked="start === 'TOMORROW'" :class="{ 'is-on': start === 'TOMORROW' }" @click="start = 'TOMORROW'">{{ $t('I morgen') }}</button>
+          <button type="button" role="radio" :aria-checked="start === 'DATE'" :class="{ 'is-on': start === 'DATE' }" @click="pickDate">{{ $t('Velg dato') }}</button>
         </div>
+        <!-- Any day from today up to 90 days ahead (the server checks the same) -->
+        <input
+          v-if="start === 'DATE'"
+          ref="dateInput"
+          v-model="startDate"
+          type="date"
+          class="lg-date"
+          :min="minDate"
+          :max="maxDate"
+          :aria-label="$t('Startdato')"
+          :aria-invalid="!!dateError"
+        />
+        <p v-if="dateError" class="lg-error" role="alert">{{ dateError }}</p>
       </div>
     </div>
 
@@ -55,7 +69,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { t as _t } from '../../i18n'
 import AppIcon from '../AppIcon.vue'
 
@@ -69,6 +83,30 @@ const format = ref('HEAD_TO_HEAD')
 const weeks = ref('2')
 const start = ref('TOMORROW')
 const playoffs = ref(true)
+
+// A chosen start date: yyyy-mm-dd in the player's own calendar (not UTC, which can be a day off)
+const MAX_DAYS_AHEAD = 90
+function localIso(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+function daysFromNow(n) {
+  const d = new Date()
+  d.setDate(d.getDate() + n)
+  return localIso(d)
+}
+const minDate = daysFromNow(0)
+const maxDate = daysFromNow(MAX_DAYS_AHEAD)
+const startDate = ref('')
+const dateInput = ref(null)
+const dateError = ref('')
+
+async function pickDate() {
+  start.value = 'DATE'
+  if (!startDate.value) startDate.value = daysFromNow(7)
+  await nextTick()
+  dateInput.value?.focus()
+}
+watch([startDate, start], () => { dateError.value = '' })
 
 const weekOptions = computed(() => format.value === 'HEAD_TO_HEAD' ? [1, 2, 3, 4, 6, 8, 10, 12] : [1, 2, 4, 8, 12, 26, 52])
 
@@ -91,9 +129,23 @@ const hint = computed(() => {
 })
 
 function submit() {
+  let startValue = start.value
+  if (start.value === 'DATE') {
+    if (!startDate.value) {
+      dateError.value = _t('Velg en startdato.')
+      dateInput.value?.focus()
+      return
+    }
+    if (startDate.value < minDate || startDate.value > maxDate) {
+      dateError.value = _t('Velg en dato fra i dag og inntil 90 dager fram.')
+      dateInput.value?.focus()
+      return
+    }
+    startValue = startDate.value
+  }
   emit('submit', {
     format: format.value,
-    start: start.value,
+    start: startValue,
     weeks: weeks.value === '' ? null : Number(weeks.value),
     playoffs: format.value === 'HEAD_TO_HEAD' && playoffs.value
   })
@@ -113,10 +165,12 @@ function submit() {
 .lg-option.is-on { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
 .lg-option:has(input:focus-visible) { outline: 2px solid var(--gold); outline-offset: 2px; }
 .lg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.lg-segmented { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rule); border-radius: var(--radius-md); overflow: hidden; }
+.lg-segmented { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--rule); border-radius: var(--radius-md); overflow: hidden; }
 .lg-segmented button { min-height: 42px; border: none; background: var(--ink-raised); color: var(--text-dim); font: inherit; font-weight: 600; cursor: pointer; }
 .lg-segmented button + button { border-left: 1px solid var(--rule); }
 .lg-segmented button.is-on { background: var(--primary); color: var(--on-primary); }
+.lg-date { margin-top: 8px; }
+.lg-error { margin: 6px 0 0; color: var(--coral-ink); font-size: 0.88rem; }
 .lg-check { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
 .lg-check input { margin-top: 4px; width: 18px; height: 18px; flex-shrink: 0; }
 .lg-hint { margin: 0; color: var(--text-dim); font-size: 0.88rem; line-height: 1.5; }

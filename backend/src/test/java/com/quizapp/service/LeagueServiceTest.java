@@ -187,4 +187,21 @@ class LeagueServiceTest {
         assertThatThrownBy(() -> leagueService.create(ada.getEmail(), new CreateLeagueRequest(" ", LeagueFormat.POINTS, "TODAY", null, false)))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void theSeasonCanStartOnAChosenDate() {
+        AppUser ada = user("Ada");
+        LeagueDetail created = leagueService.create(ada.getEmail(),
+                new CreateLeagueRequest("Dato", LeagueFormat.HEAD_TO_HEAD, T.plusDays(10).toString(), 2, false));
+        assertThat(created.season().startDate()).isEqualTo(T.plusDays(10));
+        assertThat(created.season().endDate()).isEqualTo(T.plusDays(10 + 14 - 1));
+        assertThat(created.season().state()).isEqualTo("UPCOMING");
+
+        assertThatThrownBy(() -> leagueService.create(ada.getEmail(),
+                new CreateLeagueRequest("Gammel", LeagueFormat.POINTS, T.minusDays(1).toString(), null, false))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> leagueService.create(ada.getEmail(),
+                new CreateLeagueRequest("Langt fram", LeagueFormat.POINTS, T.plusDays(91).toString(), null, false))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> leagueService.create(ada.getEmail(),
+                new CreateLeagueRequest("Tull", LeagueFormat.POINTS, "neste uke", null, false))).isInstanceOf(IllegalArgumentException.class);
+    }
 }

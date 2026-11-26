@@ -17,7 +17,7 @@ public final class LeagueDtos {
 
     // ---------- requests ----------
 
-    /** start: "TODAY" or "TOMORROW". weeks: season length; null for a points season with no end. */
+    /** start: "TODAY", "TOMORROW" or a date (yyyy-mm-dd, up to 90 days ahead). weeks: season length; null for a points season with no end. */
     public record SeasonSettings(LeagueFormat format, String start, Integer weeks, boolean playoffs) {
     }
 

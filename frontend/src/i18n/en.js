@@ -1,5 +1,9 @@
 // Generated English catalog - keys are the Norwegian source strings (see i18n.js).
 export default {
+ "Velg dato": "Pick a date",
+ "Startdato": "Start date",
+ "Velg en startdato.": "Pick a start date.",
+ "Velg en dato fra i dag og inntil 90 dager fram.": "Pick a date from today up to 90 days ahead.",
  "Ligaer": "Leagues",
  "Konkurrer med vennene dine på dagens quiz - head-to-head eller på poeng.": "Compete with your friends on the daily quiz - head-to-head or on points.",
  "Opprett en liga": "Create a league",

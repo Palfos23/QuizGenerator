@@ -29,6 +29,8 @@ public class LeagueService {
     static final int MAX_NAME_LENGTH = 40;
     static final int MAX_H2H_WEEKS = 12;
     static final int MAX_POINTS_WEEKS = 52;
+    // How far ahead a season may be set to start
+    static final int MAX_DAYS_AHEAD = 90;
     // A finished season's recap is offered on the dashboard for this long
     static final int RECAP_DAYS = 14;
     private static final String CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -427,10 +429,7 @@ public class LeagueService {
         if (settings == null || settings.format() == null) {
             throw new IllegalArgumentException(RequestLang.t("Velg et format for sesongen.", "Choose a format for the season."));
         }
-        LocalDate start;
-        if ("TODAY".equals(settings.start())) start = today();
-        else if ("TOMORROW".equals(settings.start())) start = today().plusDays(1);
-        else throw new IllegalArgumentException(RequestLang.t("Velg når sesongen starter.", "Choose when the season starts."));
+        LocalDate start = startDate(settings.start());
 
         LeagueSeason season = new LeagueSeason();
         season.setLeague(league);
@@ -452,6 +451,25 @@ public class LeagueService {
             season.setEndDate(settings.weeks() == null ? null : start.plusDays(settings.weeks() * 7L - 1));
         }
         return season;
+    }
+
+    /** "TODAY", "TOMORROW" or a date (yyyy-mm-dd) from today up to MAX_DAYS_AHEAD days ahead. */
+    LocalDate startDate(String start) {
+        if ("TODAY".equals(start)) return today();
+        if ("TOMORROW".equals(start)) return today().plusDays(1);
+        LocalDate date;
+        try {
+            date = LocalDate.parse(start == null ? "" : start.trim());
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new IllegalArgumentException(RequestLang.t("Velg når sesongen starter.", "Choose when the season starts."));
+        }
+        if (date.isBefore(today())) {
+            throw new IllegalArgumentException(RequestLang.t("Startdatoen kan ikke være tilbake i tid.", "The start date can't be in the past."));
+        }
+        if (date.isAfter(today().plusDays(MAX_DAYS_AHEAD))) {
+            throw new IllegalArgumentException(RequestLang.t("Sesongen kan starte senest 90 dager fram i tid.", "The season can start at most 90 days ahead."));
+        }
+        return date;
     }
 
     private void removeSeason(LeagueSeason season) {
