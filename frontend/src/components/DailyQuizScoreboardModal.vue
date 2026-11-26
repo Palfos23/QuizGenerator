@@ -19,7 +19,7 @@
 
         <!-- A results ledger: rank, name, a dotted leader, the score. The winner's row is inverted. -->
         <div class="dq-ledger">
-          <template v-for="row in rows" :key="row.kind === 'expert' ? 'expert' : row.entry.userName + row.rank">
+          <template v-for="row in rows" :key="row.kind === 'expert' ? 'expert' : 'p' + row.index">
             <!-- The expert is not a player: a line across the list at their real score. Everyone above it beat them. -->
             <div v-if="row.kind === 'expert'" class="dq-expert-line" role="separator" :aria-label="$t('Eksperten') + ' ' + row.score + '/' + row.maxScore">
               <span class="dq-expert-tag">
@@ -37,7 +37,7 @@
             </div>
           </template>
 
-          <template v-if="yourRank && yourRank.rank > shownPlayers.length">
+          <template v-if="yourRank && yourRank.index >= shownPlayers.length">
             <div class="dq-led-gap">···</div>
             <div class="dq-led is-you">
               <span class="dq-led-rank">{{ pad(yourRank.rank) }}</span>
@@ -70,6 +70,7 @@
 </template>
 
 <script setup>
+import { sharedRanks } from '../composables/sharedRanks'
 import LoadingSkeleton from './LoadingSkeleton.vue'
 import { t as _t } from '../i18n'
 import { computed } from 'vue'
@@ -94,12 +95,14 @@ useEscapeKey(() => emit('close'))
 
 const entries = computed(() => props.data?.entries || [])
 const shownPlayers = computed(() => (props.compact ? entries.value.slice(0, 5) : entries.value))
+// Equal scores share a place (13, 12, 12, 11 -> 1, 2, 2, 4).
+const ranks = computed(() => sharedRanks(entries.value, e => e.score))
 
 // What the list shows: the players in rank order, with the expert slotted in at their real score (after
 // everyone who scored at least as much, before the first who scored less). Not numbered or counted - just
 // there, so you can see exactly who is above and below them.
 const rows = computed(() => {
-  const list = shownPlayers.value.map((entry, i) => ({ kind: 'player', entry, rank: i + 1 }))
+  const list = shownPlayers.value.map((entry, i) => ({ kind: 'player', entry, rank: ranks.value[i], index: i }))
   const expert = props.data?.expert
   if (!expert) return list
   const expertRow = { kind: 'expert', score: expert.score, maxScore: expert.maxScore }
@@ -111,7 +114,7 @@ const rows = computed(() => {
 const yourRank = computed(() => {
   if (!props.compact) return null
   const idx = entries.value.findIndex(s => s.isYou)
-  return idx === -1 ? null : { rank: idx + 1, entry: entries.value[idx] }
+  return idx === -1 ? null : { rank: ranks.value[idx], index: idx, entry: entries.value[idx] }
 })
 
 // How far the viewer's own score is from the average - null when they aren't on the board.

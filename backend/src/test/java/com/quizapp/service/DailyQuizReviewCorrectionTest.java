@@ -232,6 +232,39 @@ class DailyQuizReviewCorrectionTest {
     }
 
     @Test
+    void aDaysPlayersCanBeSearchedFilteredAndPaged() {
+        Question q = newQuestion("General", "Capital of Norway?", "Oslo");
+        DailyQuizSet set = newSet(q);
+        List<AppUser> users = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            AppUser u = newUser();
+            u.setName((i == 2 ? "Zelda " : "Player ") + i);
+            users.add(appUserRepository.save(u));
+            submit(set, u, i % 2 == 0 ? "Oslo" : "Oslo, i Norge"); // odd ones wait on an admin
+        }
+
+        var first = reviewService.listAttemptsForSet(set.getId(), "", "ALL", 0, 2);
+        assertThat(first.getTotal()).isEqualTo(5);
+        assertThat(first.getMatching()).isEqualTo(5);
+        assertThat(first.getPendingTotal()).isEqualTo(2);
+        assertThat(first.getGradedTotal()).isEqualTo(3);
+        assertThat(first.getAttempts()).extracting(a -> a.getPlayerName()).containsExactly("Player 0", "Player 1");
+
+        var last = reviewService.listAttemptsForSet(set.getId(), "", "ALL", 2, 2);
+        assertThat(last.getAttempts()).extracting(a -> a.getPlayerName()).containsExactly("Zelda 2");
+        assertThat(reviewService.listAttemptsForSet(set.getId(), "", "ALL", 99, 2).getPage())
+                .as("a page past the end lands on the last one").isEqualTo(2);
+
+        assertThat(reviewService.listAttemptsForSet(set.getId(), "zEL", "ALL", 0, 50).getAttempts())
+                .extracting(a -> a.getPlayerName()).containsExactly("Zelda 2");
+        var waiting = reviewService.listAttemptsForSet(set.getId(), "", "PENDING", 0, 50);
+        assertThat(waiting.getMatching()).isEqualTo(2);
+        assertThat(waiting.getAttempts()).allMatch(a -> a.getStatus().equals("SUBMITTED"));
+        assertThat(reviewService.listAttemptsForSet(set.getId(), "player", "GRADED", 0, 50).getAttempts())
+                .extracting(a -> a.getPlayerName()).containsExactly("Player 0", "Player 4");
+    }
+
+    @Test
     void theAttemptDetailShowsStatusScoreAndMaxSoAChangedDecisionIsVisible() {
         Question q = newQuestion("General", "Capital of Norway?", "Oslo");
         DailyQuizSet set = newSet(q);

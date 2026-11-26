@@ -107,8 +107,12 @@ public class AdminDailyQuizController {
     }
 
     @GetMapping("/sets/{id}/attempts")
-    public DailyQuizDayAttemptsDto attemptsForSet(@PathVariable Long id) {
-        return dailyQuizReviewService.listAttemptsForSet(id);
+    public DailyQuizDayAttemptsDto attemptsForSet(@PathVariable Long id,
+                                                  @RequestParam(defaultValue = "") String q,
+                                                  @RequestParam(defaultValue = "ALL") String filter,
+                                                  @RequestParam(defaultValue = "0") int page,
+                                                  @RequestParam(defaultValue = "50") int size) {
+        return dailyQuizReviewService.listAttemptsForSet(id, q, filter, page, size);
     }
 
     @GetMapping("/sets/{id}/questions")

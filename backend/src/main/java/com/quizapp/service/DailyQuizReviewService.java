@@ -151,12 +151,47 @@ public class DailyQuizReviewService {
     // answers have all been decided (so it's gone from the waiting list) when a decision needs fixing.
     @Transactional(readOnly = true)
     public DailyQuizDayAttemptsDto listAttemptsForSet(Long setId) {
+        return listAttemptsForSet(setId, "", "ALL", 0, MAX_DAY_PAGE_SIZE);
+    }
+
+    public static final int MAX_DAY_PAGE_SIZE = 200;
+
+    /**
+     * One page of a day's players, sorted by name. With a lot of players, only the page's rows have their answers
+     * loaded (for the score and "still waiting" count); the search (part of the name, any case) and the filter
+     * (ALL / PENDING = still waiting on a decision / GRADED) run over the attempts alone.
+     */
+    @Transactional(readOnly = true)
+    public DailyQuizDayAttemptsDto listAttemptsForSet(Long setId, String query, String filter, int page, int size) {
         DailyQuizSet set = setRepository.findById(setId)
                 .filter(found -> !DailyQuizService.isExpired(found.getQuizDate()))
                 .orElseThrow(() -> new ResourceNotFoundException("Fant ikke daglig quiz med id " + setId));
-        List<DailyQuizAttempt> attempts = attemptRepository.findBySet_Id(setId).stream()
+        List<DailyQuizAttempt> submitted = attemptRepository.findBySet_Id(setId).stream()
                 .filter(a -> a.getStatus() != DailyQuizAttemptStatus.IN_PROGRESS)
+                .sorted(Comparator.comparing((DailyQuizAttempt a) -> a.getUser().getName(),
+                                Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+                        .thenComparing(DailyQuizAttempt::getId))
                 .collect(Collectors.toList());
+        int gradedTotal = (int) submitted.stream().filter(a -> a.getStatus() == DailyQuizAttemptStatus.GRADED).count();
+
+        String needle = query == null ? "" : query.trim().toLowerCase(java.util.Locale.ROOT);
+        String wanted = filter == null ? "ALL" : filter.trim().toUpperCase(java.util.Locale.ROOT);
+        List<DailyQuizAttempt> matching = submitted.stream()
+                .filter(a -> needle.isEmpty() || (a.getUser().getName() != null
+                        && a.getUser().getName().toLowerCase(java.util.Locale.ROOT).contains(needle)))
+                .filter(a -> switch (wanted) {
+                    case "PENDING" -> a.getStatus() != DailyQuizAttemptStatus.GRADED;
+                    case "GRADED" -> a.getStatus() == DailyQuizAttemptStatus.GRADED;
+                    default -> true;
+                })
+                .collect(Collectors.toList());
+
+        int pageSize = Math.max(1, Math.min(size, MAX_DAY_PAGE_SIZE));
+        int lastPage = Math.max(0, (matching.size() - 1) / pageSize);
+        int pageIndex = Math.max(0, Math.min(page, lastPage));
+        List<DailyQuizAttempt> attempts = matching.subList(
+                Math.min(pageIndex * pageSize, matching.size()), Math.min((pageIndex + 1) * pageSize, matching.size()));
+
         List<Long> attemptIds = attempts.stream().map(DailyQuizAttempt::getId).collect(Collectors.toList());
         Map<Long, List<DailyQuizAnswer>> answersByAttempt = attemptIds.isEmpty()
                 ? Map.of()
@@ -170,9 +205,9 @@ public class DailyQuizReviewService {
             boolean graded = a.getStatus() == DailyQuizAttemptStatus.GRADED;
             return new DailyQuizDayAttemptsDto.AttemptRow(
                     a.getId(), a.getUser().getName(), a.getStatus().name(), graded ? a.getScore() : null, max, pending);
-        }).sorted(Comparator.comparing(DailyQuizDayAttemptsDto.AttemptRow::getPlayerName, String.CASE_INSENSITIVE_ORDER))
-                .collect(Collectors.toList());
-        return new DailyQuizDayAttemptsDto(set.getQuizDate(), rows);
+        }).collect(Collectors.toList()); // already in name order
+        return new DailyQuizDayAttemptsDto(set.getQuizDate(), rows, pageIndex, pageSize,
+                matching.size(), submitted.size(), submitted.size() - gradedTotal, gradedTotal);
     }
 
     /**

@@ -9,12 +9,32 @@ import java.util.List;
 public class DailyQuizDayAttemptsDto {
 
     private LocalDate quizDate;
-    private List<AttemptRow> attempts;
+    private List<AttemptRow> attempts; // just the requested page
+    private int page; // 0-based
+    private int size;
+    private int matching; // rows matching the search and filter, across all pages
+    private int total; // everyone who submitted this day
+    private int pendingTotal; // of those, still waiting on a decision
+    private int gradedTotal;
 
-    public DailyQuizDayAttemptsDto(LocalDate quizDate, List<AttemptRow> attempts) {
+    public DailyQuizDayAttemptsDto(LocalDate quizDate, List<AttemptRow> attempts, int page, int size,
+                                   int matching, int total, int pendingTotal, int gradedTotal) {
         this.quizDate = quizDate;
         this.attempts = attempts;
+        this.page = page;
+        this.size = size;
+        this.matching = matching;
+        this.total = total;
+        this.pendingTotal = pendingTotal;
+        this.gradedTotal = gradedTotal;
     }
+
+    public int getPage() { return page; }
+    public int getSize() { return size; }
+    public int getMatching() { return matching; }
+    public int getTotal() { return total; }
+    public int getPendingTotal() { return pendingTotal; }
+    public int getGradedTotal() { return gradedTotal; }
 
     public LocalDate getQuizDate() {
         return quizDate;

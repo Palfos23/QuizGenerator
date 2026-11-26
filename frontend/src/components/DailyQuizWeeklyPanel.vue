@@ -15,7 +15,7 @@
 
       <div v-if="!standings.length" class="dq-row-meta" style="padding:6px 0 2px;">{{ $t('Ingen resultater denne uken ennå - vær den første.') }}</div>
       <div v-else class="dq-ledger">
-        <template v-for="row in rows" :key="row.kind === 'expert' ? 'expert' : row.entry.playerName + row.rank">
+        <template v-for="row in rows" :key="row.kind === 'expert' ? 'expert' : 'p' + row.index">
           <!-- The expert is not a player: a line across the list at their real total. Everyone above it beat them. -->
           <div v-if="row.kind === 'expert'" class="dq-expert-line" role="separator" :title="daysNote(row.daysPlayed)" :aria-label="$t('Eksperten') + ' ' + row.total">
             <span class="dq-expert-tag">
@@ -36,7 +36,7 @@
           </div>
         </template>
 
-        <template v-if="yourRank && yourRank.rank > 5">
+        <template v-if="yourRank && yourRank.index >= 5">
           <div class="dq-led-gap">···</div>
           <div class="dq-led is-you">
             <span class="dq-led-rank">{{ pad(yourRank.rank) }}</span>
@@ -101,6 +101,7 @@
 </template>
 
 <script setup>
+import { sharedRanks } from '../composables/sharedRanks'
 import { t as _t } from '../i18n'
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
@@ -127,11 +128,13 @@ onMounted(async () => {
 
 const standings = computed(() => weekly.value?.current.standings || [])
 const topFive = computed(() => standings.value.slice(0, 5))
+// Equal totals share a place (13, 12, 12, 11 -> 1, 2, 2, 4).
+const ranks = computed(() => sharedRanks(standings.value, s => s.total))
 
 // The top five players with the expert slotted in at their real total (after everyone who has at least as
 // many points, before the first with fewer) - listed, but not ranked.
 const rows = computed(() => {
-  const list = topFive.value.map((entry, i) => ({ kind: 'player', entry, rank: i + 1 }))
+  const list = topFive.value.map((entry, i) => ({ kind: 'player', entry, rank: ranks.value[i], index: i }))
   const expert = weekly.value?.expert
   if (!expert) return list
   const expertRow = { kind: 'expert', total: expert.total, daysPlayed: expert.daysPlayed }
@@ -142,7 +145,7 @@ const rows = computed(() => {
 })
 const yourRank = computed(() => {
   const idx = standings.value.findIndex(s => s.isYou)
-  return idx === -1 ? null : { rank: idx + 1, entry: standings.value[idx] }
+  return idx === -1 ? null : { rank: ranks.value[idx], index: idx, entry: standings.value[idx] }
 })
 
 function daysNote(n) {
