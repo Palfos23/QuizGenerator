@@ -78,6 +78,12 @@ const routes = [
   { path: '/grid-battle', name: 'grid-battle', component: MultiplayerGridView, meta: { requiresAuth: true } },
   { path: '/my-quizzes', name: 'my-quizzes', component: MyQuizzesView, meta: { requiresAuth: true } },
   { path: '/weekly-grid', name: 'weekly-grid', component: WeeklyGridListView, meta: { requiresAuth: true } },
+  // Private daily-quiz leagues. The invite link (/liga/KODE) is open, so a visitor can see what they're invited to
+  // and sign in from there; everything else needs an account.
+  { path: '/ligaer', name: 'leagues', component: () => import('../views/LeaguesView.vue'), meta: { requiresAuth: true } },
+  { path: '/ligaer/ny', name: 'league-create', component: () => import('../views/LeagueCreateView.vue'), meta: { requiresAuth: true } },
+  { path: '/ligaer/:id(\\d+)', name: 'league', component: () => import('../views/LeagueView.vue'), meta: { requiresAuth: true } },
+  { path: '/liga/:code', name: 'league-join', component: () => import('../views/LeagueJoinView.vue') },
   { path: '/daily-quiz', name: 'daily-quiz', component: DailyQuizListView, meta: { requiresAuth: true } },
   // Today's quiz for a visitor without an account (the landing page's main button). Answers stay in the
   // browser until they sign in to hand them in; someone already signed in is sent on to the real page.

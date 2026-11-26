@@ -55,6 +55,7 @@ public class AccountService {
     private final PasswordEncoder passwordEncoder;
     private final LoginRateLimiter loginRateLimiter;
     private final JwtService jwtService;
+    private final LeagueService leagueService;
 
     public AccountService(AppUserRepository appUserRepository,
                            SavedQuizRepository savedQuizRepository,
@@ -71,8 +72,10 @@ public class AccountService {
                            AdventProfileRepository adventProfileRepository,
                            PasswordEncoder passwordEncoder,
                            LoginRateLimiter loginRateLimiter,
-                           JwtService jwtService) {
+                           JwtService jwtService,
+                           LeagueService leagueService) {
         this.jwtService = jwtService;
+        this.leagueService = leagueService;
         this.appUserRepository = appUserRepository;
         this.savedQuizRepository = savedQuizRepository;
         this.submittedQuestionRepository = submittedQuestionRepository;
@@ -254,6 +257,8 @@ public class AccountService {
         // Same for the advent calendar: entries and the one setting are keyed by user id only.
         adventEntryRepository.deleteByUserId(user.getId());
         adventProfileRepository.deleteById(user.getId());
+        // Leagues: out of every league (one they ran passes to the next member), and their league scores go too
+        leagueService.removeUser(user.getId());
 
         appUserRepository.delete(user);
     }

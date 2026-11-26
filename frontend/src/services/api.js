@@ -617,6 +617,35 @@ export default {
   },
 
   // --- Daily quiz: user-facing ---
+  // --- Leagues: private daily-quiz competitions (see LeagueController) ---
+  getMyLeagues() {
+    return client.get('/leagues').then(r => r.data)
+  },
+  createLeague(body) {
+    return client.post('/leagues', body).then(r => r.data)
+  },
+  previewLeague(code) {
+    return client.get(`/leagues/code/${encodeURIComponent(code)}`).then(r => r.data)
+  },
+  joinLeague(code) {
+    return client.post('/leagues/join', { code }).then(r => r.data)
+  },
+  getLeague(id, season) {
+    return client.get(`/leagues/${id}`, { params: season ? { season } : {} }).then(r => r.data)
+  },
+  leaveLeague(id) {
+    return client.post(`/leagues/${id}/leave`)
+  },
+  removeLeagueMember(id, userId) {
+    return client.delete(`/leagues/${id}/members/${userId}`).then(r => r.data)
+  },
+  newLeagueSeason(id, settings) {
+    return client.post(`/leagues/${id}/seasons`, settings).then(r => r.data)
+  },
+  deleteLeague(id) {
+    return client.delete(`/leagues/${id}`)
+  },
+
   // Today's questions without an account (see DailyQuizController#today) - nothing is saved or graded.
   getDailyQuizToday() {
     return client.get('/daily-quiz/today').then(r => r.data)

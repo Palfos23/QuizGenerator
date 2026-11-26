@@ -36,13 +36,16 @@ public class DailyQuizResultService {
     private final DailyQuizResultRepository resultRepository;
     private final DailyQuizAttemptRepository attemptRepository;
     private final DailyQuizAnswerRepository answerRepository;
+    private final LeagueScoreService leagueScoreService;
 
     public DailyQuizResultService(DailyQuizResultRepository resultRepository,
                                    DailyQuizAttemptRepository attemptRepository,
-                                   DailyQuizAnswerRepository answerRepository) {
+                                   DailyQuizAnswerRepository answerRepository,
+                                   LeagueScoreService leagueScoreService) {
         this.resultRepository = resultRepository;
         this.attemptRepository = attemptRepository;
         this.answerRepository = answerRepository;
+        this.leagueScoreService = leagueScoreService;
     }
 
     /** Creates or refreshes the record for a graded attempt. Safe to call any number of times. */
@@ -63,6 +66,8 @@ public class DailyQuizResultService {
         result.setMaxScore(answers.stream().mapToInt(a -> DailyQuizScoring.maxPoints(a.getQuestion())).sum());
         result.setIncludeOnLeaderboard(attempt.isIncludeOnLeaderboard());
         resultRepository.save(result);
+        // ...and the leagues' own copy, which is kept for good (and only counts a quiz handed in on its day)
+        leagueScoreService.record(attempt);
     }
 
     /** Mirrors the player's "show my name on the leaderboard" choice onto the record, if there is one yet. */

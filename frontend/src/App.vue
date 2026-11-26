@@ -9,6 +9,7 @@
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">{{ $t('Lag en quiz') }}</router-link>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">{{ $t('Mine quizer') }}</router-link>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">{{ $t('Dagens quiz§AppT') }}</router-link>
+        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/ligaer" class="nav-link" :class="{ 'router-link-exact-active': leaguesActive }">{{ $t('Ligaer') }}</router-link>
         <!-- The same dropdowns for players and admins: only the menus differ -->
         <template v-if="!auth.isGuest.value">
           <div v-for="menu in topMenus" :key="menu.key" class="top-nav-dropdown">
@@ -206,7 +207,8 @@ const QUIZZES_MENU = {
   label: _t('Quizer'),
   items: [
     { to: '/generate', label: _t('Lag en quiz'), key: 'generate', primary: true },
-    { to: '/my-quizzes', label: _t('Mine quizer'), key: 'myQuizzes' }
+    { to: '/my-quizzes', label: _t('Mine quizer'), key: 'myQuizzes' },
+    { to: '/ligaer', label: _t('Ligaer'), key: null, also: ['/ligaer/ny', '/liga'] }
   ]
 }
 
@@ -241,6 +243,8 @@ const topMenus = computed(() => auth.isAdmin.value ? ADMIN_MENUS : PLAYER_MENUS)
 const bottomMenus = computed(() => auth.isAdmin.value ? [...ADMIN_MENUS, ADMIN_ACCOUNT_MENU] : [QUIZZES_MENU, ...PLAYER_MENUS, ACCOUNT_MENU])
 // The Dagens quiz tab stays lit on a quiz's own page too (/daily-quiz/:id), not only on the list.
 const dailyQuizActive = computed(() => router.currentRoute.value.path.startsWith('/daily-quiz'))
+// The Ligaer link stays lit on a league's own page and on an invite link
+const leaguesActive = computed(() => /^\/liga(er)?(\/|$)/.test(router.currentRoute.value.path))
 
 // Single "which player dropdown is open" ref (null | 'weekly' | 'games') - one at a
 // time, one menu open at a time.

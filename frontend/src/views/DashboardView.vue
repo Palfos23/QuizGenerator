@@ -31,6 +31,22 @@
       </div>
     </div>
 
+    <!-- Your leagues, with today's matchup - the "your opponent has played, you haven't" nudge shows here when you come back -->
+    <section v-if="leagues" class="dashboard-leagues">
+      <div class="dashboard-leagues-head">
+        <h2 class="dashboard-section-title" :style="{ '--section-accent': 'var(--gold)' }">{{ $t('Ligaene dine') }}</h2>
+        <router-link to="/ligaer" class="dashboard-leagues-all">{{ leagues.length ? $t('Alle ligaer →') : $t('Ligaer →') }}</router-link>
+      </div>
+      <div v-if="leagues.length" class="dashboard-leagues-list">
+        <LeagueCardItem v-for="c in leagues.slice(0, 3)" :key="c.id" :card="c" />
+      </div>
+      <router-link v-else to="/ligaer/ny" class="dashboard-leagues-empty">
+        <AppIcon name="crown" />
+        <span><strong>{{ $t('Spill mot vennene dine') }}</strong> {{ $t('Lag en liga på dagens quiz - head-to-head eller på poeng.') }}</span>
+        <span class="btn btn-secondary">{{ $t('Opprett en liga') }}</span>
+      </router-link>
+    </section>
+
     <!-- The advent calendar: a banner from November until the season is over (it says "coming soon" until 1 December). -->
     <router-link v-if="showAdventBanner" v-reveal to="/julekalender" class="dashboard-advent">
       <span class="dashboard-advent-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4M8 15h3" /></svg></span>
@@ -121,6 +137,7 @@ import { computed, onMounted, ref } from 'vue'
 import auth from '../services/auth'
 import api from '../services/api'
 import AppIcon from '../components/AppIcon.vue'
+import LeagueCardItem from '../components/league/LeagueCardItem.vue'
 import reveal from '../directives/reveal'
 
 // Cards are grouped into named sections (rendered as their own labeled block,
@@ -219,8 +236,12 @@ async function dismissReviewNotifications() {
   await Promise.allSettled(toDismiss.map(n => api.dismissDailyQuizReviewNotification(n.setId)))
 }
 
+// The leagues section: null until loaded (and for admins and guests, who have none)
+const leagues = ref(null)
+
 onMounted(async () => {
   if (auth.isAdmin.value || auth.isGuest.value) return
+  api.getMyLeagues().then(list => { leagues.value = list }).catch(() => { /* the dashboard works without it */ })
   try {
     reviewNotifications.value = await api.getDailyQuizReviewNotifications()
   } catch (e) {
@@ -234,3 +255,14 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.dashboard-leagues { margin: 8px 0 28px; }
+.dashboard-leagues-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.dashboard-leagues-all { font-size: 0.92rem; font-weight: 600; }
+.dashboard-leagues-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.dashboard-leagues-empty { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 16px; padding: 16px 18px; border: 1px dashed var(--rule); border-radius: var(--radius-lg); color: inherit; text-decoration: none; }
+.dashboard-leagues-empty .app-icon { width: 26px; height: 26px; color: var(--gold-ink); }
+.dashboard-leagues-empty > span:nth-child(2) { flex: 1; min-width: 200px; color: var(--text-dim); }
+.dashboard-leagues-empty strong { color: var(--text); margin-right: 4px; }
+</style>

@@ -28,6 +28,16 @@
       {{ $t('Kom tilbake snart.') }}
     </div>
 
+    <router-link to="/ligaer" class="dq-row" style="margin-top:14px;">
+      <div class="dq-row-main">
+        <div class="dq-row-title">{{ $t('Ligaer') }}</div>
+        <div class="dq-row-meta">{{ $t('Spill dagens quiz mot vennene dine - head-to-head eller på poeng.') }}</div>
+      </div>
+      <div class="dq-row-end">
+        <svg class="dq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+      </div>
+    </router-link>
+
     <DailyQuizWeeklyPanel style="margin-top:28px;" />
 
     <!-- Previous quizzes -->
