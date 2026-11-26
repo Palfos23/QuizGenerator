@@ -85,7 +85,7 @@
             </tbody>
           </table>
         </div>
-        <p v-if="season.format === 'HEAD_TO_HEAD' && season.playoffs" class="lg-foot">{{ $t('De fire øverste etter serien går til sluttspill.') }}</p>
+        <p v-if="season.format === 'HEAD_TO_HEAD' && season.playoffs" class="lg-foot">{{ $t('De fire øverste etter serien går til sluttspill.') }} {{ $t('Ved likt i et sluttspillmøte går den som endte høyest i serien videre.') }}</p>
         <p class="lg-foot">{{ $t('Du må svare samme dag for at quizen skal telle. Svar som venter på gjennomgang telles når de er sjekket.') }}</p>
       </section>
 
@@ -100,6 +100,7 @@
               <small v-else-if="d.date === season.today?.date">{{ $t('I dag') }}</small>
             </div>
             <LeagueMatchRow v-for="(m, i) in d.matches" :key="i" :match="m" />
+            <p v-if="d.stage !== 'REGULAR'" class="lg-byes">{{ $t('Ved likt går den som endte høyest i serien videre.') }}</p>
             <p v-if="d.byes.length" class="lg-byes">{{ $t('Fri runde') }}: {{ d.byes.map(playerName).join(', ') }}</p>
           </div>
           <button v-if="hiddenDays > 0" type="button" class="btn btn-secondary lg-more" @click="showAllDays = true">{{ $t('Vis hele terminlisten ({0} dag til)¦Vis hele terminlisten ({0} dager til)', [hiddenDays]) }}</button>

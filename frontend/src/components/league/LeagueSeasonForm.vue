@@ -57,7 +57,7 @@
       <input v-model="playoffs" type="checkbox" />
       <span>
         <strong>{{ $t('Sluttspill') }}</strong>
-        <small>{{ $t('De fire beste møtes i semifinaler dagen etter serien, og vinnerne spiller finale dagen etter det. Krever minst fire spillere.') }}</small>
+        <small>{{ $t('De fire beste møtes i semifinaler dagen etter serien, og vinnerne spiller finale dagen etter det. Ved likt går den som endte høyest i serien videre. Krever minst fire spillere.') }}</small>
       </span>
     </label>
 
