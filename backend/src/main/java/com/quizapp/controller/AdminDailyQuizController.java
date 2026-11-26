@@ -130,4 +130,13 @@ public class AdminDailyQuizController {
     public void resolve(@PathVariable Long id, @Valid @RequestBody DailyQuizResolveRequest request) {
         dailyQuizReviewService.resolve(id, request.getCorrect());
     }
+
+    public record YearPointsRequest(int points) {
+    }
+
+    // Override the automatic 2 / 1 / 0 on a Year answer (e.g. "88" written for 1988).
+    @PostMapping("/answers/{id}/year-points")
+    public void setYearPoints(@PathVariable Long id, @RequestBody YearPointsRequest request) {
+        dailyQuizReviewService.setYearPoints(id, request.points());
+    }
 }

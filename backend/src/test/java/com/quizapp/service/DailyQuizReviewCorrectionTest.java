@@ -206,6 +206,32 @@ class DailyQuizReviewCorrectionTest {
     }
 
     @Test
+    void anAdminCanOverrideTheAutomaticYearPoints() {
+        Question year = newQuestion("Year", "Events of a year", "1988");
+        Question other = newQuestion("General", "Capital of Norway?", "Oslo");
+        DailyQuizSet set = newSet(year, other);
+        AppUser user = newUser();
+        submit(set, user, "88", "Oslo"); // "88" reads as year 88 -> 0 points automatically
+        assertThat(dailyQuizService.getPlayState(set.getId(), user.getEmail()).getResult().getScore()).isEqualTo(1);
+
+        Long yearAnswerId = detailFor(user, set).getAnswers().get(0).getAnswerId();
+        reviewService.setYearPoints(yearAnswerId, 2);
+
+        DailyQuizPlayStateDto fixed = dailyQuizService.getPlayState(set.getId(), user.getEmail());
+        assertThat(fixed.getResult().getScore()).as("re-scored straight away").isEqualTo(3);
+        assertThat(fixed.getResult().getAnswers().get(0).getVerdict()).isEqualTo("CORRECT");
+
+        reviewService.setYearPoints(yearAnswerId, 1);
+        assertThat(dailyQuizService.getPlayState(set.getId(), user.getEmail()).getResult().getScore()).isEqualTo(2);
+        reviewService.setYearPoints(yearAnswerId, 0);
+        assertThat(dailyQuizService.getPlayState(set.getId(), user.getEmail()).getResult().getScore()).isEqualTo(1);
+
+        assertThatThrownBy(() -> reviewService.setYearPoints(yearAnswerId, 3)).isInstanceOf(IllegalArgumentException.class);
+        Long otherAnswerId = detailFor(user, set).getAnswers().get(1).getAnswerId();
+        assertThatThrownBy(() -> reviewService.setYearPoints(otherAnswerId, 1)).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
     void theAttemptDetailShowsStatusScoreAndMaxSoAChangedDecisionIsVisible() {
         Question q = newQuestion("General", "Capital of Norway?", "Oslo");
         DailyQuizSet set = newSet(q);

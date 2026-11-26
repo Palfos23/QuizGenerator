@@ -786,6 +786,9 @@ export default {
   adminResolveDailyQuizAnswer(id, correct) {
     return client.post(`/admin/daily-quiz/answers/${id}/resolve`, { correct }).then(r => r.data)
   },
+  adminSetDailyQuizYearPoints(id, points) {
+    return client.post(`/admin/daily-quiz/answers/${id}/year-points`, { points }).then(r => r.data)
+  },
 
   // --- Quiz templates: user-facing ---
   listQuizTemplates() {

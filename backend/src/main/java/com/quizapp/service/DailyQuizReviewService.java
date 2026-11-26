@@ -210,6 +210,33 @@ public class DailyQuizReviewService {
     }
 
     /**
+     * Overrides the automatic grading of a Year answer: the arithmetic only reads the digits that
+     * were written, so "88" for 1988 scores 0 although the player clearly meant it. The admin sets
+     * the points directly (0, 1 or 2); a graded attempt is re-scored straight away, and the weekly
+     * results and leagues follow the same way they do for any other changed decision.
+     */
+    @Transactional
+    public void setYearPoints(Long answerId, int points) {
+        if (points < 0 || points > DailyQuizScoring.EXACT_YEAR_POINTS) {
+            throw new IllegalArgumentException("Poeng må være mellom 0 og " + DailyQuizScoring.EXACT_YEAR_POINTS + ".");
+        }
+        DailyQuizAnswer answer = answerRepository.findById(answerId)
+                .filter(a -> !DailyQuizService.isExpired(a.getAttempt().getSet().getQuizDate()))
+                .orElseThrow(() -> new ResourceNotFoundException("Fant ikke svar med id " + answerId));
+        if (!DailyQuizScoring.isScoredAsYear(answer.getQuestion())) {
+            throw new IllegalStateException("Dette er ikke et årstallsspørsmål.");
+        }
+        DailyQuizAnswerVerdict verdict = points > 0 ? DailyQuizAnswerVerdict.CORRECT : DailyQuizAnswerVerdict.INCORRECT;
+        int current = answer.getVerdict() == DailyQuizAnswerVerdict.CORRECT ? answer.getPoints() : 0;
+        if (current == points && answer.getVerdict() == verdict) return;
+        answer.setVerdict(verdict);
+        answer.setPoints(points > 0 ? points : 0);
+        answer.setDecidedBy(DailyQuizDecisionSource.ADMIN);
+        answerRepository.save(answer);
+        afterDecision(answer.getAttempt());
+    }
+
+    /**
      * Records a verdict on one answer. Returns false when nothing changed (already decided that way - a double click, or
      * a page that was a little stale). A complaint still waiting on an answer that is now correct is settled in the
      * player's favour, since that is exactly what they asked for.

@@ -75,6 +75,18 @@
                 {{ $t('Feil§AdminDailyQuizAttemptViewT') }}
               </button>
             </div>
+            <!-- Year answers grade themselves, but the arithmetic only reads digits ("88" for 1988 scores 0),
+                 so the admin can set the points by hand. -->
+            <div v-else-if="a.yearQuestion" class="dq-segment" role="group" :aria-label="$t('Poeng for årstallet')">
+              <button
+                v-for="p in [0, 1, 2]"
+                :key="p"
+                type="button"
+                :class="[p > 0 ? 'ok' : 'bad', { 'is-on': yearPointsOf(a) === p }]"
+                :disabled="busyId === a.answerId"
+                @click="setYearPoints(a, p)"
+              >{{ $t('{0} poeng¦{0} poeng', [p]) }}</button>
+            </div>
             <span v-else class="dq-row-meta" style="margin:0;">{{ $t('Rettet automatisk') }}</span>
 
             <span class="spacer"></span>
@@ -158,6 +170,25 @@ async function resolve(answer, correct) {
     // Re-read from the server rather than patching the row locally: deciding or changing an answer
     // can grade the attempt or move its score, and the page shows that. Quietly - no loading
     // state, so the list doesn't blank out under the admin's cursor.
+    attempt.value = await api.adminGetDailyQuizAttempt(attemptId)
+  } catch (e) {
+    error.value = e.response?.data?.message || _t('Kunne ikke oppdatere svaret.')
+  } finally {
+    busyId.value = null
+  }
+}
+
+function yearPointsOf(answer) {
+  return answer.verdict === 'CORRECT' ? answer.points : 0
+}
+
+async function setYearPoints(answer, points) {
+  if (answer.verdict !== 'PENDING' && yearPointsOf(answer) === points) return
+  busyId.value = answer.answerId
+  error.value = ''
+  try {
+    await api.adminSetDailyQuizYearPoints(answer.answerId, points)
+    toast.show(_t('Satt til {0} poeng.¦Satt til {0} poeng.', [points]))
     attempt.value = await api.adminGetDailyQuizAttempt(attemptId)
   } catch (e) {
     error.value = e.response?.data?.message || _t('Kunne ikke oppdatere svaret.')

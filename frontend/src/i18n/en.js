@@ -1631,6 +1631,8 @@ export default {
  "Rett opp et feil spørsmål eller svar her - det er samme spørsmål som i spørsmålsbanken.": "Fix a wrong question or answer right here - it's the same question as in the question bank.",
  "Rette": "Correct",
  "Rettet automatisk": "Graded automatically",
+ "Poeng for årstallet": "Points for the year",
+ "Satt til {0} poeng.¦Satt til {0} poeng.": "Set to {0} point.¦Set to {0} points.",
  "Riktig - {0}!": "Correct - {0}!",
  "Riktig by:": "Correct city:",
  "Riktig svar§AdminDailyQuizAttemptViewT": "Correct answer",
