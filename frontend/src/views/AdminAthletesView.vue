@@ -184,7 +184,15 @@ function triggerFilePicker() {
   fileInput.value?.click()
 }
 
-function parseCsvLine(line) {
+// Excel in Norwegian (and other comma-decimal locales) saves "CSV" with semicolons; some tools use tabs.
+// The header row decides which one this file uses.
+function detectDelimiter(headerLine) {
+  const counts = [';', ',', '\t'].map(d => [d, headerLine.split(d).length - 1])
+  counts.sort((a, b) => b[1] - a[1])
+  return counts[0][1] > 0 ? counts[0][0] : ','
+}
+
+function parseCsvLine(line, delimiter = ',') {
   const cells = []
   let current = ''
   let inQuotes = false
@@ -196,7 +204,7 @@ function parseCsvLine(line) {
       else { current += char }
     } else if (char === '"') {
       inQuotes = true
-    } else if (char === ',') {
+    } else if (char === delimiter) {
       cells.push(current)
       current = ''
     } else {
@@ -214,13 +222,15 @@ function onFileSelected(event) {
 
   const reader = new FileReader()
   reader.onload = () => {
-    const lines = String(reader.result).split(/\r?\n/).filter(l => l.trim().length > 0)
+    // Any line ending: \r\n (Windows), \n, or a lone \r (older Mac / some Excel exports). A UTF-8 BOM is dropped too.
+    const lines = String(reader.result).replace(/^\uFEFF/, '').split(/\r\n|\r|\n/).filter(l => l.trim().length > 0)
     if (!lines.length) {
       error.value = _t('Filen ser ut til å være tom.')
       return
     }
 
-    const header = parseCsvLine(lines[0]).map(h => h.toLowerCase())
+    const delimiter = detectDelimiter(lines[0])
+    const header = parseCsvLine(lines[0], delimiter).map(h => h.toLowerCase())
     const nameIdx = header.indexOf('name')
     const sportIdx = header.indexOf('category') !== -1 ? header.indexOf('category') : header.indexOf('sport')
     const teamIdx = header.indexOf('group') !== -1 ? header.indexOf('group') : header.indexOf('team')
@@ -236,7 +246,7 @@ function onFileSelected(event) {
     const seenInFile = new Set()
 
     importRows.value = lines.slice(1).map(line => {
-      const cells = parseCsvLine(line)
+      const cells = parseCsvLine(line, delimiter)
       const name = cells[nameIdx] || ''
       const rawSport = (cells[sportIdx] || '').trim()
       // Case-insensitive match against the real category list, normalized to
