@@ -7,8 +7,10 @@
       <section class="dashboard-hero">
         <h1>{{ $t('Dagens quiz§DashboardViewJ') }}</h1>
         <!-- Says where you stand with today's quiz (it used to be a pop-up on arrival, plus a second card further down) -->
-        <p class="page-subtitle landing-lede">{{ hero.lede }}</p>
-        <div class="dashboard-hero-actions">
+        <!-- Hidden (space kept) until we know whether today's quiz is played - otherwise "Spill dagens quiz"
+             flashes before switching to "Se resultatet". -->
+        <p class="page-subtitle landing-lede dashboard-hero-status" :class="{ 'is-pending': heroPending }">{{ hero.lede }}</p>
+        <div class="dashboard-hero-actions dashboard-hero-status" :class="{ 'is-pending': heroPending }" :aria-busy="heroPending">
           <router-link :to="hero.to" class="btn btn-lg" :class="hero.done ? 'btn-secondary' : 'btn-primary'">{{ hero.button }} →</router-link>
           <span v-if="hero.score" class="dashboard-hero-score"><strong>{{ hero.score }}</strong> {{ $t('poeng i dag') }}</span>
           <router-link v-if="hero.done" to="/daily-quiz" class="dashboard-hero-link">{{ $t('Tidligere quizer og ukestilling') }}</router-link>
@@ -207,7 +209,14 @@ const dashboardSections = computed(() =>
 // /daily-quiz/active endpoint the Daily Quiz list page itself calls (it lazily creates today's set if it
 // doesn't exist yet, and reports this user's own attempt status against it). Until that answer is in -
 // and for an admin or a guest, who never ask - the hero is the plain invitation to play.
-const todayQuiz = ref(null)
+// A finished, scored quiz is remembered for this tab (per login and per day), so coming back to the dashboard
+// shows the result at once while it's refreshed in the background. Other states aren't: "not started" turns
+// into "played" the moment you play, and showing the old one first is exactly the flash this avoids.
+const todayKey = () => `${auth.state.token}|${new Date().toDateString()}`
+const cached = todayQuizCache.key === todayKey() ? todayQuizCache : null
+const todayQuiz = ref(cached ? cached.quiz : null)
+const askingServer = !(auth.isAdmin.value || auth.isGuest.value)
+const heroPending = ref(askingServer && !cached)
 const hero = computed(() => {
   const q = todayQuiz.value
   const to = q ? `/daily-quiz/${q.id}` : '/daily-quiz'
@@ -240,23 +249,34 @@ async function dismissReviewNotifications() {
 const leagues = ref(null)
 
 onMounted(async () => {
-  if (auth.isAdmin.value || auth.isGuest.value) return
+  if (!askingServer) return
+  // Today's quiz first, and not behind the other requests - it decides what the hero says.
+  api.getActiveDailyQuizzes()
+    .then(([active]) => {
+      todayQuiz.value = active || null
+      const graded = todayQuiz.value?.status === 'GRADED'
+      todayQuizCache.key = graded ? todayKey() : null
+      todayQuizCache.quiz = graded ? todayQuiz.value : null
+    })
+    .catch(() => { /* a nice-to-have - the hero then just invites you to play */ })
+    .finally(() => { heroPending.value = false })
   api.getMyLeagues().then(list => { leagues.value = list }).catch(() => { /* the dashboard works without it */ })
   try {
     reviewNotifications.value = await api.getDailyQuizReviewNotifications()
   } catch (e) {
     // a nice-to-have - the page works without it
   }
-  try {
-    const [active] = await api.getActiveDailyQuizzes()
-    todayQuiz.value = active || null
-  } catch (e) {
-    // a nice-to-have - the hero then just invites you to play
-  }
 })
 </script>
 
+<script>
+// Lives as long as the tab: what the dashboard last learned about today's quiz.
+const todayQuizCache = { key: null, quiz: null }
+</script>
+
 <style scoped>
+.dashboard-hero-status { transition: opacity 0.2s ease; }
+.dashboard-hero-status.is-pending { opacity: 0; pointer-events: none; }
 .dashboard-leagues { margin: 8px 0 28px; }
 .dashboard-leagues-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .dashboard-leagues-all { font-size: 0.92rem; font-weight: 600; }
