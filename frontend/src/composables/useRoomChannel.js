@@ -1,7 +1,19 @@
 import { onMounted, onUnmounted } from 'vue'
-import { Client } from '@stomp/stompjs'
-import SockJS from 'sockjs-client'
 import api from '../services/api'
+
+// The socket libraries are only fetched once a game room actually connects, not with every page. Besides
+// the smaller download, sockjs-client registers an 'unload' listener the moment it loads, which Chrome now
+// blocks and reports in the console ("Permissions policy violation: unload") - on every page, as long as it
+// was bundled with shared code.
+let socketLibs = null
+function loadSocketLibs() {
+  if (!socketLibs) {
+    socketLibs = Promise.all([import('@stomp/stompjs'), import('sockjs-client')])
+      .then(([stomp, sockjs]) => ({ Client: stomp.Client, SockJS: sockjs.default || sockjs }))
+      .catch(e => { socketLibs = null; throw e }) // let a later room try again
+  }
+  return socketLibs
+}
 
 // The backend serves the WS handshake at /ws, a sibling of /api, not under it -
 // same origin as VITE_API_BASE_URL, just without the /api suffix.
@@ -111,6 +123,7 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
   const roomCode = topicPath.match(/\/rooms\/([^/]+)\//)?.[1]
 
   let stompClient = null
+  let generation = 0 // bumped by start/stop, so a library load that finishes after stop() does nothing
   let subscription = null
   let pollTimer = null
   let connectTimeoutTimer = null
@@ -156,6 +169,15 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
     }
     clearInterval(presencePollTimer)
     presencePollTimer = setInterval(poll, PRESENCE_POLL_MS)
+    connectTimeoutTimer = setTimeout(startFallbackPolling, CONNECT_TIMEOUT_MS)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    const mine = ++generation
+    loadSocketLibs()
+      .then(libs => { if (mine === generation) connect(libs) })
+      .catch(() => { if (mine === generation) startFallbackPolling() }) // couldn't fetch the libraries - polling still works
+  }
+
+  function connect({ Client, SockJS }) {
     stompClient = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
       // Randomized per client (3-5s) rather than a fixed 4000 - a shared
@@ -182,12 +204,11 @@ export function createRoomChannel(topicPath, { poll, onMessage }) {
       onDisconnect: startFallbackPolling,
       onStompError: startFallbackPolling
     })
-    connectTimeoutTimer = setTimeout(startFallbackPolling, CONNECT_TIMEOUT_MS)
     stompClient.activate()
-    document.addEventListener('visibilitychange', handleVisibilityChange)
   }
 
   function stop() {
+    generation++
     clearTimeout(connectTimeoutTimer)
     clearInterval(heartbeatTimer)
     clearInterval(presencePollTimer)

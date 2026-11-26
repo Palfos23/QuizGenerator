@@ -56,6 +56,7 @@ public class AccountService {
     private final LoginRateLimiter loginRateLimiter;
     private final JwtService jwtService;
     private final LeagueService leagueService;
+    private final DisplayNameService displayNameService;
 
     public AccountService(AppUserRepository appUserRepository,
                            SavedQuizRepository savedQuizRepository,
@@ -73,9 +74,11 @@ public class AccountService {
                            PasswordEncoder passwordEncoder,
                            LoginRateLimiter loginRateLimiter,
                            JwtService jwtService,
-                           LeagueService leagueService) {
+                           LeagueService leagueService,
+                          DisplayNameService displayNameService) {
         this.jwtService = jwtService;
         this.leagueService = leagueService;
+        this.displayNameService = displayNameService;
         this.appUserRepository = appUserRepository;
         this.savedQuizRepository = savedQuizRepository;
         this.submittedQuestionRepository = submittedQuestionRepository;
@@ -156,12 +159,14 @@ public class AccountService {
     /**
      * Lets a player choose the name the app shows for them (leaderboards, weekly standings, game rooms).
      * Returns a fresh sign-in token carrying the new name, so the current session shows it straight away.
-     * Two players may use the same name - boards tell them apart with a surname initial.
+     * Names are unique ignoring case (see DisplayNameService); keeping your own name, or changing only its
+     * capitalisation, is fine.
      */
     @Transactional
     public AuthResponse updateDisplayName(String email, String rawName) {
         AppUser user = requireUser(email);
         String name = cleanDisplayName(rawName);
+        displayNameService.requireFree(name, user.getId());
         user.setName(name);
         appUserRepository.save(user);
         dailyQuizResultRepository.updatePlayerName(user.getId(), name); // the retained daily quiz results use it too

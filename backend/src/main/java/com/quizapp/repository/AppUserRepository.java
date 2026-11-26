@@ -10,4 +10,7 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     Optional<AppUser> findByGoogleSubject(String googleSubject);
     Optional<AppUser> findByResetTokenHash(String resetTokenHash);
     Optional<AppUser> findByVerificationTokenHash(String verificationTokenHash);
+    // Display names are unique ignoring case (see DisplayNameService).
+    boolean existsByNameIgnoreCase(String name);
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 }

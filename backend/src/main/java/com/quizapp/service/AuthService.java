@@ -35,6 +35,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final LoginRateLimiter loginRateLimiter;
     private final MailService mailService;
+    private final DisplayNameService displayNameService;
     private final String frontendBaseUrl;
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -45,6 +46,7 @@ public class AuthService {
                         PasswordEncoder passwordEncoder,
                         LoginRateLimiter loginRateLimiter,
                         MailService mailService,
+                        DisplayNameService displayNameService,
                         @Value("${app.frontend-base-url}") String frontendBaseUrl) {
         this.appUserRepository = appUserRepository;
         this.adminUserRepository = adminUserRepository;
@@ -53,6 +55,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.loginRateLimiter = loginRateLimiter;
         this.mailService = mailService;
+        this.displayNameService = displayNameService;
         this.frontendBaseUrl = frontendBaseUrl;
     }
 
@@ -67,7 +70,9 @@ public class AuthService {
                 .orElseGet(() -> {
                     AppUser fresh = new AppUser();
                     fresh.setEmail(verified.email());
-                    fresh.setName(verified.name());
+                    // Taken from the Google profile without the player typing it - so a clash gets a free
+                    // variant ("Ola Nordmann 2") rather than blocking sign-in; it can be changed on the account page.
+                    fresh.setName(displayNameService.freeVariant(verified.name()));
                     fresh.setGoogleSubject(verified.subject());
                     return appUserRepository.save(fresh);
                 });
@@ -116,9 +121,12 @@ public class AuthService {
             throw new IllegalArgumentException("Det finnes allerede en konto med den e-postadressen - prøv å logge inn i stedet.");
         }
 
+        String displayName = AccountService.cleanDisplayName(name);
+        displayNameService.requireFree(displayName, null);
+
         AppUser user = new AppUser();
         user.setEmail(email);
-        user.setName(name.trim());
+        user.setName(displayName);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setEmailVerified(false);
         String rawToken = applyFreshVerificationToken(user);
