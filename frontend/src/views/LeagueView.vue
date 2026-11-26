@@ -1,6 +1,6 @@
 <template>
   <div class="dq-page dq-page--wide">
-    <router-link to="/ligaer" class="dq-back">
+    <router-link :to="adminView ? '/admin/leagues' : '/ligaer'" class="dq-back">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
       {{ $t('Ligaer') }}
     </router-link>
@@ -10,7 +10,7 @@
 
     <template v-if="league">
       <header class="dq-hero lg-head">
-        <span class="dq-eyebrow">{{ formatName(season.format) }} · {{ $t('Sesong {0}', [season.number]) }} · {{ stateName(season.state) }}</span>
+        <span class="dq-eyebrow"><template v-if="adminView">{{ $t('Admin - bare lesing') }} · </template>{{ formatName(season.format) }} · {{ $t('Sesong {0}', [season.number]) }} · {{ stateName(season.state) }}</span>
         <h1 class="dq-title">{{ league.name }}</h1>
         <p class="dq-sub">
           {{ seasonSpan(season) }}
@@ -27,10 +27,10 @@
       <!-- Inviting: the code and a link to share -->
       <section class="lg-invite" :class="{ 'is-new': justCreated }">
         <div>
-          <div class="lg-invite-label">{{ justCreated ? $t('Ligaen er klar! Inviter vennene dine') : $t('Inviter venner') }}</div>
+          <div class="lg-invite-label">{{ adminView ? $t('Ligakode') : justCreated ? $t('Ligaen er klar! Inviter vennene dine') : $t('Inviter venner') }}</div>
           <div class="lg-invite-code">{{ league.code }}</div>
         </div>
-        <div class="lg-invite-actions">
+        <div v-if="!adminView" class="lg-invite-actions">
           <button type="button" class="btn btn-secondary btn-sm" @click="copyLink">{{ $t('Kopier lenke') }}</button>
           <button v-if="canShare" type="button" class="btn btn-secondary btn-sm" @click="share">{{ $t('Del') }}</button>
         </div>
@@ -47,9 +47,9 @@
           <span class="lg-today-count">{{ $t('{0} av {1} har spilt', [season.today.playedCount, season.today.participantCount]) }}</span>
         </div>
         <LeagueMatchRow v-if="season.today.myMatch" :match="season.today.myMatch" />
-        <p v-else-if="season.format === 'HEAD_TO_HEAD' && inSeason" class="lg-today-text">{{ $t('Fri runde i dag - dagens quiz teller likevel på snittet ditt.') }}</p>
-        <router-link v-if="!season.today.iPlayed && inSeason" to="/daily-quiz" class="btn btn-primary">{{ $t('Spill dagens quiz') }} →</router-link>
-        <p v-else-if="season.today.iPlayed" class="lg-today-text">{{ $t('Du har spilt i dag.') }}</p>
+        <p v-else-if="!adminView && season.format === 'HEAD_TO_HEAD' && inSeason" class="lg-today-text">{{ $t('Fri runde i dag - dagens quiz teller likevel på snittet ditt.') }}</p>
+        <router-link v-if="!adminView && !season.today.iPlayed && inSeason" to="/daily-quiz" class="btn btn-primary">{{ $t('Spill dagens quiz') }} →</router-link>
+        <p v-else-if="!adminView && season.today.iPlayed" class="lg-today-text">{{ $t('Du har spilt i dag.') }}</p>
       </section>
 
       <nav class="lg-tabs" role="tablist">
@@ -166,7 +166,10 @@
           <LeagueSeasonForm :submit-label="busy ? $t('Lagrer…') : (season.state === 'UPCOMING' ? $t('Lagre endringene') : $t('Start sesongen'))" :busy="busy" @submit="startSeason" />
         </div>
 
-        <div class="lg-danger">
+        <div v-if="adminView" class="lg-danger">
+          <button type="button" class="btn btn-secondary lg-delete" @click="removeLeague">{{ $t('Slett ligaen') }}</button>
+        </div>
+        <div v-else class="lg-danger">
           <button type="button" class="btn btn-secondary" @click="leave">{{ $t('Forlat ligaen') }}</button>
           <button v-if="league.owner" type="button" class="btn btn-secondary lg-delete" @click="removeLeague">{{ $t('Slett ligaen') }}</button>
         </div>
@@ -197,6 +200,8 @@ const busy = ref(false)
 const tab = ref('table')
 const showAllDays = ref(false)
 const justCreated = route.query.ny === '1'
+// The admin opens any league read-only: no "me", no owner controls - just the option to delete it
+const adminView = !!route.meta.adminView
 const canShare = typeof navigator !== 'undefined' && !!navigator.share
 
 const season = computed(() => league.value?.season)
@@ -259,7 +264,7 @@ async function load(seasonNumber) {
   loading.value = true
   error.value = ''
   try {
-    league.value = await api.getLeague(id, seasonNumber)
+    league.value = adminView ? await api.adminGetLeague(id, seasonNumber) : await api.getLeague(id, seasonNumber)
     showAllDays.value = false
   } catch (e) {
     error.value = e.response?.data?.message || _t('Kunne ikke laste ligaen.')
@@ -322,8 +327,9 @@ async function leave() {
 async function removeLeague() {
   if (!window.confirm(_t('Slette ligaen for alle? Alle sesonger og resultater forsvinner, og det kan ikke angres.'))) return
   try {
-    await api.deleteLeague(id)
-    router.push('/ligaer')
+    if (adminView) await api.adminDeleteLeague(id)
+    else await api.deleteLeague(id)
+    router.push(adminView ? '/admin/leagues' : '/ligaer')
   } catch (e) {
     toast.show(e.response?.data?.message || _t('Noe gikk galt - prøv igjen.'))
   }

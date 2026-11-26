@@ -83,6 +83,9 @@ const routes = [
   { path: '/ligaer', name: 'leagues', component: () => import('../views/LeaguesView.vue'), meta: { requiresAuth: true } },
   { path: '/ligaer/ny', name: 'league-create', component: () => import('../views/LeagueCreateView.vue'), meta: { requiresAuth: true } },
   { path: '/ligaer/:id(\\d+)', name: 'league', component: () => import('../views/LeagueView.vue'), meta: { requiresAuth: true } },
+  // The admin's view of the leagues: every league, and any one of them read-only (the same page, without a "me")
+  { path: '/admin/leagues', name: 'admin-leagues', component: () => import('../views/AdminLeaguesView.vue'), meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/leagues/:id(\\d+)', name: 'admin-league', component: () => import('../views/LeagueView.vue'), meta: { requiresAuth: true, requiresAdmin: true, adminView: true } },
   { path: '/liga/:code', name: 'league-join', component: () => import('../views/LeagueJoinView.vue') },
   { path: '/daily-quiz', name: 'daily-quiz', component: DailyQuizListView, meta: { requiresAuth: true } },
   // Today's quiz for a visitor without an account (the landing page's main button). Answers stay in the

@@ -204,4 +204,27 @@ class LeagueServiceTest {
         assertThatThrownBy(() -> leagueService.create(ada.getEmail(),
                 new CreateLeagueRequest("Tull", LeagueFormat.POINTS, "neste uke", null, false))).isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void theAdminSeesEveryLeagueWithoutBeingInIt() {
+        AppUser ada = user("Ada"), bo = user("Bo");
+        LeagueDetail created = leagueService.create(ada.getEmail(),
+                new CreateLeagueRequest("Admin-sjekk", LeagueFormat.POINTS, "TODAY", null, false));
+        leagueService.join(bo.getEmail(), created.code());
+
+        AdminLeagueOverview overview = leagueService.adminOverview();
+        AdminLeagueRow row = overview.rows().stream().filter(r -> r.id().equals(created.id())).findFirst().orElseThrow();
+        assertThat(row.memberCount()).isEqualTo(2);
+        assertThat(row.ownerName()).isEqualTo("Ada");
+        assertThat(row.state()).isEqualTo("ACTIVE");
+        assertThat(overview.leagues()).isGreaterThanOrEqualTo(1);
+
+        LeagueDetail asAdmin = leagueService.adminDetail(created.id(), null);
+        assertThat(asAdmin.owner()).isFalse();
+        assertThat(asAdmin.canStartNewSeason()).isFalse();
+        assertThat(asAdmin.members()).noneMatch(m -> m.player().me());
+
+        leagueService.adminDelete(created.id());
+        assertThatThrownBy(() -> leagueService.adminDetail(created.id(), null)).isInstanceOf(ResourceNotFoundException.class);
+    }
 }

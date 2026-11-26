@@ -315,6 +315,7 @@ const ADMIN_MENUS = [
     label: _t('Innsikt'),
     items: [
       { to: '/admin/statistics', label: _t('Statistikk') },
+      { to: '/admin/leagues', label: _t('Ligaer') },
       { to: '/admin/reports', label: _t('Rapporter') },
       { to: '/admin/expiring-content', label: _t('Kan utløpe') },
       { to: '/admin/duplicate-subjects', label: _t('Dupliserte emner') },

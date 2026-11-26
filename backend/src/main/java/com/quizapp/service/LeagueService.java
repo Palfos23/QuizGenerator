@@ -231,27 +231,31 @@ public class LeagueService {
     @Transactional
     public LeagueDetail detail(String email, Long leagueId, Integer seasonNumber) {
         AppUser me = player(email);
-        League league = memberLeague(me, leagueId);
+        return buildDetail(memberLeague(me, leagueId), me.getId(), seasonNumber);
+    }
+
+    /** meId null: seen from outside the league (the admin) - nobody is "me", and there are no owner controls. */
+    private LeagueDetail buildDetail(League league, Long meId, Integer seasonNumber) {
         List<LeagueSeason> seasons = seasonRepository.findByLeague_IdOrderByNumberAsc(league.getId());
         seasons.forEach(this::ensureScheduled);
         LeagueSeason chosen = seasons.stream()
                 .filter(x -> seasonNumber == null || x.getNumber() == seasonNumber)
                 .reduce((first, second) -> second)
                 .orElseThrow(() -> new ResourceNotFoundException(RequestLang.t("Fant ikke sesongen.", "Season not found.")));
-        SeasonView view = seasonView(league, chosen, me.getId());
+        SeasonView view = seasonView(league, chosen, meId);
 
         List<LeagueMember> members = memberRepository.findByLeague_IdOrderByJoinedAtAscIdAsc(league.getId());
         Map<Long, String> names = names(members.stream().map(LeagueMember::getUserId).collect(Collectors.toSet()));
-        SeasonView current = chosen.equals(seasons.get(seasons.size() - 1)) ? view : seasonView(league, seasons.get(seasons.size() - 1), me.getId());
+        SeasonView current = chosen.equals(seasons.get(seasons.size() - 1)) ? view : seasonView(league, seasons.get(seasons.size() - 1), meId);
         Set<Long> inCurrent = current.participants().stream().map(PlayerRef::id).collect(Collectors.toSet());
         List<MemberView> memberViews = members.stream().filter(LeagueMember::isActive)
-                .map(m -> new MemberView(new PlayerRef(m.getUserId(), names.get(m.getUserId()), m.getUserId().equals(me.getId()), false, false),
+                .map(m -> new MemberView(new PlayerRef(m.getUserId(), names.get(m.getUserId()), m.getUserId().equals(meId), false, false),
                         m.getUserId().equals(league.getOwnerUserId()), inCurrent.contains(m.getUserId())))
                 .collect(Collectors.toList());
 
         LeagueSeason latest = seasons.get(seasons.size() - 1);
         String latestState = stateOf(latest);
-        boolean owner = league.getOwnerUserId().equals(me.getId());
+        boolean owner = league.getOwnerUserId().equals(meId);
         boolean canNew = owner && ("FINISHED".equals(latestState) || "UPCOMING".equals(latestState)
                 || (latest.getFormat() == LeagueFormat.POINTS && latest.getEndDate() == null));
 
@@ -259,7 +263,86 @@ public class LeagueService {
                 .map(x -> new SeasonSummary(x.getNumber(), x.getFormat(), x.getStartDate(), x.getEndDate(), stateOf(x)))
                 .collect(Collectors.toList());
         return new LeagueDetail(league.getId(), league.getName(), league.getCode(), owner, canNew, memberViews,
-                summaries, view, rivalries(league, seasons, chosen, view, me.getId()));
+                summaries, view, meId == null ? List.of() : rivalries(league, seasons, chosen, view, meId));
+    }
+
+    // ---------- the admin's view ----------
+
+    /** Every league at a glance: totals, and one row per league with how much its players are playing. */
+    @Transactional
+    public AdminLeagueOverview adminOverview() {
+        LocalDate today = today();
+        Instant monthAgo = today.minusDays(30).atStartOfDay(clock.getZone()).toInstant();
+        LocalDate weekFrom = today.minusDays(7);
+        LocalDate weekTo = today.minusDays(1);
+
+        List<League> leagues = leagueRepository.findAll();
+        List<LeagueMember> allMembers = memberRepository.findAll();
+        Map<Long, List<LeagueMember>> byLeague = allMembers.stream().collect(Collectors.groupingBy(m -> m.getLeague().getId()));
+        Map<Long, String> ownerNames = names(leagues.stream().map(League::getOwnerUserId).collect(Collectors.toSet()));
+
+        List<AdminLeagueRow> rows = new ArrayList<>();
+        int active = 0, upcoming = 0, finished = 0, h2h = 0, points = 0, playoffs = 0, createdRecently = 0;
+        long playedAll = 0, possibleAll = 0;
+        for (League league : leagues) {
+            List<LeagueSeason> seasons = seasonRepository.findByLeague_IdOrderByNumberAsc(league.getId());
+            if (seasons.isEmpty()) continue;
+            LeagueSeason season = seasons.get(seasons.size() - 1);
+            ensureScheduled(season);
+            String state = stateOf(season);
+            switch (state) {
+                case "ACTIVE" -> active++;
+                case "UPCOMING" -> upcoming++;
+                default -> finished++;
+            }
+            if (season.getFormat() == LeagueFormat.HEAD_TO_HEAD) h2h++; else points++;
+            if (season.isPlayoffs()) playoffs++;
+            if (league.getCreatedAt().isAfter(monthAgo)) createdRecently++;
+
+            List<LeagueMember> members = byLeague.getOrDefault(league.getId(), List.of());
+            List<LeagueMatch> matches = season.getFormat() == LeagueFormat.HEAD_TO_HEAD && season.isScheduled()
+                    ? matchRepository.findBySeason_IdOrderByQuizDateAscIdAsc(season.getId()) : List.of();
+            List<Long> participants = participants(season, members, matches, today);
+
+            // How much of the last 7 finished days the season's players actually played (inside the season)
+            LocalDate from = season.getStartDate().isAfter(weekFrom) ? season.getStartDate() : weekFrom;
+            LocalDate to = season.getEndDate() != null && season.getEndDate().isBefore(weekTo) ? season.getEndDate() : weekTo;
+            int played = 0, possible = 0;
+            if (!participants.isEmpty() && !from.isAfter(to)) {
+                possible = participants.size() * (int) (to.toEpochDay() - from.toEpochDay() + 1);
+                played = dayScoreRepository.findByUserIdInAndQuizDateBetween(participants, from, to).size();
+            }
+            playedAll += played;
+            possibleAll += possible;
+
+            rows.add(new AdminLeagueRow(league.getId(), league.getName(), league.getCode(), ownerNames.get(league.getOwnerUserId()),
+                    (int) members.stream().filter(LeagueMember::isActive).count(), season.getFormat(), season.getNumber(), state,
+                    season.getStartDate(), season.getEndDate(), season.isPlayoffs(), league.getCreatedAt(), participants.size(),
+                    played, possible));
+        }
+        rows.sort(Comparator.comparing(AdminLeagueRow::createdAt).reversed());
+
+        List<LeagueMember> activeMembers = allMembers.stream().filter(LeagueMember::isActive).collect(Collectors.toList());
+        int players = (int) activeMembers.stream().map(LeagueMember::getUserId).distinct().count();
+        int joinedRecently = (int) activeMembers.stream().filter(m -> m.getJoinedAt().isAfter(monthAgo)).count();
+        double avgMembers = rows.isEmpty() ? 0 : Math.round(activeMembers.size() * 10.0 / rows.size()) / 10.0;
+        Integer playedPercent = possibleAll == 0 ? null : (int) Math.round(100.0 * playedAll / possibleAll);
+        return new AdminLeagueOverview(rows.size(), active, upcoming, finished, activeMembers.size(), players, avgMembers,
+                h2h, points, playoffs, createdRecently, joinedRecently, playedPercent, rows);
+    }
+
+    @Transactional
+    public LeagueDetail adminDetail(Long leagueId, Integer seasonNumber) {
+        League league = leagueRepository.findById(leagueId)
+                .orElseThrow(() -> new ResourceNotFoundException(RequestLang.t("Fant ikke ligaen.", "League not found.")));
+        return buildDetail(league, null, seasonNumber);
+    }
+
+    /** The admin removes a league (an offensive name, say) - for everyone, with all its seasons. */
+    @Transactional
+    public void adminDelete(Long leagueId) {
+        deleteLeague(leagueRepository.findById(leagueId)
+                .orElseThrow(() -> new ResourceNotFoundException(RequestLang.t("Fant ikke ligaen.", "League not found."))));
     }
 
     // ---------- the season, worked out ----------

@@ -121,4 +121,22 @@ public final class LeagueDtos {
     public record JoinPreview(Long id, String name, String code, LeagueFormat format, String state, LocalDate startDate,
                               LocalDate endDate, int memberCount, boolean alreadyMember, boolean joinsCurrentSeason) {
     }
+
+    // ---------- the admin's overview ----------
+
+    /** One league as the admin's list shows it. played/possible: day scores in the last 7 finished days of its current season. */
+    public record AdminLeagueRow(Long id, String name, String code, String ownerName, int memberCount, LeagueFormat format,
+                                 int seasonNumber, String state, LocalDate startDate, LocalDate endDate, boolean playoffs,
+                                 java.time.Instant createdAt, int participants, int playedLast7, int possibleLast7) {
+    }
+
+    /**
+     * Totals across every league. Format and state counts go by each league's current season. playedPercentLast7: of all
+     * the days the current seasons' players could have played in the last week, how many they did (null: none to count).
+     */
+    public record AdminLeagueOverview(int leagues, int activeLeagues, int upcomingLeagues, int finishedLeagues,
+                                      int memberships, int players, double averageMembers, int headToHead, int points,
+                                      int withPlayoffs, int createdLast30, int joinedLast30, Integer playedPercentLast7,
+                                      List<AdminLeagueRow> rows) {
+    }
 }

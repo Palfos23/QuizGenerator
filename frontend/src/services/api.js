@@ -618,6 +618,15 @@ export default {
 
   // --- Daily quiz: user-facing ---
   // --- Leagues: private daily-quiz competitions (see LeagueController) ---
+  adminGetLeagues() {
+    return client.get('/admin/leagues').then(r => r.data)
+  },
+  adminGetLeague(id, season) {
+    return client.get(`/admin/leagues/${id}`, { params: season ? { season } : {} }).then(r => r.data)
+  },
+  adminDeleteLeague(id) {
+    return client.delete(`/admin/leagues/${id}`)
+  },
   getMyLeagues() {
     return client.get('/leagues').then(r => r.data)
   },
