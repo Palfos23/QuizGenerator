@@ -287,7 +287,7 @@ async function submitGuess(athlete) {
       const idx = state.value.entries.findIndex(e => e.id === result.entry.id)
       if (idx !== -1) state.value.entries.splice(idx, 1, result.entry)
       justSolvedId.value = result.entry.id
-      setTimeout(() => { if (justSolvedId.value === result.entry.id) justSolvedId.value = null }, 700)
+      setTimeout(() => { if (justSolvedId.value === result.entry.id) justSolvedId.value = null }, 800)
     } else {
       shakeGuessBox.value = true
       setTimeout(() => { shakeGuessBox.value = false }, 450)

@@ -358,7 +358,7 @@ async function submitGuess(athlete) {
       const idx = gridState.value.entries.findIndex(e => e.id === result.entry.id)
       if (idx !== -1) gridState.value.entries[idx] = result.entry
       justSolvedId.value = result.entry.id
-      setTimeout(() => { justSolvedId.value = null }, 600)
+      setTimeout(() => { justSolvedId.value = null }, 800)
       if (result.allSolved) {
         gridComplete.value = true
         return

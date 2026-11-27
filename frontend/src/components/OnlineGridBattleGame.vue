@@ -355,7 +355,7 @@ async function submitGuess(athlete) {
     if (after > before) {
       const newlySolved = fresh.entries.find(e => e.solved && !state.value.entries.find(old => old.id === e.id && old.solved))
       justSolvedId.value = newlySolved?.id || null
-      setTimeout(() => { justSolvedId.value = null }, 600)
+      setTimeout(() => { justSolvedId.value = null }, 800)
       showResultOverlay(true)
     } else {
       shakeGuessBox.value = true
