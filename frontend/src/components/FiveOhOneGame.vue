@@ -8,33 +8,23 @@
       <p class="fiveoo-rules-reminder">{{ $t('Første som kommer ut mellom 0 og -10 vinner') }}</p>
     </div>
 
-    <div v-if="!winner" class="mp-player-row">
-      <div
+    <div v-if="!winner" class="fiveoo-players">
+      <FiveOhOnePlayerCard
         v-for="p in players"
         :key="p"
-        class="mp-player-card"
-        :class="{ 'active-turn': p === currentPlayer && !winner, 'you-row': windowReacher === p }"
-      >
-        <strong>{{ p }}</strong>
-        <div style="font-size:1.8rem; font-weight:700; margin-top:4px;" :style="{ color: totals[p] <= 0 && totals[p] >= -10 ? 'var(--teal)' : 'var(--text)' }">
-          {{ totals[p] }}
-        </div>
-        <div v-if="windowReacher === p && !winner" style="font-size:0.78rem; color:var(--gold); margin-top:2px;">{{ $t('I vinduet!') }}</div>
-        <div v-if="recentThrowsFor(p).length" class="fiveoo-recent-throws">
-          <span
-            v-for="(t, i) in recentThrowsFor(p)"
-            :key="i"
-            class="fiveoo-throw-chip"
-            :class="{ bust: t.bust || t.score === 0 }"
-          >{{ t.bust ? 'BUST' : (t.score === 0 ? '✕' : t.score) }}</span>
-        </div>
-      </div>
+        :name="p"
+        :total="totals[p]"
+        :active="p === currentPlayer"
+        :turn-label="$t('Tur')"
+        :in-window="windowReacher === p"
+        :throws="recentThrowsFor(p)"
+      />
     </div>
 
     <template v-if="!winner">
       <div class="guess-box-center">
       <div class="guess-box" :class="{ shake: shakeGuessBox }">
-        <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ currentPlayer }}{{ $t('sin kasting') }}</p>
+        <p class="fiveoo-turn-label">{{ $t('{0} sin kasting', [currentPlayer]) }}</p>
         <p v-if="bestAvailableScore !== null" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
           {{ $t('Beste tilgjengelige poengsum:') }} <strong style="color:var(--text);">{{ bestAvailableScore }}</strong>
         </p>
@@ -61,14 +51,6 @@
       </div>
       </div>
 
-      <div v-if="lastThrow" style="text-align:center; margin-top:16px; color:var(--text-dim); font-size:0.9rem;">
-        <span v-if="lastThrow.bust" style="color:var(--coral); font-weight:600;">BUST!</span>
-        <template v-else>
-          {{ lastThrow.player }} {{ $t('kastet') }} {{ lastThrow.name }} ({{ lastThrow.rawValue }})
-          <span v-if="lastThrow.score === 0" style="color:var(--coral);"> {{ $t('- får 0') }}</span>
-          <span v-else> {{ $t('- får') }} {{ lastThrow.score }}</span>
-        </template>
-      </div>
     </template>
 
     <div v-else class="fiveoo-gameover">
@@ -87,16 +69,7 @@
       </button>
     </div>
 
-    <details class="advanced-disclosure" style="margin-top:20px;">
-      <summary>{{ $t('Kastehistorikk') }}</summary>
-      <div style="margin-top:10px; max-height:220px; overflow-y:auto;">
-        <div v-for="(t, i) in [...history].reverse()" :key="i" style="font-size:0.85rem; color:var(--text-dim); padding:3px 0;">
-          <strong style="color:var(--text);">{{ t.player }}</strong>
-          {{ t.bust ? $t('bustet på') : $t('kastet') }} {{ t.name }} ({{ t.rawValue }})
-          <span v-if="!t.bust">{{ $t('→ fikk') }} {{ t.score }}{{ $t(', nå på') }} {{ t.resultingTotal }}</span>
-        </div>
-      </div>
-    </details>
+    <FiveOhOneThrowList :throws="history" :show-last="!winner" />
 
     <div v-if="throwOverlay" class="fiveoo-throw-overlay" :class="throwOverlay.kind">
       <div class="fiveoo-overlay-text">{{ throwOverlay.text }}</div>
@@ -108,6 +81,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import passAndPlayState from '../services/passAndPlayState'
+import FiveOhOnePlayerCard from './FiveOhOnePlayerCard.vue'
+import FiveOhOneThrowList from './FiveOhOneThrowList.vue'
 import { formatLastUpdated } from '../constants'
 
 const props = defineProps({

@@ -113,23 +113,39 @@
     </div>
 
     <div v-if="showStandingsModal" class="modal-backdrop">
-      <div class="modal">
-        <h2 style="text-align:center;">{{ $t('Stilling') }}</h2>
+      <div class="modal tension-standings-modal">
+        <h2 class="tension-standings-title">{{ $t('Stilling') }}</h2>
+        <p class="tension-standings-sub">{{ $t('Etter spørsmål {0} av {1}', [currentQuestionIndex + 1, roundCount]) }}</p>
+        <div class="tension-standings-head" aria-hidden="true">
+          <span>{{ $t('Spiller') }}</span>
+          <span>{{ $t('Runden') }}</span>
+          <span>{{ $t('Totalt') }}</span>
+        </div>
         <TransitionGroup name="standing" tag="div" class="tension-standings-list">
           <div
             v-for="(entry, i) in displayedStandings"
             :key="entry.name"
             class="tension-standing-row"
-            :class="{ 'moved-up': entry.direction === 'up', 'moved-down': entry.direction === 'down' }"
+            :class="{ leader: displayedRanks[i] === 1 }"
           >
-            <span class="tension-standing-rank">#{{ i + 1 }}</span>
-            <span style="flex:1;">{{ entry.name }}</span>
-            <span
-              v-if="entry.direction !== 'same'"
-              class="tension-standing-arrow"
-              :class="entry.direction"
-            >{{ entry.direction === 'up' ? '▲' : '▼' }}</span>
-            <span style="font-weight:700; min-width:48px; text-align:right;">{{ scores[entry.name] }}</span>
+            <span class="tension-standing-rank">{{ displayedRanks[i] }}</span>
+            <span class="tension-standing-name">
+              {{ entry.name }}
+              <span
+                v-if="entry.direction !== 'same'"
+                class="tension-standing-arrow"
+                :class="entry.direction"
+                :aria-label="entry.direction === 'up' ? $t('opp {0}', [entry.places]) : $t('ned {0}', [entry.places])"
+              >{{ entry.direction === 'up' ? '▲' : '▼' }}{{ entry.places }}</span>
+            </span>
+            <span class="tension-standing-round">
+              <span
+                v-if="entry.roundPoints != null"
+                class="tension-round-chip"
+                :class="entry.roundPoints > 0 ? 'plus' : entry.roundPoints < 0 ? 'minus' : 'zero'"
+              >{{ entry.roundPoints > 0 ? '+' : '' }}{{ entry.roundPoints }}</span>
+            </span>
+            <span class="tension-standing-total" :class="{ negative: (scores[entry.name] || 0) < 0 }">{{ scores[entry.name] }}</span>
           </div>
         </TransitionGroup>
 
@@ -174,6 +190,7 @@ import passAndPlayState from '../services/passAndPlayState'
 import TensionAnswerModal from './TensionAnswerModal.vue'
 import LoadingState from './LoadingState.vue'
 import { formatLastUpdated } from '../constants'
+import { sharedRanks } from '../composables/sharedRanks'
 
 const props = defineProps({
   category: { type: String, default: '' },
@@ -197,6 +214,7 @@ const countdown = ref(null)
 const showIntro = ref(false)
 const introCountdown = ref(4)
 const rankBeforeRound = ref([]) // player names, ordered by score, captured at the start of this question
+const scoresBeforeRound = ref({}) // each player's total at the start of this question - the standings show what this round added
 
 const playerNames = props.players.map(p => p.name)
 const question = computed(() => chosenQuestions.value[currentQuestionIndex.value])
@@ -228,7 +246,14 @@ const standings = computed(() => {
     let direction = 'same'
     if (before !== -1 && now < before) direction = 'up'
     else if (before !== -1 && now > before) direction = 'down'
-    return { name, direction }
+    const start = scoresBeforeRound.value[name]
+    return {
+      name,
+      direction,
+      places: before === -1 ? 0 : Math.abs(before - now),
+      // null when there's no snapshot (e.g. a game resumed mid-question) - then the round column stays empty
+      roundPoints: start === undefined ? null : (scores.value[name] || 0) - start
+    }
   })
 })
 
@@ -332,6 +357,8 @@ function skipReveal() {
 
 const showStandingsModal = ref(false)
 const displayedStandings = ref([])
+// Equal totals share a place (13, 12, 12, 11 -> 1, 2, 2, 4), same as everywhere else.
+const displayedRanks = computed(() => sharedRanks(displayedStandings.value, e => scores.value[e.name] || 0))
 const readyForStandings = ref(false)
 const isLastQuestion = computed(() => currentQuestionIndex.value + 1 >= props.roundCount)
 
@@ -362,6 +389,7 @@ function closeStandingsAndContinue() {
 
 function startIntro() {
   rankBeforeRound.value = [...playerNames].sort((a, b) => scores.value[b] - scores.value[a])
+  scoresBeforeRound.value = { ...scores.value }
   showIntro.value = true
   introCountdown.value = 4
   const timer = setInterval(() => {

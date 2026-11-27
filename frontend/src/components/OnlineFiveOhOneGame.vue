@@ -12,33 +12,23 @@
     <div v-if="error" class="banner error">{{ error }}</div>
 
     <template v-if="state && !state.finished">
-      <div class="mp-player-row">
-        <div
+      <div class="fiveoo-players">
+        <FiveOhOnePlayerCard
           v-for="p in state.players"
           :key="p.participantId"
-          class="mp-player-card"
-          :class="{ 'active-turn': p.participantId === state.currentTurnParticipantId, 'you-row': p.participantId === state.windowReacherParticipantId, disconnected: p.connected === false && p.participantId !== props.yourParticipantId }"
-        >
-          <strong>{{ p.name }}</strong>
-          <span v-if="p.connected === false && p.participantId !== props.yourParticipantId" class="tag offline" style="display:block; margin-top:4px;">{{ $t('Frakoblet§OnlineFiveOhOneGameT') }}</span>
-          <div style="font-size:1.8rem; font-weight:700; margin-top:4px;" :style="{ color: p.total <= 0 && p.total >= -10 ? 'var(--teal)' : 'var(--text)' }">
-            {{ p.total }}
-          </div>
-          <div v-if="p.participantId === state.windowReacherParticipantId" style="font-size:0.78rem; color:var(--gold); margin-top:2px;">{{ $t('I vinduet!') }}</div>
-          <div v-if="recentThrowsFor(p.name).length" class="fiveoo-recent-throws">
-            <span
-              v-for="(t, i) in recentThrowsFor(p.name)"
-              :key="i"
-              class="fiveoo-throw-chip"
-              :class="{ bust: t.bust || t.score === 0 }"
-            >{{ t.bust ? 'BUST' : (t.score === 0 ? '✕' : t.score) }}</span>
-          </div>
-        </div>
+          :name="p.name"
+          :total="p.total"
+          :active="p.participantId === state.currentTurnParticipantId"
+          :turn-label="p.participantId === props.yourParticipantId ? $t('Din tur') : $t('Tur')"
+          :in-window="p.participantId === state.windowReacherParticipantId"
+          :offline="p.connected === false && p.participantId !== props.yourParticipantId"
+          :throws="recentThrowsFor(p.name)"
+        />
       </div>
 
       <div v-if="isYourTurn" class="guess-box-center">
         <div class="guess-box" :class="{ shake: shakeGuessBox }">
-          <p style="text-align:center; margin:0 0 8px; color:var(--gold); font-weight:600;">{{ $t('Din kasting') }}</p>
+          <p class="fiveoo-turn-label">{{ $t('Din kasting') }}</p>
           <p v-if="state.bestAvailableScore !== null && state.bestAvailableScore !== undefined" style="text-align:center; margin:0 0 10px; color:var(--text-dim); font-size:0.85rem;">
             {{ $t('Beste tilgjengelige poengsum:') }} <strong style="color:var(--text);">{{ state.bestAvailableScore }}</strong>
           </p>
@@ -81,14 +71,6 @@
         {{ $t('Venter på {0} sin tur…', [currentTurnName]) }}
       </div>
 
-      <div v-if="lastThrow" style="text-align:center; margin-top:16px; color:var(--text-dim); font-size:0.9rem;">
-        <span v-if="lastThrow.bust" style="color:var(--coral); font-weight:600;">BUST!</span>
-        <template v-else>
-          {{ lastThrow.playerName }} {{ $t('kastet') }} {{ lastThrow.entryName }} ({{ lastThrow.rawValue }})
-          <span v-if="lastThrow.score === 0" style="color:var(--coral);"> {{ $t('- får 0') }}</span>
-          <span v-else> {{ $t('- får') }} {{ lastThrow.score }}</span>
-        </template>
-      </div>
     </template>
 
     <div v-else-if="state && state.finished" class="fiveoo-gameover">
@@ -108,16 +90,7 @@
       <p v-else class="page-subtitle" style="margin-top:8px;">{{ $t('Venter på at verten skal starte en ny runde, eller forlat spillet under.') }}</p>
     </div>
 
-    <details v-if="state" class="advanced-disclosure" style="margin-top:20px;">
-      <summary>{{ $t('Kastehistorikk') }}</summary>
-      <div style="margin-top:10px; max-height:220px; overflow-y:auto;">
-        <div v-for="(t, i) in [...state.throwHistory].reverse()" :key="i" style="font-size:0.85rem; color:var(--text-dim); padding:3px 0;">
-          <strong style="color:var(--text);">{{ t.playerName }}</strong>
-          {{ t.bust ? $t('bustet på') : $t('kastet') }} {{ t.entryName }} ({{ t.rawValue }})
-          <span v-if="!t.bust">{{ $t('→ fikk') }} {{ t.score }}{{ $t(', nå på') }} {{ t.resultingTotal }}</span>
-        </div>
-      </div>
-    </details>
+    <FiveOhOneThrowList v-if="state" :throws="throws" :show-last="!state.finished" />
 
     <button class="btn btn-secondary btn-sm no-print" style="margin-top:20px;" @click="leave">{{ $t('← Forlat spillet') }}</button>
 
@@ -130,6 +103,8 @@
 
 <script setup>
 import LoadingSkeleton from './LoadingSkeleton.vue'
+import FiveOhOnePlayerCard from './FiveOhOnePlayerCard.vue'
+import FiveOhOneThrowList from './FiveOhOneThrowList.vue'
 import { t as _t } from '../i18n'
 import { computed, ref } from 'vue'
 import api from '../services/api'
@@ -165,7 +140,6 @@ const error = ref('')
 const throwing = ref(false)
 const searchTerm = ref('')
 const shakeGuessBox = ref(false)
-const lastThrow = ref(null)
 
 const throwOverlay = ref(null)
 let overlayTimeout = null
@@ -187,9 +161,13 @@ const winnerName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.winnerParticipantId)?.name || ''
 )
 
+// The server's throw history in the shape the shared 501 pieces take (same as pass-and-play's).
+const throws = computed(() => (state.value?.throwHistory || []).map(t => ({
+  player: t.playerName, name: t.entryName, rawValue: t.rawValue, score: t.score, bust: t.bust, resultingTotal: t.resultingTotal
+})))
+
 function recentThrowsFor(playerName) {
-  if (!state.value) return []
-  return state.value.throwHistory.filter(t => t.playerName === playerName).slice(-4)
+  return throws.value.filter(t => t.player === playerName).slice(-4)
 }
 
 const searchResults = computed(() => {
@@ -225,9 +203,6 @@ async function applyState(fresh) {
     loadEntries(`category:${fresh.categoryId}`, () => api.getFiveOhOneCategory(fresh.categoryId).then(c => c.entries))
   }
   error.value = ''
-  if (fresh.throwHistory && fresh.throwHistory.length) {
-    lastThrow.value = fresh.throwHistory[fresh.throwHistory.length - 1]
-  }
   const justFinished = fresh.finished && !state.value?.finished
   state.value = fresh
   if (fresh.finished) {

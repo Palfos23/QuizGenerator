@@ -1,5 +1,12 @@
 // Generated English catalog - keys are the Norwegian source strings (see i18n.js).
 export default {
+ "{0} sin kasting": "{0}'s throw",
+ "Tur": "Turn",
+ "bust": "bust",
+ "Etter spørsmål {0} av {1}": "After question {0} of {1}",
+ "Runden": "Round",
+ "opp {0}": "up {0}",
+ "ned {0}": "down {0}",
  "Admin - bare lesing": "Admin - read only",
  "Alle ligaer": "All leagues",
  "Nyeste først. «Spilt» er hvor stor del av dagene de siste 7 dagene sesongens spillere faktisk spilte.": "Newest first. \"Played\" is how many of the last 7 days the season's players actually played.",
@@ -2264,7 +2271,6 @@ export default {
  "scorede straffer": "pens scored",
  "scoret": "scored",
  "sep": "Sep",
- "sin kasting": "'s throw",
  "sin tur": "'s turn",
  "sin tur - velg en rute": "'s turn - pick a tile",
  "sin tur - velg et navn": "'s turn - pick a name",
