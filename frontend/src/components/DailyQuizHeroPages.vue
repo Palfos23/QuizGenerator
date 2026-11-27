@@ -57,7 +57,7 @@
           <div class="dqh-week">
             <div v-for="d in week.days" :key="d.label + d.date" class="dqh-day" :class="{ today: d.today, empty: d.score === null }">
               <span class="dqh-day-score">{{ d.score ?? '' }}</span>
-              <span class="dqh-day-bar" :style="{ height: d.score === null ? '4px' : Math.max(8, Math.round(d.score / week.max * 84)) + 'px' }"></span>
+              <span class="dqh-day-bar" :style="{ height: d.score === null ? '4px' : Math.max(8, Math.round(d.score / week.max * 120)) + 'px' }"></span>
               <span class="dqh-day-label">{{ d.label }}</span>
             </div>
           </div>
@@ -85,7 +85,6 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { t as _t } from '../i18n'
 import api from '../services/api'
-import { sharedRanks } from '../composables/sharedRanks'
 
 const props = defineProps({
   quiz: { type: Object, default: null }, // today's set summary: { id, status, score, maxScore, questionCount }
@@ -120,13 +119,15 @@ async function loadToday(q) {
     .catch(() => {})
   if (q.status !== 'GRADED') return
   api.getDailyQuizScoreboard(q.id).then(board => {
-    const entries = [...(board.entries || [])].sort((a, b) => b.score - a.score)
-    const i = entries.findIndex(e => e.isYou)
-    if (i === -1) return
-    const ranks = sharedRanks(entries, e => e.score)
-    const mine = entries[i].score
-    const below = entries.filter(e => e.score < mine).length
-    standing.value = { rank: ranks[i], of: entries.length, better: entries.length > 2 ? Math.round(below / (entries.length - 1) * 100) : null }
+    // You're not on the board if you've chosen to stay off the leaderboard - then your place is worked out from
+    // your score against everyone who is.
+    const others = (board.entries || []).filter(e => !e.isYou)
+    const mine = q.score
+    if (mine == null) return
+    const field = others.length + 1
+    const above = others.filter(e => e.score > mine).length
+    const below = others.filter(e => e.score < mine).length
+    standing.value = { rank: above + 1, of: field, better: field > 2 ? Math.round(below / (field - 1) * 100) : null }
   }).catch(() => {})
 }
 
@@ -176,14 +177,15 @@ const week = computed(() => {
   if (!played.has(todayIso)) cursor.setDate(cursor.getDate() - 1)
   while (played.has(iso(cursor))) { streak++; cursor.setDate(cursor.getDate() - 1) }
 
-  const sorted = [...base.standings].sort((a, b) => b.total - a.total)
-  const ranks = sharedRanks(sorted, x => x.total)
-  const youAt = sorted.findIndex(x => x.isYou ?? x.you)
+  // Same as today's place: from the standings if you're on them, otherwise from your own total against them.
+  const you = base.standings.find(x => x.isYou)
+  const total = you ? you.total : days.reduce((sum, d) => sum + (d.score || 0), 0)
+  const others = base.standings.filter(x => !x.isYou)
   return {
     days,
     max: Math.max(16, ...days.map(d => d.score || 0)),
-    total: youAt !== -1 ? sorted[youAt].total : days.reduce((sum, d) => sum + (d.score || 0), 0),
-    rank: youAt !== -1 ? ranks[youAt] : null,
+    total,
+    rank: others.length ? others.filter(x => x.total > total).length + 1 : null,
     streak
   }
 })
