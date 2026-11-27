@@ -106,7 +106,7 @@ public class AuthService {
      * so nothing here can be used to claim someone else's inbox as your own account.
      */
     @Transactional
-    public void registerWithPassword(String rawEmail, String rawPassword, String name, String clientKey) {
+    public void registerWithPassword(String rawEmail, String rawPassword, String name, String leagueCode, String clientKey) {
         String rateLimitKey = "register:" + clientKey;
         loginRateLimiter.checkAllowed(rateLimitKey);
         loginRateLimiter.recordFailure(rateLimitKey); // see requestPasswordReset's comment on this reused call - caps how many accounts/verification emails one IP can trigger, not "wrong password" attempts
@@ -132,7 +132,13 @@ public class AuthService {
         String rawToken = applyFreshVerificationToken(user);
         appUserRepository.save(user);
 
-        mailService.sendVerificationEmail(user.getEmail(), frontendBaseUrl + "/verify-email?token=" + rawToken);
+        String link = frontendBaseUrl + "/verify-email?token=" + rawToken;
+        // Signed up from a league invite: the link brings them back to it once the email is confirmed. Only a
+        // well-formed code is passed on (it ends up in a URL).
+        if (leagueCode != null && leagueCode.trim().toUpperCase().matches("[A-Z0-9]{4,12}")) {
+            link += "&league=" + leagueCode.trim().toUpperCase();
+        }
+        mailService.sendVerificationEmail(user.getEmail(), link);
     }
 
     /** clientKey identifies the caller for rate-limiting purposes - the request's IP address. */

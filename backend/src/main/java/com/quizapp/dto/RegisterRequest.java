@@ -17,6 +17,18 @@ public class RegisterRequest {
     @NotBlank
     private String name;
 
+    // Optional: the league invite code the player signed up from, carried into the verification link so
+    // confirming the email lands them back on the invite (even on another device).
+    private String leagueCode;
+
+    public String getLeagueCode() {
+        return leagueCode;
+    }
+
+    public void setLeagueCode(String leagueCode) {
+        this.leagueCode = leagueCode;
+    }
+
     public String getEmail() {
         return email;
     }

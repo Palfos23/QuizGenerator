@@ -30,6 +30,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '../services/api'
 import auth from '../services/auth'
+import { inviteRouteFor, takeInviteRoute } from '../services/pendingInvite'
 
 const route = useRoute()
 const router = useRouter()
@@ -44,7 +45,10 @@ onMounted(async () => {
     const result = await api.verifyEmail(token)
     auth.login({ token: result.token, displayName: result.displayName, role: result.role })
     state.value = 'done'
-    router.push('/dashboard')
+    // Signed up from a league invite: back to it - from the link itself (works on any device), else from this browser.
+    const invite = inviteRouteFor(route.query.league)
+    const remembered = takeInviteRoute()
+    router.push(invite || remembered || '/dashboard')
   } catch (e) {
     error.value = e.response?.data?.message || _t('Denne bekreftelseslenken er ugyldig eller har utløpt - be om en ny fra innloggingssiden.')
     state.value = 'error'

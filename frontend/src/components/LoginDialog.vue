@@ -162,6 +162,7 @@ import cookieConsent from '../services/cookieConsent'
 import { loadScript } from '../services/loadScript'
 import { safeRedirectTarget } from '../router'
 import loginDialog from '../services/loginDialog'
+import { peekInvite, takeInviteRoute } from '../services/pendingInvite'
 import { useEscapeKey } from '../composables/useEscapeKey'
 
 const GIS_SCRIPT_URL = 'https://accounts.google.com/gsi/client'
@@ -242,9 +243,11 @@ async function setupGoogleButton() {
 
 function close() { loginDialog.close() }
 
-// Where a successful sign-in lands: wherever the opener asked for, else ?redirect= on the address, else the dashboard.
+// Where a successful sign-in lands: a league invite opened while signed out (see pendingInvite) - even if the
+// dialog was opened from somewhere else since - else wherever the opener asked for, else ?redirect= on the
+// address, else the dashboard.
 function afterLoginTarget() {
-  return loginDialog.state.redirect || safeRedirectTarget(route, '/dashboard')
+  return takeInviteRoute() || loginDialog.state.redirect || safeRedirectTarget(route, '/dashboard')
 }
 
 // Google's real button only exists (as the invisible overlay) once its script is in. Before that our own
@@ -370,7 +373,8 @@ async function submitRegister() {
   error.value = ''
   passwordBusy.value = true
   try {
-    await api.register(registerEmail.value.trim(), registerPassword.value, registerName.value.trim())
+    // An invite being signed up from rides along in the confirmation link (it may be opened on another device).
+    await api.register(registerEmail.value.trim(), registerPassword.value, registerName.value.trim(), peekInvite())
     registerSent.value = true
   } catch (e) {
     error.value = e.response?.data?.message || _t('Kunne ikke opprette kontoen din. Prøv igjen.')

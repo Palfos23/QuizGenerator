@@ -40,12 +40,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { t as _t } from '../i18n'
 import api from '../services/api'
 import auth from '../services/auth'
 import loginDialog from '../services/loginDialog'
+import { forgetInvite, rememberInvite } from '../services/pendingInvite'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import { formatName, seasonSpan } from '../composables/leagueFormat'
 
@@ -75,11 +76,20 @@ async function join() {
   }
 }
 
-onMounted(async () => {
+// Signed out: remember the invite, so signing in - or creating an account and confirming the email, maybe on
+// another device or after closing this tab - comes back here. Signed in: load what the invite is.
+// Runs again when the sign-in state changes: signing in from this page's own button lands on this same page,
+// which doesn't remount, and used to leave it blank.
+async function load() {
+  error.value = ''
+  preview.value = null
   if (!signedIn.value || guest.value) {
+    rememberInvite(code)
     loading.value = false
     return
   }
+  forgetInvite()
+  loading.value = true
   try {
     preview.value = await api.previewLeague(code)
   } catch (e) {
@@ -87,7 +97,10 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(load)
+watch([signedIn, guest], load)
 </script>
 
 <style scoped>

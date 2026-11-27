@@ -85,8 +85,8 @@ export default {
   // method on the same AppUser table (see AuthService#registerWithPassword).
   // Doesn't log the caller in - the account starts unverified, so there's no
   // token to hand back yet (see verifyEmail below).
-  register(email, password, name) {
-    return client.post('/auth/register', { email, password, name }).then(r => r.data)
+  register(email, password, name, leagueCode = null) {
+    return client.post('/auth/register', { email, password, name, leagueCode }).then(r => r.data)
   },
   loginWithPassword(email, password) {
     return client.post('/auth/login', { email, password }).then(r => r.data)

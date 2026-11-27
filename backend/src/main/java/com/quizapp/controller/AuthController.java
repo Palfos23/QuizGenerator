@@ -48,7 +48,7 @@ public class AuthController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
-        authService.registerWithPassword(request.getEmail(), request.getPassword(), request.getName(), clientKey(httpRequest));
+        authService.registerWithPassword(request.getEmail(), request.getPassword(), request.getName(), request.getLeagueCode(), clientKey(httpRequest));
     }
 
     /** Regular users: sign in with a previously-registered email + password. Rate-limited per IP. */
