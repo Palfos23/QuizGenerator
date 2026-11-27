@@ -26,7 +26,6 @@
           </ol>
 
           <div class="dq-modal-actions tips-actions">
-            <button type="button" class="btn btn-secondary" @click="closeAndSilence">{{ $t('Ikke vis tips automatisk') }}</button>
             <button ref="okButton" type="button" class="btn btn-primary" @click="close">{{ $t('Skjønner') }}</button>
           </div>
         </div>
@@ -37,15 +36,11 @@
 
 <script setup>
 import { t as _t } from '../i18n'
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import tipsService from '../services/tips'
-import cookieConsent from '../services/cookieConsent'
-import loginDialog from '../services/loginDialog'
+import { nextTick, ref, watch } from 'vue'
 import { useEscapeKey } from '../composables/useEscapeKey'
 
-// A page's tips: one small "Tips" button on the page, and a popup that opens by itself the first time the visitor
-// reaches the page (never again after that) - but not while the cookie question or the sign-in popup is up, so two
-// popups never stack. Closing it in any way counts as "seen".
+// A page's tips: one small "Tips" button on the page, opening a popup with them. Only on request - the popup used to
+// open by itself the first time a page was visited, which got in the way more than it helped.
 const props = defineProps({
   id: { type: String, required: true },
   tips: { type: Array, required: true }, // [{ title, text, to?, toLabel? }]
@@ -61,11 +56,6 @@ function show() {
 }
 function close() {
   open.value = false
-  tipsService.markSeen(props.id)
-}
-function closeAndSilence() {
-  tipsService.turnOff()
-  close()
 }
 useEscapeKey(() => { if (open.value) close() })
 
@@ -76,28 +66,6 @@ watch(open, async isOpen => {
   }
 })
 
-let timer = null
-let stop = null
-onMounted(() => {
-  if (!props.tips.length || !tipsService.shouldAutoShow(props.id)) return
-  // wait until nothing else is asking for the visitor's attention, then a short beat so the page has settled
-  stop = watch(
-    () => cookieConsent.isUnknown.value || loginDialog.state.open,
-    blocked => {
-      clearTimeout(timer)
-      if (blocked) return
-      timer = setTimeout(() => {
-        if (tipsService.shouldAutoShow(props.id)) open.value = true
-        stop && stop()
-      }, 900)
-    },
-    { immediate: true }
-  )
-})
-onBeforeUnmount(() => {
-  clearTimeout(timer)
-  stop && stop()
-})
 </script>
 
 <style scoped>

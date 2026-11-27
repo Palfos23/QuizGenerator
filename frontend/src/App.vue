@@ -1,6 +1,6 @@
 <template>
   <div class="app-shell">
-    <nav class="top-nav">
+    <nav class="top-nav" :class="{ 'is-menu-open': openPlayerMenu === 'profile' }">
       <router-link to="/" class="nav-brand">Quizzes</router-link>
 
       <template v-if="auth.isAuthenticated.value">
@@ -43,11 +43,35 @@
         <router-link
           v-if="!auth.isAdmin.value && !auth.isGuest.value"
           to="/account"
-          class="user-avatar"
+          class="user-avatar user-avatar--desktop"
           :aria-label="$t('Konto')"
           :title="auth.state.displayName"
           @click="onNavClick('/account', 'account')"
         >{{ userInitial }}</router-link>
+        <!-- Phones: the account lives only here, in the corner (no Konto tab in the bottom bar) - your initial opens
+             a small menu with the account page, the language and logging out -->
+        <div v-if="!auth.isAdmin.value && !auth.isGuest.value" class="profile-menu-wrap">
+          <button
+            type="button"
+            class="user-avatar user-avatar--mobile"
+            :class="{ 'is-open': openPlayerMenu === 'profile' }"
+            aria-haspopup="true"
+            :aria-expanded="openPlayerMenu === 'profile'"
+            :aria-label="$t('Konto')"
+            @click="togglePlayerMenu('profile')"
+          >{{ userInitial }}</button>
+          <Transition name="pop">
+            <div v-if="openPlayerMenu === 'profile'" class="profile-menu" role="menu" :aria-label="$t('Konto')">
+              <div class="profile-menu-name">{{ auth.state.displayName }}</div>
+              <router-link to="/account" role="menuitem" class="profile-menu-item" @click="closePlayerMenuItem('/account', 'account')">{{ $t('Min konto og navn') }}</router-link>
+              <div class="profile-menu-row">
+                <span>{{ $t('Språk') }}</span>
+                <LanguageToggle />
+              </div>
+              <button type="button" role="menuitem" class="profile-menu-item" @click="closePlayerMenu(); logout()">{{ $t('Logg ut') }}</button>
+            </div>
+          </Transition>
+        </div>
         <span v-else class="user-avatar user-avatar--static" :title="auth.state.displayName">{{ userInitial }}</span>
       </template>
       <template v-else>
@@ -66,7 +90,7 @@
       <router-link to="/privacy">{{ $t('Personvernerklæring') }}</router-link>
       <router-link to="/cookies">{{ $t('Retningslinjer for informasjonskapsler') }}</router-link>
       <button type="button" class="app-footer-link-btn" @click="cookieConsent.reset()">{{ $t('Cookie-innstillinger§AppT') }}</button>
-      <!-- Phones only: the language switch lives here (and in the Account sheet) instead of crowding the top bar -->
+      <!-- Phones only: the language switch lives here (and in the profile menu) instead of crowding the top bar -->
       <LanguageToggle class="lang-toggle--footer" />
     </footer>
 
@@ -80,7 +104,15 @@
       <!-- Every tab is an icon over a short label, a full thumb tall; the menus open as a sheet across the screen -->
       <template v-if="!auth.isGuest.value">
         <div v-for="menu in bottomMenus" :key="menu.key" class="bottom-nav-menu" style="position:relative; flex:1; display:flex;">
+          <router-link
+            v-if="menu.to"
+            :to="menu.to"
+            class="bottom-nav-tab"
+            :class="{ active: playerMenuActive(menu) }"
+            @click="closePlayerMenu()"
+          ><AppIcon :name="menu.icon" /><span>{{ menu.label }}</span></router-link>
           <button
+            v-else
             type="button"
             class="bottom-nav-tab"
             aria-haspopup="true"
@@ -89,7 +121,7 @@
             :class="{ active: playerMenuActive(menu) || openPlayerMenu === menu.key }"
           ><AppIcon :name="menu.icon" /><span>{{ menu.label }}</span></button>
           <Transition name="pop" @enter="popFromTrigger" @leave="popFromTrigger">
-          <div v-if="openPlayerMenu === menu.key" class="games-popup nav-sheet" :class="{ 'nav-sheet--grid': menu.items.length > 4 }" role="menu" :aria-label="menu.label">
+          <div v-if="!menu.to && openPlayerMenu === menu.key" class="games-popup nav-sheet" :class="{ 'nav-sheet--grid': menu.items.length > 4 }" role="menu" :aria-label="menu.label">
             <div class="nav-sheet-title">{{ menu.label }}</div>
             <div v-if="menu.key === 'account'" class="nav-sheet-row">
               <span>{{ $t('Språk') }}</span>
@@ -194,61 +226,37 @@ const PLAYER_MENUS = [
     ]
   }
 ]
-// Mobile bottom bar only: 'Lag en quiz' and 'Mine quizer' share one dropdown there (six tabs side by
-// side were cramped), with Create first and highlighted since it's the main action. On desktop the top
-// nav has room, so they stay as two separate links. Opened/closed through the same openPlayerMenu as the
-// others ('quizzes' is one more key).
-const QUIZZES_MENU = {
-  key: 'quizzes',
-  icon: 'layers',
-  label: _t('Quizer'),
-  items: [
-    { to: '/generate', label: _t('Lag en quiz'), key: 'generate', primary: true },
-    { to: '/my-quizzes', label: _t('Mine quizer'), key: 'myQuizzes' }
-  ]
-}
+// Mobile bottom bar, players: Dagens quiz - Ligaer - Spill - Ukentlig - Mine quizer. Three are plain links (a tab with
+// `to` instead of `items`); Spill and Ukentlig open their sheets. The account isn't a tab: it's the initial in the top
+// corner. `also` lists further paths the tab stays lit on.
+const DAILY_TAB = { key: 'daily', icon: 'calendar', label: _t('Dagens quiz§AppT'), to: '/daily-quiz' }
+const LEAGUES_TAB = { key: 'leagues', icon: 'medal', label: _t('Ligaer'), to: '/ligaer', also: ['/liga'] }
+// 'Lag en quiz' is reached from Mine quizer (and the dashboard), so the tab stays lit there too.
+const MY_QUIZZES_TAB = { key: 'myQuizzes', icon: 'layers', label: _t('Mine quizer'), to: '/my-quizzes', also: ['/generate'] }
 
-// Mobile bottom bar only: the first tab holds the daily quiz and the leagues played on it. The tab stays lit on a
-// quiz's own page (/daily-quiz/:id), any league page and an invite link (/liga/KODE).
-const DAILY_MENU = {
-  key: 'daily',
-  icon: 'calendar',
-  label: _t('Dagens quiz§AppT'),
-  items: [
-    { to: '/daily-quiz', label: _t('Dagens quiz§AppT'), key: null, primary: true },
-    { to: '/ligaer', label: _t('Ligaer'), key: null, also: ['/liga'] }
-  ]
-}
-
-// Mobile bottom bar only: the account page (where the display name is changed) had no way in from a phone -
-// the top bar's 'Konto' link doesn't exist there - so the last tab is now an Account menu holding it
-// together with Log out.
+// Admins have no account page, so their last tab stays a small menu holding Log out.
 const ADMIN_ACCOUNT_MENU = {
   key: 'account',
   icon: 'user',
   label: _t('Konto'),
   items: [{ action: 'logout', label: _t('Logg ut') }]
 }
-const ACCOUNT_MENU = {
-  key: 'account',
-  icon: 'user',
-  label: _t('Konto'),
-  items: [
-    { to: '/account', label: _t('Min konto og navn'), key: 'account' },
-    { action: 'logout', label: _t('Logg ut') }
-  ]
-}
 
 // Prefix match, not exact - Grid/Starting XI each have a /:id play sub-route
 // beyond their own list page.
 function playerMenuActive(menu) {
   const path = router.currentRoute.value.path
-  return menu.items.some(item => [item.to, ...(item.also || [])].some(p => path === p || path.startsWith(p + '/')))
+  const lit = p => path === p || path.startsWith(p + '/')
+  if (menu.to) return [menu.to, ...(menu.also || [])].some(lit)
+  return menu.items.some(item => [item.to, ...(item.also || [])].some(lit))
 }
 
 // Players and admins get the same navigation, just different menus
 const topMenus = computed(() => auth.isAdmin.value ? ADMIN_MENUS : PLAYER_MENUS)
-const bottomMenus = computed(() => auth.isAdmin.value ? [...ADMIN_MENUS, ADMIN_ACCOUNT_MENU] : [DAILY_MENU, QUIZZES_MENU, ...PLAYER_MENUS, ACCOUNT_MENU])
+const playerMenu = key => PLAYER_MENUS.find(m => m.key === key)
+const bottomMenus = computed(() => auth.isAdmin.value
+  ? [...ADMIN_MENUS, ADMIN_ACCOUNT_MENU]
+  : [DAILY_TAB, LEAGUES_TAB, playerMenu('games'), playerMenu('weekly'), MY_QUIZZES_TAB])
 // The Ligaer link stays lit on a league's own page and on an invite link
 const leaguesActive = computed(() => /^\/liga(er)?(\/|$)/.test(router.currentRoute.value.path))
 
@@ -349,7 +357,7 @@ useEscapeKey(() => {
 // they handle themselves, including switching straight from one menu to another.
 function closeMenusOnOutsidePress(e) {
   if (openPlayerMenu.value === null) return
-  if (e.target instanceof Element && e.target.closest('.top-nav-dropdown, .bottom-nav-menu')) return
+  if (e.target instanceof Element && e.target.closest('.top-nav-dropdown, .bottom-nav-menu, .profile-menu-wrap')) return
   closePlayerMenu()
 }
 

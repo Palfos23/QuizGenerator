@@ -666,6 +666,34 @@ h1.page-title::before, .dashboard-hero h1::before {
 a.user-avatar:hover, a.user-avatar.router-link-exact-active { background: rgb(var(--primary-rgb) / 0.18); border-color: var(--primary); }
 a.user-avatar:active { scale: 0.97; transition-duration: 0s; }
 .user-avatar--static { cursor: default; }
+/* The initial in the corner: on a computer a link to the account page; on a phone a button opening the profile
+   menu (account, language, log out) - the account has no tab in the phone's bottom bar. */
+.profile-menu-wrap { display: none; position: relative; }
+/* While it's open the bar sits above the dimmed backdrop (which catches the closing tap, so it doesn't land on the page) */
+.top-nav.is-menu-open { z-index: 45; }
+button.user-avatar { appearance: none; }
+.user-avatar--mobile.is-open { background: rgb(var(--primary-rgb) / 0.18); border-color: var(--primary); }
+.profile-menu {
+  position: absolute; top: calc(100% + 10px); right: 0; z-index: 60;
+  width: min(280px, calc(100vw - 32px));
+  display: flex; flex-direction: column; gap: 2px; padding: 8px;
+  background: var(--ink-raised); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: 0 12px 32px rgb(11 18 32 / 0.25);
+}
+.profile-menu-name { padding: 6px 12px 8px; color: var(--text-dim); font-size: 0.8rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-menu-item {
+  display: flex; align-items: center; min-height: 48px; padding: 12px 14px; border: none; border-radius: var(--radius-md);
+  background: none; color: var(--text); font: 600 1rem var(--font-body); text-align: left; text-decoration: none; cursor: pointer;
+}
+.profile-menu-item:hover, .profile-menu-item.router-link-exact-active { background: rgb(var(--fg-rgb) / 0.06); }
+.profile-menu-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 6px 14px; color: var(--text); font-weight: 600; }
+.top-nav .profile-menu-row .lang-toggle { display: inline-flex; margin: 0; }
+@media (max-width: 760px) {
+  .user-avatar--desktop { display: none; }
+  .profile-menu-wrap { display: block; margin-left: auto; }
+  .profile-menu-wrap .user-avatar { margin-left: 0; }
+}
+
 /* "Logg ut" is the last thing in the header, after the language toggle */
 .nav-logout { margin-left: var(--space-3); flex-shrink: 0; }
 @media (min-width: 761px) and (max-width: 900px) { .nav-logout { margin-left: 4px; } }

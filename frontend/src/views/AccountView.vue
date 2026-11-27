@@ -57,14 +57,6 @@
     </div>
 
     <div class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
-      <label>{{ $t('Tips og triks') }}</label>
-      <p class="page-subtitle" style="margin-top:-6px;">
-        {{ tipsState.off ? $t('Tipsene åpner ikke av seg selv akkurat nå. Du kan alltid åpne dem med «Tips»-knappen på hver side.') : $t('Tipsene åpner av seg selv første gang du besøker en side, og aldri igjen etter det. Du kan alltid åpne dem med «Tips»-knappen på siden.') }}
-      </p>
-      <button class="btn btn-secondary" @click="showTipsAgain">{{ $t('Vis tipsene på nytt') }}</button>
-    </div>
-
-    <div class="field" style="margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
       <label>{{ $t('Last ned dataene mine') }}</label>
       <p class="page-subtitle" style="margin-top:-6px;">
         {{ $t('En kopi av alt som er knyttet til kontoen din - profil, lagrede quizer, innsendte spørsmål, rapporter og spillhistorikk - som en JSON-fil.') }}
@@ -103,7 +95,6 @@ import auth from '../services/auth'
 import toast from '../services/toast'
 import DeleteAccountModal from '../components/DeleteAccountModal.vue'
 import PaletteSwitcher from '../components/PaletteSwitcher.vue'
-import tipsService from '../services/tips'
 import { PALETTES, palette } from '../services/palette'
 
 const router = useRouter()
@@ -163,13 +154,6 @@ async function savePassword() {
   } finally {
     savingPassword.value = false
   }
-}
-
-// --- tips ---
-const tipsState = tipsService.state
-function showTipsAgain() {
-  tipsService.resetAll()
-  toast.show(_t('Tipsene åpner igjen første gang du besøker hver side.'))
 }
 
 const showDeleteModal = ref(false)

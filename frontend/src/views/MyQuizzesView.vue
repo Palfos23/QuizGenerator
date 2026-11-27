@@ -1,6 +1,10 @@
 <template>
   <div>
-    <h1>{{ $t('Mine quizer') }}</h1>
+    <!-- 'Lag en quiz' sits here too: on a phone, Mine quizer is the bottom-bar tab for both -->
+    <div class="my-quizzes-head">
+      <h1>{{ $t('Mine quizer') }}</h1>
+      <router-link to="/generate" class="btn btn-primary btn-sm">{{ $t('Lag en quiz') }}</router-link>
+    </div>
 
     <div v-if="error" class="banner error">{{ error }}</div>
 
@@ -401,3 +405,9 @@ async function saveAsNew() {
   }
 }
 </script>
+
+<style scoped>
+.my-quizzes-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.my-quizzes-head h1 { margin-bottom: 0; }
+.my-quizzes-head + * { margin-top: 16px; }
+</style>
