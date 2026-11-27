@@ -5,16 +5,19 @@
     <LoadingSkeleton v-if="loading" />
 
     <div v-else-if="state" class="grid-page">
-      <h1 style="margin:0 0 10px; text-align:center;">{{ state.title }}</h1>
-      <div style="display:flex; gap:8px; margin-bottom:6px;" class="no-print">
-        <router-link to="/weekly-grid" class="btn btn-secondary btn-sm">{{ $t('← Alle grids') }}</router-link>
-        <button class="dq-chip-btn" @click="openScoreboard">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
-            {{ $t('Toppliste') }}
-          </button>
+      <div class="grid-head">
+        <router-link to="/weekly-grid" class="grid-head-btn no-print" :aria-label="$t('Alle grids')" :title="$t('Alle grids')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+        </router-link>
+        <h1>{{ state.title }}</h1>
+        <button class="grid-head-btn no-print" :aria-label="$t('Toppliste')" :title="$t('Toppliste')" @click="openScoreboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3" /></svg>
+        </button>
       </div>
-      <p class="page-subtitle" style="text-align:center;">{{ state.theme }}</p>
-      <p v-if="lastUpdatedLabel" class="page-subtitle" style="text-align:center; margin-top:-8px; font-size:0.78rem;">{{ lastUpdatedLabel }}</p>
+      <p class="page-subtitle grid-head-sub">
+        {{ state.theme }}
+        <small v-if="lastUpdatedLabel">{{ lastUpdatedLabel }}</small>
+      </p>
 
       <DailyQuizScoreboardModal
         v-if="showScoreboard"
@@ -30,8 +33,8 @@
         @close="showScoreboard = false"
       />
 
-      <div class="grid-status-bar">
-        <div class="grid-progress">{{ guessedCount }} / {{ state.entries.length }} {{ $t('funnet') }}</div>
+      <div class="grid-status-bar grid-status-box">
+        <div class="grid-progress"><span class="grid-progress-count">{{ guessedCount }}</span> / {{ state.entries.length }} {{ $t('funnet') }}</div>
         <LivesHearts :max="state.maxStrikes" :used="state.strikesUsed" />
       </div>
 
@@ -78,16 +81,12 @@
         </div>
       </div>
 
-      <div v-if="canStillGuess" class="no-print" style="margin-bottom:20px;">
-        <button class="btn btn-secondary btn-sm" :disabled="actionBusy" @click="showGiveUpConfirm = true">{{ $t('Gi opp og vis gjenstående svar') }}</button>
-      </div>
-
-      <div v-else-if="gameOver" class="no-print" style="margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap;">
+      <div v-if="gameOver" class="no-print" style="margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap;">
         <button class="btn btn-primary" :disabled="actionBusy" @click="doOvertime">{{ $t('Fortsett i overtid') }}</button>
         <button class="btn btn-secondary" :disabled="actionBusy" @click="doReveal">{{ $t('Vis gjenstående svar') }}</button>
       </div>
 
-      <div class="grid-tiles">
+      <div class="grid-tiles grid-board">
         <div
           v-for="e in state.entries"
           :key="e.id"
@@ -121,6 +120,10 @@
           <div class="grid-tile-name">{{ e.solved ? e.athleteName : '?' }}</div>
         </div>
       </div>
+
+      <button v-if="canStillGuess" class="grid-giveup-link no-print" :disabled="actionBusy" @click="showGiveUpConfirm = true">
+        {{ $t('Gi opp og vis gjenstående svar') }}
+      </button>
     </div>
 
     <ConfirmModal

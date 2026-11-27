@@ -2419,7 +2419,7 @@ export default {
  "— funnet av": "— found by",
  "— venter —": "— waiting —",
  "← Alle brett": "← All boards",
- "← Alle grids": "← All grids",
+ "Alle grids": "All grids",
  "← Forlat": "← Leave",
  "← Forlat spillet": "← Leave game",
  "← Forrige": "← Prev",

@@ -138,7 +138,7 @@
         </div>
       </div>
 
-      <div class="grid-tiles">
+      <div class="grid-tiles grid-board">
         <div
           v-for="e in gridState.entries"
           :key="e.id"
