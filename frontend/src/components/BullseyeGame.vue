@@ -61,69 +61,14 @@
       <div v-if="revealed" class="tension-answers-panel" style="margin:16px auto 0;">
         <h3 style="text-align:center; margin-top:0;">{{ $t('Svar§BullseyeGameT') }}</h3>
 
-        <div v-if="drumrolling" class="bullseye-drumroll">
-          <div class="bullseye-drumroll-icon">🥁</div>
-          <div>{{ $t('Bare to igjen…') }}</div>
-        </div>
-
-        <div v-if="eliminating" class="bullseye-elimination-banner">
-          ❌ {{ justEliminatedName }} {{ $t('er ute!') }}
-        </div>
-
-        <div
-          v-if="spotlightEntry && !drumrolling"
-          :key="spotlightEntry.player"
-          class="bullseye-spotlight"
-          :class="{ 'bullseye-spotlight-out': spotlightLabel === '❌ Eliminated' }"
-        >
-          <div class="bullseye-spotlight-label">{{ spotlightLabel }}</div>
-          <div class="bullseye-spotlight-name">{{ spotlightEntry.player }}</div>
-          <div class="bullseye-spotlight-answer">
-            {{ spotlightEntry.name }} · {{ fmt(spotlightEntry.statValue) }} ({{ fmt(spotlightEntry.distance) }} {{ $t('unna)') }}
-          </div>
-        </div>
-
-        <div class="bullseye-reveal-list">
-          <div
-            v-for="(a, idx) in rankedAnswers"
-            :key="a.player"
-            class="bullseye-reveal-row"
-            :class="{
-              'is-revealed': revealIndex > idx,
-              'is-safe': revealIndex > idx && idx === rankedAnswers.length - 2,
-              'is-eliminated': revealIndex > idx && a.player === eliminatedThisRound?.player
-            }"
-          >
-            <div class="bullseye-reveal-rank">{{ revealIndex > idx ? idx + 1 : '?' }}</div>
-            <div class="bullseye-reveal-main">
-              <div class="bullseye-reveal-player">{{ revealIndex > idx ? a.player : '???' }}</div>
-              <div class="bullseye-reveal-guess">{{ revealIndex > idx ? a.name : $t('Skjult til avsløringen') }}</div>
-            </div>
-            <div v-if="revealIndex > idx" class="bullseye-reveal-stats">
-              <div class="bullseye-reveal-value">{{ fmt(a.statValue) }}</div>
-              <div class="bullseye-reveal-bar">
-                <div class="bullseye-reveal-bar-fill" :style="{ width: distancePct(a.distance) + '%' }"></div>
-              </div>
-              <div class="bullseye-reveal-distance">{{ fmt(a.distance) }} {{ $t('unna') }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="showTruth && bullseyeAnswers.length" class="bullseye-reveal-divider">{{ $t('Det riktige svaret') }}</div>
-
-        <div v-if="showTruth && bullseyeAnswers.length" class="bullseye-truth-callout">
-          <div class="bullseye-truth-label">{{ bullseyeAnswers[0].distance === 0 ? '🎯 Bullseye' : $t('Nærmeste mulige svar') }}</div>
-          <div class="bullseye-truth-list">
-            <span
-              v-for="e in bullseyeAnswersWithFoundState"
-              :key="e.athleteId ?? e.athleteName"
-              class="bullseye-truth-name"
-              :class="e.foundBy ? 'found' : 'not-found'"
-            >
-              {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ fmt(e.statValue) }})<template v-if="e.foundBy"> {{ $t('— funnet av') }} {{ e.foundBy }}</template>
-            </span>
-          </div>
-        </div>
+        <BullseyeReveal
+          :target="roundState.targetValue"
+          :results="revealResults"
+          :reveal-count="revealIndex"
+          :truth="revealTruth"
+          :show-truth="showTruth"
+          :fmt="fmt"
+        />
 
         <div style="text-align:center; margin-top:16px;">
           <button v-if="revealIndex < rankedAnswers.length" class="btn btn-secondary" @click="skipReveal">
@@ -157,6 +102,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import toast from '../services/toast'
 import passAndPlayState from '../services/passAndPlayState'
+import BullseyeReveal from './BullseyeReveal.vue'
 import { formatNumber, sportLabel, formatLastUpdated } from '../constants'
 import BullseyeAnswerModal from './BullseyeAnswerModal.vue'
 import LoadingState from './LoadingState.vue'
@@ -186,7 +132,6 @@ const countdown = ref(null)
 const eliminationOrder = ref([]) // player names, in elimination order across the whole game
 const justEliminatedName = ref(null)
 const readyForNextRound = ref(false)
-const drumrolling = ref(false) // true only during the "final two" suspense beat
 const eliminating = ref(false) // true only while the elimination flourish is playing
 const justSafeName = ref(null) // the closer of the final two, once revealed
 const showTruth = ref(false) // gates the "🎯 Bullseye" answer-key callout until the whole reveal sequence has played out
@@ -226,10 +171,14 @@ const rankedAnswers = computed(() => {
 // Scales each row's distance bar relative to the worst distance this round,
 // so the bars read as a relative comparison ("who's closest") rather than an
 // absolute, hard-to-judge number - a dead-on guess renders as an empty bar.
-const maxDistance = computed(() => Math.max(1, ...rankedAnswers.value.map(a => a.distance)))
-function distancePct(distance) {
-  return Math.min(100, Math.round((distance / maxDistance.value) * 100))
-}
+// The same answers in the shape the shared reveal takes (see BullseyeReveal.vue).
+const revealResults = computed(() => rankedAnswers.value.map(a => ({
+  key: a.player, player: a.player, guess: a.name, statValue: a.statValue, distance: a.distance,
+  eliminated: a.player === eliminatedThisRound.value?.player
+})))
+const revealTruth = computed(() => bullseyeAnswersWithFoundState.value.map(e => ({
+  key: e.athleteId ?? e.athleteName, name: e.athleteName, statValue: e.statValue, distance: e.distance, foundBy: e.foundBy
+})))
 
 // Farthest off is eliminated; ties broken by whoever answered earliest this
 // round - keeps exactly one elimination per round.
@@ -276,27 +225,6 @@ function formatQuestionTarget(q) {
   return q.groupDigits === false ? String(q.targetValue) : formatNumber(q.targetValue)
 }
 
-function ordinal(n) {
-  const s = ['th', 'st', 'nd', 'rd']
-  const v = n % 100
-  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`
-}
-
-// The entry most recently revealed, and how to caption it - drives the big
-// "spotlight" card during the reveal sequence.
-const spotlightEntry = computed(() => {
-  if (!revealIndex.value) return null
-  return rankedAnswers.value[revealIndex.value - 1] || null
-})
-const spotlightLabel = computed(() => {
-  const total = rankedAnswers.value.length
-  const rank = revealIndex.value
-  if (!rank) return ''
-  if (rank === total) return _t('❌ Ute')
-  if (rank === total - 1) return _t('✅ Trygg!')
-  return _t('{0} nærmest', [ordinal(rank)])
-})
-
 let countdownTimer = null
 watch([roundAnswers, revealed], () => {
   if (allAnswered.value && !revealed.value) {
@@ -317,7 +245,6 @@ watch([roundAnswers, revealed], () => {
 function reveal() {
   revealed.value = true
   revealIndex.value = 0
-  drumrolling.value = false
   eliminating.value = false
   justSafeName.value = null
   showTruth.value = false
@@ -326,11 +253,10 @@ function reveal() {
 
 // Reveal pacing: closest-first, one at a time, same order the user asked for
 // ("reveal the one that is closest... then the next closest, and so on").
-// The last two get special treatment - a drumroll beat, then the "safe"
-// player, then the elimination itself, held long enough for the
-// .bullseye-just-eliminated card animation to play out before moving on.
+// The last two at the same pace, then the "safe" player, then the elimination
+// itself, held long enough for the .bullseye-just-eliminated card animation to
+// play out before moving on. (There used to be a drumroll pause before these two.)
 const REVEAL_STEP_MS = 2400
-const DRUMROLL_MS = 2600
 const SAFE_BEAT_MS = 1800
 const ELIMINATION_HOLD_MS = 2200
 
@@ -354,9 +280,7 @@ function scheduleReveal() {
   }
 
   if (remaining === 2) {
-    drumrolling.value = true
     revealTimer = setTimeout(() => {
-      drumrolling.value = false
       revealIndex.value += 1
       justSafeName.value = rankedAnswers.value[revealIndex.value - 1]?.player || null
       revealTimer = setTimeout(() => {
@@ -368,7 +292,7 @@ function scheduleReveal() {
           finishReveal()
         }, ELIMINATION_HOLD_MS)
       }, SAFE_BEAT_MS)
-    }, DRUMROLL_MS)
+    }, REVEAL_STEP_MS)
     return
   }
 
@@ -385,7 +309,6 @@ function scheduleReveal() {
 function skipReveal() {
   clearTimeout(revealTimer)
   revealIndex.value = rankedAnswers.value.length
-  drumrolling.value = false
   eliminating.value = false
   justSafeName.value = rankedAnswers.value.length >= 2 ? rankedAnswers.value[rankedAnswers.value.length - 2]?.player : null
   justEliminatedName.value = eliminatedThisRound.value?.player || null

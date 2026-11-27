@@ -1,5 +1,8 @@
 // Generated English catalog - keys are the Norwegian source strings (see i18n.js).
 export default {
+ "Riktig svar": "Correct answer",
+ "Blink!": "Bullseye!",
+ "Ute · {0}": "Out · {0}",
  "{0} sin kasting": "{0}'s throw",
  "Tur": "Turn",
  "bust": "bust",

@@ -51,46 +51,14 @@
         <div class="tension-answers-panel" style="margin:16px auto 0;">
           <h3 style="text-align:center; margin-top:0;">{{ $t('Svar§OnlineBullseyeGameT') }}</h3>
 
-          <div class="bullseye-reveal-list">
-            <div
-              v-for="(a, idx) in state.roundResults"
-              :key="a.participantId"
-              class="bullseye-reveal-row"
-              :class="{
-                'is-revealed': revealIndex > idx,
-                'is-eliminated': revealIndex > idx && a.eliminatedThisRound
-              }"
-            >
-              <div class="bullseye-reveal-rank">{{ revealIndex > idx ? idx + 1 : '?' }}</div>
-              <div class="bullseye-reveal-main">
-                <div class="bullseye-reveal-player">{{ revealIndex > idx ? a.name : '???' }}</div>
-                <div class="bullseye-reveal-guess">{{ revealIndex > idx ? a.guessedName : $t('Skjult til avsløringen') }}</div>
-              </div>
-              <div v-if="revealIndex > idx" class="bullseye-reveal-stats">
-                <div class="bullseye-reveal-value">{{ fmt(a.statValue) }}</div>
-                <div class="bullseye-reveal-distance">{{ fmt(a.distance) }} {{ $t('unna') }}</div>
-              </div>
-            </div>
-          </div>
-
-          <template v-if="revealIndex >= (state.roundResults?.length || 0)">
-            <div v-if="eliminatedName" class="bullseye-elimination-banner">❌ {{ eliminatedName }} {{ $t('er ute!') }}</div>
-
-            <div v-if="state.bullseyeAnswers && state.bullseyeAnswers.length" class="bullseye-reveal-divider">{{ $t('Det riktige svaret') }}</div>
-            <div v-if="state.bullseyeAnswers && state.bullseyeAnswers.length" class="bullseye-truth-callout">
-              <div class="bullseye-truth-label">{{ state.bullseyeAnswers[0].distance === 0 ? '🎯 Bullseye' : $t('Nærmeste mulige svar') }}</div>
-              <div class="bullseye-truth-list">
-                <span
-                  v-for="e in state.bullseyeAnswers"
-                  :key="e.athleteId ?? e.athleteName"
-                  class="bullseye-truth-name"
-                  :class="e.foundBy ? 'found' : 'not-found'"
-                >
-                  {{ e.foundBy ? '✓' : '✕' }} {{ e.athleteName }} ({{ fmt(e.statValue) }})<template v-if="e.foundBy"> {{ $t('— funnet av') }} {{ e.foundBy }}</template>
-                </span>
-              </div>
-            </div>
-          </template>
+          <BullseyeReveal
+            :target="state.targetValue"
+            :results="revealResults"
+            :reveal-count="revealIndex"
+            :truth="revealTruth"
+            :show-truth="revealIndex >= (state.roundResults?.length || 0)"
+            :fmt="fmt"
+          />
 
           <div style="text-align:center; margin-top:16px;">
             <button v-if="revealIndex < (state.roundResults?.length || 0)" class="btn btn-secondary" @click="skipReveal">
@@ -135,6 +103,7 @@ import api from '../services/api'
 import toast from '../services/toast'
 import LoadingState from './LoadingState.vue'
 import BullseyeAnswerModal from './BullseyeAnswerModal.vue'
+import BullseyeReveal from './BullseyeReveal.vue'
 import { useRoomChannel, createStaleGuard } from '../composables/useRoomChannel'
 import { useTurnTitleAlert } from '../composables/useTurnTitleAlert'
 import { formatNumber } from '../constants'
@@ -165,13 +134,22 @@ const advancing = ref(false)
 let wasRevealed = false
 let revealTimer = null
 const revealIndex = ref(0)
-const eliminatedName = ref(null)
 
 const isYourTurn = computed(() => !!state.value && state.value.currentTurnParticipantId === props.yourParticipantId)
 useTurnTitleAlert(isYourTurn)
 const currentTurnName = computed(() =>
   state.value?.players.find(p => p.participantId === state.value.currentTurnParticipantId)?.name || '…'
 )
+
+// The round's results in the shape the shared reveal takes (see BullseyeReveal.vue); the server
+// already sends them closest first.
+const revealResults = computed(() => (state.value?.roundResults || []).map(r => ({
+  key: r.participantId, player: r.name, guess: r.guessedName, statValue: r.statValue, distance: r.distance,
+  eliminated: !!r.eliminatedThisRound
+})))
+const revealTruth = computed(() => (state.value?.bullseyeAnswers || []).map(e => ({
+  key: e.athleteId ?? e.athleteName, name: e.athleteName, statValue: e.statValue, distance: e.distance, foundBy: e.foundBy
+})))
 
 const staleGuard = createStaleGuard()
 
@@ -193,12 +171,10 @@ function applyState(fresh) {
   state.value = fresh
   if (fresh.roundRevealed && !wasRevealed) {
     revealIndex.value = 0
-    eliminatedName.value = null
     scheduleReveal()
   } else if (!fresh.roundRevealed && wasRevealed) {
     clearTimeout(revealTimer)
     revealIndex.value = 0
-    eliminatedName.value = null
   }
   wasRevealed = fresh.roundRevealed
   if (fresh.finished) {
@@ -214,9 +190,6 @@ function scheduleReveal() {
   if (revealIndex.value < total) {
     revealTimer = setTimeout(() => {
       revealIndex.value += 1
-      if (revealIndex.value >= total) {
-        eliminatedName.value = state.value.roundResults.find(r => r.eliminatedThisRound)?.name || null
-      }
       scheduleReveal()
     }, 1400)
   }
@@ -226,7 +199,6 @@ function skipReveal() {
   clearTimeout(revealTimer)
   const total = state.value?.roundResults?.length || 0
   revealIndex.value = total
-  eliminatedName.value = state.value?.roundResults?.find(r => r.eliminatedThisRound)?.name || null
 }
 
 const { stop: stopPolling } = useRoomChannel(`/topic/rooms/${props.roomCode}/state`, { poll, onMessage: applyState })

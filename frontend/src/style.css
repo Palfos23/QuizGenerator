@@ -1915,130 +1915,6 @@ mark {
   .tension-reveal-row { transition: none; }
 }
 
-/* The reveal "ladder" - a stack of cards that fills in as each answer is
-   revealed, replacing a plain table with something that reads at a glance:
-   a rank badge, the guess, and a relative distance bar (closest = short/teal,
-   farthest = long/coral) instead of a bare number. */
-.bullseye-reveal-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.bullseye-reveal-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: rgb(var(--fg-rgb) / 0.07);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  opacity: 0.5;
-  transform: scale(0.98);
-  transition: opacity 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1), background 0.3s ease, border-color 0.3s ease;
-}
-.bullseye-reveal-row.is-revealed {
-  opacity: 1;
-  transform: scale(1);
-  background: rgb(var(--teal-rgb) / 0.05);
-  border-color: rgb(var(--teal-rgb) / 0.2);
-}
-.bullseye-reveal-row.is-safe {
-  background: rgb(var(--gold-rgb) / 0.06);
-  border-color: rgb(var(--gold-rgb) / 0.25);
-}
-.bullseye-reveal-row.is-eliminated {
-  background: rgb(var(--coral-rgb) / 0.08);
-  border-color: rgb(var(--coral-rgb) / 0.3);
-}
-.bullseye-reveal-rank {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 0.82rem;
-  background: rgb(var(--fg-rgb) / 0.06);
-  border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.bullseye-reveal-main {
-  flex: 1;
-  min-width: 0;
-  text-align: left;
-}
-.bullseye-reveal-player {
-  font-weight: 700;
-}
-.bullseye-reveal-guess {
-  font-size: 0.82rem;
-  color: var(--text-dim);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.bullseye-reveal-stats {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-.bullseye-reveal-value {
-  font-weight: 700;
-  font-size: 0.9rem;
-  min-width: 30px;
-  text-align: right;
-}
-.bullseye-reveal-bar {
-  width: 64px;
-  height: 6px;
-  border-radius: 999px;
-  background: rgb(var(--fg-rgb) / 0.08);
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.bullseye-reveal-bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: var(--violet);
-  transition: width 0.7s ease;
-}
-.bullseye-reveal-row:first-child .bullseye-reveal-bar-fill { background: var(--teal); }
-.bullseye-reveal-row.is-safe .bullseye-reveal-bar-fill { background: var(--gold); }
-.bullseye-reveal-row.is-eliminated .bullseye-reveal-bar-fill { background: var(--coral); }
-.bullseye-reveal-distance {
-  font-size: 0.76rem;
-  color: var(--text-dim);
-  min-width: 54px;
-  text-align: right;
-}
-@media (prefers-reduced-motion: reduce) {
-  .bullseye-reveal-row { transition: none; }
-}
-
-/* A clear seam between "who did what this round" (above) and "what the real
-   answer was" (below) - the two used to sit right on top of each other in
-   near-identical translucent boxes and read as one blurred block. */
-.bullseye-reveal-divider {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-dim);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 22px 0 14px;
-}
-.bullseye-reveal-divider::before,
-.bullseye-reveal-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
 .bullseye-truth-callout {
   text-align: center;
   border: 1px solid rgb(var(--gold-rgb) / 0.5);
@@ -2054,112 +1930,139 @@ mark {
   font-size: 0.78rem;
   color: var(--gold);
 }
-.bullseye-truth-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 8px;
+/* Bullseye's round reveal (BullseyeReveal.vue): the answer key, a number line with each guess
+   placed where it landed, and the ranked list. */
+.bullseye-reveal { display: flex; flex-direction: column; gap: 14px; }
+.bullseye-key {
+  text-align: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--ink-raised);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
-.bullseye-truth-name {
-  font-weight: 700;
-  font-size: 0.92rem;
-  padding: 4px 10px;
+.bullseye-key.open { background: rgb(var(--teal-rgb) / 0.1); border-color: rgb(var(--teal-rgb) / 0.4); }
+.bullseye-key-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
+.bullseye-key-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; margin-top: 4px; }
+.bullseye-key-name { font-size: 1.05rem; font-weight: 700; }
+.bullseye-key.open .bullseye-key-name { color: var(--teal); }
+.bullseye-key-found {
+  margin-left: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 1px 7px;
   border-radius: 999px;
-  border: 1px solid transparent;
+  background: rgb(var(--teal-rgb) / 0.18);
+  vertical-align: 2px;
 }
-.bullseye-truth-name.found {
+
+.bullseye-line { position: relative; height: 92px; margin: 0 8px; }
+.bullseye-line-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 46px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--border);
+}
+.bullseye-line-target, .bullseye-line-mark {
+  position: absolute;
+  top: 46px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.bullseye-line-target-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--teal);
+  background: radial-gradient(circle, var(--teal) 0 4px, transparent 5px);
+}
+.bullseye-line-value.target {
+  position: absolute;
+  top: 26px;
+  font-size: 0.8rem;
+  font-weight: 700;
   color: var(--teal);
-  background: rgb(var(--teal-rgb) / 0.12);
-  border-color: rgb(var(--teal-rgb) / 0.35);
+  white-space: nowrap;
 }
-.bullseye-truth-name.not-found {
-  color: var(--text-dim);
-  background: rgb(var(--coral-rgb) / 0.08);
-  border-color: rgb(var(--coral-rgb) / 0.25);
-}
-
-/* The "final two" suspense beat, then the elimination flourish, then a big
-   spotlight card that announces whoever was just revealed - the dramatic
-   reveal sequence the user asked for (closest-first, one at a time, with a
-   drumroll before the last elimination). */
-.bullseye-drumroll {
-  text-align: center;
+.bullseye-line-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.68rem;
   font-weight: 700;
+  color: var(--ink-raised);
+  background: var(--gold);
+  box-shadow: 0 0 0 2px rgb(var(--page-rgb));
+}
+.bullseye-line-mark.out .bullseye-line-dot { background: var(--coral); }
+.bullseye-line-mark.hit .bullseye-line-dot { background: var(--teal); }
+.bullseye-line-name {
+  position: absolute;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--gold);
-  margin-bottom: 16px;
 }
-.bullseye-drumroll-icon {
-  font-size: 2.2rem;
-  animation: bullseye-drumroll-shake 0.35s ease-in-out infinite;
-}
-@keyframes bullseye-drumroll-shake {
-  0%, 100% { transform: translateX(0) rotate(0deg); }
-  25% { transform: translateX(-4px) rotate(-6deg); }
-  75% { transform: translateX(4px) rotate(6deg); }
-}
+.bullseye-line-mark.above .bullseye-line-name { bottom: 24px; }
+.bullseye-line-mark.below .bullseye-line-name { top: 24px; }
+.bullseye-line-mark.out .bullseye-line-name { color: var(--coral); }
+.bullseye-line-mark.hit .bullseye-line-name { color: var(--teal); }
+.bullseye-dot-enter-active { transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease; }
+.bullseye-dot-enter-from { opacity: 0; transform: translate(-50%, -150%); }
 
-.bullseye-elimination-banner {
-  text-align: center;
-  font-weight: 800;
-  font-size: 1.15rem;
-  color: var(--text);
-  background: rgb(var(--coral-rgb) / 0.28);
-  border: 1px solid rgb(var(--coral-rgb) / 0.6);
-  box-shadow: none;
-  border-radius: var(--radius-sm);
-  padding: 12px 18px;
-  margin-bottom: 16px;
-  animation: bullseye-banner-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+.bullseye-rows { display: flex; flex-direction: column; gap: 6px; }
+.bullseye-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--ink-raised);
+  border: 1px solid var(--border);
+  transition: background 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
 }
-
-/* Gold when spotlighting an ordinary/safe reveal, switched to a distinctly
-   different coral gradient (.bullseye-spotlight-out) for the elimination -
-   low-opacity flat tints on a dark page read as the same muted box
-   regardless of hue, so both get a real gradient + glow to actually look
-   like two different colors, not just "a slightly lighter panel". */
-.bullseye-spotlight {
-  text-align: center;
-  border: 1px solid rgb(var(--gold-rgb) / 0.4);
-  background: rgb(var(--gold-rgb) / 0.1);
-  box-shadow: none;
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  animation: bullseye-banner-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+.bullseye-row.hidden { opacity: 0.55; }
+.bullseye-row.out { border-color: rgb(var(--coral-rgb) / 0.4); }
+.bullseye-row.hit { border-color: rgb(var(--teal-rgb) / 0.45); background: rgb(var(--teal-rgb) / 0.08); }
+.bullseye-row-rank {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
 }
-.bullseye-spotlight-out {
-  border-color: rgb(var(--coral-rgb) / 0.55);
-  background: rgb(var(--coral-rgb) / 0.12);
-  box-shadow: none;
-}
-.bullseye-spotlight-label {
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.bullseye-row-main { display: flex; flex-direction: column; min-width: 0; }
+.bullseye-row-main strong, .bullseye-row-guess { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bullseye-row-guess { font-size: 0.85rem; color: var(--text-dim); }
+.bullseye-row.out strong { text-decoration: line-through; text-decoration-color: var(--coral); }
+.bullseye-row-chip {
   font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  background: rgb(var(--gold-rgb) / 0.15);
   color: var(--gold);
 }
-.bullseye-spotlight-out .bullseye-spotlight-label {
-  color: var(--coral);
-}
-.bullseye-spotlight-name {
-  font-weight: 700;
-  font-size: 1.3rem;
-  margin-top: 4px;
-}
-.bullseye-spotlight-answer {
-  color: var(--text-dim);
-  font-size: 0.88rem;
-  margin-top: 2px;
-}
-@keyframes bullseye-banner-pop {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
+.bullseye-row.out .bullseye-row-chip { background: rgb(var(--coral-rgb) / 0.15); color: var(--coral); }
+.bullseye-row.hit .bullseye-row-chip { background: rgb(var(--teal-rgb) / 0.18); color: var(--teal); }
 @media (prefers-reduced-motion: reduce) {
-  .bullseye-drumroll-icon { animation: none; }
-  .bullseye-elimination-banner,
-  .bullseye-spotlight { animation: none; }
+  .bullseye-dot-enter-active, .bullseye-row, .bullseye-key { transition: none; }
 }
 
 .tension-intro-overlay {
@@ -3323,11 +3226,6 @@ table.scoreboard-table {
   .tension-player-col { width: 100%; flex-direction: row; flex-wrap: wrap; }
   .tension-player-card { flex: 1; min-width: 140px; }
   .tension-answers-panel { min-width: 0; max-width: 100%; padding: 14px; }
-
-  .bullseye-reveal-row { flex-wrap: wrap; row-gap: 6px; }
-  .bullseye-reveal-main { min-width: 55%; }
-  .bullseye-reveal-stats { width: 100%; justify-content: flex-end; padding-left: 44px; }
-  .bullseye-reveal-bar { width: 48px; }
 
   .tension-reveal-row { flex-wrap: wrap; row-gap: 6px; }
   .tension-reveal-main { min-width: 55%; }
