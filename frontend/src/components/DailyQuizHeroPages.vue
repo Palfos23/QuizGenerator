@@ -57,7 +57,7 @@
           <div class="dqh-week">
             <div v-for="d in week.days" :key="d.label + d.date" class="dqh-day" :class="{ today: d.today, empty: d.score === null }">
               <span class="dqh-day-score">{{ d.score ?? '' }}</span>
-              <span class="dqh-day-bar" :style="{ height: d.score === null ? '4px' : Math.max(6, Math.round(d.score / week.max * 44)) + 'px' }"></span>
+              <span class="dqh-day-bar" :style="{ height: d.score === null ? '4px' : Math.max(8, Math.round(d.score / week.max * 84)) + 'px' }"></span>
               <span class="dqh-day-label">{{ d.label }}</span>
             </div>
           </div>
