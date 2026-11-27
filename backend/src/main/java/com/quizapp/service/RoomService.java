@@ -180,7 +180,8 @@ public class RoomService {
         dto.setRoomCode(room.getRoomCode());
         dto.setGameType(room.getGameType());
         dto.setStatus(room.getStatus());
-        dto.setHostEmail(room.getHostEmail());
+        // No host email here: this goes to every player (guests too) and out over the room's open WebSocket channel.
+        // Who hosts is already on the participants (their host flag).
         dto.setParticipants(room.getParticipants().stream()
                 .map(p -> new RoomParticipantDto(p.getId(), p.getDisplayName(), p.getColor(), isConnected(p),
                         p.getUserEmail().equals(room.getHostEmail())))

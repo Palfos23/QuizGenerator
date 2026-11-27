@@ -34,10 +34,10 @@ public class AccountController {
     }
 
     @PutMapping("/password")
-    public ResponseEntity<Void> changePassword(@RequestBody com.quizapp.dto.ChangePasswordRequest request,
-                                               Authentication authentication) {
-        accountService.changePassword(authentication.getName(), request.getCurrentPassword(), request.getNewPassword());
-        return ResponseEntity.noContent().build();
+    // Returns a new sign-in token: changing the password withdraws the old ones, the caller's own included.
+    public com.quizapp.dto.AuthResponse changePassword(@RequestBody com.quizapp.dto.ChangePasswordRequest request,
+                                                       Authentication authentication) {
+        return accountService.changePassword(authentication.getName(), request.getCurrentPassword(), request.getNewPassword());
     }
 
     @GetMapping("/export")

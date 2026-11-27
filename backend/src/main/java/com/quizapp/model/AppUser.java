@@ -51,6 +51,12 @@ public class AppUser {
     @Column(name = "verification_token_hash")
     private String verificationTokenHash;
 
+    // Bumped to withdraw every sign-in issued so far (password changed or reset) - see TokenVersions. The database
+    // default matters: the column joins a table that already has rows, and under ddl-auto=update a NOT NULL column
+    // without one can't be added to a populated table. 0 also matches every token issued before this existed.
+    @Column(name = "token_version", nullable = false, columnDefinition = "integer not null default 0")
+    private int tokenVersion = 0;
+
     @Column(name = "verification_token_expires_at")
     private Instant verificationTokenExpiresAt;
 
@@ -206,6 +212,14 @@ public class AppUser {
 
     public void setResetTokenExpiresAt(Instant resetTokenExpiresAt) {
         this.resetTokenExpiresAt = resetTokenExpiresAt;
+    }
+
+    public int getTokenVersion() {
+        return tokenVersion;
+    }
+
+    public void setTokenVersion(int tokenVersion) {
+        this.tokenVersion = tokenVersion;
     }
 
     public boolean isEmailVerified() {

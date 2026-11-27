@@ -146,9 +146,11 @@ async function savePassword() {
   }
   savingPassword.value = true
   try {
-    await api.changeMyPassword(currentPassword.value, newPassword.value)
+    const result = await api.changeMyPassword(currentPassword.value, newPassword.value)
+    // Stay signed in here with the new sign-in; every other device is signed out by the change.
+    if (result?.token) auth.login({ token: result.token, displayName: result.displayName, role: result.role })
     currentPassword.value = newPassword.value = repeatPassword.value = ''
-    toast.show(_t('Passordet er endret.'))
+    toast.show(_t('Passordet er endret. Andre enheter er logget ut.'))
   } catch (e) {
     passwordError.value = e.response?.data?.message || _t('Kunne ikke bytte passordet.')
   } finally {

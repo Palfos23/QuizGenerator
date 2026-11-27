@@ -284,10 +284,6 @@ public class RoomController {
 
     /** Same reasoning/shape as AuthController's own copy - Render sits behind a reverse proxy. */
     private String clientKey(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
+        return com.quizapp.security.ClientIp.of(request);
     }
 }

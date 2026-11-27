@@ -57,6 +57,7 @@ public class AccountService {
     private final JwtService jwtService;
     private final LeagueService leagueService;
     private final DisplayNameService displayNameService;
+    private final com.quizapp.security.TokenVersions tokenVersions;
 
     public AccountService(AppUserRepository appUserRepository,
                            SavedQuizRepository savedQuizRepository,
@@ -75,10 +76,12 @@ public class AccountService {
                            LoginRateLimiter loginRateLimiter,
                            JwtService jwtService,
                            LeagueService leagueService,
-                          DisplayNameService displayNameService) {
+                          DisplayNameService displayNameService,
+                          com.quizapp.security.TokenVersions tokenVersions) {
         this.jwtService = jwtService;
         this.leagueService = leagueService;
         this.displayNameService = displayNameService;
+        this.tokenVersions = tokenVersions;
         this.appUserRepository = appUserRepository;
         this.savedQuizRepository = savedQuizRepository;
         this.submittedQuestionRepository = submittedQuestionRepository;
@@ -115,9 +118,11 @@ public class AccountService {
     /**
      * Lets a signed-in user choose a new password. The current one must be given, so someone who finds a
      * phone left logged in can't lock the owner out; wrong guesses count against the same limit as logging in.
+     * Returns a fresh sign-in: a new password withdraws every sign-in issued before it (another device, or a
+     * stolen token) - this one included, so the caller swaps in the new token to stay signed in here.
      */
     @Transactional
-    public void changePassword(String email, String currentPassword, String newPassword) {
+    public AuthResponse changePassword(String email, String currentPassword, String newPassword) {
         String limitKey = "change-password:" + email;
         loginRateLimiter.checkAllowed(limitKey);
         AppUser user = requireUser(email);
@@ -139,8 +144,11 @@ public class AccountService {
         // A reset link that was requested earlier shouldn't keep working now that the password was just chosen.
         user.setResetTokenHash(null);
         user.setResetTokenExpiresAt(null);
+        tokenVersions.bump(user);
         appUserRepository.save(user);
         loginRateLimiter.recordSuccess(limitKey);
+        String token = jwtService.generateToken(user.getEmail(), "USER", user.getId(), user.getName());
+        return new AuthResponse(token, user.getName(), "USER");
     }
 
     static final int MIN_NAME_LENGTH = 2;
@@ -271,6 +279,7 @@ public class AccountService {
         leagueService.removeUser(user.getId());
 
         appUserRepository.delete(user);
+        tokenVersions.forget(user.getId()); // its sign-ins stop working at once (there's no version left to match)
     }
 
     private AppUser requireUser(String email) {

@@ -36,6 +36,7 @@ public class AuthService {
     private final LoginRateLimiter loginRateLimiter;
     private final MailService mailService;
     private final DisplayNameService displayNameService;
+    private final com.quizapp.security.TokenVersions tokenVersions;
     private final String frontendBaseUrl;
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -47,6 +48,7 @@ public class AuthService {
                         LoginRateLimiter loginRateLimiter,
                         MailService mailService,
                         DisplayNameService displayNameService,
+                        com.quizapp.security.TokenVersions tokenVersions,
                         @Value("${app.frontend-base-url}") String frontendBaseUrl) {
         this.appUserRepository = appUserRepository;
         this.adminUserRepository = adminUserRepository;
@@ -56,6 +58,7 @@ public class AuthService {
         this.loginRateLimiter = loginRateLimiter;
         this.mailService = mailService;
         this.displayNameService = displayNameService;
+        this.tokenVersions = tokenVersions;
         this.frontendBaseUrl = frontendBaseUrl;
     }
 
@@ -83,16 +86,21 @@ public class AuthService {
 
     /** clientKey identifies the caller for rate-limiting purposes - the request's IP address. */
     public AuthResponse loginAsAdmin(String username, String rawPassword, String clientKey) {
+        // Per IP, and per account name too - an IP can be faked, the account being guessed at can't.
+        String accountKey = "admin-account:" + String.valueOf(username).trim().toLowerCase();
         loginRateLimiter.checkAllowed(clientKey);
+        loginRateLimiter.checkAllowed(accountKey, LoginRateLimiter.ACCOUNT_MAX_ATTEMPTS);
 
         AdminUser admin = adminUserRepository.findByUsername(username).orElse(null);
 
         if (admin == null || !passwordEncoder.matches(rawPassword, admin.getPasswordHash())) {
             loginRateLimiter.recordFailure(clientKey);
+            loginRateLimiter.recordFailure(accountKey);
             throw new IllegalArgumentException("Ugyldig administratorlogin.");
         }
 
         loginRateLimiter.recordSuccess(clientKey);
+        loginRateLimiter.recordSuccess(accountKey);
         String token = jwtService.generateToken(admin.getUsername(), "ADMIN", admin.getId(), admin.getUsername());
         return new AuthResponse(token, admin.getUsername(), "ADMIN");
     }
@@ -146,8 +154,11 @@ public class AuthService {
     public AuthResponse loginWithPassword(String rawEmail, String rawPassword, String clientKey) {
         String key = "user-login:" + clientKey;
         loginRateLimiter.checkAllowed(key);
-
         String email = normalizeEmail(rawEmail);
+        // Wrong passwords also count per account, which a faked IP can't get around.
+        String accountKey = "user-account:" + email;
+        loginRateLimiter.checkAllowed(accountKey, LoginRateLimiter.ACCOUNT_MAX_ATTEMPTS);
+
         AppUser user = appUserRepository.findByEmail(email).orElse(null);
 
         if (user == null || user.getPasswordHash() == null) {
@@ -159,6 +170,7 @@ public class AuthService {
         }
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
             loginRateLimiter.recordFailure(key);
+            loginRateLimiter.recordFailure(accountKey);
             throw new IllegalArgumentException("Ugyldig e-postadresse eller passord.");
         }
         if (!user.isEmailVerified()) {
@@ -168,6 +180,7 @@ public class AuthService {
         }
 
         loginRateLimiter.recordSuccess(key);
+        loginRateLimiter.recordSuccess(accountKey);
         String token = jwtService.generateToken(user.getEmail(), "USER", user.getId(), user.getName());
         return new AuthResponse(token, user.getName(), "USER");
     }
@@ -190,6 +203,10 @@ public class AuthService {
         // endpoint can be hit per IP rather than how many times it's been wrong.
         loginRateLimiter.recordFailure(rateLimitKey);
         String email = normalizeEmail(rawEmail);
+        // And per address, so nobody can fill a stranger's inbox with reset emails from many IPs.
+        String inboxKey = "forgot-password-inbox:" + email;
+        loginRateLimiter.checkAllowed(inboxKey);
+        loginRateLimiter.recordFailure(inboxKey);
         AppUser user = appUserRepository.findByEmail(email).orElse(null);
         if (user == null) {
             return;
@@ -271,6 +288,8 @@ public class AuthService {
             user.setVerificationTokenHash(null);
             user.setVerificationTokenExpiresAt(null);
         }
+        // Whoever had the old password - or a sign-in made with it - is out now.
+        tokenVersions.bump(user);
         appUserRepository.save(user);
 
         String token = jwtService.generateToken(user.getEmail(), "USER", user.getId(), user.getName());

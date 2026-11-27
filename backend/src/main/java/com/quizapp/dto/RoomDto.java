@@ -10,7 +10,6 @@ public class RoomDto {
     private String roomCode;
     private RoomGameType gameType;
     private RoomStatus status;
-    private String hostEmail;
     private List<RoomParticipantDto> participants;
     private Long yourParticipantId;
     private boolean isHost;
@@ -23,8 +22,6 @@ public class RoomDto {
     public void setGameType(RoomGameType gameType) { this.gameType = gameType; }
     public RoomStatus getStatus() { return status; }
     public void setStatus(RoomStatus status) { this.status = status; }
-    public String getHostEmail() { return hostEmail; }
-    public void setHostEmail(String hostEmail) { this.hostEmail = hostEmail; }
     public List<RoomParticipantDto> getParticipants() { return participants; }
     public void setParticipants(List<RoomParticipantDto> participants) { this.participants = participants; }
     public Long getYourParticipantId() { return yourParticipantId; }

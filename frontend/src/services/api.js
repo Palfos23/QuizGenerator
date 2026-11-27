@@ -1094,8 +1094,9 @@ export default {
   getMyPasswordStatus() {
     return client.get('/account/password-status').then(r => r.data)
   },
+  // Answers with a fresh sign-in: a new password withdraws the old ones, this device's included.
   changeMyPassword(currentPassword, newPassword) {
-    return client.put('/account/password', { currentPassword, newPassword })
+    return client.put('/account/password', { currentPassword, newPassword }).then(r => r.data)
   },
   exportMyData() {
     return client.get('/account/export').then(r => r.data)

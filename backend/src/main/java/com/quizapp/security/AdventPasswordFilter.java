@@ -43,8 +43,10 @@ public class AdventPasswordFilter extends OncePerRequestFilter {
         }
 
         String clientKey = clientKey(request);
+        String accountKey = "advent-account:" + SecurityContextHolder.getContext().getAuthentication().getName();
         try {
             rateLimiter.checkAllowed(clientKey);
+            rateLimiter.checkAllowed(accountKey, LoginRateLimiter.ACCOUNT_MAX_ATTEMPTS);
         } catch (TooManyAttemptsException e) {
             writeJson(response, 429, e.getMessage()); // HttpServletResponse has no SC_TOO_MANY_REQUESTS constant
             return;
@@ -52,10 +54,12 @@ public class AdventPasswordFilter extends OncePerRequestFilter {
 
         if (!matches(request.getHeader("X-Advent-Password"))) {
             rateLimiter.recordFailure(clientKey);
+            rateLimiter.recordFailure(accountKey);
             writeJson(response, HttpServletResponse.SC_FORBIDDEN, "Feil passord.");
             return;
         }
         rateLimiter.recordSuccess(clientKey);
+        rateLimiter.recordSuccess(accountKey);
         chain.doFilter(request, response);
     }
 
@@ -71,11 +75,7 @@ public class AdventPasswordFilter extends OncePerRequestFilter {
     }
 
     private String clientKey(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return "advent:" + forwardedFor.split(",")[0].trim();
-        }
-        return "advent:" + request.getRemoteAddr();
+        return "advent:" + ClientIp.of(request);
     }
 
     private void writeJson(HttpServletResponse response, int status, String message) throws IOException {

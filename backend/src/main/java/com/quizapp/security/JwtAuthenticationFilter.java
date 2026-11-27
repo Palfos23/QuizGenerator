@@ -32,6 +32,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7);
             try {
                 Claims claims = jwtService.parseClaims(token);
+                if (!jwtService.isStillValid(claims)) {
+                    // withdrawn (password changed, account deleted): treated exactly like an expired token
+                    SecurityContextHolder.clearContext();
+                    chain.doFilter(request, response);
+                    return;
+                }
                 String role = claims.get("role", String.class);
                 var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 

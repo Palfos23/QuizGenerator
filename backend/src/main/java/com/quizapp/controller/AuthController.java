@@ -130,15 +130,8 @@ public class AuthController {
         return new AuthResponse(result.token(), result.displayName(), result.role());
     }
 
-    /**
-     * Render (like most PaaS hosts) sits behind a reverse proxy, so the real client IP is in
-     * X-Forwarded-For, not getRemoteAddr(). Falls back to getRemoteAddr() for local dev.
-     */
+    /** The caller's IP for rate limiting - see ClientIp for which header is trusted and why. */
     private String clientKey(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
+        return com.quizapp.security.ClientIp.of(request);
     }
 }

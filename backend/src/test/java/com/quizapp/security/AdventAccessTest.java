@@ -19,6 +19,7 @@ class AdventAccessTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private JwtService jwtService;
     @Autowired private AuthService authService;
+    @Autowired private com.quizapp.repository.AppUserRepository appUserRepository;
 
     // each request comes from its own made-up client address, so deliberate wrong guesses never lock out another test
     private int next = 0;
@@ -48,7 +49,12 @@ class AdventAccessTest {
 
     @Test
     void aSignedInPlayerCanButTheGamemastersSideIsForAdminsOnly() throws Exception {
-        String player = jwtService.generateToken("advent-access@example.com", "USER", 987654L, "Spiller");
+        // a real account: a token for one that doesn't exist (or no longer does) is refused - see TokenVersions
+        com.quizapp.model.AppUser u = new com.quizapp.model.AppUser();
+        u.setEmail("advent-access-" + System.nanoTime() + "@example.com");
+        u.setName("Spiller " + System.nanoTime());
+        u = appUserRepository.save(u);
+        String player = jwtService.generateToken(u.getEmail(), "USER", u.getId(), u.getName());
         assertThat(status(get("/api/advent"), player)).isEqualTo(200);
         assertThat(status(get("/api/admin/advent"), player)).isIn(401, 403);
         assertThat(status(get("/api/admin/advent/days/1/review"), player)).isIn(401, 403);
@@ -66,7 +72,12 @@ class AdventAccessTest {
             assertThat(status(get(path).header("X-Forwarded-For", ip()), admin)).isEqualTo(403);
             assertThat(status(get(path).header("X-Advent-Password", "feil").header("X-Forwarded-For", ip()), admin)).isEqualTo(403);
             // the password alone is not enough: a signed-in player who knows it is still not an admin
-            String player = jwtService.generateToken("advent-access@example.com", "USER", 987654L, "Spiller");
+            // a real account: a token for one that doesn't exist (or no longer does) is refused - see TokenVersions
+        com.quizapp.model.AppUser u = new com.quizapp.model.AppUser();
+        u.setEmail("advent-access-" + System.nanoTime() + "@example.com");
+        u.setName("Spiller " + System.nanoTime());
+        u = appUserRepository.save(u);
+        String player = jwtService.generateToken(u.getEmail(), "USER", u.getId(), u.getName());
             assertThat(status(get(path).header("X-Advent-Password", "jul123").header("X-Forwarded-For", ip()), player)).isIn(401, 403);
             // and nobody who isn't signed in can even try guesses
             assertThat(status(get(path).header("X-Advent-Password", "jul123").header("X-Forwarded-For", ip()), null)).isIn(401, 403);
