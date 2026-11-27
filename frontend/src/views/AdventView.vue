@@ -1,6 +1,8 @@
 <template>
   <div class="dq-page adv-page">
     <header class="dq-hero adv-hero">
+      <span class="adv-hero-scene"><ChristmasScene variant="hero" /></span>
+      <ChristmasScene variant="snow" />
       <span class="dq-eyebrow">{{ $t('Julekalender') }} <template v-if="state">{{ state.year }}</template></span>
       <h1 class="dq-title">{{ $t('Tenk som spillmesteren') }}</h1>
       <p class="dq-sub">{{ $t('En ny luke hver dag til jul - velg 4 svar og prøv å treffe spillmesterens skjulte svar.') }}</p>
@@ -70,8 +72,11 @@
             :aria-label="doorLabel(door)"
             @click="openDoor(door)"
           >
-            <span class="adv-door-n">{{ door.day }}</span>
-            <span class="adv-door-sub"><AppIcon v-if="door.status === 'LOCKED'" name="lock" /><template v-else>{{ doorSub(door) }}</template></span>
+            <span class="adv-door-bow" aria-hidden="true"></span>
+            <span class="adv-door-tag">
+              <span class="adv-door-n">{{ door.day }}</span>
+              <span class="adv-door-sub"><AppIcon v-if="door.status === 'LOCKED'" name="lock" /><template v-else>{{ doorSub(door) }}</template></span>
+            </span>
           </button>
         </div>
 
@@ -79,7 +84,7 @@
         <h2 class="dq-section-title">{{ $t('Toppliste') }}</h2>
         <div v-if="leaderboard && leaderboard.playedDays" class="dq-card adv-board">
           <div v-for="p in visiblePlayers" :key="p.rank + p.name" class="adv-row" :class="{ 'is-you': p.you }">
-            <span class="adv-row-rank">{{ p.rank }}</span>
+            <span class="adv-row-rank" :class="p.rank <= 3 ? 'medal-' + p.rank : ''">{{ p.rank }}</span>
             <span class="adv-row-name">{{ p.name }} <small v-if="p.you">({{ $t('deg') }})</small></span>
             <span class="adv-row-points">{{ p.points }}</span>
           </div>
@@ -122,6 +127,7 @@ import api from '../services/api'
 import { typeInfo, pointsText } from '../services/advent'
 import AdventRules from '../components/AdventRules.vue'
 import AppIcon from '../components/AppIcon.vue'
+import ChristmasScene from '../components/ChristmasScene.vue'
 
 const router = useRouter()
 const state = ref(null)
@@ -184,6 +190,25 @@ async function changeShowName(value) {
 
 <style scoped>
 .adv-page { max-width: 760px; }
+
+/* A snowy night over the header: stars, a moon, pine trees (one decorated) on the hills below the text. */
+.adv-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 26px 24px 150px;
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(90% 70% at 85% 0%, rgb(70 120 160 / 0.35) 0%, transparent 70%),
+    linear-gradient(180deg, #0d1f33 0%, #13324a 55%, #1a4a4a 100%);
+  color: #f4f7fb;
+  margin-bottom: 18px;
+}
+.adv-hero > :not(.xmas-scene):not(.adv-hero-scene) { position: relative; z-index: 1; }
+.adv-hero .dq-eyebrow { color: #ffd45c; }
+.adv-hero .dq-title { color: #fff; text-shadow: 0 2px 12px rgb(0 0 0 / 0.35); }
+.adv-hero .dq-sub { color: rgb(244 247 251 / 0.85); max-width: 460px; }
+.adv-hero-scene { position: absolute; left: 0; right: 0; bottom: 0; height: 170px; }
+.adv-hero-scene :deep(.xmas-scene) { position: absolute; inset: 0; }
 .adv-testbanner { margin: 0 0 14px; padding: 8px 14px; border: 1px solid rgb(var(--gold-rgb) / 0.4); border-radius: var(--radius-md); background: rgb(var(--gold-rgb) / 0.06); font-size: 0.92rem; }
 .adv-soon { text-align: center; padding: 34px 20px; }
 .adv-soon-emoji { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto var(--space-3); border-radius: var(--radius-lg); background: rgb(var(--primary-rgb) / 0.09); color: var(--primary); font-size: 2rem; }
@@ -192,7 +217,8 @@ async function changeShowName(value) {
 .adv-soon-text strong { display: block; color: var(--text); margin-top: 6px; font-size: 1.1rem; }
 
 .adv-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
-.adv-stat { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); padding: 10px 6px; text-align: center; }
+.adv-stat { border: 1px solid var(--rule); border-top: 3px solid #a32a2a; border-radius: var(--radius-sm); background: var(--ink-raised); padding: 10px 6px; text-align: center; }
+.adv-stat:nth-child(even) { border-top-color: #1f5a3a; }
 .adv-stat-n { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.45rem; line-height: 1.1; }
 .adv-stat-n small { font-size: 0.8rem; font-weight: 500; color: var(--text-dim); }
 .adv-stat-l { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin-top: 3px; }
@@ -204,27 +230,113 @@ async function changeShowName(value) {
 .adv-today-cta { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
 .adv-today-note { color: var(--text-dim); font-size: 0.9rem; }
 
-.adv-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+/* The doors: little presents, red and green in turn, a gold bow on each and snow along the top. Today's glows gold;
+   the 24th is all gold, with a star. */
+.adv-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
 .adv-door {
+  position: relative;
   aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--ink-raised); color: var(--text);
-  font-family: var(--font-body); cursor: pointer; padding: 2px;
+  border: none; border-radius: 10px; color: #fff; cursor: pointer; padding: 2px;
+  font-family: var(--font-body);
+  background:
+    linear-gradient(90deg, transparent 46%, rgb(233 185 73 / 0.85) 46% 54%, transparent 54%),
+    radial-gradient(circle at 30% 25%, rgb(255 255 255 / 0.08) 0 2px, transparent 3px) 0 0 / 14px 14px,
+    #a32a2a;
+  box-shadow: 0 3px 0 rgb(0 0 0 / 0.25), inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
-.adv-door-n { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; line-height: 1; }
-.adv-door-sub { font-size: 0.7rem; color: var(--text-dim); }
-.adv-door.is-locked, .adv-door.is-empty { opacity: 0.5; cursor: default; }
-.adv-door.is-open { border-color: var(--gold); box-shadow: 0 0 0 3px rgb(var(--gold-rgb) / 0.22); background: rgb(var(--gold-rgb) / 0.08); }
-.adv-door.is-open .adv-door-sub { color: var(--gold-ink, var(--gold)); font-weight: 700; }
-.adv-door.is-closed.is-entered { background: rgb(var(--teal-rgb) / 0.1); }
-.adv-door.is-closed.is-entered .adv-door-sub { color: var(--teal-ink, var(--teal)); font-weight: 700; }
-.adv-door.is-closed:not(.is-entered) { opacity: 0.6; }
-.adv-door.is-finale { border-style: double; border-width: 4px; }
+.adv-door:nth-child(even) {
+  background:
+    linear-gradient(90deg, transparent 46%, rgb(233 185 73 / 0.85) 46% 54%, transparent 54%),
+    radial-gradient(circle at 30% 25%, rgb(255 255 255 / 0.08) 0 2px, transparent 3px) 0 0 / 14px 14px,
+    #1f5a3a;
+}
+/* snow on the lid */
+.adv-door::before {
+  content: '';
+  position: absolute;
+  left: 4px; right: 4px; top: -3px;
+  height: 9px;
+  border-radius: 6px 6px 50% 50% / 6px 6px 100% 100%;
+  background: #f4fbff;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.12);
+}
+.adv-door-bow {
+  position: absolute;
+  top: 2px; left: 50%;
+  width: 18px; height: 10px;
+  translate: -50% 0;
+  background:
+    radial-gradient(ellipse at 25% 50%, #e9b949 0 45%, transparent 47%),
+    radial-gradient(ellipse at 75% 50%, #e9b949 0 45%, transparent 47%);
+  z-index: 1;
+}
+.adv-door:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.1); }
+/* the number sits on a cream gift tag, so the ribbon never runs through it */
+.adv-door-tag {
+  position: relative;
+  z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 52%;
+  padding: 4px 6px 3px;
+  border-radius: 8px;
+  background: #fdf6e6;
+  color: #6a1a1d;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.3);
+}
+.adv-door:nth-child(even) .adv-door-tag { color: #17442c; }
+.adv-door-n { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; line-height: 1; }
+.adv-door-sub { font-size: 0.68rem; font-weight: 700; line-height: 1.2; min-height: 1.2em; color: rgb(60 30 20 / 0.7); }
+.adv-door-sub :deep(svg) { width: 11px; height: 11px; }
+.adv-door.is-locked, .adv-door.is-empty { cursor: default; filter: saturate(0.55) brightness(0.7); }
+.adv-door.is-open {
+  box-shadow: 0 0 0 3px #ffd45c, 0 0 18px 2px rgb(255 212 92 / 0.55), 0 3px 0 rgb(0 0 0 / 0.25);
+  animation: adv-door-glow 2.2s ease-in-out infinite;
+}
+.adv-door.is-open .adv-door-sub { color: #a36a00; }
+.adv-door.is-closed.is-entered { filter: none; }
+.adv-door.is-closed.is-entered .adv-door-sub { color: #1f7a4a; }
+.adv-door.is-closed:not(.is-entered) { filter: saturate(0.5) brightness(0.75); }
+.adv-door.is-finale {
+  background:
+    radial-gradient(circle at 50% 40%, rgb(255 255 255 / 0.35) 0, transparent 55%),
+    linear-gradient(160deg, #f2c75c, #c8902a);
+  color: #4d2a05;
+}
+.adv-door.is-finale .adv-door-bow { display: none; }
+.adv-door.is-finale::after {
+  content: '★';
+  position: absolute;
+  top: 3px;
+  font-size: 0.9rem;
+  color: #fff7d6;
+  text-shadow: 0 0 6px rgb(255 255 255 / 0.9);
+  z-index: 1;
+}
+@keyframes adv-door-glow {
+  0%, 100% { box-shadow: 0 0 0 3px #ffd45c, 0 0 14px 1px rgb(255 212 92 / 0.45), 0 3px 0 rgb(0 0 0 / 0.25); }
+  50% { box-shadow: 0 0 0 3px #ffd45c, 0 0 24px 4px rgb(255 212 92 / 0.7), 0 3px 0 rgb(0 0 0 / 0.25); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .adv-door.is-open { animation: none; }
+  .adv-door:not(:disabled):hover { transform: none; }
+}
 
 .adv-board { padding: 6px 14px 12px; }
 .adv-row { display: flex; align-items: baseline; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
 .adv-row:first-child { border-top: none; }
 .adv-row.is-you { background: rgb(var(--gold-rgb) / 0.09); margin: 0 -14px; padding: 9px 14px; }
 .adv-row-rank { width: 28px; color: var(--text-dim); font-size: 0.9rem; }
+/* the top three get a little bauble in gold, silver and bronze */
+.adv-row-rank[class*='medal-'] {
+  width: 24px; height: 24px; margin-right: 4px; border-radius: 50%;
+  display: inline-grid; place-items: center; align-self: center;
+  font-size: 0.78rem; font-weight: 700; color: #2b1a05;
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.15);
+}
+.adv-row-rank.medal-1 { background: radial-gradient(circle at 35% 30%, #fff3c4, #e9b949 60%); }
+.adv-row-rank.medal-2 { background: radial-gradient(circle at 35% 30%, #ffffff, #b9c2cc 60%); }
+.adv-row-rank.medal-3 { background: radial-gradient(circle at 35% 30%, #ffe0c4, #c58a55 60%); }
 .adv-row-name { flex: 1; min-width: 0; font-family: var(--font-display); font-weight: 600; overflow-wrap: anywhere; }
 .adv-row-name small { font-family: var(--font-body); font-weight: 400; color: var(--text-dim); }
 .adv-row-points { font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; }
@@ -234,7 +346,9 @@ async function changeShowName(value) {
 .adv-rules-card { margin-top: 8px; }
 
 @media (max-width: 560px) {
-  .adv-grid { grid-template-columns: repeat(4, 1fr); }
+  .adv-hero { padding: 20px 16px 130px; }
+  .adv-hero-scene { height: 140px; }
+  .adv-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .adv-stat-n { font-size: 1.15rem; }
   .adv-stat-l { font-size: 0.6rem; }
 }
