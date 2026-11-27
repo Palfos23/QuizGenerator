@@ -6,15 +6,14 @@
 
     <div class="dashboard-hero-row">
       <section class="dashboard-hero">
+        <span class="dashboard-hero-eyebrow">{{ heroEyebrow }}</span>
         <h1>{{ $t('Dagens quiz§DashboardViewJ') }}</h1>
-        <!-- Says where you stand with today's quiz (it used to be a pop-up on arrival, plus a second card further down) -->
-        <!-- Hidden (space kept) until we know whether today's quiz is played - otherwise "Spill dagens quiz"
-             flashes before switching to "Se resultatet". -->
-        <p class="page-subtitle landing-lede dashboard-hero-status" :class="{ 'is-pending': heroPending }">{{ hero.lede }}</p>
+        <!-- Today, your answers and your week, as pages you swipe or step through. Hidden (space kept) until we know
+             whether today's quiz is played - otherwise "Spill dagens quiz" flashes before switching to "Se resultatet". -->
+        <DailyQuizHeroPages :quiz="todayQuiz" :lede="hero.lede" :pending="heroPending" />
         <div class="dashboard-hero-actions dashboard-hero-status" :class="{ 'is-pending': heroPending }" :aria-busy="heroPending">
-          <router-link :to="hero.to" class="btn btn-lg" :class="hero.done ? 'btn-secondary' : 'btn-primary'">{{ hero.button }} →</router-link>
-          <span v-if="hero.score" class="dashboard-hero-score"><strong>{{ hero.score }}</strong> {{ $t('poeng i dag') }}</span>
-          <router-link v-if="hero.done" to="/daily-quiz" class="dashboard-hero-link">{{ $t('Tidligere quizer og ukestilling') }}</router-link>
+          <router-link :to="hero.to" class="btn" :class="hero.done ? 'btn-secondary' : 'btn-primary btn-lg'">{{ hero.button }} →</router-link>
+          <router-link to="/daily-quiz" class="dashboard-hero-link">{{ $t('Tidligere quizer og ukestilling') }}</router-link>
         </div>
       </section>
 
@@ -71,7 +70,7 @@
             <span class="dash-icon" data-draw aria-hidden="true"><AppIcon :name="card.icon" /></span>
             <h3>{{ card.title }}</h3>
             <p>{{ card.description }}</p>
-            <span class="dashboard-feature-play">{{ $t('Spill →').replace('→', '').trim() }} <span class="dash-arrow">→</span></span>
+            <span class="dashboard-feature-play">{{ card.cta || $t('Spill →').replace('→', '').trim() }} <span class="dash-arrow">→</span></span>
           </router-link>
         </div>
       </div>
@@ -132,6 +131,7 @@ import { computed, onMounted, ref } from 'vue'
 import auth from '../services/auth'
 import api from '../services/api'
 import AppIcon from '../components/AppIcon.vue'
+import DailyQuizHeroPages from '../components/DailyQuizHeroPages.vue'
 import LeagueCardItem from '../components/league/LeagueCardItem.vue'
 import reveal from '../directives/reveal'
 
@@ -177,9 +177,9 @@ const dashboardSectionDefs = [
     title: _t('Administrer quizene dine'),
     accent: QUIZ_MANAGEMENT_ACCENT[0],
     cards: [
-      { to: '/my-quizzes?tab=templates', icon: 'gift', title: _t('Quizmaler'), description: _t('Ferdiglagde quizer publisert av en administrator - last ned en PDF med en gang, eller kopier en for å redigere.'), accent: QUIZ_MANAGEMENT_ACCENT[0], ink: QUIZ_MANAGEMENT_ACCENT[1] },
-      { to: '/my-quizzes', icon: 'check', title: _t('Mine quizer'), description: _t('Se på, rediger eller last ned på nytt alt du har lagret.'), accent: QUIZ_MANAGEMENT_ACCENT[0], ink: QUIZ_MANAGEMENT_ACCENT[1] },
-      { to: '/suggest-question', icon: 'flask', title: _t('Foreslå et spørsmål'), description: _t('Legg til i den felles spørsmålsbanken - gjennomgås av en administrator, og kan uansett brukes i dine egne quizer.'), accent: QUIZ_MANAGEMENT_ACCENT[0], ink: QUIZ_MANAGEMENT_ACCENT[1] }
+      { to: '/my-quizzes?tab=templates', icon: 'gift', title: _t('Quizmaler'), cta: _t('Åpne'), description: _t('Ferdiglagde quizer publisert av en administrator - last ned en PDF med en gang, eller kopier en for å redigere.'), accent: QUIZ_MANAGEMENT_ACCENT[0], ink: QUIZ_MANAGEMENT_ACCENT[1] },
+      { to: '/my-quizzes', icon: 'check', title: _t('Mine quizer'), cta: _t('Åpne'), description: _t('Se på, rediger eller last ned på nytt alt du har lagret.'), accent: QUIZ_MANAGEMENT_ACCENT[0], ink: QUIZ_MANAGEMENT_ACCENT[1] },
+      { to: '/suggest-question', icon: 'flask', title: _t('Foreslå et spørsmål'), cta: _t('Foreslå'), description: _t('Legg til i den felles spørsmålsbanken - gjennomgås av en administrator, og kan uansett brukes i dine egne quizer.'), accent: QUIZ_MANAGEMENT_ACCENT[0], ink: QUIZ_MANAGEMENT_ACCENT[1] }
     ]
   }
 ]
@@ -221,6 +221,14 @@ const hero = computed(() => {
     return { to, done: true, score: `${q.score} / ${q.maxScore}`, lede: _t('Dagens quiz er levert. Et nytt sett med spørsmål kommer i morgen.'), button: _t('Se resultatet') }
   }
   return { to, lede: _t('15 tilfeldige spørsmål i pubquiz-stil - fritekst, et nytt sett hver dag.'), button: _t('Spill dagens quiz§HomeViewT') }
+})
+
+// "Levert · fredag 27. november" above the title: where you stand, then today's date.
+const heroEyebrow = computed(() => {
+  const date = new Date().toLocaleDateString(window.QUIZ_LOCALE, { weekday: 'long', day: 'numeric', month: 'long' })
+  const s = todayQuiz.value?.status
+  const state = s === 'GRADED' ? _t('Levert') : s === 'SUBMITTED' ? _t('Sendt inn') : s === 'IN_PROGRESS' ? _t('I gang') : null
+  return heroPending.value || !state ? date : `${state} · ${date}`
 })
 
 // --- "Your quiz has been reviewed" - results an admin finished checking since the player last looked.

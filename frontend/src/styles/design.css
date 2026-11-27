@@ -71,6 +71,22 @@ a { text-underline-offset: 3px; }
 .top-nav-dropdown-popup .nav-link { border-radius: var(--radius-md); }
 .top-nav-dropdown-popup .nav-link:hover,
 .top-nav-dropdown-popup .nav-link.router-link-exact-active { background: rgb(var(--primary-rgb) / 0.08); color: var(--primary); box-shadow: none; }
+/* "+ Lag en quiz", first in the Mine quizer menu: the one action, so it reads as a button, with a line under it */
+.top-nav-dropdown-popup .nav-link.top-nav-dropdown-primary {
+  background: rgb(var(--primary-rgb) / 0.14);
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 6px;
+  position: relative;
+}
+.top-nav-dropdown-popup .nav-link.top-nav-dropdown-primary::after {
+  content: '';
+  position: absolute;
+  left: 6px; right: 6px; bottom: -4px;
+  height: 1px;
+  background: var(--rule);
+}
+.top-nav-dropdown-popup .nav-link.top-nav-dropdown-primary:hover { background: rgb(var(--primary-rgb) / 0.22); }
 
 /* ---------- Bottom bar (phones) ---------- */
 .bottom-nav {

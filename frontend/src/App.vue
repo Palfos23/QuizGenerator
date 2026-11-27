@@ -6,8 +6,6 @@
       <template v-if="auth.isAuthenticated.value">
         <!-- A spacer on each side of the links: the wordmark sits left, the account right, and the links in the middle between them -->
         <div class="top-nav-spacer"></div>
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/generate" class="nav-link" @click="onNavClick('/generate', 'generate')">{{ $t('Lag en quiz') }}</router-link>
-        <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/my-quizzes" class="nav-link" @click="onNavClick('/my-quizzes', 'myQuizzes')">{{ $t('Mine quizer') }}</router-link>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/daily-quiz" class="nav-link">{{ $t('Dagens quiz§AppT') }}</router-link>
         <router-link v-if="!auth.isAdmin.value && !auth.isGuest.value" to="/ligaer" class="nav-link" :class="{ 'router-link-exact-active': leaguesActive }">{{ $t('Ligaer') }}</router-link>
         <!-- The same dropdowns for players and admins: only the menus differ -->
@@ -30,6 +28,7 @@
                 :key="item.to"
                 :to="item.to"
                 class="nav-link"
+                :class="{ 'top-nav-dropdown-primary': item.primary }"
                 role="menuitem"
                 @click="closePlayerMenuItem(item.to, item.key)"
               >{{ item.label }}</router-link>
@@ -223,6 +222,19 @@ const PLAYER_MENUS = [
       { to: '/starting-xi-battle', label: 'XI Battle', key: 'startingXiBattle' },
       { to: '/bullseye', label: 'Bullseye', key: 'bullseye' },
       { to: '/flashback', label: 'Flashback', key: 'flashback' }
+    ]
+  },
+  // Everything that's yours, last in the bar, with making a new quiz first. (Desktop only - on phones "Mine quizer" is
+  // its own tab, and Lag en quiz is reached from there.)
+  {
+    key: 'mine',
+    icon: 'layers',
+    label: _t('Mine quizer'),
+    items: [
+      { to: '/generate', label: _t('+ Lag en quiz'), key: 'generate', primary: true },
+      { to: '/my-quizzes', label: _t('Mine quizer'), key: 'myQuizzes' },
+      { to: '/my-quizzes?tab=templates', label: _t('Quizmaler'), key: null },
+      { to: '/suggest-question', label: _t('Foreslå et spørsmål'), key: null }
     ]
   }
 ]
