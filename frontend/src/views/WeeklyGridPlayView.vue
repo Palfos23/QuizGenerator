@@ -35,6 +35,7 @@
 
       <div class="grid-status-bar grid-status-box">
         <div class="grid-progress"><span class="grid-progress-count">{{ guessedCount }}</span> / {{ state.entries.length }} {{ $t('funnet') }}</div>
+        <div class="grid-progress-bar" aria-hidden="true"><span :style="{ width: (state.entries.length ? guessedCount / state.entries.length * 100 : 0) + '%' }"></span></div>
         <LivesHearts :max="state.maxStrikes" :used="state.strikesUsed" />
       </div>
 

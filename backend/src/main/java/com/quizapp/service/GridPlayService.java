@@ -301,7 +301,7 @@ public class GridPlayService {
         dto.setEntries(grid.getEntries().stream()
                 .sorted(entrySortOrder(grid))
                 .map(e -> new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), false, false, false,
-                        null, grid.isRanked() ? null : resolvedPhotoUrl(e), logoUrl(e), hintColor(e), resolvedDescription(e)))
+                        null, photoIsTheClue(grid, e) ? resolvedPhotoUrl(e) : null, logoUrl(e), hintColor(e), resolvedDescription(e)))
                 .collect(Collectors.toList()));
         return dto;
     }
@@ -455,7 +455,7 @@ public class GridPlayService {
                     boolean guessedByUser = attempt.getSolvedEntryIds().contains(e.getId());
                     boolean solved = revealAll || guessedByUser;
                     boolean solvedInOvertime = attempt.getOvertimeSolvedEntryIds().contains(e.getId());
-                    boolean photoVisible = solved || !grid.isRanked();
+                    boolean photoVisible = solved || photoIsTheClue(grid, e);
                     return new GridEntryViewDto(e.getId(), e.getHintLabel(), e.getHintValue(), solved, guessedByUser,
                             solvedInOvertime,
                             solved ? e.getAthlete().getName() : null,
@@ -487,6 +487,14 @@ public class GridPlayService {
 
     private String hintColor(GridEntry entry) {
         return entry.getClub() != null ? entry.getClub().getColor() : null;
+    }
+
+    // Before an entry is found, its photo is shown only when it IS the clue: an unranked
+    // grid (no value to hint with) where the entry shows no logo. A visible logo - say an
+    // "Oscars" badge on a best-picture grid - is the clue instead, and the photo (the
+    // poster, with the answer written on it) waits until the entry is found.
+    private boolean photoIsTheClue(Grid grid, GridEntry entry) {
+        return !grid.isRanked() && logoUrl(entry) == null;
     }
 
     // The logo is a hint shown alongside the label/value, visible whether or not the

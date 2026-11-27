@@ -111,7 +111,7 @@
             {{ $t('Lavest først') }} <span style="color:var(--text-dim); font-weight:400;">{{ $t('(sluttplassering…)') }}</span>
           </button>
           <button type="button" class="language-btn" :class="{ active: !form.ranked }" @click="form.ranked = false">
-            {{ $t('Ingen rangering') }} <span style="color:var(--text-dim); font-weight:400;">{{ $t('(bildet er hintet - filmplakater…)') }}</span>
+            {{ $t('Ingen rangering') }} <span style="color:var(--text-dim); font-weight:400;">{{ $t('(bildet er hintet, om ruten ikke viser en logo)') }}</span>
           </button>
         </div>
       </div>

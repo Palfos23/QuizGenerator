@@ -227,7 +227,7 @@ export default {
  "(1 = lettest, 10 = vanskeligst)": "(1 = easiest, 10 = hardest)",
  "(Din tur)": "(Your turn)",
  "(Din tur) ": "(Your turn)",
- "(bildet er hintet - filmplakater…)": "(image is the hint - movie covers…)",
+ "(bildet er hintet, om ruten ikke viser en logo)": "(the image is the hint, unless the tile shows a logo)",
  "(det vanlige, for grids uten rangering)": "(the usual, for unranked grids)",
  "(et oppdiktet eksempel, bare for å illustrere). Det finnes en rangert liste med 10 riktige svar som ingen kan se ennå:": "(a made-up example, just to illustrate). There's a ranked list of 10 correct answers nobody can see yet:",
  "(et sitat vist som hint - for bøker osv.)": "(a quote shown as the hint - for books, etc.)",

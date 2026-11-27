@@ -203,7 +203,7 @@ public class GridBattleOnlineService {
                     GridBattleSolvedEntry s = solvedByEntryId.get(e.getId());
                     boolean isSolved = s != null;
                     boolean visible = isSolved || revealAll;
-                    boolean photoVisible = visible || !grid.isRanked();
+                    boolean photoVisible = visible || (!grid.isRanked() && logoUrl(e) == null); // same rule as GridPlayService.photoIsTheClue
                     return new GridBattleEntryDto(e.getId(), e.getHintLabel(), e.getHintValue(), isSolved,
                             visible ? e.getAthlete().getName() : null,
                             photoVisible ? resolvedPhotoUrl(e) : null,
