@@ -2771,6 +2771,76 @@ table.scoreboard-table {
 .game-preview-caption .good { color: var(--teal); }
 .game-preview-caption .bad { color: var(--coral); }
 
+/* Shared pieces of the "mini-spill" previews: each one replays a short round on the real game's own
+   components and classes (501 cards, Bullseye's number line, the grid board, Tension's standings),
+   with these few extras around them - the round's title, the players and their turn, answer rows. */
+.game-preview-tag { top: 16px; }
+.pv-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+  padding-right: 140px;
+  margin: 0 0 14px;
+  min-height: 1.4em;
+}
+.pv-players { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 0 0 4px; }
+.pv-player {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--ink-raised);
+  font-size: 0.82rem;
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+.pv-player.active { border-color: var(--gold); background: rgb(var(--gold-rgb) / 0.12); }
+.pv-player .life-heart svg { width: 12px; height: 12px; }
+.pv-player-score { font-weight: 700; color: var(--teal); min-width: 1ch; text-align: right; }
+.pv-player-score.bad { color: var(--coral); }
+
+.pv-rows { display: flex; flex-direction: column; gap: 6px; max-width: 460px; margin: 0 auto; }
+.pv-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--ink-raised);
+  opacity: 0;
+  translate: 0 8px;
+  transition: opacity 0.35s ease, translate 0.35s ease;
+}
+.pv-row.in { opacity: 1; translate: 0 0; }
+.pv-row.out.in { border-color: rgb(var(--coral-rgb) / 0.4); }
+.pv-row.hit.in { border-color: rgb(var(--teal-rgb) / 0.45); background: rgb(var(--teal-rgb) / 0.08); }
+.pv-row-rank {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 0.75rem; font-weight: 700;
+  border: 1px solid var(--border); color: var(--text-dim);
+}
+.pv-row-main { display: flex; flex-direction: column; min-width: 0; font-size: 0.85rem; }
+.pv-row-main span { color: var(--text-dim); }
+.pv-chip {
+  font-size: 0.75rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+  background: rgb(var(--gold-rgb) / 0.15); color: var(--gold);
+}
+.pv-chip.hit { background: rgb(var(--teal-rgb) / 0.18); color: var(--teal); }
+.pv-chip.out { background: rgb(var(--coral-rgb) / 0.15); color: var(--coral); }
+.pv-standings { max-width: 460px; margin: 0 auto; animation: pv-rise 0.4s ease; }
+@media (max-width: 760px) {
+  .pv-title { padding-right: 0; padding-top: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pv-row { transition: none; }
+  .pv-standings { animation: none; }
+}
+
 /* The two (occasionally three, e.g. XI Battle's Penalty Shootout) "how do you
    want to play" cards, styled with the same accent-border language as the
    dashboard's game cards - a color per option (teal/violet/coral, via

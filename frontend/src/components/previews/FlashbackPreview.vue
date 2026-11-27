@@ -1,6 +1,7 @@
 <template>
   <div ref="rootEl" class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av Flashback: et mysterieår avslørt gjennom hint, gjettet riktig på det andre.')">
     <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
+    <div class="pv-title">{{ $t('Hvilket år er det?') }}</div>
 
     <div class="fp-clues">
       <div v-for="c in clues" :key="c.num" class="fp-clue" :class="{ win: c.winner && step >= 5, in: step >= c.at }">

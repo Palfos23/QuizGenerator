@@ -1,152 +1,89 @@
 <template>
-  <div ref="rootEl" class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av Grid Battle: et grid med skjulte ruter, noen løst med spillerbilde og navn, hver med et lite hint.')">
+  <div ref="rootEl" class="game-preview" role="img" :aria-label="$t('Forhåndsvisning av Grid Battle: to spillere bytter på å finne spillerne bak klubb og draktnummer, og en feil koster et liv.')">
     <span class="game-preview-tag">{{ $t('Forhåndsvisning') }}</span>
-    <div class="gb-head">
-      <span class="gb-theme">{{ $t('Grid · «Toppscorere for Spurs, 2023/24»') }}</span>
-      <span class="gb-lives">
-        <span v-for="n in 5" :key="n" class="gb-heart" :class="{ lost: n > lives }">♥</span>
-      </span>
+    <div class="pv-title">{{ $t('Draktnummer · Premier League 2024/25') }}</div>
+
+    <div class="pv-players">
+      <div v-for="p in PLAYERS" :key="p" class="pv-player" :class="{ active: turn === p }">
+        <strong>{{ p }}</strong>
+        <LivesHearts :max="3" :used="lost[p]" />
+        <span class="pv-player-score">{{ found[p] }}</span>
+      </div>
     </div>
 
-    <div class="gb-grid">
-      <div v-for="t in tiles" :key="t.id" class="gb-tile" :class="{ solved: isSolved(t), shaking: shaking === t.id }">
-        <template v-if="isSolved(t)">
-          <span class="gb-av">{{ t.initials }}</span>
-          <span class="gb-name">{{ t.name }}</span>
-          <span class="gb-check">✓</span>
-        </template>
-        <template v-else>
-          <span class="gb-hint">{{ t.hint }}</span>
-          <span class="gb-q">?</span>
-        </template>
+    <div class="grid-tiles grid-board pv-grid">
+      <div
+        v-for="t in TILES"
+        :key="t.id"
+        class="grid-tile"
+        :class="{ correct: solved.includes(t.id), 'just-solved': justSolved === t.id, shake: shaking === t.id }"
+      >
+        <span v-if="solved.includes(t.id)" class="grid-tile-status correct">✓</span>
+        <svg class="pv-crest" viewBox="0 0 40 46" aria-hidden="true">
+          <path d="M20 2 L37 8 V24 C37 35 29 42 20 44 C11 42 3 35 3 24 V8 Z" :fill="t.color" stroke="rgb(255 255 255 / 0.85)" stroke-width="2" />
+          <circle cx="20" cy="22" r="7" fill="rgb(255 255 255 / 0.8)" />
+        </svg>
+        <div class="grid-tile-hint" :style="{ background: 'var(--gold)' }">#{{ t.number }}</div>
+        <div class="grid-tile-name">{{ solved.includes(t.id) ? t.name : '?' }}</div>
       </div>
     </div>
 
     <p class="game-preview-caption">
-      {{ $t('Bytt på å nevne spillere som passer.') }} <span class="good">{{ $t('Riktig§GridBattlePreviewT') }}</span> {{ $t('snur ruten og gir poeng;') }}
-      <span class="bad">{{ $t('feil') }}</span> {{ $t('koster et liv. Høyest totalsum på 2–4 grids vinner.') }}
+      {{ $t('Bytt på å nevne spillere som passer.') }} <span class="good">{{ $t('Riktig§GridBattlePreviewT') }}</span> {{ $t('gir et poeng,') }}
+      <span class="bad">{{ $t('feil') }}</span> {{ $t('koster et liv.') }}
     </p>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { usePreviewLoop } from '../../composables/usePreviewLoop'
+import LivesHearts from '../LivesHearts.vue'
 
-// The film: players are named one after another, tiles flip over; two wrong guesses shake a tile and cost a life.
+// The film, on the real board: Jo and Sam take turns finding the player behind each club crest and
+// shirt number; one wrong guess shakes the tile and costs a life.
 const rootEl = ref(null)
-const solved = ref([])
-const lives = ref(5)
-const shaking = ref(null)
-const isSolved = (t) => !!t.name && solved.value.includes(t.id)
+const PLAYERS = ['Jo', 'Sam']
+const TILES = [
+  { id: 1, number: 9, name: 'Haaland', color: '#6cabdd' },
+  { id: 2, number: 7, name: 'Saka', color: '#ef0107' },
+  { id: 3, number: 11, name: 'Salah', color: '#c8102e' },
+  { id: 4, number: 20, name: 'Palmer', color: '#034694' },
+  { id: 5, number: 8, name: 'Ødegaard', color: '#ef0107' },
+  { id: 6, number: 41, name: 'Rice', color: '#ef0107' }
+]
 
-async function wrong(id, sleep) {
-  shaking.value = id
-  lives.value--
-  await sleep(560)
-  shaking.value = null
+const solved = ref([])
+const justSolved = ref(null)
+const shaking = ref(null)
+const turn = ref('Jo')
+const lost = reactive({ Jo: 0, Sam: 0 })
+const found = reactive({ Jo: 0, Sam: 0 })
+
+function reset() {
+  solved.value = []; justSolved.value = null; shaking.value = null; turn.value = 'Jo'
+  lost.Jo = 0; lost.Sam = 0; found.Jo = 0; found.Sam = 0
+}
+function next() { turn.value = turn.value === 'Jo' ? 'Sam' : 'Jo' }
+function right(id) {
+  solved.value = [...solved.value, id]; justSolved.value = id; found[turn.value]++; next()
 }
 
 usePreviewLoop(rootEl, {
   async play(sleep) {
-    solved.value = []; lives.value = 5; await sleep(1000)
-    solved.value = [1]; await sleep(900)
-    solved.value = [1, 3]; await sleep(900)
-    await wrong(2, sleep); await sleep(500)
-    solved.value = [1, 3, 6]; await sleep(900)
-    await wrong(8, sleep); await sleep(2800)
+    reset(); await sleep(1000)
+    right(1); await sleep(1100)
+    right(3); await sleep(1100)
+    shaking.value = 2; lost[turn.value]++; await sleep(500); shaking.value = null; next(); await sleep(700)
+    right(4); await sleep(1100)
+    right(2); await sleep(3000)
   },
-  finalFrame() { solved.value = [1, 3, 6]; lives.value = 3 }
+  finalFrame() { reset(); solved.value = [1, 3, 4, 2]; found.Jo = 2; found.Sam = 2; lost.Jo = 1 }
 })
-
-const tiles = [
-  { id: 1, name: 'Son', initials: 'SH', hint: '' },
-  { id: 2, hint: 'FW · 14' },
-  { id: 3, name: 'Kane', initials: 'HK', hint: '' },
-  { id: 4, hint: 'MF · 9' },
-  { id: 5, hint: 'FW · 12' },
-  { id: 6, name: 'Richarlison', initials: 'RA', hint: '' },
-  { id: 7, hint: 'MF · 7' },
-  { id: 8, hint: 'DF · 3' },
-  { id: 9, hint: 'FW · 6' }
-]
 </script>
 
 <style scoped>
-.gb-head {
-  padding-top: 22px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-.gb-theme { font-size: 0.8rem; color: var(--text-dim); }
-.gb-lives { display: inline-flex; gap: 3px; }
-.gb-heart { color: var(--coral); font-size: 0.8rem; }
-.gb-heart.lost { color: rgb(var(--coral-rgb) / 0.3); }
-
-.gb-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 96px));
-  gap: 6px;
-  justify-content: center;
-}
-.gb-tile {
-  position: relative;
-  aspect-ratio: 1 / 1;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: rgb(var(--fg-rgb) / 0.07);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  overflow: hidden;
-}
-.gb-tile { transition: border-color 250ms var(--ease-out), background 250ms var(--ease-out); }
-.gb-tile.solved {
-  border-color: var(--teal);
-  background: rgb(var(--teal-rgb) / 0.1);
-  animation: pv-flip 520ms var(--ease-out) both;
-}
-.gb-tile.shaking { animation: pv-shake 520ms both; border-color: var(--coral); background: rgb(var(--coral-rgb) / 0.14); }
-.gb-heart { transition: color 300ms var(--ease-out); }
-.gb-av {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--violet);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.62rem;
-  font-weight: 800;
-  color: #06131f;
-}
-.gb-name { font-size: 0.66rem; font-weight: 700; color: var(--text); }
-.gb-check {
-  position: absolute;
-  top: 4px;
-  right: 5px;
-  font-size: 0.6rem;
-  color: var(--teal);
-  font-weight: 800;
-}
-.gb-hint {
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: var(--ink-raised);
-  background: var(--gold);
-  padding: 1px 5px;
-  border-radius: var(--radius-sm);
-}
-.gb-q { font-size: 1rem; color: var(--text-dim); font-weight: 700; }
-
-@media (max-width: 560px) {
-  .gb-grid { grid-template-columns: repeat(3, minmax(0, 84px)); }
-  .gb-name { font-size: 0.58rem; }
-  .gb-av { width: 26px; height: 26px; font-size: 0.56rem; }
-}
+.pv-grid { grid-template-columns: repeat(3, 1fr); max-width: 360px; margin: 10px auto 0; }
+.pv-crest { position: absolute; inset: 22% 30% 30%; width: 40%; height: 48%; }
+.grid-tile.shake { animation: pv-shake 0.45s ease; }
 </style>

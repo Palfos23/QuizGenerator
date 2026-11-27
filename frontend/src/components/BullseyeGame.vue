@@ -50,10 +50,7 @@
       </div>
 
       <div v-if="!revealed" style="text-align:center; margin:8px 0 0;">
-        <div v-if="countdown !== null" style="font-size:1.4rem; font-weight:700;">
-          {{ $t('Alle har svart! Avslører om') }} {{ countdown }}…
-        </div>
-        <p v-else style="color:var(--gold); font-weight:600;">
+        <p style="color:var(--gold); font-weight:600;">
           {{ $t('{0} sin tur - velg et navn', [currentTurnPlayerName]) }}
         </p>
       </div>
@@ -128,7 +125,6 @@ const roundAnswers = ref([]) // [{ player, name }] push order = submission order
 const currentTurnIdx = ref(0)
 const revealed = ref(false)
 const revealIndex = ref(0)
-const countdown = ref(null)
 const eliminationOrder = ref([]) // player names, in elimination order across the whole game
 const justEliminatedName = ref(null)
 const readyForNextRound = ref(false)
@@ -225,21 +221,9 @@ function formatQuestionTarget(q) {
   return q.groupDigits === false ? String(q.targetValue) : formatNumber(q.targetValue)
 }
 
-let countdownTimer = null
+// As soon as the last player has answered, the reveal (and its number line) is up - no countdown first.
 watch([roundAnswers, revealed], () => {
-  if (allAnswered.value && !revealed.value) {
-    countdown.value = 3
-    clearInterval(countdownTimer)
-    countdownTimer = setInterval(() => {
-      if (countdown.value > 1) {
-        countdown.value -= 1
-      } else {
-        clearInterval(countdownTimer)
-        countdown.value = null
-        reveal()
-      }
-    }, 1000)
-  }
+  if (allAnswered.value && !revealed.value) reveal()
 }, { deep: true })
 
 function reveal() {

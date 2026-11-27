@@ -7,7 +7,7 @@
     <span class="fiveoo-throw-chip" :class="{ bust: last.bust, zero: !last.bust && last.score === 0 }">{{ chipText(last) }}</span>
   </div>
 
-  <details v-if="throws.length" class="fiveoo-history">
+  <details v-if="showHistory && throws.length" class="fiveoo-history">
     <summary>{{ $t('Kastehistorikk') }} <span class="fiveoo-history-count">{{ throws.length }}</span></summary>
     <div class="fiveoo-history-list">
       <div v-for="(t, i) in newestFirst" :key="i" class="fiveoo-history-row">
@@ -29,7 +29,8 @@ import { t as _t } from '../i18n'
 // { player, name, rawValue, score, bust, resultingTotal } by the pass-and-play and online games.
 const props = defineProps({
   throws: { type: Array, default: () => [] },
-  showLast: { type: Boolean, default: true }
+  showLast: { type: Boolean, default: true },
+  showHistory: { type: Boolean, default: true }
 })
 
 const newestFirst = computed(() => [...props.throws].reverse())
