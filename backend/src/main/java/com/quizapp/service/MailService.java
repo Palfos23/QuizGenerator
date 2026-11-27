@@ -49,6 +49,14 @@ public class MailService {
                 RequestLang.t("Hvis du ikke ba om dette, kan du trygt ignorere denne e-posten - passordet ditt endres ikke.", "If you didn't request this, you can safely ignore this email - your password won't change."));
     }
 
+    /** "Forgot password" for an account that signs in with Google: there's no password - point them to the Google button. */
+    public void sendGoogleAccountHintEmail(String toEmail, String siteUrl) {
+        send(toEmail, RequestLang.t("Logg inn på Quizzes med Google", "Sign in to Quizzes with Google"),
+                RequestLang.t("Noen (forhåpentligvis deg) ba om å nullstille passordet på Quizzes-kontoen din.\n\n", "Someone (hopefully you) asked to reset the password on your Quizzes account.\n\n") +
+                RequestLang.t("Kontoen din bruker Google-innlogging og har ikke noe eget passord. Logg inn med «Fortsett med Google» her:\n", "Your account uses Google sign-in and has no password of its own. Sign in with \"Continue with Google\" here:\n") + siteUrl + "\n\n" +
+                RequestLang.t("Hvis du ikke ba om dette, kan du trygt ignorere denne e-posten.", "If you didn't request this, you can safely ignore this email."));
+    }
+
     /** Same swallow-and-log approach as sendPasswordResetEmail - see its comment. */
     public void sendVerificationEmail(String toEmail, String verifyLink) {
         send(toEmail, RequestLang.t("Bekreft e-postadressen din på Quizzes", "Verify your Quizzes email"),

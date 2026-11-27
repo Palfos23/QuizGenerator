@@ -8,8 +8,7 @@
 
     <template v-else-if="done">
       <h1>{{ $t('Passordet er oppdatert') }}</h1>
-      <p class="page-subtitle">{{ $t('Passordet ditt er endret - logg inn med det under.') }}</p>
-      <router-link to="/" class="btn btn-primary">{{ $t('Tilbake til innlogging') }}</router-link>
+      <p class="page-subtitle">{{ $t('Du er logget inn - sender deg videre…') }}</p>
     </template>
 
     <template v-else>
@@ -35,10 +34,14 @@
 <script setup>
 import { t as _t } from '../i18n'
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import api from '../services/api'
+import auth from '../services/auth'
+import toast from '../services/toast'
+import { takeInviteRoute } from '../services/pendingInvite'
 
 const route = useRoute()
+const router = useRouter()
 const token = route.query.token || ''
 
 const newPassword = ref('')
@@ -57,14 +60,22 @@ async function submit() {
     error.value = _t('Passordet må være minst 8 tegn.')
     return
   }
+  if (new TextEncoder().encode(newPassword.value).length > 72) {
+    error.value = _t('Passordet kan høyst være 72 tegn.')
+    return
+  }
   if (newPassword.value !== confirmPassword.value) {
     error.value = _t('Passordene er ikke like.')
     return
   }
   submitting.value = true
   try {
-    await api.resetPassword(token, newPassword.value)
+    // A successful reset logs you straight in - no going back to type the new password again.
+    const result = await api.resetPassword(token, newPassword.value)
     done.value = true
+    auth.login({ token: result.token, displayName: result.displayName, role: result.role })
+    toast.show(_t('Passordet er oppdatert, og du er logget inn.'))
+    router.push(takeInviteRoute() || '/dashboard')
   } catch (e) {
     error.value = e.response?.data?.message || _t('Kunne ikke nullstille passordet - lenken kan ha utløpt.')
   } finally {

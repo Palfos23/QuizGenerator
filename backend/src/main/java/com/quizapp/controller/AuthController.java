@@ -68,10 +68,10 @@ public class AuthController {
         authService.requestPasswordReset(request.getEmail(), clientKey(httpRequest));
     }
 
+    // Returns a sign-in token: a successful reset logs the player straight in.
     @PostMapping("/reset-password")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        authService.resetPassword(request.getToken(), request.getNewPassword());
+    public AuthResponse resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return authService.resetPassword(request.getToken(), request.getNewPassword());
     }
 
     /** Confirms a registered email is actually reachable by whoever clicked the link, then logs them in. */

@@ -99,6 +99,13 @@ public class AccountService {
     static final int MIN_PASSWORD_LENGTH = 8; // same as registering and resetting
     static final int MAX_PASSWORD_LENGTH = 72; // what bcrypt can use - anything longer would be silently cut off
 
+    /** Every place a password is chosen (sign-up, reset, change) refuses one bcrypt would quietly cut short. */
+    static void requirePasswordFits(String password) {
+        if (password != null && password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > MAX_PASSWORD_LENGTH) {
+            throw new IllegalArgumentException("Passordet kan høyst være " + MAX_PASSWORD_LENGTH + " tegn.");
+        }
+    }
+
     /** Whether this account has a password at all - an account that only ever signed in with Google doesn't. */
     @Transactional(readOnly = true)
     public boolean hasPassword(String email) {
@@ -124,9 +131,7 @@ public class AccountService {
         if (newPassword == null || newPassword.length() < MIN_PASSWORD_LENGTH) {
             throw new IllegalArgumentException("Passordet må være minst " + MIN_PASSWORD_LENGTH + " tegn.");
         }
-        if (newPassword.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > MAX_PASSWORD_LENGTH) {
-            throw new IllegalArgumentException("Passordet kan høyst være " + MAX_PASSWORD_LENGTH + " tegn.");
-        }
+        requirePasswordFits(newPassword);
         if (newPassword.equals(currentPassword)) {
             throw new IllegalArgumentException("Det nye passordet må være forskjellig fra det gamle.");
         }

@@ -121,6 +121,7 @@ public class AuthService {
             throw new IllegalArgumentException("Det finnes allerede en konto med den e-postadressen - prøv å logge inn i stedet.");
         }
 
+        AccountService.requirePasswordFits(rawPassword);
         String displayName = AccountService.cleanDisplayName(name);
         displayNameService.requireFree(displayName, null);
 
@@ -190,7 +191,13 @@ public class AuthService {
         loginRateLimiter.recordFailure(rateLimitKey);
         String email = normalizeEmail(rawEmail);
         AppUser user = appUserRepository.findByEmail(email).orElse(null);
-        if (user == null || user.getPasswordHash() == null) {
+        if (user == null) {
+            return;
+        }
+        if (user.getPasswordHash() == null) {
+            // A Google account has no password to reset - say so by email, so they aren't left waiting for a link
+            // that never comes. The response on screen stays the same as always.
+            mailService.sendGoogleAccountHintEmail(user.getEmail(), frontendBaseUrl);
             return;
         }
 
@@ -242,18 +249,32 @@ public class AuthService {
         return new AuthResponse(token, user.getName(), "USER");
     }
 
+    /**
+     * Sets the new password and logs the player straight in. The link came to their inbox, which proves the address
+     * is theirs - so an account that was never confirmed counts as confirmed now (otherwise it could reset its
+     * password and still not get in).
+     */
     @Transactional
-    public void resetPassword(String rawToken, String newPassword) {
+    public AuthResponse resetPassword(String rawToken, String newPassword) {
         AppUser user = appUserRepository.findByResetTokenHash(sha256Hex(rawToken)).orElse(null);
         if (user == null || user.getResetTokenExpiresAt() == null
                 || Instant.now().isAfter(user.getResetTokenExpiresAt())) {
             throw new IllegalArgumentException("Denne nullstillingslenken er ugyldig eller har utløpt - be om en ny.");
         }
+        AccountService.requirePasswordFits(newPassword);
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setResetTokenHash(null);
         user.setResetTokenExpiresAt(null);
+        if (!user.isEmailVerified()) {
+            user.setEmailVerified(true);
+            user.setVerificationTokenHash(null);
+            user.setVerificationTokenExpiresAt(null);
+        }
         appUserRepository.save(user);
+
+        String token = jwtService.generateToken(user.getEmail(), "USER", user.getId(), user.getName());
+        return new AuthResponse(token, user.getName(), "USER");
     }
 
     /**
