@@ -1,5 +1,6 @@
 <template>
   <div class="dashboard">
+    <AdventBanner />
     <p class="dashboard-welcome">{{ $t('Velkommen tilbake,') }} <strong>{{ auth.state.displayName }}</strong></p>
     <TipsModal id="dashboard" :tips="getTips('dashboard')" />
 
@@ -49,15 +50,6 @@
       </router-link>
     </section>
 
-    <!-- The advent calendar: a banner from November until the season is over (it says "coming soon" until 1 December). -->
-    <router-link v-if="showAdventBanner" v-reveal to="/julekalender" class="dashboard-advent">
-      <span class="dashboard-advent-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4M8 15h3" /></svg></span>
-      <div>
-        <h3>{{ $t('Julekalender') }}</h3>
-        <p>{{ $t('En ny luke hver dag 1.-24. desember - tenk som spillmesteren og samle poeng.') }}</p>
-      </div>
-      <span class="btn btn-secondary">{{ $t('Åpne →') }}</span>
-    </router-link>
 
     <template v-for="section in dashboardSections" :key="section.title">
       <h2 v-reveal class="dashboard-section-title" :style="{ '--section-accent': section.accent }">{{ section.title }}</h2>
@@ -132,6 +124,7 @@
 </template>
 
 <script setup>
+import AdventBanner from '../components/AdventBanner.vue'
 import TipsModal from '../components/TipsModal.vue'
 import { getTips } from '../content/tips'
 import { t as _t } from '../i18n'
@@ -147,8 +140,6 @@ import reveal from '../directives/reveal'
 // solo quizzes, the pass-the-device/online games, and the non-game "manage
 // your quizzes" actions each read as their own thing now, not just a color.
 // "Report a problem" isn't in any section - see the callout below instead.
-// The advent calendar banner shows from 1 November through January (the season's wrapped is up until then).
-const showAdventBanner = [0, 10, 11].includes(new Date().getMonth())
 
 const vReveal = reveal // cards fade up as they scroll into view (see directives/reveal.js)
 
