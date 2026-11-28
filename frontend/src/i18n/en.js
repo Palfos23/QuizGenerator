@@ -1,5 +1,12 @@
 // Generated English catalog - keys are the Norwegian source strings (see i18n.js).
 export default {
+ "Tidligere uker": "Earlier weeks",
+ "Vis {0} til": "Show {0} more",
+ "Slettes etter 7 dager": "Deleted after 7 days",
+ "Ukepoengene dine beholdes selv om quizen slettes.": "Your weekly points stay even when the quiz is deleted.",
+ "påbegynt": "started",
+ "ikke spilt": "not played",
+ "Du er i gang - svarene du har lagret venter på deg.": "You're in progress - the answers you saved are waiting for you.",
  "#{0} av {1}": "#{0} of {1}",
  "#{0} i ukestillingen": "#{0} in the weekly standings",
  "Bedre enn {0} % i dag": "Better than {0}% today",

@@ -89,7 +89,8 @@ import api from '../services/api'
 const props = defineProps({
   quiz: { type: Object, default: null }, // today's set summary: { id, status, score, maxScore, questionCount }
   lede: { type: String, default: '' },
-  pending: { type: Boolean, default: false }
+  pending: { type: Boolean, default: false },
+  todayOnly: { type: Boolean, default: false } // just the ring - the Dagens quiz page has the answers and week elsewhere
 })
 
 const CIRC = 2 * Math.PI * 25
@@ -114,7 +115,7 @@ async function loadToday(q) {
   standing.value = null
   answers.value = null
   if (!q || !['GRADED', 'SUBMITTED'].includes(q.status)) return
-  api.getDailyQuizPlayState(q.id)
+  if (!props.todayOnly) api.getDailyQuizPlayState(q.id)
     .then(s => { answers.value = s.result?.answers?.length ? s.result.answers : null })
     .catch(() => {})
   if (q.status !== 'GRADED') return
@@ -191,7 +192,7 @@ const week = computed(() => {
 })
 
 watch(() => props.quiz && `${props.quiz.id}|${props.quiz.status}|${props.quiz.score}`, () => loadToday(props.quiz), { immediate: true })
-onMounted(loadWeek)
+onMounted(() => { if (!props.todayOnly) loadWeek() })
 
 const answersSummary = computed(() => {
   if (!answers.value) return ''
@@ -210,7 +211,7 @@ function dotClass(a) {
 }
 
 // --- paging
-const pages = computed(() => ['today', ...(answers.value ? ['answers'] : []), ...(week.value ? ['week'] : [])])
+const pages = computed(() => (props.todayOnly ? ['today'] : ['today', ...(answers.value ? ['answers'] : []), ...(week.value ? ['week'] : [])]))
 const current = ref(0)
 const pageKey = computed(() => pages.value[current.value] || 'today')
 const trackEl = ref(null)

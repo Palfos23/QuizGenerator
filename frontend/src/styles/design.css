@@ -522,12 +522,18 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   display: flex;
   align-items: center;
   gap: 14px;
-  background: var(--primary);
-  color: var(--on-primary);
+  /* last week's winner: a gold frame and a faint gold wash, not a solid gold slab */
+  background: rgb(var(--gold-rgb) / 0.08);
+  border: 1px solid rgb(var(--gold-rgb) / 0.6);
+  color: var(--text);
   border-radius: var(--radius-lg);
-  padding: 16px 18px;
+  padding: 14px 18px;
   margin-bottom: var(--space-3);
 }
+.dq-champ .dq-champ-icon { color: var(--gold); }
+.dq-champ .dq-champ-when { color: var(--text-dim); opacity: 1; }
+.dq-champ .dq-champ-score { color: var(--gold); }
+.dq-champ .dq-champ-score small { color: var(--text-dim); }
 .dq-champ-icon { width: 30px; height: 30px; flex-shrink: 0; }
 .dq-champ-main { flex: 1; min-width: 0; }
 .dq-champ-when {
@@ -586,8 +592,11 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 .dq-roll-score { font-size: 0.9rem; white-space: nowrap; }
 .dq-tally { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
 .dq-tally-name { width: 84px; flex-shrink: 0; font-family: var(--font-display); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dq-tally-pips { display: flex; gap: 3px; flex-wrap: wrap; }
-.dq-tally-pips i { display: block; width: 11px; height: 11px; background: var(--primary); border-radius: 50%; }
+.dq-tally-bar { flex: 1; max-width: 260px; height: 8px; border-radius: 4px; background: rgb(var(--fg-rgb) / 0.06); overflow: hidden; }
+.dq-tally-bar i { display: block; height: 100%; border-radius: inherit; background: rgb(var(--gold-rgb) / 0.55); }
+.dq-tally-bar i.top { background: var(--gold); }
+.dq-tally-count { min-width: 2ch; text-align: right; }
+.dq-roll-more { display: flex; gap: 18px; }
 .dq-tally-count { font-size: 0.9rem; }
 @media (max-width: 520px) {
   .dq-roll { flex-wrap: wrap; }

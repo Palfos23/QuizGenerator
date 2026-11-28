@@ -170,6 +170,34 @@
 }
 .dq-today-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
 .dq-today-cta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+/* the score ring from the dashboard box, a size smaller here */
+.dq-today .dqh-stage { margin: 4px 0 16px; }
+.dq-today .dqh-track.single { margin: 0; }
+.dq-today .dqh-page { min-height: 0; padding: 0; }
+.dq-today .dqh-ring { width: 120px; height: 120px; }
+.dq-today .dqh-headline { font-size: 1.4rem; }
+/* your running leagues, as the dashboard shows them */
+.dq-leagues { display: grid; gap: 10px; margin-top: 14px; }
+/* Previous quizzes: a row of day cards */
+.dq-archive-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.dq-archive-note { font-size: 0.8rem; color: var(--text-dim); }
+.dq-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; margin-top: 4px; }
+.dq-day {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 6px 9px; border: 1px solid var(--rule); border-radius: var(--radius-md);
+  background: var(--ink-raised); color: inherit; text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.dq-day:hover { border-color: rgb(var(--primary-rgb) / 0.5); transform: translateY(-2px); }
+.dq-day-weekday { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); }
+.dq-day-date { font-size: 0.88rem; font-weight: 600; }
+.dq-day-score { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin-top: 4px; }
+.dq-day.is-not_started .dq-day-score, .dq-day.is-in_progress .dq-day-score { color: var(--text-dim); }
+.dq-day-bar { width: 80%; height: 4px; border-radius: 2px; background: rgb(var(--fg-rgb) / 0.08); overflow: hidden; margin: 4px 0 2px; }
+.dq-day-bar i { display: block; height: 100%; border-radius: inherit; background: var(--teal); }
+.dq-day-note { font-size: 0.68rem; color: var(--text-dim); }
+.dq-archive-foot { margin: 10px 0 0; font-size: 0.82rem; color: var(--text-dim); }
+.dq-row-cta { font-size: 0.88rem; font-weight: 700; color: var(--primary); white-space: nowrap; }
 .dq-today-cta .btn { min-width: 190px; }
 .dq-score-note { color: var(--text-dim); font-size: 0.92rem; }
 .dq-score-note strong { color: var(--text); }
@@ -706,6 +734,11 @@ a.dq-row:hover, .dq-row--link:hover {
   .dq-card { padding: 18px; border-radius: var(--radius-sm); }
   .dq-today { padding: 20px; }
   .dq-today-cta .btn { width: 100%; }
+  .dq-today .dqh-ring { width: 96px; height: 96px; }
+  .dq-row-cta { display: none; }
+  .dq-days { display: flex; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; margin: 4px -20px 0; padding: 0 20px 4px; }
+  .dq-days::-webkit-scrollbar { display: none; }
+  .dq-day { flex: 0 0 76px; scroll-snap-align: start; }
   .dq-q { padding: 16px 16px 18px; }
   .dq-q-text { font-size: 1.02rem; }
   .dq-score-hero { flex-direction: column; text-align: center; padding: 22px; gap: 14px; }
