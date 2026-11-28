@@ -60,9 +60,10 @@
       <section v-if="tab === 'table'" class="dq-card lg-panel">
         <p v-if="!season.table.length" class="lg-empty">{{ $t('Ingen spillere ennå.') }}</p>
         <!-- The top three on a podium (2nd, 1st, 3rd from left to right), everyone else in the table below.
-             Shared places stay shared: two on 38 are both "1", and the line under the podium says so. -->
+             A step's colour and height come from the place, not the position: two sharing 1st both stand on gold
+             (and nobody on silver), and the line under the podium says it's shared. -->
         <div v-if="podium.length" class="lg-podium">
-          <div v-for="p in podium" :key="p.row.player.id" class="lg-podium-spot" :class="['place-' + p.slot, { 'is-me': p.row.player.me }]">
+          <div v-for="p in podium" :key="p.row.player.id" class="lg-podium-spot" :class="['place-' + p.row.rank, { 'is-me': p.row.player.me }]">
             <span class="lg-podium-name">{{ playerName(p.row.player) }}<span v-if="p.row.player.me" class="lg-you">{{ $t('DU') }}</span></span>
             <span class="lg-podium-value">{{ tableValue(p.row) }}</span>
             <span class="lg-podium-meta">{{ podiumMeta(p.row) }}</span>
