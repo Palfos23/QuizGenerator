@@ -1,5 +1,9 @@
 // Generated English catalog - keys are the Norwegian source strings (see i18n.js).
 export default {
+ "Alle vinnere": "All winners",
+ "Vinnere": "Winners",
+ "Alle uker": "All weeks",
+ "Lukk": "Close",
  "Tidligere uker": "Earlier weeks",
  "Vis {0} til": "Show {0} more",
  "Slettes etter 7 dager": "Deleted after 7 days",

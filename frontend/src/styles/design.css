@@ -442,13 +442,12 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   flex-wrap: wrap;
   gap: 4px 8px;
 }
+/* "6 dager spilt" on the same line as the name - with ten rows, two lines each made the list very tall */
 .dq-led-meta {
-  flex-basis: 100%;
   font-family: var(--font-body);
   font-weight: 500;
   font-size: 0.74rem;
   color: var(--text-dim);
-  margin-top: -2px;
 }
 .dq-led-dots {
   flex: 1;
@@ -590,6 +589,48 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 }
 .dq-roll-name { font-family: var(--font-display); font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
 .dq-roll-score { font-size: 0.9rem; white-space: nowrap; }
+/* Last week's winner as one line under the standings, with the way into the full history */
+.dq-champ-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid rgb(var(--gold-rgb) / 0.55);
+  border-radius: var(--radius-md);
+  background: rgb(var(--gold-rgb) / 0.07);
+}
+.dq-champ-line .dq-champ-icon { width: 22px; height: 22px; color: var(--gold); }
+.dq-champ-line-text { flex: 1; min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+.dq-champ-line .dq-champ-when { font-size: 0.78rem; color: var(--text-dim); }
+.dq-champ-line .dq-champ-name { font-size: 1.1rem; }
+.dq-champ-line .dq-champ-score { font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--gold); text-align: left; }
+.dq-champ-all {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  color: var(--primary);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.dq-champ-all:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* The winners window: most wins on top, then every week in a list that scrolls inside the window */
+.dq-winners-modal { max-width: 520px; width: 100%; text-align: left; }
+.dq-winners-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dq-winners-head h2 { margin: 0; }
+.dq-winners-close { background: none; border: none; padding: 4px; color: var(--text-dim); cursor: pointer; }
+.dq-winners-close:hover { color: var(--text); }
+.dq-winners-close svg { width: 20px; height: 20px; display: block; }
+.dq-winners-list { max-height: min(46vh, 420px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+@media (max-width: 520px) {
+  .dq-champ-line { flex-wrap: wrap; }
+  .dq-champ-all { width: 100%; text-align: left; }
+}
 .dq-tally { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
 .dq-tally-name { width: 84px; flex-shrink: 0; font-family: var(--font-display); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dq-tally-bar { flex: 1; max-width: 260px; height: 8px; border-radius: 4px; background: rgb(var(--fg-rgb) / 0.06); overflow: hidden; }

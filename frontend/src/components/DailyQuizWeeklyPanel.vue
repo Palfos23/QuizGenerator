@@ -36,7 +36,7 @@
           </div>
         </template>
 
-        <template v-if="yourRank && yourRank.index >= 5">
+        <template v-if="yourRank && yourRank.index >= TOP_N">
           <div class="dq-led-gap">···</div>
           <div class="dq-led is-you">
             <span class="dq-led-rank">{{ pad(yourRank.rank) }}</span>
@@ -50,49 +50,31 @@
         </template>
       </div>
 
-      <template v-if="weekly.pastWeeks.length">
-        <div class="dq-weekly-label">{{ $t('Tidligere vinnere') }}</div>
+      <!-- Last week's winner as one line; the full history (every week, and who has won the most) opens in a window. -->
+      <div v-if="weekly.pastWeeks.length" class="dq-champ-line">
+        <svg class="dq-champ-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" /></svg>
+        <span class="dq-champ-line-text">
+          <span class="dq-champ-when">{{ $t('Forrige uke') }}</span>
+          <span class="dq-champ-name">{{ winnersLabel(latestWeek) }}</span>
+          <span class="dq-champ-score">{{ $t('{0} poeng¦{0} poeng', [latestWeek.winningScore]) }}</span>
+          <span v-if="latestWeek.winners.length > 1" class="dq-led-pill">{{ $t('Delt') }}</span>
+          <span v-if="latestWeek.provisional" class="dq-led-pill" :title="$t('Noen av svarene den uken ble fortsatt gjennomgått')">{{ $t('Foreløpig') }}</span>
+        </span>
+        <button type="button" class="dq-champ-all" @click="showWinners = true">{{ $t('Alle vinnere') }} →</button>
+      </div>
+    </div>
 
-        <!-- Last week's winner gets the spotlight; the weeks before it are a plain dated roll. -->
-        <div class="dq-champ">
-          <svg class="dq-champ-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" /></svg>
-          <div class="dq-champ-main">
-            <div class="dq-champ-when">{{ $t('Forrige uke') }} &middot; {{ formatRange(latestWeek.weekStart, latestWeek.weekEnd) }}</div>
-            <div class="dq-champ-name">{{ winnersLabel(latestWeek) }}</div>
-            <div v-if="latestWeek.winners.length > 1 || latestWeek.provisional" class="dq-champ-flags">
-              <span v-if="latestWeek.winners.length > 1" class="dq-champ-pill">{{ $t('Delt') }}</span>
-              <span v-if="latestWeek.provisional" class="dq-champ-pill" :title="$t('Noen av svarene den uken ble fortsatt gjennomgått')">{{ $t('Foreløpig') }}</span>
-            </div>
-          </div>
-          <div class="dq-champ-score">{{ latestWeek.winningScore }}<small>{{ $t('poeng§DailyQuizWeeklyPanelT') }}</small></div>
+    <div v-if="showWinners" class="modal-backdrop" @click.self="showWinners = false">
+      <div class="modal dq-winners-modal" role="dialog" aria-modal="true" :aria-label="$t('Vinnere')">
+        <div class="dq-winners-head">
+          <h2>{{ $t('Vinnere') }}</h2>
+          <button type="button" class="dq-winners-close" :aria-label="$t('Lukk')" @click="showWinners = false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
         </div>
 
-        <!-- The weeks before: the three latest straight away, then ten more at a time - the list grows by a week every
-             Monday, so it never all opens at once. -->
-        <template v-if="olderWeeks.length">
-          <div class="dq-weekly-label">{{ $t('Tidligere uker') }}</div>
-          <div v-for="w in shownWeeks" :key="w.weekStart" class="dq-roll">
-            <span class="dq-roll-when">{{ formatRange(w.weekStart, w.weekEnd) }}</span>
-            <span class="dq-roll-name">{{ winnersLabel(w) }}</span>
-            <span v-if="w.winners.length > 1" class="dq-led-pill">{{ $t('Delt') }}</span>
-            <span v-if="w.provisional" class="dq-led-pill" :title="$t('Noen av svarene den uken ble fortsatt gjennomgått')">{{ $t('Foreløpig') }}</span>
-            <span class="dq-led-dots"></span>
-            <span class="dq-roll-score">{{ $t('{0} poeng¦{0} poeng', [w.winningScore]) }}</span>
-          </div>
-          <div v-if="olderWeeks.length > FIRST_WEEKS" class="dq-roll-more">
-            <button v-if="shownCount < olderWeeks.length" type="button" class="dq-more-toggle" @click="shownCount += MORE_WEEKS">
-              {{ $t('Vis {0} til', [Math.min(MORE_WEEKS, olderWeeks.length - shownCount)]) }}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
-            </button>
-            <button v-if="shownCount > FIRST_WEEKS" type="button" class="dq-more-toggle" @click="shownCount = FIRST_WEEKS">
-              {{ $t('Vis færre') }}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="is-open"><path d="M6 9l6 6 6-6" /></svg>
-            </button>
-          </div>
-        </template>
-
         <!-- Who has won the most weeks (a tie counts as a win for each winner) - the top five, as bars. -->
-        <template v-if="winTally.length > 1">
+        <template v-if="winTally.length">
           <div class="dq-weekly-label">{{ $t('Flest seiere') }}</div>
           <div v-for="row in winTally" :key="row.name" class="dq-tally">
             <span class="dq-tally-name">{{ firstName(row.name) }}</span>
@@ -100,7 +82,20 @@
             <span class="dq-tally-count">{{ row.wins }}</span>
           </div>
         </template>
-      </template>
+
+        <!-- Every week, newest first - it grows by one each Monday, so the list scrolls inside the window. -->
+        <div class="dq-weekly-label">{{ $t('Alle uker') }}</div>
+        <div class="dq-winners-list">
+          <div v-for="w in weekly.pastWeeks" :key="w.weekStart" class="dq-roll">
+            <span class="dq-roll-when">{{ formatRange(w.weekStart, w.weekEnd) }}</span>
+            <span class="dq-roll-name">{{ winnersLabel(w) }}</span>
+            <span v-if="w.winners.length > 1" class="dq-led-pill">{{ $t('Delt') }}</span>
+            <span v-if="w.provisional" class="dq-led-pill" :title="$t('Noen av svarene den uken ble fortsatt gjennomgått')">{{ $t('Foreløpig') }}</span>
+            <span class="dq-led-dots"></span>
+            <span class="dq-roll-score">{{ $t('{0} poeng¦{0} poeng', [w.winningScore]) }}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -121,9 +116,7 @@ const props = defineProps({
 })
 
 const weekly = ref(null)
-const FIRST_WEEKS = 3
-const MORE_WEEKS = 10
-const shownCount = ref(FIRST_WEEKS)
+const showWinners = ref(false)
 
 onMounted(async () => {
   try {
@@ -134,11 +127,13 @@ onMounted(async () => {
 })
 
 const standings = computed(() => weekly.value?.current.standings || [])
-const topFive = computed(() => standings.value.slice(0, 5))
+// The top ten (your own row is added under them when you're further down).
+const TOP_N = 10
+const topFive = computed(() => standings.value.slice(0, TOP_N))
 // Equal totals share a place (13, 12, 12, 11 -> 1, 2, 2, 4).
 const ranks = computed(() => sharedRanks(standings.value, s => s.total))
 
-// The top five players with the expert slotted in at their real total (after everyone who has at least as
+// The top players with the expert slotted in at their real total (after everyone who has at least as
 // many points, before the first with fewer) - listed, but not ranked.
 const rows = computed(() => {
   const list = topFive.value.map((entry, i) => ({ kind: 'player', entry, rank: ranks.value[i], index: i }))
@@ -177,8 +172,6 @@ function firstName(name) {
 }
 
 const latestWeek = computed(() => weekly.value.pastWeeks[0])
-const olderWeeks = computed(() => weekly.value.pastWeeks.slice(1))
-const shownWeeks = computed(() => olderWeeks.value.slice(0, shownCount.value))
 
 // Wins per player across the past weeks the server sends, most first (ties broken by name).
 const winTally = computed(() => {

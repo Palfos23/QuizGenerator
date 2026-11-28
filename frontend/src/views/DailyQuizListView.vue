@@ -13,9 +13,12 @@
     <section v-else-if="today" class="dq-card dq-today">
       <span class="dq-eyebrow">{{ $t('I dag') }} · {{ formatLong(today.quizDate) }}</span>
       <!-- the same score ring as the dashboard's Dagens quiz box, so the two pages read as one -->
-      <DailyQuizHeroPages :quiz="today" :lede="todayLede" today-only />
-      <div class="dq-today-cta">
-        <router-link :to="`/daily-quiz/${today.id}`" class="btn btn-primary">{{ todayButton(today.status) }} →</router-link>
+      <!-- ring and text on the left, the button beside them (stacked on phones) -->
+      <div class="dq-today-body">
+        <DailyQuizHeroPages :quiz="today" :lede="todayLede" today-only />
+        <div class="dq-today-cta">
+          <router-link :to="`/daily-quiz/${today.id}`" class="btn btn-primary">{{ todayButton(today.status) }} →</router-link>
+        </div>
       </div>
     </section>
 
