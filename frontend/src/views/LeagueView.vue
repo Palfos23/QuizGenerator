@@ -59,7 +59,19 @@
       <!-- Table -->
       <section v-if="tab === 'table'" class="dq-card lg-panel">
         <p v-if="!season.table.length" class="lg-empty">{{ $t('Ingen spillere ennå.') }}</p>
-        <div v-else class="lg-scroll">
+        <!-- The top three on a podium (2nd, 1st, 3rd from left to right), everyone else in the table below.
+             Shared places stay shared: two on 38 are both "1", and the line under the podium says so. -->
+        <div v-if="podium.length" class="lg-podium">
+          <div v-for="p in podium" :key="p.row.player.id" class="lg-podium-spot" :class="['place-' + p.slot, { 'is-me': p.row.player.me }]">
+            <span class="lg-podium-name">{{ playerName(p.row.player) }}<span v-if="p.row.player.me" class="lg-you">{{ $t('DU') }}</span></span>
+            <span class="lg-podium-value">{{ tableValue(p.row) }}</span>
+            <span class="lg-podium-meta">{{ podiumMeta(p.row) }}</span>
+            <span class="lg-podium-step"><b>{{ p.row.rank }}</b></span>
+          </div>
+        </div>
+        <p v-if="podiumNote" class="lg-podium-note">{{ podiumNote }}</p>
+
+        <div v-if="!podium.length || season.table.length > 3" class="lg-scroll">
           <table class="lg-table">
             <thead v-if="season.format === 'HEAD_TO_HEAD'">
               <tr><th>#</th><th class="lg-left">{{ $t('Spiller') }}</th><th :title="$t('Kamper')">{{ $t('K§LeagueTable') }}</th><th :title="$t('Seier')">{{ $t('S§LeagueTable') }}</th><th :title="$t('Uavgjort')">{{ $t('U§LeagueTable') }}</th><th :title="$t('Tap')">{{ $t('T§LeagueTable') }}</th><th class="lg-hide-sm" :title="$t('Quizpoeng')">{{ $t('Quiz') }}</th><th>{{ $t('Poeng') }}</th><th class="lg-hide-sm">{{ $t('Form') }}</th></tr>
@@ -68,9 +80,9 @@
               <tr><th>#</th><th class="lg-left">{{ $t('Spiller') }}</th><th>{{ $t('Dager') }}</th><th class="lg-hide-sm">{{ $t('Snitt') }}</th><th class="lg-hide-sm">{{ $t('Beste') }}</th><th>{{ $t('Totalt') }}</th><th class="lg-hide-sm">{{ $t('Siste dager') }}</th></tr>
             </thead>
             <tbody>
-              <tr v-for="r in season.table" :key="r.player.id" :class="{ 'is-me': r.player.me, 'is-playoff': inPlayoffSpot(r) }">
+              <tr v-for="r in tableRows" :key="r.player.id" :class="{ 'is-me': r.player.me, 'is-playoff': inPlayoffSpot(r) }">
                 <td class="lg-rank">{{ r.rank }}</td>
-                <td class="lg-left lg-name">{{ playerName(r.player) }}<small v-if="r.player.left"> {{ $t('(har forlatt ligaen)') }}</small></td>
+                <td class="lg-left lg-name">{{ playerName(r.player) }}<span v-if="r.player.me" class="lg-you">{{ $t('DU') }}</span><small v-if="r.player.left"> {{ $t('(har forlatt ligaen)') }}</small></td>
                 <template v-if="season.format === 'HEAD_TO_HEAD'">
                   <td>{{ r.wins + r.draws + r.losses }}</td><td>{{ r.wins }}</td><td>{{ r.draws }}</td><td>{{ r.losses }}</td>
                   <td class="lg-hide-sm">{{ r.totalScore }}</td><td class="lg-strong">{{ r.points }}</td>
@@ -207,6 +219,28 @@ const canShare = typeof navigator !== 'undefined' && !!navigator.share
 
 const season = computed(() => league.value?.season)
 const inSeason = computed(() => season.value?.participants.some(p => p.me))
+
+// --- The podium: the top three once anyone has a score, laid out 2nd - 1st - 3rd. With fewer than three players,
+// or before anything is played, it's just the table.
+const tableValue = r => (season.value?.format === 'HEAD_TO_HEAD' ? r.points : r.totalScore)
+const podium = computed(() => {
+  const table = season.value?.table || []
+  if (table.length < 3 || !table.slice(0, 3).some(r => tableValue(r) > 0)) return []
+  const [first, second, third] = table
+  return [{ row: second, slot: 2 }, { row: first, slot: 1 }, { row: third, slot: 3 }]
+})
+const tableRows = computed(() => (podium.value.length ? season.value.table.slice(3) : season.value?.table || []))
+function podiumMeta(r) {
+  if (season.value?.format === 'HEAD_TO_HEAD') return `${r.wins}-${r.draws}-${r.losses}`
+  return _t('snitt {0}', [num(r.average)])
+}
+// "Delt 1.-plass · 38 poeng" when the top is shared
+const podiumNote = computed(() => {
+  if (!podium.value.length) return ''
+  const firsts = season.value.table.filter(r => r.rank === 1)
+  if (firsts.length < 2) return ''
+  return _t('Delt 1.-plass · {0}', [_t('{0} poeng¦{0} poeng', [tableValue(firsts[0])])])
+})
 const showExpert = computed(() => season.value?.stats.some(r => r.beatExpert > 0))
 const openEndedRunning = computed(() => season.value?.format === 'POINTS' && !season.value?.endDate && season.value?.state === 'ACTIVE')
 
@@ -367,7 +401,30 @@ onMounted(async () => {
 .lg-table td { padding: 10px 6px; text-align: center; border-bottom: 1px solid var(--rule); }
 .lg-table tr:last-child td { border-bottom: none; }
 .lg-table .lg-left { text-align: left; }
-.lg-table tr.is-me td { background: rgb(var(--primary-rgb) / 0.07); }
+.lg-table tr.is-me td { background: rgb(var(--teal-rgb) / 0.1); }
+.lg-you { margin-left: 6px; padding: 1px 6px; border-radius: 999px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em; vertical-align: 2px; background: var(--teal); color: var(--ink-raised); }
+
+/* The podium: three steps, the middle (1st) the tallest, in gold / silver / bronze */
+.lg-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 10px; max-width: 460px; margin: 6px auto 4px; }
+.lg-podium-spot { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; text-align: center; }
+.lg-podium-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: 0.95rem; }
+.lg-podium-value { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; line-height: 1.1; color: var(--gold); }
+.lg-podium-meta { font-size: 0.74rem; color: var(--text-dim); margin-bottom: 6px; }
+.lg-podium-step { width: 100%; display: grid; place-items: center; border-radius: 10px 10px 0 0; box-shadow: inset 0 -4px 0 rgb(0 0 0 / 0.15); }
+.lg-podium-step b { font-family: var(--font-display); font-size: 1.6rem; }
+.place-1 .lg-podium-step { height: 96px; background: linear-gradient(180deg, #f2cf6b, #d9a93a); color: #4a3205; }
+.place-2 .lg-podium-step { height: 70px; background: linear-gradient(180deg, #e3e7ee, #b9c2cc); color: #2d3138; }
+.place-3 .lg-podium-step { height: 52px; background: linear-gradient(180deg, #e2a978, #c0834f); color: #3d2410; }
+.lg-podium-spot.is-me .lg-podium-name { color: var(--teal); }
+.lg-podium-note { text-align: center; margin: 4px 0 12px; font-size: 0.82rem; color: var(--text-dim); }
+.lg-podium + .lg-scroll, .lg-podium-note + .lg-scroll { margin-top: 10px; border-top: 1px solid var(--rule); }
+@media (max-width: 560px) {
+  .lg-podium { gap: 6px; }
+  .lg-podium-value { font-size: 1.25rem; }
+  .place-1 .lg-podium-step { height: 76px; }
+  .place-2 .lg-podium-step { height: 56px; }
+  .place-3 .lg-podium-step { height: 42px; }
+}
 .lg-table tr.is-playoff .lg-rank { box-shadow: inset 3px 0 0 var(--gold); }
 .lg-rank { color: var(--text-dim); font-weight: 700; width: 2.5em; }
 .lg-name { font-weight: 600; white-space: nowrap; }
