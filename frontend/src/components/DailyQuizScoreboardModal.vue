@@ -78,7 +78,7 @@ import { useEscapeKey } from '../composables/useEscapeKey'
 import { shortNames } from '../services/displayNames'
 
 // One scoreboard for the player's 'Toppliste' button and both admin views. `compact` is the player
-// view (top five, plus your own row if you're further down, first names only); the admin view lists
+// view (top ten, plus your own row if you're further down, first names only); the admin view lists
 // everyone with full names.
 const props = defineProps({
   title: { type: String, default: _t('Toppliste') },
@@ -94,7 +94,8 @@ const emit = defineEmits(['close', 'update:preference'])
 useEscapeKey(() => emit('close'))
 
 const entries = computed(() => props.data?.entries || [])
-const shownPlayers = computed(() => (props.compact ? entries.value.slice(0, 5) : entries.value))
+const COMPACT_TOP = 10
+const shownPlayers = computed(() => (props.compact ? entries.value.slice(0, COMPACT_TOP) : entries.value))
 // Equal scores share a place (13, 12, 12, 11 -> 1, 2, 2, 4).
 const ranks = computed(() => sharedRanks(entries.value, e => e.score))
 
